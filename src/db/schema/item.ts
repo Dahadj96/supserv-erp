@@ -24,7 +24,9 @@ export const item = pgTable("item", {
 export const itemAlias = pgTable(
   "item_alias",
   {
-    itemId: uuid("item_id").notNull().references(() => item.id),
+    itemId: uuid("item_id")
+      .notNull()
+      .references(() => item.id),
     alias: text("alias").notNull(),
     source: text("source").notNull(), // client | supplier | manufacturer | internal
     partyId: uuid("party_id").references(() => party.id), // whose word this is
@@ -39,7 +41,9 @@ export const itemAlias = pgTable(
  */
 export const itemMedia = pgTable("item_media", {
   id: uuid("id").primaryKey().defaultRandom(),
-  itemId: uuid("item_id").notNull().references(() => item.id),
+  itemId: uuid("item_id")
+    .notNull()
+    .references(() => item.id),
   fileId: uuid("file_id").notNull(),
   mediaKind: text("media_kind").notNull(), // datasheet|photo|certificate|diagram|manual
   /** Provenance decides what a file may be used for. Never drop it. */
@@ -60,7 +64,9 @@ export const itemCoverage = pgTable(
   "item_coverage",
   {
     dealId: uuid("deal_id").notNull(),
-    itemId: uuid("item_id").notNull().references(() => item.id),
+    itemId: uuid("item_id")
+      .notNull()
+      .references(() => item.id),
     requirement: text("requirement").notNull(), // required | kept_anyway | not_stated
     status: text("status").notNull(), // complete | missing | not_applicable
     notApplicableReason: text("not_applicable_reason"),

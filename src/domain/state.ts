@@ -7,7 +7,12 @@
  */
 
 export const INVOICE_STATES = [
-  "draft", "issued", "part_paid", "paid", "credited", "written_off",
+  "draft",
+  "issued",
+  "part_paid",
+  "paid",
+  "credited",
+  "written_off",
 ] as const;
 export type InvoiceState = (typeof INVOICE_STATES)[number];
 

@@ -1,5 +1,14 @@
 import {
-  boolean, date, integer, jsonb, numeric, pgTable, primaryKey, text, timestamp, uuid,
+  boolean,
+  date,
+  integer,
+  jsonb,
+  numeric,
+  pgTable,
+  primaryKey,
+  text,
+  timestamp,
+  uuid,
 } from "drizzle-orm/pg-core";
 import { item } from "./item";
 import { party } from "./party";
@@ -24,7 +33,9 @@ export const document = pgTable("document", {
   /** null until issued. LAW 5. */
   number: text("number"),
   seriesId: uuid("series_id").references(() => numberingSeries.id),
-  partyId: uuid("party_id").notNull().references(() => party.id),
+  partyId: uuid("party_id")
+    .notNull()
+    .references(() => party.id),
   /** LAW 4 — resolved from party.docLocale at creation, overridable per document. */
   locale: text("locale").notNull(),
   currency: text("currency").notNull().default("DZD"),
@@ -54,7 +65,9 @@ export const document = pgTable("document", {
 
 export const documentLine = pgTable("document_line", {
   id: uuid("id").primaryKey().defaultRandom(),
-  documentId: uuid("document_id").notNull().references(() => document.id, { onDelete: "cascade" }),
+  documentId: uuid("document_id")
+    .notNull()
+    .references(() => document.id, { onDelete: "cascade" }),
   position: integer("position").notNull(),
   lineKind: text("line_kind").notNull(), // item | section | text | subtotal | page_break
   /** An option is shown but excluded from the totals. */
@@ -80,8 +93,12 @@ export const documentLine = pgTable("document_line", {
 export const documentLink = pgTable(
   "document_link",
   {
-    fromDocument: uuid("from_document").notNull().references(() => document.id),
-    toDocument: uuid("to_document").notNull().references(() => document.id),
+    fromDocument: uuid("from_document")
+      .notNull()
+      .references(() => document.id),
+    toDocument: uuid("to_document")
+      .notNull()
+      .references(() => document.id),
     /** A proforma may NEVER carry `settles`. Enforced by trigger. */
     relation: text("relation").notNull(), // converted_to | covers | credits | settles
   },

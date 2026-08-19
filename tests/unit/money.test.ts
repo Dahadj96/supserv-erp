@@ -34,10 +34,9 @@ describe("money", () => {
   });
 
   it("reduces each VAT base proportionally when a global discount applies", () => {
-    const t = computeTotals(
-      [{ qty: 1, unitPrice: "1000", vatRate: 19 }],
-      { globalDiscountPct: 10 },
-    );
+    const t = computeTotals([{ qty: 1, unitPrice: "1000", vatRate: 19 }], {
+      globalDiscountPct: 10,
+    });
     expect(t.totalExcl).toBe("900.00");
     expect(t.vatByRate["19.00"]).toBe("171.00");
   });

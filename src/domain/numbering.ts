@@ -1,5 +1,3 @@
-import type { Decimal } from "decimal.js";
-
 /**
  * LAW 5. Three rules, and all three are enforced in the database by trigger —
  * not here, because application code can be bypassed and a numbering gap cannot

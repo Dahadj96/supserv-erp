@@ -1,6 +1,4 @@
-import {
-  boolean, date, pgTable, primaryKey, text, timestamp, uuid,
-} from "drizzle-orm/pg-core";
+import { boolean, date, pgTable, primaryKey, text, timestamp, uuid } from "drizzle-orm/pg-core";
 
 /**
  * One table for every organisation we deal with. A company that is both a client
@@ -50,7 +48,9 @@ export const party = pgTable("party", {
 export const partyAlias = pgTable(
   "party_alias",
   {
-    partyId: uuid("party_id").notNull().references(() => party.id),
+    partyId: uuid("party_id")
+      .notNull()
+      .references(() => party.id),
     alias: text("alias").notNull(),
     source: text("source"), // typed | email | import | merge
   },
@@ -60,7 +60,9 @@ export const partyAlias = pgTable(
 export const partyRole = pgTable(
   "party_role",
   {
-    partyId: uuid("party_id").notNull().references(() => party.id),
+    partyId: uuid("party_id")
+      .notNull()
+      .references(() => party.id),
     role: text("role").notNull(), // client|supplier|authority|subcontractor|partner|prospect
   },
   (t) => [primaryKey({ columns: [t.partyId, t.role] })],
@@ -89,7 +91,9 @@ export const person = pgTable("person", {
 
 export const personCertification = pgTable("person_certification", {
   id: uuid("id").primaryKey().defaultRandom(),
-  personId: uuid("person_id").notNull().references(() => person.id),
+  personId: uuid("person_id")
+    .notNull()
+    .references(() => person.id),
   kind: text("kind").notNull(),
   number: text("number"),
   issuedBy: text("issued_by"),
