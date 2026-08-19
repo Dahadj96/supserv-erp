@@ -18,9 +18,16 @@ const COUNTS: Record<string, { value: number; tone: "neutral" | "critical" }> = 
   conversations: { value: 9, tone: "critical" },
 };
 
-export function Sidebar() {
+export function Sidebar({ displayName, roleLabel }: { displayName: string; roleLabel: string }) {
   const t = useTranslations("nav");
   const pathname = usePathname();
+  const initials = displayName
+    .split(/[\s.]+/)
+    .filter(Boolean)
+    .map((part) => part[0])
+    .join("")
+    .slice(0, 2)
+    .toUpperCase();
 
   return (
     <aside className="flex w-[236px] shrink-0 flex-col border-e border-line-subtle bg-surface">
@@ -75,11 +82,11 @@ export function Sidebar() {
 
       <div className="flex h-[55px] items-center gap-3 border-t border-line-subtle ps-4">
         <span className="flex size-[30px] items-center justify-center rounded-full bg-chip text-tiny font-semibold text-secondary">
-          AD
+          {initials}
         </span>
         <span className="leading-tight">
-          <span className="block text-tiny font-medium text-ink">A. Dahadj</span>
-          <span className="block text-micro text-muted">Gérant</span>
+          <span className="block text-tiny font-medium text-ink">{displayName}</span>
+          <span className="block text-micro text-muted">{roleLabel}</span>
         </span>
       </div>
     </aside>

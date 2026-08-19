@@ -25,7 +25,31 @@
     "compliance": "Conformité",
     "files": "Fichiers",
     "reports": "Rapports",
-    "settings": "Paramètres"
+    "settings": "Paramètres",
+    "notifications": "Notifications"
+  },
+  "auth": {
+    "signIn": "Connexion",
+    "devNotice": "Entra ID n'est pas encore connecté. Choisissez un rôle pour travailler — cet écran n'existe qu'en développement et reste inaccessible en production.",
+    "notConfigured": "La connexion n'est pas configurée. Better Auth et Entra ID doivent être connectés avant que cette version puisse laisser entrer qui que ce soit.",
+    "permissions": "autorisations",
+    "roles": {
+      "gerant": "Gérant",
+      "commercial": "Commercial",
+      "achats": "Achats",
+      "chantier": "Chantier",
+      "compta": "Comptabilité",
+      "lecture": "Lecture seule"
+    }
+  },
+  "profile": {
+    "title": "Mon profil",
+    "subtitle": "Les réglages qui vous suivent, pas ceux de la société.",
+    "interfaceLanguage": "Langue de l'interface",
+    "interfaceLanguageHelp": "Ceci change ce que VOUS voyez. Cela ne change la langue d'aucun document ni d'aucun e-mail — ceux-ci suivent le client ou le fournisseur auquel ils s'adressent.",
+    "documentLanguage": "Langue des documents",
+    "documentLanguageHelp": "Se règle sur chaque société, pas ici. Un client francophone reçoit des documents en français même si vous travaillez en anglais.",
+    "access": "Ce que vous pouvez faire"
   },
   "common": {
     "save": "Enregistrer",
@@ -38,6 +62,7 @@
     "apply": "Appliquer",
     "restore": "Restaurer",
     "signOut": "Se déconnecter",
+    "retry": "Réessayer",
     "showing": "{shown} sur {total}",
     "rowsHidden": "{count} lignes masquées — {permission}"
   },

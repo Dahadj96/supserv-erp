@@ -5,8 +5,7 @@ import { hasLocale, NextIntlClientProvider } from "next-intl";
 import { setRequestLocale } from "next-intl/server";
 import { NuqsAdapter } from "nuqs/adapters/next/app";
 import type { ReactNode } from "react";
-import { Sidebar } from "@/components/layout/sidebar";
-import { Topbar } from "@/components/layout/topbar";
+import { Toaster } from "sonner";
 import { routing } from "@/i18n/routing";
 import "../globals.css";
 
@@ -21,6 +20,10 @@ export function generateStaticParams() {
   return routing.locales.map((locale) => ({ locale }));
 }
 
+/**
+ * Only the document and the providers live here. The application shell —
+ * sidebar and topbar — is in `(app)/layout.tsx`, so sign-in renders without it.
+ */
 export default async function LocaleLayout({
   children,
   params,
@@ -37,16 +40,9 @@ export default async function LocaleLayout({
       <body className="bg-plane text-ink antialiased">
         <NextIntlClientProvider>
           {/* NuqsAdapter is what lets the filter live in the address — screen 79. */}
-          <NuqsAdapter>
-            {/* The shell, written once. Figma: Sidebar + Topbar on page v5. */}
-            <div className="flex h-screen">
-              <Sidebar />
-              <div className="flex min-w-0 flex-1 flex-col">
-                <Topbar />
-                {children}
-              </div>
-            </div>
-          </NuqsAdapter>
+          <NuqsAdapter>{children}</NuqsAdapter>
+          {/* Screen 36 — toasts. */}
+          <Toaster position="bottom-center" toastOptions={{ className: "text-tiny" }} />
         </NextIntlClientProvider>
       </body>
     </html>

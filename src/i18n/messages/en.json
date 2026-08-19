@@ -25,7 +25,31 @@
     "compliance": "Compliance",
     "files": "Files",
     "reports": "Reports",
-    "settings": "Settings"
+    "settings": "Settings",
+    "notifications": "Notifications"
+  },
+  "auth": {
+    "signIn": "Sign in",
+    "devNotice": "Entra ID is not connected yet. Pick a role to work as — this screen exists only in development and is unreachable in a production build.",
+    "notConfigured": "Sign-in is not configured. Better Auth and Entra ID must be connected before this build can let anyone in.",
+    "permissions": "permissions",
+    "roles": {
+      "gerant": "Gérant",
+      "commercial": "Commercial",
+      "achats": "Achats",
+      "chantier": "Chantier",
+      "compta": "Comptabilité",
+      "lecture": "Lecture seule"
+    }
+  },
+  "profile": {
+    "title": "My profile",
+    "subtitle": "Settings that follow you, not the company.",
+    "interfaceLanguage": "Interface language",
+    "interfaceLanguageHelp": "This changes what YOU see. It does not change the language of any document or email — those follow the client or supplier they are addressed to.",
+    "documentLanguage": "Document language",
+    "documentLanguageHelp": "Set on each company, not here. A French client receives French paperwork even when you work in English.",
+    "access": "What you can do"
   },
   "common": {
     "save": "Save",
@@ -38,6 +62,7 @@
     "apply": "Apply",
     "restore": "Restore",
     "signOut": "Sign out",
+    "retry": "Try again",
     "showing": "{shown} of {total}",
     "rowsHidden": "{count} rows hidden — {permission}"
   },
