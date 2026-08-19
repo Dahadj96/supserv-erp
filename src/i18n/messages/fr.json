@@ -41,7 +41,65 @@
     "showing": "{shown} sur {total}",
     "rowsHidden": "{count} lignes masquées — {permission}"
   },
+  "list": {
+    "applied": "Appliqué",
+    "applyCount": "Appliquer — {shown} sur {total}",
+    "selected": "{count} sélectionnées",
+    "selectAll": "Tout sélectionner",
+    "savedViews": "Vues enregistrées",
+    "range": "{first} – {last} sur {total}",
+    "filteredFrom": "{shown} filtrées sur {total}",
+    "rowsPerPage": "Lignes par page",
+    "previous": "Page précédente",
+    "next": "Page suivante",
+    "assignTo": "Attribuer à…",
+    "addTag": "Ajouter une étiquette",
+    "markWaiting": "Marquer en attente",
+    "export": "Exporter"
+  },
+  "deals": {
+    "reference": "Réf",
+    "client": "Client",
+    "subject": "Objet",
+    "value": "Montant",
+    "deadline": "Échéance",
+    "stage": "Étape",
+    "owner": "Responsable",
+    "daysOpen": "Jours ouverts",
+    "margin": "Marge",
+    "filters": {
+      "stage": "Étape",
+      "stageHint": "Plusieurs valeurs possibles — OU à l'intérieur d'un champ",
+      "owner": "Responsable",
+      "ownerHint": "ET entre les champs, OU à l'intérieur d'un champ",
+      "new": "Nouvelle",
+      "qualifying": "Qualification",
+      "sourcing": "Approvisionnement",
+      "offerOut": "Offre envoyée",
+      "ordered": "Commandée",
+      "invoiced": "Facturée",
+      "mine": "Les miennes",
+      "anyone": "Tout le monde"
+    },
+    "views": {
+      "closingThisWeek": "À conclure cette semaine",
+      "closingThisWeekAsks": "Échéance sous 7 jours, ni gagnée ni perdue",
+      "waitingOnSupplier": "En attente d'un fournisseur",
+      "waitingOnSupplierAsks": "Demandé, sans réponse, 2 jours ou plus",
+      "nothingSentYet": "Rien d'envoyé",
+      "nothingSentYetAsks": "Demande ouverte, sans offre, plus de 3 jours"
+    }
+  },
+  "companies": {
+    "code": "Code",
+    "legalName": "Raison sociale",
+    "wilaya": "Wilaya",
+    "nif": "NIF",
+    "docLocale": "Langue des documents"
+  },
   "empty": {
+    "noCompaniesTitle": "Aucune société pour le moment",
+    "noCompaniesBody": "Les sociétés apparaissent lorsque vous en ajoutez une, ou lorsqu'un e-mail d'un nouvel expéditeur est classé sur une nouvelle fiche.",
     "noDealsTitle": "Aucune affaire pour le moment",
     "noDealsBody": "Les affaires apparaissent ici lorsque vous en créez une, ou lorsqu'un e-mail de la boîte de réception est converti.",
     "filteredTitle": "Aucune affaire ne correspond à ces filtres",

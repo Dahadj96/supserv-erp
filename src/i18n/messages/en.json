@@ -41,7 +41,65 @@
     "showing": "{shown} of {total}",
     "rowsHidden": "{count} rows hidden — {permission}"
   },
+  "list": {
+    "applied": "Applied",
+    "applyCount": "Apply — {shown} of {total}",
+    "selected": "{count} selected",
+    "selectAll": "Select all rows",
+    "savedViews": "Saved views",
+    "range": "{first} – {last} of {total}",
+    "filteredFrom": "{shown} filtered from {total}",
+    "rowsPerPage": "Rows per page",
+    "previous": "Previous page",
+    "next": "Next page",
+    "assignTo": "Assign to…",
+    "addTag": "Add a tag",
+    "markWaiting": "Mark waiting on",
+    "export": "Export"
+  },
+  "deals": {
+    "reference": "Ref",
+    "client": "Client",
+    "subject": "Subject",
+    "value": "Value",
+    "deadline": "Deadline",
+    "stage": "Stage",
+    "owner": "Owner",
+    "daysOpen": "Days open",
+    "margin": "Margin",
+    "filters": {
+      "stage": "Stage",
+      "stageHint": "More than one value allowed — OR inside a field",
+      "owner": "Owner",
+      "ownerHint": "AND between fields, OR inside one",
+      "new": "New",
+      "qualifying": "Qualifying",
+      "sourcing": "Sourcing",
+      "offerOut": "Offer sent",
+      "ordered": "Ordered",
+      "invoiced": "Invoiced",
+      "mine": "Mine",
+      "anyone": "Anyone"
+    },
+    "views": {
+      "closingThisWeek": "Closing this week",
+      "closingThisWeekAsks": "Deadline inside 7 days, not won or lost",
+      "waitingOnSupplier": "Waiting on a supplier",
+      "waitingOnSupplierAsks": "Asked, no reply, 2 days or more",
+      "nothingSentYet": "Nothing sent yet",
+      "nothingSentYetAsks": "Enquiry open, no offer, older than 3 days"
+    }
+  },
+  "companies": {
+    "code": "Code",
+    "legalName": "Legal name",
+    "wilaya": "Wilaya",
+    "nif": "NIF",
+    "docLocale": "Document language"
+  },
   "empty": {
+    "noCompaniesTitle": "No companies yet",
+    "noCompaniesBody": "Companies arrive when you add one, or when an email from a new sender is filed against a new record.",
     "noDealsTitle": "No deals yet",
     "noDealsBody": "Deals appear here when you create one, or when an email in the Inbox is turned into one.",
     "filteredTitle": "No deals match those filters",
