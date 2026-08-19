@@ -1,0 +1,55 @@
+# Dokploy reads this. Five services, one box.
+services:
+  postgres:
+    image: postgres:18-alpine
+    environment:
+      POSTGRES_USER: supserv
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+      POSTGRES_DB: supserv
+    volumes:
+      # postgres:18+ stores data in /var/lib/postgresql/<major>/docker and
+      # refuses to start if the volume is mounted at the old .../data path.
+      - pgdata:/var/lib/postgresql
+      - ./docker/init-extensions.sql:/docker-entrypoint-initdb.d/10-extensions.sql:ro
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U supserv"]
+      interval: 10s
+      retries: 5
+
+  web:
+    build: { context: ., dockerfile: Dockerfile }
+    env_file: [.env]
+    depends_on:
+      postgres: { condition: service_healthy }
+    volumes:
+      - files:/data/files
+    labels:
+      - traefik.enable=true
+      # Tailscale name — no public DNS, no open ports. See docs/SERVER.md
+      - traefik.http.routers.supserv.rule=Host(`erp.${TAILNET}.ts.net`)
+      - traefik.http.services.supserv.loadbalancer.server.port=3000
+
+  worker:
+    build: { context: ., dockerfile: Dockerfile }
+    command: ["node", "dist/jobs/worker.js"]
+    env_file: [.env]
+    depends_on:
+      postgres: { condition: service_healthy }
+    volumes:
+      - files:/data/files
+
+  ocr:
+    build: { context: ., dockerfile: Dockerfile.ocr }
+    environment:
+      PORT: 3002
+    # internal only. Client documents never leave this server.
+
+  renderer:
+    build: { context: ., dockerfile: Dockerfile.renderer }
+    environment:
+      PORT: 3001
+    # never exposed to the internet — web talks to it on the internal network
+
+volumes:
+  pgdata:
+  files:

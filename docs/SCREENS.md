@@ -1,0 +1,111 @@
+# SCREENS → ROUTES → PHASE
+
+86 screens in the Figma file `p0zcsZTobPL8zZAeYhyYBt`, page **v4 - Complete**.
+
+Every task maps to at least one row here. If you cannot find the screen for what
+you are about to build, stop and ask — do not invent an interface.
+
+`(pattern)` = built once in `src/components/`, used by many screens.
+`(reference)` = a design document drawn as a screen; it has no route.
+
+| # | Screen | Route | Phase |
+|---|---|---|---|
+| 01 | Login | `/[locale]/login` | **0** |
+| 02 | Inbox | `/inbox` | **2** |
+| 03 | Dashboard (Gerant) | `/dashboard` | **5** |
+| 04 | Dashboard (Commercial) | `/dashboard` | **5** |
+| 05 | Deals | `/deals` | **4** |
+| 06 | Enquiry detail | `/deals/[id]` | **4** |
+| 07 | Tenders | `/tenders` | later |
+| 08 | Tender dossier | `/tenders/[id]` | later |
+| 09 | Sourcing | `/sourcing` | **4** |
+| 10 | Supplier RFQ composer | `/sourcing/[id]/rfq` | **4** |
+| 11 | Offers | `/offers` | **4** |
+| 12 | Offer builder | `/offers/[id]/build` | **4** |
+| 13 | Orders | `/orders` | **5** |
+| 14 | Deliveries | `/deliveries` | **5** |
+| 15 | Projects | `/projects` | later |
+| 16 | Project detail | `/projects/[id]` | later |
+| 17 | Invoices | `/invoices` | **5** |
+| 18 | Invoice preview | `/invoices/[id]/preview` | **3** |
+| 19 | Payments | `/payments` | **5** |
+| 20 | Ageing and relances | `/invoices/ageing` | **5** |
+| 21 | Companies | `/companies` | **1** |
+| 22 | Company detail | `/companies/[id]` | **1** |
+| 23 | Supplier scorecard | `/companies/[id]/scorecard` | later |
+| 24 | Candidates | `/candidates` | later |
+| 25 | Candidate detail | `/candidates/[id]` | later |
+| 26 | Personnel requests | `/personnel-requests` | later |
+| 27 | Compliance | `/compliance` | **7** |
+| 28 | Reports | `/reports` | **7** |
+| 29 | Settings | `/settings` | **0** |
+| 30 | Users and roles | `/settings/users` | **0** |
+| 31 | Modules | `/settings/modules` | **0** |
+| 32 | Audit log | `/settings/audit` | **7** |
+| 33 | Notifications | `/notifications` | **6** |
+| 34 | Empty, loading and error states | `(pattern)` | **0** |
+| 35 | Component states | `(pattern)` | **0** |
+| 36 | Overlays and patterns | `(pattern)` | **0** |
+| 37 | Flow map | `(reference)` | — |
+| 38 | Intake channels | `/inbox/channels` | **2** |
+| 39 | Dossier intake | `/inbox/dossier/[id]` | **2** |
+| 40 | Extraction review | `/inbox/dossier/[id]/review` | **2** |
+| 41 | Scan station | `/inbox/scan` | **2** |
+| 42 | BPU import and pricing | `/tenders/[id]/bpu` | later |
+| 43 | Assistant in context | `(overlay)` | **7** |
+| 44 | Assistant proposals | `/assistant/proposals` | **7** |
+| 45 | Assistant permissions and safety | `/settings/assistant` | **7** |
+| 46 | Website intake forms | `/settings/forms` | **2** |
+| 47 | Document builder | `/documents/[id]/build` | **3** |
+| 48 | Proforma to invoice | `/documents/[id]/convert` | **5** |
+| 49 | Delivery note builder | `/deliveries/[id]/build` | **5** |
+| 50 | Document types | `/settings/document-types` | **3** |
+| 51 | People | `/people` | **1** |
+| 52 | Standardisation | `(reference)` | — |
+| 53 | Language and localisation | `/settings/language` | **0** |
+| 54 | The same screen in French | `(proof)` | — |
+| 55 | Today | `/today` | **6** |
+| 56 | Deal timeline | `/deals/[id]/timeline` | **6** |
+| 57 | Conversations | `/conversations` | **6** |
+| 58 | Waiting on | `/waiting-on` | **6** |
+| 59 | Email templates and snippets | `/settings/email-templates` | **6** |
+| 60 | Files | `/files` | **6** |
+| 61 | Quick capture | `/capture` | **2** |
+| 62 | Move in from Excel and OneDrive | `/settings/import` | **2** |
+| 63 | Week ahead | `/today/week` | **6** |
+| 64 | State machines | `(reference)` | **7** |
+| 65 | Approvals | `/approvals` | **6** |
+| 66 | Storage and files | `/settings/storage` | **6** |
+| 67 | Sourcing request | `/sourcing/[id]` | **4** |
+| 68 | Supplier order | `/purchase-orders/[id]` | later |
+| 69 | Compliance profile | `/settings/compliance` | **7** |
+| 70 | Document engine | `(reference)` | **3** |
+| 71 | Document templates | `/settings/templates` | **3** |
+| 72 | New invoice | `/invoices/new` | **5** |
+| 73 | Item list builder | `/deals/[id]/items` | **1** |
+| 74 | Price capture | `/deals/[id]/prices` | **4** |
+| 75 | Which name goes on the offer | `(pattern)` | **1** |
+| 76 | Contacts | `/contacts` | **1** |
+| 77 | Item technical file | `/items/[id]/technical` | **4** |
+| 78 | Technical coverage | `/deals/[id]/technical` | **4** |
+| 79 | Filtering, views and bulk actions | `(pattern)` | **0** |
+| 80 | Menus, pickers and shortcuts | `(pattern)` | **0** |
+| 81 | My profile and preferences | `/me` | **0** |
+| 82 | Search | `/search` | **1** |
+| 83 | Deleted and restore | `/settings/deleted` | **6** |
+| 84 | Merge duplicates | `/companies/merge` | **1** |
+| 85 | Day one | `/setup` | **0** |
+| 86 | On the phone | `(responsive)` | **2** |
+
+## By phase
+
+- **Phase 0** — Shell and the interface layer: 01, 29, 30, 31, 34, 35, 36, 53, 79, 80, 81, 85
+- **Phase 1** — Records and search: 21, 22, 51, 73, 75, 76, 82, 84
+- **Phase 2** — Capture: 02, 38, 39, 40, 41, 46, 61, 62, 86
+- **Phase 3** — The document engine: 18, 47, 50, 70, 71
+- **Phase 4** — Sell side, end to end: 05, 06, 09, 10, 11, 12, 67, 74, 77, 78
+- **Phase 5** — Money: 03, 04, 13, 14, 17, 19, 20, 48, 49, 72
+- **Phase 6** — Organisation: 33, 55, 56, 57, 58, 59, 60, 63, 65, 66, 83
+- **Phase 7** — Control and the assistant: 27, 28, 32, 43, 44, 45, 64, 69
+- **Parked — after the first release**: 07, 08, 15, 16, 23, 24, 25, 26, 42, 68
+- **Reference only, no route**: 37, 52, 54

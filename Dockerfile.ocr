@@ -1,0 +1,22 @@
+# Free, offline OCR. French + Arabic + English. No account, no card, no API.
+# See docs/OCR.md — the choices here were measured, not assumed.
+FROM jbarlow83/ocrmypdf-alpine:17.10.0
+
+# Arabic is NOT in the base image. French, English and German are.
+RUN apk add --no-cache \
+      tesseract-ocr-data-ara \
+      tesseract-ocr-data-fra \
+      tesseract-ocr-data-eng \
+      python3 py3-pip
+
+RUN pip install --break-system-packages --no-cache-dir \
+      pdfplumber==0.11.10 \
+      rapidocr-onnxruntime==1.4.4 \
+      arabic-reshaper \
+      python-bidi
+
+COPY ocr/ /app/
+WORKDIR /app
+EXPOSE 3002
+# internal network only — never behind a Traefik router
+CMD ["python3", "server.py"]

@@ -1,0 +1,41 @@
+{
+  "nav": {
+    "today": "Aujourd'hui", "inbox": "Boîte de réception", "conversations": "Conversations",
+    "waitingOn": "En attente de", "deals": "Affaires", "dashboard": "Tableau de bord",
+    "work": "TRAVAIL", "tenders": "Appels d'offres", "sourcing": "Approvisionnement",
+    "offers": "Offres", "orders": "Commandes", "deliveries": "Livraisons", "projects": "Chantiers",
+    "money": "ARGENT", "invoices": "Factures", "payments": "Règlements",
+    "companiesPeople": "SOCIÉTÉS ET PERSONNES", "companies": "Sociétés", "contacts": "Contacts",
+    "people": "Personnes", "personnelRequests": "Demandes de personnel",
+    "control": "CONTRÔLE", "compliance": "Conformité", "files": "Fichiers",
+    "reports": "Rapports", "settings": "Paramètres"
+  },
+  "common": {
+    "save": "Enregistrer", "cancel": "Annuler", "discard": "Abandonner", "search": "Rechercher",
+    "filters": "Filtres", "columns": "Colonnes", "clearAll": "Tout effacer",
+    "apply": "Appliquer", "restore": "Restaurer", "signOut": "Se déconnecter",
+    "showing": "{shown} sur {total}", "rowsHidden": "{count} lignes masquées — {permission}"
+  },
+  "empty": {
+    "noDealsTitle": "Aucune affaire pour le moment",
+    "noDealsBody": "Les affaires apparaissent ici lorsque vous en créez une, ou lorsqu'un e-mail de la boîte de réception est converti.",
+    "filteredTitle": "Aucune affaire ne correspond à ces filtres",
+    "errorTitle": "Impossible de charger", "errorBody": "Le serveur n'a pas répondu. Rien n'a été modifié.",
+    "noPermissionTitle": "Vous n'avez pas accès au coût et à la marge",
+    "noPermissionBody": "Le reste de cette offre est visible. Demandez {permission} au Gérant."
+  },
+  "rules": {
+    "invoice": {
+      "clientNifMissing": "Le client n'a pas de NIF",
+      "companyIdentityIncomplete": "L'identité de la société est incomplète — RC, NIF, NIS ou article d'imposition",
+      "noDeliveryNote": "Aucun bon de livraison n'est rattaché",
+      "stampDutyThreshold": "Seuil du droit de timbre non confirmé",
+      "retentionTreatment": "Traitement de la retenue de garantie non confirmé",
+      "vatServicesAbroad": "TVA sur services rendus à l'étranger non confirmée"
+    },
+    "offer": { "annexIncomplete": "L'annexe technique est incomplète" },
+    "proforma": { "validityPeriod": "Durée de validité de la proforma non confirmée" },
+    "unconfirmed": "Cette règle n'a pas encore été confirmée. Elle avertit sans bloquer.",
+    "authority": "Source : {authority}"
+  }
+}

@@ -1,0 +1,9 @@
+# HTML -> PDF, isolated. Keeps 1.3 GB of Chromium out of the app image.
+FROM mcr.microsoft.com/playwright:v1.62.1-noble
+WORKDIR /app
+RUN corepack enable
+COPY renderer/package.json ./
+RUN pnpm install
+COPY renderer/ ./
+EXPOSE 3001
+CMD ["node", "server.js"]

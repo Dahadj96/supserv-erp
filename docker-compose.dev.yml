@@ -1,0 +1,32 @@
+# Development on the office mini PC — Windows + Docker Desktop.
+#
+# Postgres only. About 250 MB, starts in ten seconds, and needs no build.
+# The app runs on Windows with `pnpm dev` and talks to this on localhost:5432.
+#
+# The full stack (web, worker, renderer, ocr) lives in docker-compose.yml and is
+# for the Ubuntu server. Do not build those images here — Playwright and OCR are
+# roughly 3 GB together and this machine has no room for them yet.
+
+services:
+  postgres:
+    image: postgres:18-alpine
+    container_name: supserv-db
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: supserv
+      POSTGRES_PASSWORD: devpassword
+      POSTGRES_DB: supserv
+    ports:
+      - "127.0.0.1:5432:5432"     # localhost only. Never 0.0.0.0
+    volumes:
+      # postgres:18+ stores data in /var/lib/postgresql/<major>/docker and
+      # refuses to start if the volume is mounted at the old .../data path.
+      - pgdata:/var/lib/postgresql
+      - ./docker/init-extensions.sql:/docker-entrypoint-initdb.d/10-extensions.sql:ro
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U supserv"]
+      interval: 10s
+      retries: 5
+
+volumes:
+  pgdata:
