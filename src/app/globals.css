@@ -1,0 +1,71 @@
+@import "tailwindcss";
+
+/*
+ * Measured from the Figma page `v4 - Complete`, not from the SUPSERV Tokens
+ * variable collection — that collection still holds the older v2/v3 palette and
+ * is bound to nothing on v4. CLAUDE.md: the screen wins.
+ * See docs/DECISIONS/2026-08-19-figma-componentisation.md.
+ */
+@theme {
+  --font-sans: Geist, ui-sans-serif, system-ui, sans-serif;
+
+  --color-ink: #1a1a19;
+  --color-ink-hover: #3a3a37;
+  --color-secondary: #5c5c58;
+  --color-muted: #8a8a85;
+  --color-disabled: #b0afaa;
+  --color-on-ink: #ffffff;
+
+  --color-surface: #ffffff;
+  --color-plane: #fafaf9;
+  --color-card: #fdfdfc;
+  --color-sunken: #f5f5f3;
+  --color-inactive: #f2f2ef;
+  --color-chip: #e8e8e4;
+
+  --color-line: #e4e4e1;
+  --color-line-subtle: #efefec;
+  --color-line-strong: #c9c9c4;
+
+  --color-good: #0ca30c;
+  --color-good-bg: #e6f5e6;
+  --color-good-ink: #0a7a0a;
+  --color-warning: #fab219;
+  --color-warning-bg: #fdf3dc;
+  --color-warning-ink: #7a5600;
+  --color-serious: #ec835a;
+  --color-serious-bg: #fbeae1;
+  --color-serious-ink: #9e4519;
+  --color-critical: #d03b3b;
+  --color-critical-bg: #fae7e7;
+  --color-critical-ink: #a32a2a;
+  --color-accent: #2a78d6;
+  --color-accent-bg: #e6f0fc;
+  --color-accent-ink: #1b5aa6;
+
+  --radius-control: 7px;
+  --radius-card: 10px;
+  --radius-pill: 20px;
+
+  --text-micro: 9.5px;
+  --text-tiny: 11px;
+  --text-small: 11.5px;
+  --text-base: 12.5px;
+  --text-lead: 13px;
+}
+
+html {
+  -webkit-text-size-adjust: 100%;
+}
+
+body {
+  background-color: var(--color-plane);
+  color: var(--color-ink);
+  font-family: var(--font-sans);
+  font-size: var(--text-base);
+}
+
+/* Icons are drawn with a 1.75px stroke in the design, not lucide's default 2. */
+.lucide {
+  stroke-width: 1.75;
+}
