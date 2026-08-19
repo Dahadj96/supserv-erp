@@ -1,0 +1,23 @@
+# This repo is edited on Windows and runs on Ubuntu in Docker.
+# Normalise everything to LF in the repository so a file committed here
+# behaves identically inside a container.
+* text=auto eol=lf
+
+# Windows-only files keep CRLF in the working tree.
+*.ps1 text eol=crlf
+*.cmd text eol=crlf
+*.bat text eol=crlf
+
+# Never touch binaries.
+*.png binary
+*.jpg binary
+*.jpeg binary
+*.gif binary
+*.ico binary
+*.pdf binary
+*.woff binary
+*.woff2 binary
+*.ttf binary
+*.otf binary
+*.zip binary
+*.vhdx binary
