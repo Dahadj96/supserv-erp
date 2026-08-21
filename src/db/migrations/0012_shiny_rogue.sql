@@ -1,0 +1,1 @@
+ALTER TABLE "audit_entry" ALTER COLUMN "entity_id" SET DATA TYPE text;

@@ -1128,5 +1128,217 @@
     "overdueDays": "{days} d · overdue",
     "empty": "Nothing here yet.",
     "paymentsLater": "There is no Paid column and no relance banner because payments are not recorded yet. Overdue is worked out from the due date and the balance whenever this page loads — it is never a status somebody sets."
+  },
+  "users": {
+    "title": "Users and roles",
+    "subtitle": "{users, plural, one {# person} other {# people}} · {roles} roles · permissions apply everywhere, not only in the interface",
+    "invite": "Invite someone",
+    "inviteUnavailable": "There is nothing to send. A colleague appears in this list the first time they sign in with their Microsoft account — and arrives with no role until you give them one.",
+    "people": "People",
+    "noPasswords": "sign-in is handled by Microsoft 365 — no passwords are stored here",
+    "saved": "Role changed. The audit log has who did it and when.",
+    "withoutRole": "{count, plural, one {# person has signed in and has no role} other {# people have signed in and have no role}}. They can see nothing until you give them one.",
+    "noRole": "No role",
+    "never": "never",
+    "firstSignIn": "first sign-in",
+    "notYourself": "not your own role",
+    "readOnly": "only the Gérant can change this",
+    "apply": "Apply",
+    "granted": "granted",
+    "notGranted": "not granted",
+    "permissions": "What each role may do",
+    "matrixIsCode": "defined in code — read-only here",
+    "howPeopleAppear": "Nobody is created on this screen. Entra decides who exists; this decides what they may do, and the two never touch.",
+    "whyReadOnly": "This table is the only thing standing between a person and data they may not see, so it lives in src/auth/can.ts rather than in a grid of checkboxes: a change goes through a commit, is reviewed, and is visible in the history. A mis-click here would be silent.",
+    "col": {
+      "name": "Name",
+      "email": "Email",
+      "role": "Role",
+      "givenBy": "Given by",
+      "lastSeen": "Last seen",
+      "change": "Change",
+      "permission": "Permission"
+    },
+    "role": {
+      "gerant": "Gérant",
+      "commercial": "Commercial",
+      "achats": "Achats",
+      "chantier": "Chantier",
+      "compta": "Comptabilité",
+      "lecture": "Read only"
+    },
+    "permission": {
+      "offers": {
+        "margin": {
+          "view": "Offers — see margin"
+        },
+        "issue": "Offers — send to client"
+      },
+      "invoices": {
+        "issue": "Invoices — issue",
+        "cancel": "Invoices — cancel by credit note"
+      },
+      "payments": {
+        "record": "Payments — record"
+      },
+      "purchase": {
+        "order": {
+          "issue": "Purchase orders — issue"
+        }
+      },
+      "people": {
+        "salary": {
+          "view": "People — see salary"
+        }
+      },
+      "settings": {
+        "company": "Settings — company, VAT and numbering"
+      },
+      "users": {
+        "manage": "Users and roles — manage"
+      },
+      "records": {
+        "delete": "Records — delete to the bin"
+      },
+      "merge": {
+        "execute": "Duplicates — merge"
+      }
+    },
+    "error": {
+      "notAllowed": "Only a Gérant may change roles.",
+      "self": "You cannot change your own role. Ask another Gérant.",
+      "lastGerant": "This is the last Gérant. Give somebody else that role first, or the system locks with nobody able to unlock it.",
+      "unknownRole": "That is not a role this system knows.",
+      "noSuchUser": "That person no longer exists."
+    }
+  },
+  "settings": {
+    "title": "Settings",
+    "subtitle": "The company, the money, the documents and what comes in",
+    "dayOne": "Day one checklist",
+    "set": "Set",
+    "notSet": "Not set",
+    "cannotIssue": "No document can be issued yet: {missing} still to do. Everything else on this page works without them.",
+    "group": {
+      "company": "The company",
+      "people": "People",
+      "incoming": "What comes in",
+      "control": "Control"
+    },
+    "entry": {
+      "identity": {
+        "name": "Legal identity",
+        "what": "Legal name, RC, NIF, NIS, article d'imposition, address. Printed on every document."
+      },
+      "logo": {
+        "name": "Logo",
+        "what": "One file. Change it once and every document changes."
+      },
+      "bank": {
+        "name": "Bank accounts",
+        "what": "RIB and domiciliation. The default one prints on invoices."
+      },
+      "vat": {
+        "name": "VAT rates",
+        "what": "Each rate with the date it started. Old documents keep the old rate."
+      },
+      "numbering": {
+        "name": "Numbering",
+        "what": "One series per document kind. Changing a pattern never renumbers what is already issued."
+      },
+      "users": {
+        "name": "Users and roles",
+        "what": "Who has signed in, and what each of them may do."
+      },
+      "profile": {
+        "name": "My profile",
+        "what": "Your own interface language and preferences."
+      },
+      "language": {
+        "name": "Language",
+        "what": "The language you work in, and the language each client is written to in."
+      },
+      "channels": {
+        "name": "Channels",
+        "what": "The mailbox, the scan station, the website forms."
+      },
+      "import": {
+        "name": "Move in from Excel",
+        "what": "Read a file, preview it, import it, undo within 7 days."
+      },
+      "storage": {
+        "name": "Storage",
+        "what": "Where documents are filed.",
+        "unbuilt": "Needs Graph Files.ReadWrite scoped to one SharePoint site — the same conversation as the mailbox, and it has not been had. Documents go to the working volume until then."
+      },
+      "compliance": {
+        "name": "Compliance rules",
+        "what": "Confirm a rule and it starts refusing.",
+        "unbuilt": "Screen 69. The four unconfirmed rules are listed on the day-one checklist and warn on every document; confirming one needs this screen, which is not built."
+      },
+      "bin": {
+        "name": "Deleted and restore",
+        "what": "The 30-day bin. Nothing is removed before it expires."
+      },
+      "audit": {
+        "name": "Audit log",
+        "what": "Who did what, and when.",
+        "unbuilt": "Every action already writes an entry — screens 18, 30, 62 and 70 all do. The page that reads them back is not built."
+      }
+    }
+  },
+  "language": {
+    "title": "Language",
+    "subtitle": "Two settings that never touch each other: the language you work in, and the language a document goes out in.",
+    "changeMine": "Change mine",
+    "banner": "The interface follows the person. Documents and email follow the client or the supplier. You can work in English and still send a French invoice to an Algerian client — and you cannot do it the other way round by accident, because neither setting can reach the other.",
+    "perPerson": "Interface language — one per person",
+    "perPersonWhat": "menus, buttons, tables and validation messages only",
+    "perCounterparty": "Document language — one per counterparty",
+    "perCounterpartyWhat": "what the client reads, or what the supplier understands",
+    "noCounterparties": "No companies yet, so nothing has a document language.",
+    "changeOnTheRecord": "Changed on the company record, not here. A second place to set it would be a second answer to which language a document is in.",
+    "rules": "What the system actually does about language",
+    "enforced": "enforced",
+    "notEnforced": "not enforced — no confirmed rule behind it",
+    "whyNotEnforced": "The greyed rows are claims about the law, or about what an authority requires. Nobody has confirmed them, so the system does not act on them — it would be asserting a rule on its own authority. Confirm one on the compliance screen and it starts refusing.",
+    "rule": {
+      "documentFollowsCounterparty": "A document is written in the counterparty's language, never in the language of whoever pressed the button",
+      "amountInWords": "The amount in words is generated in the document's language",
+      "formatFollowsDocument": "Dates and numbers on a document follow the document, not the reader",
+      "interfaceFollowsPerson": "The interface follows the person signed in",
+      "neverTranslated": "Legal names, identifiers and references are never translated",
+      "algerianInvoiceLanguage": "An invoice to an Algerian client must be French or Arabic",
+      "tenderLanguage": "A tender submission follows the language the authority requires"
+    },
+    "coverage": "Interface coverage",
+    "counted": "Counted from the message files when this page loads, not written down. If somebody adds an English string and forgets the French one, this number drops.",
+    "percentOfKeys": "{percent}% · {keys} keys",
+    "planned": "Planned — not built",
+    "defaultFrench": "Not set — French",
+    "name": {
+      "fr": "Français",
+      "en": "English",
+      "ar": "العربية"
+    },
+    "neverTranslated": "Never translated",
+    "never": {
+      "legalNames": "Legal names of companies — as registered",
+      "identifiers": "NIF, NIS, RC, AI — identifiers, not words",
+      "references": "Item references — as the client wrote them",
+      "original": "The original email or file — that is the archive",
+      "numbers": "Numbers already issued — SUP/2026/0041 stays SUP/2026/0041"
+    },
+    "neverTranslatedWhy": "Translating a legal name or a reference would make a document wrong. The system stores what was written and shows it unchanged in both languages.",
+    "arabic": "Arabic",
+    "arabicBody": "Not built. The interface has no Arabic strings and no right-to-left layout, and no document template is written in Arabic. It is listed here so the gap is visible rather than discovered.",
+    "col": {
+      "person": "Person",
+      "interface": "Interface",
+      "format": "Date and number",
+      "counterparty": "Counterparty",
+      "documents": "Documents",
+      "email": "Email"
+    }
   }
 }

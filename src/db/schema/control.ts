@@ -47,7 +47,14 @@ export const auditEntry = pgTable("audit_entry", {
   actorId: text("actor_id"),
   actorKind: text("actor_kind").notNull().default("user"), // user | assistant | system
   entity: text("entity").notNull(),
-  entityId: uuid("entity_id"),
+  /**
+   * Text, not uuid. Most rows in this system are uuid, but a user is not: Entra
+   * hands Better Auth an opaque string id, and screen 30 writes an audit entry
+   * every time somebody is given a role. A column that could only hold a uuid
+   * would force that entry to leave `entity_id` null — an audit trail with a
+   * hole in it exactly where "who gave them that" is asked.
+   */
+  entityId: text("entity_id"),
   action: text("action").notNull(),
   before: jsonb("before"),
   after: jsonb("after"),

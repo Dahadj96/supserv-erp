@@ -1128,5 +1128,217 @@
     "overdueDays": "{days} j · en retard",
     "empty": "Rien ici pour l'instant.",
     "paymentsLater": "Il n'y a ni colonne Payé ni bandeau de relance parce que les règlements ne sont pas encore enregistrés. Le retard est calculé à partir de l'échéance et du solde à chaque affichage — ce n'est jamais un statut que quelqu'un pose."
+  },
+  "users": {
+    "title": "Utilisateurs et rôles",
+    "subtitle": "{users, plural, one {# personne} other {# personnes}} · {roles} rôles · les permissions s'appliquent partout, pas seulement dans l'interface",
+    "invite": "Inviter quelqu'un",
+    "inviteUnavailable": "Il n'y a rien à envoyer. Un collègue apparaît dans cette liste la première fois qu'il se connecte avec son compte Microsoft — et il arrive sans rôle tant que vous ne lui en donnez pas un.",
+    "people": "Personnes",
+    "noPasswords": "la connexion passe par Microsoft 365 — aucun mot de passe n'est conservé ici",
+    "saved": "Rôle modifié. Le journal indique qui l'a fait et quand.",
+    "withoutRole": "{count, plural, one {# personne s'est connectée et n'a aucun rôle} other {# personnes se sont connectées et n'ont aucun rôle}}. Elles ne voient rien tant que vous ne leur en donnez pas un.",
+    "noRole": "Aucun rôle",
+    "never": "jamais",
+    "firstSignIn": "première connexion",
+    "notYourself": "pas votre propre rôle",
+    "readOnly": "seul le Gérant peut le changer",
+    "apply": "Appliquer",
+    "granted": "accordée",
+    "notGranted": "non accordée",
+    "permissions": "Ce que chaque rôle peut faire",
+    "matrixIsCode": "défini dans le code — lecture seule ici",
+    "howPeopleAppear": "Personne n'est créé sur cet écran. Entra décide qui existe ; ceci décide ce qu'il peut faire, et les deux ne se touchent jamais.",
+    "whyReadOnly": "Ce tableau est la seule chose entre une personne et des données qu'elle ne doit pas voir. Il vit donc dans src/auth/can.ts plutôt que dans une grille de cases : une modification passe par un commit, elle est relue, et elle reste dans l'historique. Un clic malheureux ici serait silencieux.",
+    "col": {
+      "name": "Nom",
+      "email": "E-mail",
+      "role": "Rôle",
+      "givenBy": "Attribué par",
+      "lastSeen": "Vu la dernière fois",
+      "change": "Modifier",
+      "permission": "Permission"
+    },
+    "role": {
+      "gerant": "Gérant",
+      "commercial": "Commercial",
+      "achats": "Achats",
+      "chantier": "Chantier",
+      "compta": "Comptabilité",
+      "lecture": "Lecture seule"
+    },
+    "permission": {
+      "offers": {
+        "margin": {
+          "view": "Offres — voir la marge"
+        },
+        "issue": "Offres — envoyer au client"
+      },
+      "invoices": {
+        "issue": "Factures — émettre",
+        "cancel": "Factures — annuler par avoir"
+      },
+      "payments": {
+        "record": "Règlements — enregistrer"
+      },
+      "purchase": {
+        "order": {
+          "issue": "Bons de commande — émettre"
+        }
+      },
+      "people": {
+        "salary": {
+          "view": "Personnel — voir le salaire"
+        }
+      },
+      "settings": {
+        "company": "Paramètres — société, TVA et numérotation"
+      },
+      "users": {
+        "manage": "Utilisateurs et rôles — gérer"
+      },
+      "records": {
+        "delete": "Fiches — supprimer vers la corbeille"
+      },
+      "merge": {
+        "execute": "Doublons — fusionner"
+      }
+    },
+    "error": {
+      "notAllowed": "Seul un Gérant peut modifier les rôles.",
+      "self": "Vous ne pouvez pas modifier votre propre rôle. Demandez à un autre Gérant.",
+      "lastGerant": "C'est le dernier Gérant. Donnez d'abord ce rôle à quelqu'un d'autre, sinon le système se verrouille sans que personne puisse le déverrouiller.",
+      "unknownRole": "Ce n'est pas un rôle connu du système.",
+      "noSuchUser": "Cette personne n'existe plus."
+    }
+  },
+  "settings": {
+    "title": "Paramètres",
+    "subtitle": "La société, l'argent, les documents et ce qui arrive",
+    "dayOne": "Checklist du premier jour",
+    "set": "Fait",
+    "notSet": "À faire",
+    "cannotIssue": "Aucun document ne peut encore être émis : {missing} restent à faire. Tout le reste de cette page fonctionne sans eux.",
+    "group": {
+      "company": "La société",
+      "people": "Les personnes",
+      "incoming": "Ce qui arrive",
+      "control": "Contrôle"
+    },
+    "entry": {
+      "identity": {
+        "name": "Identité légale",
+        "what": "Raison sociale, RC, NIF, NIS, article d'imposition, adresse. Imprimés sur chaque document."
+      },
+      "logo": {
+        "name": "Logo",
+        "what": "Un seul fichier. Changez-le une fois, tous les documents changent."
+      },
+      "bank": {
+        "name": "Comptes bancaires",
+        "what": "RIB et domiciliation. Le compte par défaut figure sur les factures."
+      },
+      "vat": {
+        "name": "Taux de TVA",
+        "what": "Chaque taux avec sa date d'entrée en vigueur. Les anciens documents gardent l'ancien taux."
+      },
+      "numbering": {
+        "name": "Numérotation",
+        "what": "Une série par type de document. Changer un format ne renumérote jamais ce qui est déjà émis."
+      },
+      "users": {
+        "name": "Utilisateurs et rôles",
+        "what": "Qui s'est connecté, et ce que chacun a le droit de faire."
+      },
+      "profile": {
+        "name": "Mon profil",
+        "what": "Votre langue d'interface et vos préférences."
+      },
+      "language": {
+        "name": "Langue",
+        "what": "La langue dans laquelle vous travaillez, et celle dans laquelle chaque client est écrit."
+      },
+      "channels": {
+        "name": "Canaux",
+        "what": "La boîte partagée, la station de scan, les formulaires du site."
+      },
+      "import": {
+        "name": "Reprise depuis Excel",
+        "what": "Lire un fichier, le prévisualiser, l'importer, annuler sous 7 jours."
+      },
+      "storage": {
+        "name": "Stockage",
+        "what": "Où les documents sont classés.",
+        "unbuilt": "Demande Graph Files.ReadWrite restreint à un seul site SharePoint — la même conversation que la boîte partagée, et elle n'a pas eu lieu. Les documents vont sur le volume de travail en attendant."
+      },
+      "compliance": {
+        "name": "Règles de conformité",
+        "what": "Confirmez une règle et elle se met à refuser.",
+        "unbuilt": "Écran 69. Les quatre règles non confirmées figurent sur la checklist du premier jour et avertissent sur chaque document ; les confirmer demande cet écran, qui n'est pas construit."
+      },
+      "bin": {
+        "name": "Supprimés et restauration",
+        "what": "La corbeille à 30 jours. Rien n'est retiré avant l'échéance."
+      },
+      "audit": {
+        "name": "Journal",
+        "what": "Qui a fait quoi, et quand.",
+        "unbuilt": "Chaque action écrit déjà une entrée — les écrans 18, 30, 62 et 70 le font tous. La page qui les relit n'est pas construite."
+      }
+    }
+  },
+  "language": {
+    "title": "Langue",
+    "subtitle": "Deux réglages qui ne se touchent jamais : la langue dans laquelle vous travaillez, et celle dans laquelle un document part.",
+    "changeMine": "Changer la mienne",
+    "banner": "L'interface suit la personne. Les documents et les e-mails suivent le client ou le fournisseur. Vous pouvez travailler en anglais et envoyer malgré tout une facture en français à un client algérien — et l'inverse ne peut pas arriver par accident, parce qu'aucun des deux réglages n'atteint l'autre.",
+    "perPerson": "Langue de l'interface — une par personne",
+    "perPersonWhat": "menus, boutons, tableaux et messages de validation uniquement",
+    "perCounterparty": "Langue des documents — une par tiers",
+    "perCounterpartyWhat": "ce que le client lit, ou ce que le fournisseur comprend",
+    "noCounterparties": "Aucune société pour l'instant, donc rien n'a de langue de document.",
+    "changeOnTheRecord": "Se change sur la fiche de la société, pas ici. Un deuxième endroit pour le régler serait une deuxième réponse à la question de la langue d'un document.",
+    "rules": "Ce que le système fait réellement de la langue",
+    "enforced": "appliqué",
+    "notEnforced": "non appliqué — aucune règle confirmée derrière",
+    "whyNotEnforced": "Les lignes grisées sont des affirmations sur la loi, ou sur ce qu'exige une administration. Personne ne les a confirmées, donc le système n'agit pas dessus — il se prononcerait de sa propre autorité. Confirmez-en une sur l'écran de conformité et elle se met à refuser.",
+    "rule": {
+      "documentFollowsCounterparty": "Un document est écrit dans la langue du tiers, jamais dans celle de la personne qui a cliqué",
+      "amountInWords": "Le montant en lettres est généré dans la langue du document",
+      "formatFollowsDocument": "Les dates et les nombres d'un document suivent le document, pas le lecteur",
+      "interfaceFollowsPerson": "L'interface suit la personne connectée",
+      "neverTranslated": "Les raisons sociales, les identifiants et les références ne sont jamais traduits",
+      "algerianInvoiceLanguage": "Une facture à un client algérien doit être en français ou en arabe",
+      "tenderLanguage": "Une soumission suit la langue exigée par l'administration"
+    },
+    "coverage": "Couverture de l'interface",
+    "counted": "Compté dans les fichiers de messages au chargement de la page, pas écrit à la main. Si quelqu'un ajoute une chaîne anglaise et oublie la française, ce nombre baisse.",
+    "percentOfKeys": "{percent} % · {keys} clés",
+    "planned": "Prévu — non construit",
+    "defaultFrench": "Non réglé — français",
+    "name": {
+      "fr": "Français",
+      "en": "English",
+      "ar": "العربية"
+    },
+    "neverTranslated": "Jamais traduit",
+    "never": {
+      "legalNames": "Les raisons sociales — telles qu'enregistrées",
+      "identifiers": "NIF, NIS, RC, AI — des identifiants, pas des mots",
+      "references": "Les références article — telles que le client les a écrites",
+      "original": "L'e-mail ou le fichier d'origine — c'est l'archive",
+      "numbers": "Les numéros déjà émis — SUP/2026/0041 reste SUP/2026/0041"
+    },
+    "neverTranslatedWhy": "Traduire une raison sociale ou une référence rendrait un document faux. Le système conserve ce qui a été écrit et l'affiche inchangé dans les deux langues.",
+    "arabic": "Arabe",
+    "arabicBody": "Non construit. L'interface n'a aucune chaîne en arabe ni de mise en page de droite à gauche, et aucun modèle de document n'est rédigé en arabe. C'est indiqué ici pour que le manque soit visible plutôt que découvert.",
+    "col": {
+      "person": "Personne",
+      "interface": "Interface",
+      "format": "Date et nombre",
+      "counterparty": "Tiers",
+      "documents": "Documents",
+      "email": "E-mail"
+    }
   }
 }

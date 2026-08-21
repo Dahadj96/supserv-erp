@@ -85,6 +85,13 @@
       "when": 1787339716829,
       "tag": "0011_large_hiroim",
       "breakpoints": true
+    },
+    {
+      "idx": 12,
+      "version": "7",
+      "when": 1787353970100,
+      "tag": "0012_shiny_rogue",
+      "breakpoints": true
     }
   ]
 }
