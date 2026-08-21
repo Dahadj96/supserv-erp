@@ -1,8 +1,6 @@
 import { Plus } from "lucide-react";
 import { getTranslations, setRequestLocale } from "next-intl/server";
 import { Button } from "@/components/ui/button";
-import { RulePopover } from "@/components/ui/rule-popover";
-import { evaluate, isBlocked, SEED_RULES } from "@/domain/rules";
 import { type DealRow, DealsList } from "./deals-list";
 
 /**
@@ -20,9 +18,12 @@ export default async function DealsPage({ params }: { params: Promise<{ locale: 
   const rows: DealRow[] = [];
   const total = 0;
 
-  // Until an offer exists there is nothing to send, so the control is disabled
-  // and says why. The rule set comes from src/domain/rules.ts, not from here.
-  const blocking = evaluate(SEED_RULES, ["offer.technical_annex_incomplete"]);
+  // The button is grey because the offer builder does not exist yet — not
+  // because a compliance rule refused anything. It used to claim the latter,
+  // citing a rule from a seed list that said it had been confirmed by a person
+  // who never confirmed it. Screen 80 asks for a reason on every grey control;
+  // it does not ask for an impressive one.
+  const notYet = t("rules.comingInPhase", { phase: 4 });
 
   return (
     <main className="flex min-h-0 flex-1 flex-col">
@@ -34,15 +35,13 @@ export default async function DealsPage({ params }: { params: Promise<{ locale: 
           </p>
         </div>
         <div className="ms-auto">
-          <RulePopover results={blocking}>
-            <Button
-              variant="primary"
-              icon={<Plus className="size-4" aria-hidden />}
-              disabledReason={isBlocked(blocking) ? t(blocking[0]?.messageKey ?? "") : undefined}
-            >
-              {t("nav.offers")}
-            </Button>
-          </RulePopover>
+          <Button
+            variant="primary"
+            icon={<Plus className="size-4" aria-hidden />}
+            disabledReason={notYet}
+          >
+            {t("nav.offers")}
+          </Button>
         </div>
       </div>
 

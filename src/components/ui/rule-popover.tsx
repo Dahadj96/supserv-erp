@@ -2,14 +2,28 @@
 
 import { useTranslations } from "next-intl";
 import { useState } from "react";
-import type { RuleResult } from "@/domain/rules";
 
 /**
  * Screen 80 — no grey button without a reason. This is the popover: it names
  * the rule, its authority, and where to go and fix it. An unconfirmed rule is
  * shown as a warning, because the system never asserts a law on its own
  * authority (CLAUDE.md, hard rules).
+ *
+ * The shape is declared here rather than imported from a domain module. There
+ * used to be a second rule model in `src/domain/rules.ts` with its own codes and
+ * a seed list that claimed rules had been "confirmed by A. Dahadj on
+ * 2026-08-01" — a signature nobody gave. It is gone. The one rule table is
+ * `blocking_rule`, read through `src/domain/compliance-profile.ts`, and a caller
+ * maps a row onto this shape when it needs to explain a grey control.
  */
+export type RuleResult = {
+  code: string;
+  messageKey: string;
+  authority: string | null;
+  fixRoute: string | null;
+  /** An unconfirmed rule WARNS. It never blocks. Screen 69. */
+  severity: "block" | "warn";
+};
 export function RulePopover({
   results,
   children,

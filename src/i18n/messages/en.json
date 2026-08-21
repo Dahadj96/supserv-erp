@@ -1340,5 +1340,115 @@
       "documents": "Documents",
       "email": "Email"
     }
+  },
+  "compliance": {
+    "title": "Compliance profile",
+    "subtitle": "the rules the system enforces, and who confirmed each one",
+    "banner": "The software enforces these rules. It does not assert that they are the law. Each one names its source and the person who confirmed it — and until somebody does, it is marked unconfirmed and enforced as a warning only.",
+    "export": "Export for your accountant",
+    "exportOnePager": "Export the one-pager",
+    "activeProfile": "Algeria — active profile",
+    "ruleCount": "{total} rules · {confirmed} confirmed, {unconfirmed} not yet",
+    "noRulesYet": "No rules are written down yet. A rule nobody has written down cannot be confirmed — and a system that invents the rule at the moment it needs it is a system asserting a law on its own authority.",
+    "writeThemDown": "Write down the known rules",
+    "seeded": "The rules are written down. None of them is confirmed except the ones a decree confirms itself.",
+    "statedSource": "Stated source: {source}",
+    "noSource": "no source recorded",
+    "confirmedBy": "Confirmed by {who} on {on}",
+    "confirmedByItself": "Confirmed by the text itself, {on}",
+    "notConfirmed": "Nobody has confirmed this",
+    "decreeConfirmsItself": "A decree confirms itself. There is nothing for a person to add, and nothing to take back.",
+    "whoSaidSo": "Who confirmed it",
+    "whoSaidSoHint": "your accountant's name, or your own",
+    "on": "On",
+    "confirmIt": "Confirm — it will refuse from now on",
+    "unconfirm": "Take it back",
+    "whyTakeItBack": "Why",
+    "whyTakeItBackHint": "a finance act changed it, the question was wrong…",
+    "nowBlocks": "Confirmed. From now on a document that fails this rule is refused, not warned about.",
+    "nowWarns": "Taken back. It warns again, and documents already issued are untouched.",
+    "enforcement": {
+      "blocks": "Blocks",
+      "warns": "Warns only",
+      "always": "Always"
+    },
+    "structural": "What the system does whatever anybody says",
+    "structuralWhat": "guarantees that come from how it is built",
+    "structuralWhy": "These are not rules somebody confirmed — they are properties of the code, and there is no switch for them. They are listed because a reader asking what this software enforces deserves the whole answer.",
+    "built": {
+      "chronological": "Numbers documents in order, with no gaps",
+      "neverReuse": "Never gives out the same number twice, even under two people issuing at once",
+      "neverEditIssued": "Never edits an issued document — a correction is a new document",
+      "oneRenderer": "Draws every document with one renderer, so they cannot drift apart",
+      "numberOnIssue": "Takes a number at issue and never on a draft",
+      "amountInWords": "Writes the amount in words in the document's own language"
+    },
+    "principle": "The principle",
+    "principleWhy": "why the wording changed across the whole system",
+    "principleQuote": "Software should not tell you what the law is. It should do what you told it to do, and show you who told it.",
+    "principleBody": "Screens used to say things like \"required by art. 42 CTCA\". That is the software making a legal claim, and if the claim is wrong — or the article is renumbered in a finance act — the software is confidently wrong in a place nobody thinks to check. Every one of those strings now reads from this profile. The behaviour is identical: the invoice is still refused without a NIF. What changed is that the reason is attributed, dated and reviewable, and an unconfirmed rule warns instead of blocking.",
+    "was": "Was",
+    "now": "Now",
+    "wasNow": {
+      "nif": {
+        "was": "\"The client NIF is missing and article 42 of the CTCA requires it on every invoice.\"",
+        "now": "\"Cannot issue — the client NIF is missing. Rule from décret exécutif 05-468, confirmed by the decree itself.\""
+      },
+      "mentions": {
+        "was": "\"décret exécutif 05-468 · the system refuses to issue without them\"",
+        "now": "\"The required mentions, from your Algeria profile. Confirmed ones refuse; the rest warn.\""
+      },
+      "stamp": {
+        "was": "\"Droit de timbre applies.\"",
+        "now": "\"Stamp duty on cash settlement — nobody has confirmed the rule, so this is a warning.\""
+      }
+    },
+    "status": "Status",
+    "count": {
+      "rules": "Rules written down",
+      "confirmed": "Confirmed",
+      "unconfirmed": "Not confirmed",
+      "blocks": "Refuse a document",
+      "warns": "Warn only",
+      "structural": "Built into the code"
+    },
+    "whatToDo": "What to do with this",
+    "whatToDoBody": "Export it, send it to your accountant, and have him confirm or correct the unconfirmed rules. It is one page. That conversation is worth having once, and this is the artefact that makes it a fifteen-minute conversation instead of a research project.",
+    "reversible": "Taking a confirmation back",
+    "reversibleBody": "A confirmation is somebody's judgement, and judgements get revised — a finance act moves a threshold, or the wrong question was asked. Taking one back changes what happens next, never what already happened: a document issued under the old rule keeps its number and its content.",
+    "seeDayOne": "See it on the day-one checklist",
+    "error": {
+      "notAllowed": "Only a Gérant may confirm a rule.",
+      "noSuchRule": "That rule is not in the profile.",
+      "noName": "Say who confirmed it. A confirmation without a name is not one.",
+      "selfEvident": "A decree confirms itself — there is nothing to change here."
+    }
+  },
+  "onePager": {
+    "title": "Compliance profile — questions for our accountant",
+    "yourCompany": "Your company",
+    "dated": "Prepared {date}",
+    "intro": "Our invoicing software refuses to issue a document that breaks a rule we have confirmed, and warns about one we have not. Below are the rules it does not yet act on, because nobody qualified has told us what they are. Each one takes a sentence to settle. Everything already settled is listed underneath, so you can correct it if we have it wrong.",
+    "needYou": "{count, plural, =0 {Nothing waiting on you} one {# question for you} other {# questions for you}}",
+    "nothingPending": "Every rule in the profile has been confirmed.",
+    "ourUnderstanding": "What we think the source is: {source}",
+    "noSource": "we do not know",
+    "genericQuestion": "Is this right, and what exactly should the software do?",
+    "question": {
+      "invoice": {
+        "stampDutyThreshold": "From what amount does the droit de timbre apply on a cash settlement, at what rate, and does it apply to a part-cash, part-transfer settlement?",
+        "retentionTreatment": "A retenue de garantie: is it deducted from the amount before VAT or after, and is VAT computed before or after the retention?",
+        "vatServicesAbroad": "A service rendered to a client outside Algeria: exempt or at the normal rate, and which reference must appear on the invoice?"
+      },
+      "proforma": {
+        "validityPeriod": "How long does a pro forma invoice hold our prices, and must that period be printed on the document?"
+      }
+    },
+    "answer": "Answer",
+    "signed": "Signed",
+    "alreadySettled": "{count, plural, =0 {Nothing settled yet} other {Already settled — # rules}}",
+    "settledBy": "source {source}, confirmed by {who} on {on}",
+    "footer": "Whatever you write here is entered into the software with your name and the date against it. Until then the software warns instead of refusing, which means a document can still go out — so the sooner these are settled, the fewer documents go out on an assumption.",
+    "printHint": "Use your browser's print command to save this as a PDF."
   }
 }

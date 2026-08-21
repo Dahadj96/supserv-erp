@@ -1340,5 +1340,115 @@
       "documents": "Documents",
       "email": "E-mail"
     }
+  },
+  "compliance": {
+    "title": "Profil de conformité",
+    "subtitle": "les règles que le système applique, et qui a confirmé chacune",
+    "banner": "Le logiciel applique ces règles. Il n'affirme pas qu'elles sont la loi. Chacune nomme sa source et la personne qui l'a confirmée — et tant que personne ne le fait, elle est marquée non confirmée et n'est appliquée qu'en avertissement.",
+    "export": "Exporter pour le comptable",
+    "exportOnePager": "Exporter la page unique",
+    "activeProfile": "Algérie — profil actif",
+    "ruleCount": "{total} règles · {confirmed} confirmées, {unconfirmed} pas encore",
+    "noRulesYet": "Aucune règle n'est encore écrite. Une règle que personne n'a écrite ne peut pas être confirmée — et un système qui invente la règle au moment où il en a besoin est un système qui se prononce de sa propre autorité.",
+    "writeThemDown": "Écrire les règles connues",
+    "seeded": "Les règles sont écrites. Aucune n'est confirmée, sauf celles qu'un décret confirme lui-même.",
+    "statedSource": "Source indiquée : {source}",
+    "noSource": "aucune source enregistrée",
+    "confirmedBy": "Confirmée par {who} le {on}",
+    "confirmedByItself": "Confirmée par le texte lui-même, {on}",
+    "notConfirmed": "Personne ne l'a confirmée",
+    "decreeConfirmsItself": "Un décret se confirme lui-même. Il n'y a rien à ajouter par une personne, et rien à retirer.",
+    "whoSaidSo": "Qui l'a confirmée",
+    "whoSaidSoHint": "le nom de votre comptable, ou le vôtre",
+    "on": "Le",
+    "confirmIt": "Confirmer — elle refusera désormais",
+    "unconfirm": "Retirer",
+    "whyTakeItBack": "Pourquoi",
+    "whyTakeItBackHint": "une loi de finances a changé, la question était mal posée…",
+    "nowBlocks": "Confirmée. Désormais un document qui manque à cette règle est refusé, plus seulement signalé.",
+    "nowWarns": "Retirée. Elle avertit de nouveau, et les documents déjà émis ne sont pas touchés.",
+    "enforcement": {
+      "blocks": "Bloque",
+      "warns": "Avertit seulement",
+      "always": "Toujours"
+    },
+    "structural": "Ce que le système fait quoi qu'on lui dise",
+    "structuralWhat": "des garanties qui viennent de sa construction",
+    "structuralWhy": "Ce ne sont pas des règles que quelqu'un a confirmées — ce sont des propriétés du code, et il n'existe aucun interrupteur pour les changer. Elles figurent ici parce qu'un lecteur qui demande ce que ce logiciel applique mérite la réponse entière.",
+    "built": {
+      "chronological": "Numérote les documents dans l'ordre, sans trou",
+      "neverReuse": "Ne donne jamais deux fois le même numéro, même si deux personnes émettent en même temps",
+      "neverEditIssued": "Ne modifie jamais un document émis — une correction est un nouveau document",
+      "oneRenderer": "Dessine tous les documents avec un seul moteur, pour qu'ils ne divergent pas",
+      "numberOnIssue": "Prend un numéro à l'émission, jamais sur un brouillon",
+      "amountInWords": "Écrit le montant en lettres dans la langue du document"
+    },
+    "principle": "Le principe",
+    "principleWhy": "pourquoi la formulation a changé dans tout le système",
+    "principleQuote": "Un logiciel ne doit pas vous dire ce qu'est la loi. Il doit faire ce que vous lui avez dit de faire, et vous montrer qui le lui a dit.",
+    "principleBody": "Les écrans disaient des choses comme « exigé par l'article 42 du CTCA ». C'est le logiciel qui énonce une règle de droit, et si l'énoncé est faux — ou si l'article est renuméroté par une loi de finances — le logiciel a tort avec assurance, à un endroit où personne ne pense à vérifier. Toutes ces phrases lisent désormais ce profil. Le comportement est identique : la facture est toujours refusée sans NIF. Ce qui change, c'est que la raison est attribuée, datée et vérifiable, et qu'une règle non confirmée avertit au lieu de bloquer.",
+    "was": "Avant",
+    "now": "Maintenant",
+    "wasNow": {
+      "nif": {
+        "was": "« Le NIF du client est manquant et l'article 42 du CTCA l'exige sur toute facture. »",
+        "now": "« Impossible d'émettre — le NIF du client est manquant. Règle du décret exécutif 05-468, confirmée par le décret lui-même. »"
+      },
+      "mentions": {
+        "was": "« décret exécutif 05-468 · le système refuse d'émettre sans elles »",
+        "now": "« Les mentions obligatoires, depuis votre profil Algérie. Les règles confirmées refusent ; les autres avertissent. »"
+      },
+      "stamp": {
+        "was": "« Le droit de timbre s'applique. »",
+        "now": "« Droit de timbre sur règlement en espèces — personne n'a confirmé la règle, c'est donc un avertissement. »"
+      }
+    },
+    "status": "État",
+    "count": {
+      "rules": "Règles écrites",
+      "confirmed": "Confirmées",
+      "unconfirmed": "Non confirmées",
+      "blocks": "Refusent un document",
+      "warns": "Avertissent seulement",
+      "structural": "Inscrites dans le code"
+    },
+    "whatToDo": "Quoi en faire",
+    "whatToDoBody": "Exportez-la, envoyez-la à votre comptable, et faites-lui confirmer ou corriger les règles non confirmées. C'est une seule page. Cette conversation vaut la peine d'être menée une fois, et voici l'objet qui en fait une conversation de quinze minutes plutôt qu'un travail de recherche.",
+    "reversible": "Retirer une confirmation",
+    "reversibleBody": "Une confirmation est le jugement de quelqu'un, et un jugement se révise — une loi de finances déplace un seuil, ou la question était mal posée. La retirer change ce qui se passera ensuite, jamais ce qui a déjà eu lieu : un document émis sous l'ancienne règle garde son numéro et son contenu.",
+    "seeDayOne": "Le voir sur la checklist du premier jour",
+    "error": {
+      "notAllowed": "Seul un Gérant peut confirmer une règle.",
+      "noSuchRule": "Cette règle ne figure pas dans le profil.",
+      "noName": "Indiquez qui l'a confirmée. Une confirmation sans nom n'en est pas une.",
+      "selfEvident": "Un décret se confirme lui-même — il n'y a rien à changer ici."
+    }
+  },
+  "onePager": {
+    "title": "Profil de conformité — questions pour notre comptable",
+    "yourCompany": "Votre société",
+    "dated": "Établi le {date}",
+    "intro": "Notre logiciel de facturation refuse d'émettre un document qui manque à une règle que nous avons confirmée, et se contente d'avertir pour une règle que nous n'avons pas confirmée. Vous trouverez ci-dessous les règles sur lesquelles il n'agit pas encore, faute que quelqu'un de qualifié nous ait dit ce qu'elles sont. Chacune se règle en une phrase. Ce qui est déjà réglé figure en dessous, pour que vous puissiez nous corriger si nous nous trompons.",
+    "needYou": "{count, plural, =0 {Rien en attente de vous} one {# question pour vous} other {# questions pour vous}}",
+    "nothingPending": "Toutes les règles du profil ont été confirmées.",
+    "ourUnderstanding": "Ce que nous pensons être la source : {source}",
+    "noSource": "nous l'ignorons",
+    "genericQuestion": "Est-ce exact, et que doit faire le logiciel exactement ?",
+    "question": {
+      "invoice": {
+        "stampDutyThreshold": "À partir de quel montant le droit de timbre s'applique-t-il sur un règlement en espèces, à quel taux, et s'applique-t-il à un règlement partie espèces, partie virement ?",
+        "retentionTreatment": "La retenue de garantie : se déduit-elle du montant HT ou du TTC, et la TVA se calcule-t-elle avant ou après la retenue ?",
+        "vatServicesAbroad": "Un service rendu à un client hors d'Algérie : exonéré ou au taux normal, et quelle référence doit figurer sur la facture ?"
+      },
+      "proforma": {
+        "validityPeriod": "Combien de temps une facture proforma engage-t-elle nos prix, et cette durée doit-elle être imprimée sur le document ?"
+      }
+    },
+    "answer": "Réponse",
+    "signed": "Signature",
+    "alreadySettled": "{count, plural, =0 {Rien de réglé pour l'instant} other {Déjà réglé — # règles}}",
+    "settledBy": "source {source}, confirmée par {who} le {on}",
+    "footer": "Ce que vous écrivez ici est saisi dans le logiciel avec votre nom et la date en regard. En attendant, le logiciel avertit au lieu de refuser, ce qui veut dire qu'un document peut tout de même partir — plus tôt ces points seront réglés, moins de documents partiront sur une supposition.",
+    "printHint": "Utilisez la commande d'impression de votre navigateur pour l'enregistrer en PDF."
   }
 }
