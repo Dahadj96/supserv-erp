@@ -286,14 +286,16 @@
     "moves": {
       "aliases": "Aussi appelée",
       "contacts": "Contacts",
-      "document.offer": "Offres",
-      "document.invoice": "Factures",
-      "document.order": "Commandes",
-      "document.delivery": "Livraisons",
-      "document.purchase_order": "Bons de commande",
-      "document.credit_note": "Avoirs",
-      "document.proforma": "Factures proforma",
-      "document.quote": "Devis"
+      "document": {
+        "offer": "Offres",
+        "invoice": "Factures",
+        "order": "Commandes",
+        "delivery": "Livraisons",
+        "purchase_order": "Bons de commande",
+        "credit_note": "Avoirs",
+        "proforma": "Factures proforma",
+        "quote": "Devis"
+      }
     },
     "auditNote": "Les entrées du journal ne sont pas déplacées non plus — les deux pistes sont conservées, et la fusion elle-même y est inscrite : qui, quand, et chaque champ choisi.",
     "howFound": "Comment elles ont été repérées",
@@ -848,10 +850,14 @@
     "confirmedBy": "confirmée par {who}",
     "fourRulesBody": "Le système n'affirme jamais une règle légale de sa propre autorité. Chacune nomme sa source, qui l'a confirmée et quand. Tant que personne n'a confirmé ces quatre-là, le système avertit et vous laisse continuer.",
     "rule": {
-      "invoice.stampDutyThreshold": "Seuil du droit de timbre",
-      "invoice.retentionTreatment": "Traitement de la retenue de garantie",
-      "invoice.vatServicesAbroad": "TVA sur services rendus à l'étranger",
-      "proforma.validityPeriod": "Durée de validité de la proforma"
+      "invoice": {
+        "stampDutyThreshold": "Seuil du droit de timbre",
+        "retentionTreatment": "Traitement de la retenue de garantie",
+        "vatServicesAbroad": "TVA sur services rendus à l'étranger"
+      },
+      "proforma": {
+        "validityPeriod": "Durée de validité de la proforma"
+      }
     },
     "emptiestDay": "Le premier jour est aussi le plus vide",
     "everyListEmptyTitle": "Toutes les listes seront vides",

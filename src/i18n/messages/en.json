@@ -286,14 +286,16 @@
     "moves": {
       "aliases": "Also known as",
       "contacts": "Contacts",
-      "document.offer": "Offers",
-      "document.invoice": "Invoices",
-      "document.order": "Orders",
-      "document.delivery": "Deliveries",
-      "document.purchase_order": "Purchase orders",
-      "document.credit_note": "Credit notes",
-      "document.proforma": "Proforma invoices",
-      "document.quote": "Quotes"
+      "document": {
+        "offer": "Offers",
+        "invoice": "Invoices",
+        "order": "Orders",
+        "delivery": "Deliveries",
+        "purchase_order": "Purchase orders",
+        "credit_note": "Credit notes",
+        "proforma": "Proforma invoices",
+        "quote": "Quotes"
+      }
     },
     "auditNote": "Audit entries are not moved either — both trails are kept, and the merge itself is written into them: who, when, and every field chosen.",
     "howFound": "How they were found",
@@ -848,10 +850,14 @@
     "confirmedBy": "confirmed by {who}",
     "fourRulesBody": "The system never asserts a legal rule on its own authority. Each one names its source, who confirmed it and when. Until somebody confirms these four, the system warns and lets you proceed.",
     "rule": {
-      "invoice.stampDutyThreshold": "Droit de timbre threshold",
-      "invoice.retentionTreatment": "Retenue de garantie treatment",
-      "invoice.vatServicesAbroad": "TVA on services rendered abroad",
-      "proforma.validityPeriod": "Proforma validity period"
+      "invoice": {
+        "stampDutyThreshold": "Droit de timbre threshold",
+        "retentionTreatment": "Retenue de garantie treatment",
+        "vatServicesAbroad": "TVA on services rendered abroad"
+      },
+      "proforma": {
+        "validityPeriod": "Proforma validity period"
+      }
     },
     "emptiestDay": "Day one is also the emptiest day",
     "everyListEmptyTitle": "Every list will be empty",

@@ -61,6 +61,28 @@ describe("messages", () => {
     expect(missing).toEqual([]);
   });
 
+  /**
+   * next-intl 4 throws INVALID_KEY while LOADING the messages when a key name
+   * contains a dot, because the dot is how nesting is expressed. One malformed
+   * key breaks every page in the app, not just the screen that reads it — and
+   * `flatten()` above could never see it, since it joins parents with a dot and
+   * so renders `{"a.b": "…"}` and `{a: {b: "…"}}` as the same string.
+   *
+   * Twelve of these were live for weeks. This is the check that finds them.
+   */
+  it("has no key name containing a dot", () => {
+    const names = (obj: unknown, prefix = ""): string[] => {
+      if (typeof obj !== "object" || obj === null) return [];
+      return Object.entries(obj).flatMap(([key, value]) => [
+        ...(key.includes(".") ? [`${prefix}${key}`] : []),
+        ...names(value, `${prefix}${key}.`),
+      ]);
+    };
+
+    expect(names(en), "English").toEqual([]);
+    expect(names(fr), "French").toEqual([]);
+  });
+
   it("never leaves a namespace as both a string and an object", () => {
     // `merge.after` was briefly a column header AND a group of six labels.
     // next-intl cannot hold both, and the second one silently wins.
