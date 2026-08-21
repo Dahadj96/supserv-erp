@@ -12,6 +12,27 @@ const nextConfig: NextConfig = {
   // every redirect is a template string that the generated Route union cannot
   // accept. next-intl's own Link/redirect already keep the locale correct.
   typedRoutes: false,
+
+  /**
+   * The local storage driver reads and writes paths built at runtime, which
+   * Turbopack cannot follow — so it traces the whole project into the
+   * standalone output "to be safe" and the image doubles.
+   *
+   * This is the standard answer: the paths below are never needed at runtime.
+   * `.data` in particular is the uploaded-files volume itself, which must not
+   * be baked into an image.
+   */
+  outputFileTracingExcludes: {
+    "**/*": [
+      "./.data/**",
+      "./docs/**",
+      "./tests/**",
+      "./.git/**",
+      "./node_modules/@biomejs/**",
+      "./node_modules/@playwright/**",
+      "./node_modules/typescript/**",
+    ],
+  },
 };
 
 export default withNextIntl(nextConfig);
