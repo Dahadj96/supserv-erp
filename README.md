@@ -41,10 +41,17 @@ mid-install. Back up by pushing to GitHub, not by syncing the folder.
 `CLAUDE.md` describes the repository as it is **meant** to be. This section says
 where it actually is, and is updated at the end of every phase.
 
-**Last updated: 2026-08-21 · phases 0 and 1 done, phase 2 in progress · 166 tests passing.**
+**Last updated: 2026-08-21 · ~20 of 83 screens have a working route · 166 tests passing.**
 
 `pnpm dev` runs. Sign in with Microsoft, switch to Français, and the records
 half of the system works end to end.
+
+**Correction, 2026-08-21:** this section previously said "phases 0 and 1 are
+done". Phase 1 is. **Phase 0 is not** — screens 29 (Settings), 30 (Users and
+roles), 31 (Modules), 53 (Language settings) and 85 (Day one) have no route.
+That last one matters most: screen 85 is where the company's RC, NIF, NIS,
+article d'imposition, VAT rates and numbering series are entered, and **no
+document can be issued until they exist**. Phase 3 is blocked behind it.
 
 | Built | Screens |
 |---|---|
