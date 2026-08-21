@@ -17,10 +17,19 @@ import type { party } from "@/db/schema/party";
 
 export type Finding = {
   code: string;
-  /** blocked when the rule is confirmed, warning while it is not. */
-  severity: "block" | "warn";
+  /**
+   * pass  — the rule was evaluated and the document satisfies it
+   * warn  — it fails, but nobody has confirmed the rule, so it does not block
+   * block — it fails and a person has confirmed the rule
+   *
+   * Screen 18 lists all three. A checklist that only showed failures would let
+   * somebody believe the other nine things were never checked — and "we did
+   * look at your NIS" is the reassurance the screen exists to give.
+   */
+  severity: "pass" | "warn" | "block";
   authority: string | null;
   confirmedBy: string | null;
+  confirmedOn: string | null;
   fixRoute: string | null;
 };
 
@@ -62,15 +71,20 @@ export async function check(subject: CheckSubject): Promise<Finding[]> {
     if (!rule.appliesTo.startsWith(subject.kind) && !rule.code.startsWith(subject.kind)) continue;
 
     const test = CHECKS[rule.code];
-    if (!test || !test(subject)) continue;
+    if (!test) continue;
+
+    const fails = test(subject);
 
     findings.push({
       code: rule.code,
-      // Confirmed by a person → it blocks. Not yet → it warns and lets you
-      // proceed, which is screen 85's promise and screen 69's job to change.
-      severity: rule.confirmedOn ? "block" : "warn",
+      // Passing is reported too — screen 18 lists ten checks and only one of
+      // them is red. Confirmed by a person and failing → it blocks. Not yet
+      // confirmed → it warns and lets you proceed, which is screen 85's
+      // promise and screen 69's job to change.
+      severity: !fails ? "pass" : rule.confirmedOn ? "block" : "warn",
       authority: rule.authority,
       confirmedBy: rule.confirmedBy,
+      confirmedOn: rule.confirmedOn,
       fixRoute: rule.fixRoute,
     });
   }
