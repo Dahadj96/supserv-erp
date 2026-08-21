@@ -128,7 +128,18 @@
     "count": "{count} found",
     "viaAlias": "matched “{alias}”",
     "noneTitle": "Nothing matched",
-    "noneBody": "Try fewer words, or part of a name. If a company is known here by another spelling, add it as an alias on its page and every future search will find it."
+    "noneBody": "Try fewer words, or part of a name. If a company is known here by another spelling, add it as an alias on its page and every future search will find it.",
+    "scope": {
+      "all": "Everything",
+      "companies": "Companies",
+      "people": "People and contacts",
+      "items": "Items"
+    },
+    "whereItLooks": "records only, for now",
+    "isContact": "contact",
+    "isPerson": "on our side",
+    "viaEmail": "matched on the email address",
+    "notLookedYet": "Search looks in four places: records, documents we generated, files we received, and email bodies. Only records exist so far — the other three are not empty, they have not been looked in yet."
   },
   "company": {
     "newTitle": "New company",

@@ -128,7 +128,18 @@
     "count": "{count} trouvé(s)",
     "viaAlias": "correspond à « {alias} »",
     "noneTitle": "Aucun résultat",
-    "noneBody": "Essayez moins de mots, ou une partie d'un nom. Si une société est connue ici sous une autre orthographe, ajoutez-la comme alias sur sa fiche et toutes les recherches suivantes la trouveront."
+    "noneBody": "Essayez moins de mots, ou une partie d'un nom. Si une société est connue ici sous une autre orthographe, ajoutez-la comme alias sur sa fiche et toutes les recherches suivantes la trouveront.",
+    "scope": {
+      "all": "Tout",
+      "companies": "Sociétés",
+      "people": "Personnes et contacts",
+      "items": "Articles"
+    },
+    "whereItLooks": "les fiches seulement, pour l'instant",
+    "isContact": "contact",
+    "isPerson": "de notre côté",
+    "viaEmail": "trouvé par l'adresse e-mail",
+    "notLookedYet": "La recherche regarde à quatre endroits : les fiches, les documents que nous avons établis, les fichiers reçus, et le corps des e-mails. Seules les fiches existent pour l'instant — les trois autres ne sont pas vides, ils n'ont pas encore été consultés."
   },
   "company": {
     "newTitle": "Nouvelle société",
