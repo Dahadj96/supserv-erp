@@ -1,7 +1,10 @@
 import { asc, isNull } from "drizzle-orm";
+import { Plus } from "lucide-react";
 import { getTranslations, setRequestLocale } from "next-intl/server";
+import { Button } from "@/components/ui/button";
 import { db } from "@/db";
 import { party } from "@/db/schema/party";
+import { Link } from "@/i18n/navigation";
 import { CompaniesList, type CompanyRow } from "./companies-list";
 
 /**
@@ -40,6 +43,13 @@ export default async function CompaniesPage({ params }: { params: Promise<{ loca
           <p className="mt-1 text-tiny text-muted">
             {t("common.showing", { shown: rows.length, total: rows.length })}
           </p>
+        </div>
+        <div className="ms-auto">
+          <Link href="/companies/new">
+            <Button variant="primary" icon={<Plus className="size-4" aria-hidden />}>
+              {t("company.newTitle")}
+            </Button>
+          </Link>
         </div>
       </div>
 

@@ -1,0 +1,243 @@
+import { and, eq, isNull, sql } from "drizzle-orm";
+import { z } from "zod";
+import { db } from "@/db";
+import { auditEntry } from "@/db/schema/control";
+import { party, partyAlias, partyRole } from "@/db/schema/party";
+
+/**
+ * Screens 21 and 22 — companies.
+ *
+ * One table for every organisation we deal with. A company that is both a
+ * client and a supplier is normal, so roles are additive, never exclusive.
+ */
+
+export const PARTY_ROLES = [
+  "client",
+  "supplier",
+  "authority",
+  "subcontractor",
+  "partner",
+  "prospect",
+] as const;
+export type PartyRole = (typeof PARTY_ROLES)[number];
+
+/** The code prefix follows the role the company was first entered as. */
+const CODE_PREFIX: Record<PartyRole, string> = {
+  client: "CL",
+  supplier: "SU",
+  authority: "AU",
+  subcontractor: "ST",
+  partner: "PA",
+  prospect: "PR",
+};
+
+/**
+ * Only `legalName` and one role are required.
+ *
+ * The décret 05-468 fields are deliberately optional here. A company arrives
+ * from an email long before anyone has its NIF, and refusing to record it until
+ * the paperwork is complete is how people end up keeping a second list in
+ * Excel. The rule bites at invoice time instead — `blocking_rule` already
+ * carries `invoice.client_nif_missing`, which explains itself and names the
+ * décret rather than silently blocking a form.
+ */
+export const partyInput = z.object({
+  legalName: z.string().trim().min(2, "legalNameTooShort"),
+  tradeName: z.string().trim().optional().or(z.literal("")),
+  roles: z.array(z.enum(PARTY_ROLES)).min(1, "roleRequired"),
+  nif: z
+    .string()
+    .trim()
+    .regex(/^\d{15}$/, "nifFifteenDigits")
+    .optional()
+    .or(z.literal("")),
+  nis: z.string().trim().optional().or(z.literal("")),
+  rc: z.string().trim().optional().or(z.literal("")),
+  ai: z.string().trim().optional().or(z.literal("")),
+  email: z.string().trim().email("emailInvalid").optional().or(z.literal("")),
+  phone: z.string().trim().optional().or(z.literal("")),
+  address: z.string().trim().optional().or(z.literal("")),
+  wilaya: z.string().trim().optional().or(z.literal("")),
+  /** LAW 4 — documents follow the counterparty, and this is where that is set. */
+  docLocale: z.enum(["fr", "en"]).default("fr"),
+  emailLocale: z.enum(["fr", "en"]).default("fr"),
+  currency: z.string().trim().default("DZD"),
+  paymentTerms: z.string().trim().optional().or(z.literal("")),
+});
+
+export type PartyInput = z.infer<typeof partyInput>;
+
+const blank = (v: string | undefined) => (v && v.length > 0 ? v : null);
+
+/** CL-0001, SU-0011. Allocated inside the insert so two people cannot collide. */
+async function nextCode(tx: typeof db, role: PartyRole): Promise<string> {
+  const prefix = CODE_PREFIX[role];
+  const rows = await tx.execute<{ next: number }>(sql`
+    select coalesce(max(nullif(regexp_replace(code, '^' || ${prefix} || '-', ''), '')::int), 0) + 1 as next
+    from party
+    where code ~ ('^' || ${prefix} || '-[0-9]+$')
+  `);
+  const next = rows[0]?.next ?? 1;
+  return `${prefix}-${String(next).padStart(4, "0")}`;
+}
+
+export async function createParty(input: PartyInput, actorId: string) {
+  const data = partyInput.parse(input);
+
+  return db.transaction(async (tx) => {
+    const code = await nextCode(tx as unknown as typeof db, data.roles[0] as PartyRole);
+
+    const [created] = await tx
+      .insert(party)
+      .values({
+        code,
+        legalName: data.legalName,
+        tradeName: blank(data.tradeName),
+        nif: blank(data.nif),
+        nis: blank(data.nis),
+        rc: blank(data.rc),
+        ai: blank(data.ai),
+        email: blank(data.email),
+        phone: blank(data.phone),
+        address: blank(data.address),
+        wilaya: blank(data.wilaya),
+        docLocale: data.docLocale,
+        emailLocale: data.emailLocale,
+        currency: data.currency,
+        paymentTerms: blank(data.paymentTerms),
+      })
+      .returning({ id: party.id, code: party.code });
+
+    if (!created) throw new Error("Could not create the company");
+
+    await tx
+      .insert(partyRole)
+      .values(data.roles.map((role) => ({ partyId: created.id, role })))
+      .onConflictDoNothing();
+
+    // The trade name is a spelling people will search by, so it is an alias
+    // from the start rather than something screen 84 has to discover later.
+    if (data.tradeName && data.tradeName.toLowerCase() !== data.legalName.toLowerCase()) {
+      await tx
+        .insert(partyAlias)
+        .values({ partyId: created.id, alias: data.tradeName, source: "typed" })
+        .onConflictDoNothing();
+    }
+
+    await tx.insert(auditEntry).values({
+      actorId,
+      entity: "party",
+      entityId: created.id,
+      action: "create",
+      after: { code: created.code, legalName: data.legalName },
+      sourceScreen: "22",
+    });
+
+    return created;
+  });
+}
+
+export async function updateParty(id: string, input: PartyInput, actorId: string) {
+  const data = partyInput.parse(input);
+
+  return db.transaction(async (tx) => {
+    const [before] = await tx.select().from(party).where(eq(party.id, id)).limit(1);
+    if (!before) throw new Error("No such company");
+    if (before.supersededBy) throw new Error("This company was merged into another");
+
+    await tx
+      .update(party)
+      .set({
+        legalName: data.legalName,
+        tradeName: blank(data.tradeName),
+        nif: blank(data.nif),
+        nis: blank(data.nis),
+        rc: blank(data.rc),
+        ai: blank(data.ai),
+        email: blank(data.email),
+        phone: blank(data.phone),
+        address: blank(data.address),
+        wilaya: blank(data.wilaya),
+        docLocale: data.docLocale,
+        emailLocale: data.emailLocale,
+        currency: data.currency,
+        paymentTerms: blank(data.paymentTerms),
+      })
+      .where(eq(party.id, id));
+
+    await tx.delete(partyRole).where(eq(partyRole.partyId, id));
+    await tx
+      .insert(partyRole)
+      .values(data.roles.map((role) => ({ partyId: id, role })))
+      .onConflictDoNothing();
+
+    await tx.insert(auditEntry).values({
+      actorId,
+      entity: "party",
+      entityId: id,
+      action: "update",
+      before: { legalName: before.legalName, nif: before.nif },
+      after: { legalName: data.legalName, nif: blank(data.nif) },
+      sourceScreen: "22",
+    });
+  });
+}
+
+/** Screen 82 — one company, many spellings. Adding one is a one-line action. */
+export async function addAlias(partyId: string, alias: string, actorId: string) {
+  const clean = alias.trim();
+  if (clean.length < 2) return;
+  await db
+    .insert(partyAlias)
+    .values({ partyId, alias: clean, source: "typed" })
+    .onConflictDoNothing();
+  await db.insert(auditEntry).values({
+    actorId,
+    entity: "party",
+    entityId: partyId,
+    action: "alias.add",
+    after: { alias: clean },
+    sourceScreen: "22",
+  });
+}
+
+/** A company, with everything screen 22 shows that actually exists yet. */
+export async function getParty(id: string) {
+  const [row] = await db.select().from(party).where(eq(party.id, id)).limit(1);
+  if (!row) return null;
+
+  const roles = (
+    await db.select({ role: partyRole.role }).from(partyRole).where(eq(partyRole.partyId, id))
+  ).map((r) => r.role);
+
+  const aliases = (
+    await db.select({ alias: partyAlias.alias }).from(partyAlias).where(eq(partyAlias.partyId, id))
+  ).map((r) => r.alias);
+
+  // A merged company must still resolve — old links land on the survivor.
+  let survivor: { id: string; code: string; legalName: string } | null = null;
+  if (row.supersededBy) {
+    const [s] = await db
+      .select({ id: party.id, code: party.code, legalName: party.legalName })
+      .from(party)
+      .where(eq(party.id, row.supersededBy))
+      .limit(1);
+    survivor = s ?? null;
+  }
+
+  return { ...row, roles, aliases, survivor };
+}
+
+export async function listContacts(partyId: string) {
+  const { person } = await import("@/db/schema/party");
+  return db
+    .select({
+      id: person.id,
+      fullName: person.fullName,
+      trade: person.trade,
+      email: person.email,
+      phone: person.phone,
+    })
+    .from(person)
+    .where(and(eq(person.employerPartyId, partyId), isNull(person.deletedAt)));
+}
