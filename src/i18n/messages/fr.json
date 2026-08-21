@@ -169,6 +169,28 @@
     "contactTrade": "Fonction",
     "tradeUnspecified": "à préciser"
   },
+  "bin": {
+    "title": "Supprimés",
+    "subtitle": "Restaurables pendant 30 jours. Ensuite la fiche disparaît, mais pas sa trace dans le journal.",
+    "emptyTitle": "Rien n'a été supprimé",
+    "emptyBody": "Tout ce que vous retirez arrive ici d'abord, avec qui l'a retiré et pourquoi.",
+    "what": "Quoi",
+    "when": "Quand",
+    "reason": "Motif",
+    "reasonPlaceholder": "Pourquoi la retirer ? Ce motif est conservé.",
+    "goneIn": "Disparaît dans",
+    "days": "{count} jours",
+    "restore": "Restaurer",
+    "removing": "Retirer cette société",
+    "removingHelp": "Supprimer la met à la corbeille pendant 30 jours — pour une fiche qui n'aurait jamais dû exister. Archiver la conserve, ainsi que tous les documents qui la citent, mais la retire des listes et de la recherche — pour un client avec qui vous ne travaillez plus. Un document émis n'est jamais supprimé par l'un ni par l'autre : il est annulé, et un avoir en conserve le numéro.",
+    "discard": "Supprimer",
+    "archive": "Archiver",
+    "blockedByIssued": "Cette société a des documents émis, elle ne peut donc pas être supprimée — une facture envoyée doit continuer à se résoudre. Archivez-la : elle quitte les listes et tous les documents continuent de fonctionner.",
+    "goneTitle": "{code} — {name} a été supprimée",
+    "goneBody": "Retirée le {date}. Vous avez {days} jours pour la restaurer.",
+    "reasonGiven": "Motif indiqué : {reason}",
+    "afterThirtyDays": "Après 30 jours la fiche est retirée mais l'entrée du journal reste. Dans deux ans, vous pourrez encore savoir qu'elle a existé et pourquoi elle est partie."
+  },
   "companies": {
     "code": "Code",
     "legalName": "Raison sociale",

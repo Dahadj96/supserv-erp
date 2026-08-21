@@ -2,9 +2,11 @@ import { notFound } from "next/navigation";
 import { getTranslations, setRequestLocale } from "next-intl/server";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import { deletedPartyNotice } from "@/domain/deletion";
 import { getParty, listContacts } from "@/domain/party";
 import { Link, redirect } from "@/i18n/navigation";
 import { addCompanyAlias } from "../actions";
+import { archiveCompany, discardCompany, restoreCompany } from "../delete-actions";
 
 export const dynamic = "force-dynamic";
 
@@ -19,10 +21,13 @@ function Row({ label, value }: { label: string; value: string | null | undefined
 
 export default async function CompanyPage({
   params,
+  searchParams,
 }: {
   params: Promise<{ locale: string; id: string }>;
+  searchParams: Promise<{ blocked?: string }>;
 }) {
   const { locale, id } = await params;
+  const { blocked } = await searchParams;
   setRequestLocale(locale);
   const t = await getTranslations();
 
@@ -31,6 +36,37 @@ export default async function CompanyPage({
 
   // A merged company still resolves — the old link lands on the survivor.
   if (company.survivor) redirect({ href: `/companies/${company.survivor.id}`, locale });
+
+  // Screen 83 — never a blank 404. A dead link inside your own system should
+  // say what used to be there, and offer to bring it back.
+  const gone = await deletedPartyNotice(id);
+  if (gone) {
+    return (
+      <main className="min-h-0 flex-1 overflow-auto px-7 py-10">
+        <div className="mx-auto max-w-[560px] rounded-[var(--radius-card)] border border-line bg-surface p-6">
+          <h1 className="text-lead font-semibold text-ink">
+            {t("bin.goneTitle", { code: gone.code, name: gone.legalName })}
+          </h1>
+          <p className="mt-2 text-tiny leading-relaxed text-secondary">
+            {t("bin.goneBody", {
+              date: gone.deletedAt.toLocaleDateString(locale === "fr" ? "fr-DZ" : "en-GB"),
+              days: gone.daysLeft,
+            })}
+          </p>
+          {gone.reason ? (
+            <p className="mt-2 rounded-[var(--radius-control)] bg-plane px-3 py-2 text-micro text-secondary">
+              {t("bin.reasonGiven", { reason: gone.reason })}
+            </p>
+          ) : null}
+          <form action={restoreCompany.bind(null, locale, id)} className="mt-4">
+            <Button type="submit" variant="primary">
+              {t("bin.restore")}
+            </Button>
+          </form>
+        </div>
+      </main>
+    );
+  }
 
   const contacts = await listContacts(id);
 
@@ -140,6 +176,43 @@ export default async function CompanyPage({
               </tbody>
             </table>
           )}
+        </section>
+
+        {/* Screen 83 — three words that are not the same. */}
+        <section className="col-span-3 rounded-[var(--radius-card)] border border-line bg-surface p-5">
+          <h2 className="text-tiny font-semibold text-ink">{t("bin.removing")}</h2>
+          <p className="mt-1 max-w-[720px] text-micro leading-relaxed text-secondary">
+            {t("bin.removingHelp")}
+          </p>
+
+          {blocked === "issued" ? (
+            <p className="mt-3 rounded-[var(--radius-control)] bg-warning-bg px-3 py-2 text-micro text-warning-ink">
+              {t("bin.blockedByIssued")}
+            </p>
+          ) : null}
+
+          <div className="mt-4 flex flex-wrap items-end gap-3">
+            <form action={discardCompany.bind(null, locale, id)} className="flex items-end gap-2">
+              <label className="flex flex-col gap-1">
+                <span className="text-micro font-medium text-secondary">{t("bin.reason")}</span>
+                <input
+                  name="reason"
+                  required
+                  placeholder={t("bin.reasonPlaceholder")}
+                  className="h-[34px] w-[320px] rounded-[var(--radius-control)] border border-line bg-surface px-2.5 text-tiny outline-none focus:border-ink"
+                />
+              </label>
+              <Button type="submit" variant="danger">
+                {t("bin.discard")}
+              </Button>
+            </form>
+
+            <form action={archiveCompany.bind(null, locale, id)}>
+              <Button type="submit" variant="secondary">
+                {t("bin.archive")}
+              </Button>
+            </form>
+          </div>
         </section>
       </div>
     </main>

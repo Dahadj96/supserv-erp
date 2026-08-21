@@ -169,6 +169,28 @@
     "contactTrade": "Job title",
     "tradeUnspecified": "not specified"
   },
+  "bin": {
+    "title": "Deleted",
+    "subtitle": "Restorable for 30 days. After that the record is gone but its audit trail is not.",
+    "emptyTitle": "Nothing has been deleted",
+    "emptyBody": "Anything you remove lands here first, with who removed it and why.",
+    "what": "What",
+    "when": "When",
+    "reason": "Reason",
+    "reasonPlaceholder": "Why is it going? This is kept.",
+    "goneIn": "Gone in",
+    "days": "{count} days",
+    "restore": "Restore",
+    "removing": "Removing this company",
+    "removingHelp": "Discard puts it in the bin for 30 days — for a record that should never have existed. Archive keeps it and every document that points at it, but takes it out of lists and search — for a client you no longer work with. An issued document is never deleted by either: it is cancelled, and an avoir keeps the number.",
+    "discard": "Discard",
+    "archive": "Archive",
+    "blockedByIssued": "This company has issued documents, so it cannot be discarded — a sent invoice must keep resolving. Archive it instead: it leaves the lists and every document still works.",
+    "goneTitle": "{code} — {name} was deleted",
+    "goneBody": "Removed on {date}. You have {days} days to bring it back.",
+    "reasonGiven": "Reason given: {reason}",
+    "afterThirtyDays": "After 30 days the record is removed but the audit entry stays. In two years you can still find out that it existed and why it went."
+  },
   "companies": {
     "code": "Code",
     "legalName": "Legal name",
