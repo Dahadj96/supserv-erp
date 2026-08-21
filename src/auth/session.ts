@@ -1,70 +1,70 @@
 import "server-only";
-import { eq } from "drizzle-orm";
-import { cookies } from "next/headers";
+import { eq, sql } from "drizzle-orm";
+import { headers } from "next/headers";
 import { db } from "@/db";
+import { userRole } from "@/db/schema/auth";
 import { userPreference } from "@/db/schema/interface";
 import type { Role } from "./can";
 import { ROLES } from "./can";
+import { auth } from "./index";
 
 /**
- * THE SEAM FOR SIGN-IN.
+ * THE ONE PLACE THE APP LEARNS WHO IS SIGNED IN.
  *
- * Real sign-in is Better Auth + Entra ID (STACK.md). It is not wired yet, so
- * development uses a cookie that names a role. Everything else in the app —
- * `can()`, preferences, the avatar menu — reads the session through this file
- * and nothing else, so swapping in Better Auth means rewriting `getSession`
- * and deleting `signInAsDevUser`. No caller changes.
- *
- * Tailscale is transport, never identity: never read a Tailscale header here.
+ * Entra ID answers "who", `user_role` answers "what may they do", and
+ * `user_preference` answers "in which language do they see it". Nothing else
+ * in the app reads a cookie or a header to find out.
  */
-const COOKIE = "supserv_dev_role";
-
-/** Dev sign-in must never be reachable from a built production server. */
-export const DEV_AUTH_ENABLED = process.env.NODE_ENV !== "production";
-
 export type Session = {
   userId: string;
   displayName: string;
-  role: Role;
+  email: string;
+  /** null means signed in but not yet given a role — see screen 30. */
+  role: Role | null;
   uiLocale: string;
 };
 
-/** A stable uuid per role so preferences persist across restarts in dev. */
-const DEV_USER_IDS: Record<Role, string> = {
-  gerant: "00000000-0000-4000-8000-000000000001",
-  commercial: "00000000-0000-4000-8000-000000000002",
-  achats: "00000000-0000-4000-8000-000000000003",
-  chantier: "00000000-0000-4000-8000-000000000004",
-  compta: "00000000-0000-4000-8000-000000000005",
-  lecture: "00000000-0000-4000-8000-000000000006",
-};
-
-export function isRole(value: string): value is Role {
+function isRole(value: string): value is Role {
   return Object.keys(ROLES).includes(value);
 }
 
 export async function getSession(): Promise<Session | null> {
-  if (!DEV_AUTH_ENABLED) {
-    // Better Auth goes here. Until then a production build has no session and
-    // every page must send the person to sign in rather than guess who they are.
-    return null;
+  const result = await auth.api.getSession({ headers: await headers() });
+  if (!result?.user) return null;
+
+  const { id, name, email } = result.user;
+
+  const [assigned] = await db
+    .select({ role: userRole.role })
+    .from(userRole)
+    .where(eq(userRole.userId, id))
+    .limit(1);
+
+  let role: Role | null = assigned && isRole(assigned.role) ? assigned.role : null;
+
+  // Bootstrap: the very first person to sign in becomes Gérant, otherwise the
+  // system is born locked with nobody able to grant anyone anything. Everyone
+  // after that arrives with no role and must be given one on screen 30 —
+  // a colleague's Entra account is not an entitlement.
+  if (!role) {
+    const rows = await db.select({ count: sql<number>`count(*)::int` }).from(userRole);
+    if ((rows[0]?.count ?? 0) === 0) {
+      await db.insert(userRole).values({ userId: id, role: "gerant" });
+      role = "gerant";
+    }
   }
 
-  const store = await cookies();
-  const raw = store.get(COOKIE)?.value;
-  if (!raw || !isRole(raw)) return null;
-
-  const userId = DEV_USER_IDS[raw];
   const [pref] = await db
     .select({ uiLocale: userPreference.uiLocale })
     .from(userPreference)
-    .where(eq(userPreference.userId, userId))
+    .where(eq(userPreference.userId, id))
     .limit(1);
 
   return {
-    userId,
-    displayName: "A. Dahadj",
-    role: raw,
+    userId: id,
+    displayName: name || email,
+    email,
+    role,
     uiLocale: pref?.uiLocale ?? "fr",
   };
 }

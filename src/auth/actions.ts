@@ -1,37 +1,28 @@
 "use server";
 
 import { eq } from "drizzle-orm";
-import { cookies } from "next/headers";
+import { headers } from "next/headers";
 import { db } from "@/db";
 import { userPreference } from "@/db/schema/interface";
 import { redirect } from "@/i18n/navigation";
-import { DEV_AUTH_ENABLED, getSession, isRole } from "./session";
+import { auth } from "./index";
+import { getSession } from "./session";
 
-const COOKIE = "supserv_dev_role";
-
-/** Development only. Deleted the day Better Auth + Entra ID lands. */
-export async function signInAsDevUser(role: string) {
-  if (!DEV_AUTH_ENABLED) throw new Error("Dev sign-in is disabled outside development");
-  if (!isRole(role)) throw new Error(`Unknown role: ${role}`);
-
-  const store = await cookies();
-  store.set(COOKIE, role, { httpOnly: true, sameSite: "lax", path: "/" });
-
-  const session = await getSession();
-  redirect({ href: "/deals", locale: session?.uiLocale ?? "fr" });
-}
-
+/**
+ * Sign-in itself is started from the browser — see `src/auth/client.ts`, and
+ * the sign-in button next to it. Signing OUT is safe to do here, because the
+ * redirect afterwards is same-origin.
+ */
 export async function signOut(locale: string) {
-  const store = await cookies();
-  store.delete(COOKIE);
+  await auth.api.signOut({ headers: await headers() });
   redirect({ href: "/sign-in", locale });
 }
 
 /**
  * LAW 4, first axis: the interface follows the PERSON. This writes
- * `user_preference.ui_locale` — it is the only place the interface language is
- * decided, and it never touches `party.doc_locale`, which follows the
- * counterparty and belongs to the document engine.
+ * `user_preference.ui_locale` — the only place the interface language is
+ * decided. It never touches `party.doc_locale`, which follows the counterparty
+ * and belongs to the document engine.
  */
 export async function setUiLocale(locale: string, nextPath: string) {
   const session = await getSession();

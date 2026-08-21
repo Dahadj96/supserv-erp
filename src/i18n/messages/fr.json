@@ -30,8 +30,12 @@
   },
   "auth": {
     "signIn": "Connexion",
-    "devNotice": "Entra ID n'est pas encore connecté. Choisissez un rôle pour travailler — cet écran n'existe qu'en développement et reste inaccessible en production.",
-    "notConfigured": "La connexion n'est pas configurée. Better Auth et Entra ID doivent être connectés avant que cette version puisse laisser entrer qui que ce soit.",
+    "withMicrosoft": "Utilisez le compte Microsoft 365 avec lequel vous ouvrez déjà votre messagerie. SUPSERV ne conserve aucun mot de passe.",
+    "microsoftButton": "Continuer avec Microsoft",
+    "failed": "La connexion n'a pas abouti. Rien n'a été modifié — réessayez.",
+    "noAccountHelp": "Seuls les comptes de l'annuaire SUPSERV peuvent se connecter. Si le vôtre est refusé, demandez au Gérant de vous ajouter.",
+    "noRoleTitle": "Votre compte fonctionne, mais vous n'avez pas encore d'accès",
+    "noRoleBody": "Vous êtes connecté en tant que {email}. Le Gérant décide de ce que chacun peut faire et ne vous a pas encore attribué de rôle. Rien n'est cassé — demandez-lui d'ouvrir Paramètres → Utilisateurs et rôles.",
     "permissions": "autorisations",
     "roles": {
       "gerant": "Gérant",

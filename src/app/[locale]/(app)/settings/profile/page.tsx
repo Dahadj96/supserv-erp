@@ -20,8 +20,10 @@ export default async function ProfilePage({ params }: { params: Promise<{ locale
 
   const session = await getSession();
   if (!session) redirect(`/${locale}/sign-in`);
+  // The layout already turns a role-less session away, so by here it is set.
+  if (!session.role) redirect(`/${locale}`);
 
-  const permissions = ROLES[session.role];
+  const permissions: readonly string[] = ROLES[session.role];
 
   return (
     <main className="min-h-0 flex-1 overflow-auto">

@@ -30,8 +30,12 @@
   },
   "auth": {
     "signIn": "Sign in",
-    "devNotice": "Entra ID is not connected yet. Pick a role to work as — this screen exists only in development and is unreachable in a production build.",
-    "notConfigured": "Sign-in is not configured. Better Auth and Entra ID must be connected before this build can let anyone in.",
+    "withMicrosoft": "Use the Microsoft 365 account you already sign in to email with. SUPSERV keeps no password of its own.",
+    "microsoftButton": "Continue with Microsoft",
+    "failed": "Sign-in did not complete. Nothing was changed — try again.",
+    "noAccountHelp": "Only accounts in the SUPSERV directory can sign in. If yours is refused, ask the Gérant to add you.",
+    "noRoleTitle": "Your account works, but you have no access yet",
+    "noRoleBody": "You are signed in as {email}. The Gérant decides what each person may do, and has not assigned you a role. Nothing is broken — ask them to open Settings → Users and roles.",
     "permissions": "permissions",
     "roles": {
       "gerant": "Gérant",

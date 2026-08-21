@@ -4,6 +4,7 @@ import type { ReactNode } from "react";
 import { getSession } from "@/auth/session";
 import { Sidebar } from "@/components/layout/sidebar";
 import { Topbar } from "@/components/layout/topbar";
+import { StateBlock } from "@/components/ui/state-block";
 
 /**
  * Everything behind sign-in. The shell is written ONCE here — Figma page v5 has
@@ -23,6 +24,24 @@ export default async function AppLayout({
   if (!session) redirect(`/${locale}/sign-in`);
 
   const t = await getTranslations();
+
+  // Signed in, but nobody has said what they may do yet. Showing the shell
+  // would be a lie — every control in it would be dead. Say so instead, and
+  // name the person who can fix it.
+  if (!session.role) {
+    return (
+      <div className="flex min-h-screen items-center justify-center bg-plane p-6">
+        <div className="w-[520px]">
+          <StateBlock
+            tone="permission"
+            title={t("auth.noRoleTitle")}
+            body={t("auth.noRoleBody", { email: session.email })}
+          />
+        </div>
+      </div>
+    );
+  }
+
   const roleLabel = t(`auth.roles.${session.role}`);
 
   return (

@@ -15,7 +15,9 @@ import {
  * axis actually lives — without it the French/English mix comes straight back.
  */
 export const userPreference = pgTable("user_preference", {
-  userId: uuid("user_id").primaryKey(),
+  // text, not uuid: this keys on Better Auth's `user.id`, which is a generated
+  // string. Every user-scoped table below follows the same rule.
+  userId: text("user_id").primaryKey(),
   uiLocale: text("ui_locale").notNull().default("fr"),
   dateFormat: text("date_format").default("dd/MM/yyyy"),
   numberFormat: text("number_format").default("fr-DZ"),
@@ -26,13 +28,13 @@ export const userPreference = pgTable("user_preference", {
   signatureFr: text("signature_fr"),
   signatureEn: text("signature_en"),
   awayUntil: date("away_until"),
-  coverUserId: uuid("cover_user_id"),
+  coverUserId: text("cover_user_id"),
 });
 
 export const notificationPref = pgTable(
   "notification_pref",
   {
-    userId: uuid("user_id").notNull(),
+    userId: text("user_id").notNull(),
     event: text("event").notNull(),
     inApp: boolean("in_app").notNull().default(true),
     email: boolean("email").notNull().default(false),
@@ -51,15 +53,15 @@ export const savedView = pgTable("saved_view", {
   filter: jsonb("filter").notNull(),
   sort: jsonb("sort"),
   columns: jsonb("columns"),
-  ownerId: uuid("owner_id"),
+  ownerId: text("owner_id"),
   shared: boolean("shared").notNull().default(false),
-  isDefaultFor: uuid("is_default_for"),
+  isDefaultFor: text("is_default_for"),
 });
 
 export const tablePreference = pgTable(
   "table_preference",
   {
-    userId: uuid("user_id").notNull(),
+    userId: text("user_id").notNull(),
     entity: text("entity").notNull(),
     columns: jsonb("columns"),
     sort: jsonb("sort"),

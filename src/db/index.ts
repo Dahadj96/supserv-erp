@@ -1,5 +1,6 @@
 import { drizzle } from "drizzle-orm/postgres-js";
 import postgres from "postgres";
+import * as authSchema from "./schema/auth";
 import * as document from "./schema/document";
 import * as iface from "./schema/interface";
 import * as item from "./schema/item";
@@ -20,6 +21,6 @@ const conn =
 
 if (process.env.NODE_ENV !== "production") globalForDb.conn = conn;
 
-export const schema = { ...document, ...iface, ...item, ...party };
+export const schema = { ...authSchema, ...document, ...iface, ...item, ...party };
 
 export const db = drizzle(conn, { schema });
