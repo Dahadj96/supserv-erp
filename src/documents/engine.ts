@@ -1,0 +1,272 @@
+import { and, eq, isNull } from "drizzle-orm";
+import { db } from "@/db";
+import { bankAccount, COMPANY_ID, companyIdentity } from "@/db/schema/company";
+import { auditEntry } from "@/db/schema/control";
+import { document, documentLine } from "@/db/schema/document";
+import { party } from "@/db/schema/party";
+import { assertCanIssue } from "@/domain/setup";
+import { storageFor } from "@/storage";
+import { amountInWords } from "./amount-in-words";
+import { Blocked, check, type Finding } from "./compliance";
+import { dateline, money, percent, shortDate } from "./format";
+import { reserveNumber } from "./numbering";
+
+/**
+ * Screen 70 — ONE document engine, five callers.
+ *
+ * "Every builder in the system asks the same service for a document. No module
+ * renders a PDF itself. Change the logo once and every document changes."
+ *
+ * The seven steps below are that screen's middle column, in its order, and the
+ * order is load-bearing: the number is reserved AFTER the compliance profile is
+ * applied, so a document that fails a confirmed rule never consumes one.
+ *
+ * WHAT A MODULE MUST NEVER DO — the red panel on screen 70, restated here
+ * because this is the file that makes it true:
+ *   · render its own PDF
+ *   · hard-code the company address or RC number
+ *   · invent its own numbering
+ *   · decide the language from the signed-in user
+ *   · write a file to SharePoint directly
+ */
+
+export type Purpose = "preview" | "issue";
+
+export type RenderRequest = {
+  documentId: string;
+  purpose: Purpose;
+  actorId: string;
+  /** Cash changes the total — screen 85, step 6. */
+  settlementInCash?: boolean;
+};
+
+export type RenderedLine = {
+  position: number;
+  designation: string;
+  /** Shown on the document, excluded from the totals. */
+  isOption: boolean;
+  quantity: string;
+  unit: string | null;
+  unitPrice: string;
+  vatRate: string;
+  total: string;
+};
+
+export type RenderedDocument = {
+  /** Null on a preview. Screen 70: never on a preview. */
+  number: string | null;
+  kind: string;
+  /** LAW 4 — from the counterparty, not the user. */
+  locale: string;
+  issuedOn: string;
+  dateline: string;
+
+  company: {
+    legalName: string;
+    address: string;
+    rc: string;
+    nif: string;
+    nis: string;
+    ai: string;
+    logoPath: string | null;
+    phone: string | null;
+    email: string | null;
+  };
+  counterparty: {
+    legalName: string;
+    address: string | null;
+    nif: string | null;
+    rc: string | null;
+  };
+  bank: { bankName: string; rib: string; agency: string | null } | null;
+
+  lines: RenderedLine[];
+  totals: { label: string; value: string }[];
+  amountInWords: string;
+
+  findings: Finding[];
+  /** Which template produced this. Screen 70 wants it in the audit entry. */
+  template: string;
+};
+
+export class NotRenderable extends Error {
+  constructor(readonly why: string) {
+    super(why);
+  }
+}
+
+/**
+ * The one call. Five callers, five results.
+ */
+export async function render(request: RenderRequest): Promise<RenderedDocument> {
+  const { purpose } = request;
+
+  /* 1 ── Pulls master data ------------------------------------------------ */
+  const [company] = await db
+    .select()
+    .from(companyIdentity)
+    .where(eq(companyIdentity.id, COMPANY_ID))
+    .limit(1);
+
+  const [record] = await db
+    .select()
+    .from(document)
+    .where(eq(document.id, request.documentId))
+    .limit(1);
+  if (!record) throw new NotRenderable("noSuchDocument");
+
+  // LAW 5 — an issued document is immutable, and that includes re-issuing it.
+  if (purpose === "issue" && record.number) throw new NotRenderable("alreadyIssued");
+
+  const [counterparty] = await db.select().from(party).where(eq(party.id, record.partyId)).limit(1);
+  if (!counterparty) throw new NotRenderable("noCounterparty");
+
+  const [bank] = await db
+    .select()
+    .from(bankAccount)
+    .where(and(isNull(bankAccount.archivedAt), eq(bankAccount.isDefault, true)))
+    .limit(1);
+
+  const lines = await db
+    .select()
+    .from(documentLine)
+    .where(eq(documentLine.documentId, record.id))
+    .orderBy(documentLine.position);
+
+  /* 2 ── Resolves the template -------------------------------------------- */
+  //     family · kind · language · version. The locale comes from the
+  //     COUNTERPARTY (LAW 4) — never from the session, never from a parameter.
+  const locale = record.locale || counterparty.docLocale || "fr";
+  const template = `SUPSERV ${record.kind} — ${locale.toUpperCase()} v1`;
+
+  /* 3 ── Applies the compliance profile ------------------------------------ */
+  //     Before the number, so a refusal costs nothing.
+  const totals = (record.totals ?? {}) as Record<string, string>;
+  const grandTotal = Number(totals.totalIncl ?? totals.totalExcl ?? 0);
+
+  const findings = await check({
+    kind: record.kind,
+    company: company ?? null,
+    counterparty,
+    total: grandTotal,
+    settlementInCash: request.settlementInCash ?? false,
+  });
+
+  if (purpose === "issue") {
+    // Everything on screen 85's first four rows, plus every confirmed rule.
+    await assertCanIssue();
+    const blocking = findings.filter((f) => f.severity === "block");
+    if (blocking.length > 0) throw new Blocked(blocking);
+  }
+
+  /* 4 ── Reserves the number ----------------------------------------------- */
+  const issuedOn = record.issuedOn ? new Date(record.issuedOn) : new Date();
+  let number = record.number;
+
+  if (purpose === "issue") {
+    number = await db.transaction(async (tx) => {
+      const allocated = await reserveNumber(tx, record.kind, issuedOn);
+      await tx
+        .update(document)
+        .set({
+          number: allocated,
+          status: "issued",
+          issuedOn: issuedOn.toISOString().slice(0, 10),
+          // LAW 5 — from this moment the totals above are frozen into the row.
+          lockedAt: new Date(),
+        })
+        .where(eq(document.id, record.id));
+      return allocated;
+    });
+  }
+
+  /* 5 ── Formats ----------------------------------------------------------- */
+  //     In the DOCUMENT language, which is why `locale` is threaded everywhere
+  //     rather than read from a request-scoped helper.
+  const rendered: RenderedDocument = {
+    number,
+    kind: record.kind,
+    locale,
+    issuedOn: shortDate(issuedOn, locale),
+    dateline: dateline(company?.wilaya ?? null, issuedOn, locale),
+
+    company: {
+      legalName: company?.legalName ?? "",
+      address: company?.address ?? "",
+      rc: company?.rc ?? "",
+      nif: company?.nif ?? "",
+      nis: company?.nis ?? "",
+      ai: company?.ai ?? "",
+      logoPath: company?.logoPath ?? null,
+      phone: company?.phone ?? null,
+      email: company?.email ?? null,
+    },
+    counterparty: {
+      legalName: counterparty.legalName,
+      address: counterparty.address,
+      nif: counterparty.nif,
+      rc: counterparty.rc,
+    },
+    bank: bank ? { bankName: bank.bankName, rib: bank.rib, agency: bank.agency } : null,
+
+    // An option line is shown and excluded from the totals (see the schema),
+    // so it is rendered with its own flag rather than filtered out — the client
+    // is meant to see what they did not buy.
+    lines: lines.map((l) => ({
+      position: l.position,
+      designation: l.designation ?? "",
+      isOption: l.isOption,
+      quantity: money(Number(l.qty ?? 0), locale),
+      unit: l.unit,
+      unitPrice: money(Number(l.unitPrice ?? 0), locale),
+      vatRate: percent(Number(l.vatRate ?? 0), locale),
+      total: money(Number(l.totalExcl ?? 0), locale),
+    })),
+
+    totals: Object.entries(totals)
+      .filter(([, v]) => v !== null && v !== undefined)
+      .map(([key, value]) => ({ label: key, value: money(Number(value), locale) })),
+
+    /* 6 ── Amount in words, in the document language ----------------------- */
+    amountInWords: amountInWords(grandTotal, locale, record.currency),
+
+    findings,
+    template,
+  };
+
+  /* 7 ── Files and registers ------------------------------------------------ */
+  if (purpose === "issue") {
+    await db.insert(auditEntry).values({
+      actorId: request.actorId,
+      actorKind: "user",
+      entity: "document",
+      entityId: record.id,
+      action: "issue",
+      after: {
+        number,
+        kind: record.kind,
+        locale,
+        template,
+        counterparty: counterparty.code,
+        warnings: findings.filter((f) => f.severity === "warn").map((f) => f.code),
+      },
+      sourceScreen: "70",
+    });
+  }
+
+  return rendered;
+}
+
+/**
+ * Store the rendered bytes and link them to the record.
+ *
+ * Screen 70: "A link on the record — the document is never a loose file."
+ * SharePoint filing needs Graph Files.ReadWrite scoped to one site, which is
+ * the same conversation as the mailbox and has not been had; until then the
+ * bytes go to the working volume and the link still exists.
+ */
+export async function fileDocument(documentId: string, number: string, pdf: Buffer) {
+  const path = `documents/${documentId}/${number.replace(/[^\w.-]+/g, "_")}.pdf`;
+  await storageFor("working").put({ path, body: pdf, mime: "application/pdf" });
+  return path;
+}
