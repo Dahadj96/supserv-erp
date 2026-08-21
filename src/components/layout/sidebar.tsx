@@ -67,7 +67,14 @@ export function Sidebar({ displayName, roleLabel }: { displayName: string; roleL
                   <span className="truncate">{t(entry.messageKey)}</span>
                   {count ? (
                     <span className="ms-auto">
-                      <Badge tone={active ? "neutral" : count.tone}>{count.value}</Badge>
+                      {/* On the active row the pill sits on ink, so a solid ink
+                          pill would vanish — the soft chip is the readable one. */}
+                      <Badge
+                        tone={active ? "neutral" : count.tone}
+                        fill={active ? "soft" : "solid"}
+                      >
+                        {count.value}
+                      </Badge>
                     </span>
                   ) : null}
                 </Link>

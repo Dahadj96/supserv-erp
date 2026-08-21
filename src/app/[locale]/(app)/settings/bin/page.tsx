@@ -54,7 +54,7 @@ export default async function BinPage({ params }: { params: Promise<{ locale: st
                   <td className="px-4 py-2.5 text-secondary">{fmt(row.deletedAt)}</td>
                   <td className="px-4 py-2.5 text-secondary">{row.reason || "—"}</td>
                   <td className="px-4 py-2.5">
-                    <Badge tone={row.daysLeft <= 5 ? "critical" : "neutral"}>
+                    <Badge tone={row.daysLeft <= 5 ? "critical" : "neutral"} fill="solid">
                       {t("bin.days", { count: row.daysLeft })}
                     </Badge>
                   </td>

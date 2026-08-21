@@ -89,6 +89,22 @@ export const person = pgTable("person", {
   source: text("source").notNull(), // cv | direct | subcontractor | import
   relationship: text("relationship").notNull(), // employee|temporary|daily|subcontractor|external
   employerPartyId: uuid("employer_party_id").references(() => party.id), // null = SUPSERV
+
+  /**
+   * Screen 76 — how to reach this person, and whether we actually can.
+   *
+   * LAW 1 — these are four facts, not a status. "Active", "Unverified" and
+   * "Bouncing" are computed from them in src/domain/contact.ts, because a
+   * stored status is a status somebody forgets to update: the day a bounce
+   * comes back, `bounced_at` is written and every screen is right at once.
+   */
+  prefers: text("prefers"), // email | phone | whatsapp | null = we do not know
+  /** When the address or number was last confirmed to reach this person. */
+  verifiedAt: timestamp("verified_at", { withTimezone: true }),
+  /** When mail to this address last came back. Cleared when it is fixed. */
+  bouncedAt: timestamp("bounced_at", { withTimezone: true }),
+  /** Last time anybody here actually spoke to or wrote to them. */
+  lastContactAt: timestamp("last_contact_at", { withTimezone: true }),
   supersededBy: uuid("superseded_by"),
   deletedAt: timestamp("deleted_at", { withTimezone: true }),
   deletedBy: uuid("deleted_by"),

@@ -225,7 +225,8 @@
       "validityPeriod": "Proforma validity period not confirmed"
     },
     "unconfirmed": "This rule has not been confirmed yet. It warns rather than blocks.",
-    "authority": "Source: {authority}"
+    "authority": "Source: {authority}",
+    "comingInPhase": "Not built yet — this arrives in phase {phase}."
   },
   "merge": {
     "title": "Merge duplicates",
@@ -330,5 +331,66 @@
     },
     "fourPlacesBody": "One merge screen, four entities. Building it once is the difference between a tidy database and the Excel files this system replaces.",
     "banner": "{count, plural, =1 {One pair of companies looks like the same client.} other {# pairs of companies look like the same client.}}"
+  },
+  "contacts": {
+    "subtitle": "{people} people at {companies} companies · {unverified} unverified · {bouncing, plural, =0 {no bouncing addresses} =1 {1 email bouncing} other {# emails bouncing}}",
+    "import": "Import",
+    "newContact": "New contact",
+    "fixIt": "Fix it",
+    "bouncingNeverReached": "{count, plural, =1 {One email address is bouncing.} other {# email addresses are bouncing.}} {company} has never replied to a request — not because they are slow, but because nothing has ever reached them.",
+    "bouncingKnown": "{count, plural, =1 {One email address is bouncing.} other {# email addresses are bouncing.}} Mail to {company} is coming back, so anything sent since is unread.",
+    "facet": {
+      "all": "All",
+      "clients": "Clients",
+      "suppliers": "Suppliers",
+      "authorities": "Authorities",
+      "unverified": "Unverified",
+      "bouncing": "Bouncing"
+    },
+    "name": "Name",
+    "company": "Company",
+    "job": "Job",
+    "jobHint": "What they do at that company — Purchasing, Project manager, Legal.",
+    "email": "Email",
+    "phone": "Phone",
+    "prefers": "Prefers",
+    "prefersHint": "How they answer fastest. Leave blank until you know.",
+    "prefersUnknown": "Not known yet",
+    "prefersValue": {
+      "email": "Email",
+      "phone": "Phone",
+      "whatsapp": "WhatsApp"
+    },
+    "lastContact": "Last contact",
+    "status": "Status",
+    "statusValue": {
+      "active": "Active",
+      "unverified": "Unverified",
+      "bouncing": "Bouncing"
+    },
+    "today": "today",
+    "yesterday": "yesterday",
+    "never": "never",
+    "emptyTitle": "No contacts yet",
+    "emptyBody": "A contact is a person at another company. Add the first one, or bring them in with the companies when the Excel move-in arrives.",
+    "whyOwnScreenTitle": "Why this is its own screen",
+    "whyOwnScreenBody": "A contact belongs to a company, but you deal with people. When a deadline is in six hours you search a name, not a company. And a person moves — the same buyer appears at a new employer and everything they told you should follow them.",
+    "qualityTitle": "Quality",
+    "withAnEmail": "With an email",
+    "withAPhone": "With a phone",
+    "neither": "Neither",
+    "neverContacted": "Never contacted",
+    "ofTotal": "{n} of {total}",
+    "newTitle": "New contact",
+    "newSubtitle": "A name, a job, and the company they work for. The rest can wait.",
+    "chooseCompany": "Choose a company",
+    "newVerifyNote": "A new contact starts as unverified — nobody has confirmed the address reaches them yet. It turns active the first time they reply.",
+    "error": {
+      "nameTooShort": "A contact needs a name.",
+      "jobRequired": "Say what they do at that company — it is how you will find them later.",
+      "companyRequired": "A contact belongs to a company. Choose one.",
+      "emailInvalid": "That email address does not look right.",
+      "invalid": "Something in the form was not accepted."
+    }
   }
 }

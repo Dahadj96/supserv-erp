@@ -225,7 +225,8 @@
       "validityPeriod": "Durée de validité de la proforma non confirmée"
     },
     "unconfirmed": "Cette règle n'a pas encore été confirmée. Elle avertit sans bloquer.",
-    "authority": "Source : {authority}"
+    "authority": "Source : {authority}",
+    "comingInPhase": "Pas encore construit — cela arrive en phase {phase}."
   },
   "merge": {
     "title": "Fusionner les doublons",
@@ -330,5 +331,66 @@
     },
     "fourPlacesBody": "Un seul écran de fusion, quatre entités. Le construire une fois, c'est la différence entre une base propre et les fichiers Excel que ce système remplace.",
     "banner": "{count, plural, =1 {Une paire de sociétés semble être le même client.} other {# paires de sociétés semblent être le même client.}}"
+  },
+  "contacts": {
+    "subtitle": "{people} personnes dans {companies} sociétés · {unverified} non vérifiées · {bouncing, plural, =0 {aucune adresse en échec} =1 {1 e-mail en échec} other {# e-mails en échec}}",
+    "import": "Importer",
+    "newContact": "Nouveau contact",
+    "fixIt": "Corriger",
+    "bouncingNeverReached": "{count, plural, =1 {Une adresse e-mail est en échec.} other {# adresses e-mail sont en échec.}} {company} n'a jamais répondu à une demande — non pas par lenteur, mais parce que rien ne leur est jamais parvenu.",
+    "bouncingKnown": "{count, plural, =1 {Une adresse e-mail est en échec.} other {# adresses e-mail sont en échec.}} Le courrier vers {company} revient : tout ce qui a été envoyé depuis n'a pas été lu.",
+    "facet": {
+      "all": "Toutes",
+      "clients": "Clients",
+      "suppliers": "Fournisseurs",
+      "authorities": "Administrations",
+      "unverified": "Non vérifiés",
+      "bouncing": "En échec"
+    },
+    "name": "Nom",
+    "company": "Société",
+    "job": "Fonction",
+    "jobHint": "Ce qu'elle fait dans cette société — Achats, Chef de projet, Juridique.",
+    "email": "E-mail",
+    "phone": "Téléphone",
+    "prefers": "Préfère",
+    "prefersHint": "Le canal sur lequel elle répond le plus vite. À laisser vide tant qu'on ne sait pas.",
+    "prefersUnknown": "Pas encore connu",
+    "prefersValue": {
+      "email": "E-mail",
+      "phone": "Téléphone",
+      "whatsapp": "WhatsApp"
+    },
+    "lastContact": "Dernier contact",
+    "status": "Statut",
+    "statusValue": {
+      "active": "Actif",
+      "unverified": "Non vérifié",
+      "bouncing": "En échec"
+    },
+    "today": "aujourd'hui",
+    "yesterday": "hier",
+    "never": "jamais",
+    "emptyTitle": "Aucun contact",
+    "emptyBody": "Un contact est une personne dans une autre société. Ajoutez le premier, ou faites-les venir avec les sociétés lors de la reprise Excel.",
+    "whyOwnScreenTitle": "Pourquoi c'est un écran à part",
+    "whyOwnScreenBody": "Un contact appartient à une société, mais on traite avec des personnes. Quand une échéance tombe dans six heures, on cherche un nom, pas une société. Et une personne change d'employeur — le même acheteur réapparaît ailleurs, et tout ce qu'il vous a dit doit le suivre.",
+    "qualityTitle": "Qualité",
+    "withAnEmail": "Avec un e-mail",
+    "withAPhone": "Avec un téléphone",
+    "neither": "Ni l'un ni l'autre",
+    "neverContacted": "Jamais contactés",
+    "ofTotal": "{n} sur {total}",
+    "newTitle": "Nouveau contact",
+    "newSubtitle": "Un nom, une fonction, et la société où elle travaille. Le reste peut attendre.",
+    "chooseCompany": "Choisir une société",
+    "newVerifyNote": "Un nouveau contact démarre en « non vérifié » — personne n'a encore confirmé que l'adresse lui parvient. Il devient actif à sa première réponse.",
+    "error": {
+      "nameTooShort": "Un contact a besoin d'un nom.",
+      "jobRequired": "Indiquez sa fonction dans cette société — c'est ainsi que vous la retrouverez.",
+      "companyRequired": "Un contact appartient à une société. Choisissez-en une.",
+      "emailInvalid": "Cette adresse e-mail ne semble pas correcte.",
+      "invalid": "Quelque chose dans le formulaire n'a pas été accepté."
+    }
   }
 }
