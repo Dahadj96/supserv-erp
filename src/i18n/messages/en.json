@@ -629,5 +629,101 @@
     "confirmAs": "It is a {what}",
     "addContactUnder": "Add contact under {company}",
     "itIsNoise": "It is noise"
+  },
+  "moveIn": {
+    "title": "Move in",
+    "subtitle": "bring what you already have · nothing of yours is changed or deleted",
+    "filesStay": "Your Excel files stay exactly where they are. This copies what is useful into the system and tells you what it could not read.",
+    "step": {
+      "1": "Choose what to bring",
+      "2": "Check the columns",
+      "3": "Preview",
+      "4": "Import"
+    },
+    "chooseTitle": "Choose what to bring",
+    "chooseBody": "One spreadsheet at a time. A list of clients, a list of suppliers, or a staff list — the columns are read and matched, and anything unrecognised is left alone.",
+    "file": "Spreadsheet",
+    "readIt": "Read it",
+    "oneDriveLater": "Reading your OneDrive folders directly needs the same Microsoft permission conversation as the mailbox, and is not connected yet. Until then, upload the file.",
+    "checkColumns": "{file} — check the columns",
+    "mappedOf": "{mapped} of {total} mapped · the rest are ignored",
+    "ignored": "ignored",
+    "target": {
+      "legalName": "Legal name",
+      "tradeName": "Trade name",
+      "nif": "NIF",
+      "nis": "NIS",
+      "rc": "RC",
+      "ai": "Article d'imposition",
+      "email": "Email",
+      "phone": "Phone",
+      "address": "Address",
+      "wilaya": "Wilaya",
+      "paymentTerms": "Payment terms",
+      "docLocale": "Document language",
+      "contactName": "Contact name",
+      "contactJob": "Contact job",
+      "contactEmail": "Contact email",
+      "contactPhone": "Contact phone",
+      "fullName": "Full name",
+      "trade": "Trade",
+      "nationalId": "ID number"
+    },
+    "previewTitle": "What will happen",
+    "becomes": "Becomes",
+    "becomesValue": {
+      "party": "Companies + Contacts",
+      "contact": "Contacts",
+      "person": "People"
+    },
+    "rowsRead": "Rows read",
+    "willCreate": "Records that will be created",
+    "skippedRows": "Rows skipped",
+    "theseAre": "These are",
+    "importNow": "Import {count}",
+    "alreadyImported": "This file has already been imported.",
+    "problemsTitle": "Problems found",
+    "handledNotHidden": "handled, not hidden",
+    "noProblems": "Nothing in this file needed handling.",
+    "problem": {
+      "duplicates": "Duplicate companies",
+      "noName": "Rows with no name",
+      "missingNif": "Missing NIF",
+      "badNif": "NIF that is not fifteen digits",
+      "unreadableRows": "Rows missing a required field"
+    },
+    "problemAction": {
+      "duplicates": "{n} — merge them afterwards",
+      "noName": "{n} — skipped",
+      "missingNif": "{n} — imported blank",
+      "badNif": "{n} — imported blank",
+      "unreadableRows": "{n} — skipped"
+    },
+    "safeTitle": "Your files are safe",
+    "safe": {
+      "deleted": "Anything deleted",
+      "moved": "Anything moved",
+      "changed": "Excel files changed",
+      "undo": "Import can be undone"
+    },
+    "never": "Never",
+    "withinDays": "Within {days} days",
+    "keepUsingExcel": "You can keep working in Excel for a while afterwards. Most people stop within a month because the system already has the answer.",
+    "onlyWhatFitsTitle": "Only what has somewhere to go",
+    "onlyWhatFitsBody": "Companies, contacts and people are imported today. Deals, offers, invoices and payments arrive with the phases that build them — importing them into tables that do not exist yet would lose them twice.",
+    "historyTitle": "Imports so far",
+    "statusImported": "Imported",
+    "statusPreviewed": "Not imported",
+    "statusUndone": "Undone",
+    "undo": "Undo",
+    "imported": "{count, plural, =1 {1 record created.} other {# records created.}} You can undo this for {days} days.",
+    "undone": "{count, plural, =1 {1 record sent to the bin.} other {# records sent to the bin.}}{kept, plural, =0 {} =1 { 1 was kept, because a document has been issued against it since.} other { # were kept, because documents have been issued against them since.}}",
+    "error": {
+      "noFile": "Choose a file first.",
+      "emptySheet": "That file has no table in it that could be read.",
+      "unreadable": "That file could not be read as a spreadsheet.",
+      "noBatch": "That import is no longer available.",
+      "undoExpired": "The seven days are up — this import can no longer be undone in one step."
+    }
   }
 }

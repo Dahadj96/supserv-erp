@@ -1,3 +1,5 @@
+import { localStorage } from "./local";
+
 /**
  * Two places, on purpose (screen 66):
  *   - final, human-readable documents  -> SharePoint, via Microsoft Graph
@@ -24,7 +26,11 @@ export interface Storage {
 }
 
 export function storageFor(purpose: "final" | "working"): Storage {
+  if (purpose === "working") return localStorage;
+
   // final -> SharePoint: already paid for, already backed up, and openable in
-  // File Explorer in three years without this application running.
-  throw new Error(`implement in phase 0: storage driver for "${purpose}"`);
+  // File Explorer in three years without this application running. Needs Graph
+  // Files.ReadWrite scoped to one site — the same policy conversation as the
+  // mailbox, and not yet had.
+  throw new Error(`storage driver for "${purpose}" arrives with the document engine (phase 3)`);
 }

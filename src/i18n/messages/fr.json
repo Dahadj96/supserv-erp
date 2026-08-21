@@ -629,5 +629,101 @@
     "confirmAs": "C'est bien « {what} »",
     "addContactUnder": "Ajouter le contact chez {company}",
     "itIsNoise": "C'est du bruit"
+  },
+  "moveIn": {
+    "title": "Reprise",
+    "subtitle": "apportez ce que vous avez déjà · rien de ce qui est à vous n'est modifié ni supprimé",
+    "filesStay": "Vos fichiers Excel restent exactement où ils sont. Ceci copie ce qui est utile dans le système et vous dit ce qu'il n'a pas su lire.",
+    "step": {
+      "1": "Choisir quoi apporter",
+      "2": "Vérifier les colonnes",
+      "3": "Aperçu",
+      "4": "Importer"
+    },
+    "chooseTitle": "Choisir quoi apporter",
+    "chooseBody": "Un tableur à la fois. Une liste de clients, une liste de fournisseurs, ou une liste du personnel — les colonnes sont lues et rapprochées, et tout ce qui n'est pas reconnu est laissé de côté.",
+    "file": "Tableur",
+    "readIt": "Le lire",
+    "oneDriveLater": "Lire directement vos dossiers OneDrive demande la même discussion d'autorisations Microsoft que la boîte aux lettres, et n'est pas encore connecté. En attendant, déposez le fichier.",
+    "checkColumns": "{file} — vérifier les colonnes",
+    "mappedOf": "{mapped} sur {total} rapprochées · le reste est ignoré",
+    "ignored": "ignorée",
+    "target": {
+      "legalName": "Raison sociale",
+      "tradeName": "Nom commercial",
+      "nif": "NIF",
+      "nis": "NIS",
+      "rc": "RC",
+      "ai": "Article d'imposition",
+      "email": "E-mail",
+      "phone": "Téléphone",
+      "address": "Adresse",
+      "wilaya": "Wilaya",
+      "paymentTerms": "Conditions de paiement",
+      "docLocale": "Langue des documents",
+      "contactName": "Nom du contact",
+      "contactJob": "Fonction du contact",
+      "contactEmail": "E-mail du contact",
+      "contactPhone": "Téléphone du contact",
+      "fullName": "Nom complet",
+      "trade": "Métier",
+      "nationalId": "N° pièce d'identité"
+    },
+    "previewTitle": "Ce qui va se passer",
+    "becomes": "Devient",
+    "becomesValue": {
+      "party": "Sociétés + Contacts",
+      "contact": "Contacts",
+      "person": "Personnes"
+    },
+    "rowsRead": "Lignes lues",
+    "willCreate": "Fiches qui seront créées",
+    "skippedRows": "Lignes ignorées",
+    "theseAre": "Ce sont des",
+    "importNow": "Importer {count}",
+    "alreadyImported": "Ce fichier a déjà été importé.",
+    "problemsTitle": "Problèmes rencontrés",
+    "handledNotHidden": "traités, pas cachés",
+    "noProblems": "Rien dans ce fichier n'a demandé de traitement.",
+    "problem": {
+      "duplicates": "Sociétés en double",
+      "noName": "Lignes sans nom",
+      "missingNif": "NIF absent",
+      "badNif": "NIF qui ne fait pas quinze chiffres",
+      "unreadableRows": "Lignes sans champ obligatoire"
+    },
+    "problemAction": {
+      "duplicates": "{n} — à fusionner ensuite",
+      "noName": "{n} — ignorées",
+      "missingNif": "{n} — importés à blanc",
+      "badNif": "{n} — importés à blanc",
+      "unreadableRows": "{n} — ignorées"
+    },
+    "safeTitle": "Vos fichiers ne risquent rien",
+    "safe": {
+      "deleted": "Quoi que ce soit de supprimé",
+      "moved": "Quoi que ce soit de déplacé",
+      "changed": "Fichiers Excel modifiés",
+      "undo": "L'import peut être annulé"
+    },
+    "never": "Jamais",
+    "withinDays": "Sous {days} jours",
+    "keepUsingExcel": "Vous pouvez continuer à travailler sur Excel quelque temps après. La plupart des gens arrêtent en moins d'un mois, parce que le système a déjà la réponse.",
+    "onlyWhatFitsTitle": "Seulement ce qui a une place",
+    "onlyWhatFitsBody": "Sociétés, contacts et personnes sont importés aujourd'hui. Les affaires, offres, factures et règlements arrivent avec les phases qui les construisent — les importer dans des tables qui n'existent pas encore reviendrait à les perdre deux fois.",
+    "historyTitle": "Imports effectués",
+    "statusImported": "Importé",
+    "statusPreviewed": "Non importé",
+    "statusUndone": "Annulé",
+    "undo": "Annuler",
+    "imported": "{count, plural, =1 {1 fiche créée.} other {# fiches créées.}} Vous pouvez annuler pendant {days} jours.",
+    "undone": "{count, plural, =1 {1 fiche mise à la corbeille.} other {# fiches mises à la corbeille.}}{kept, plural, =0 {} =1 { 1 a été conservée : un document a été émis dessus depuis.} other { # ont été conservées : des documents ont été émis dessus depuis.}}",
+    "error": {
+      "noFile": "Choisissez d'abord un fichier.",
+      "emptySheet": "Ce fichier ne contient aucun tableau lisible.",
+      "unreadable": "Ce fichier n'a pas pu être lu comme un tableur.",
+      "noBatch": "Cet import n'est plus disponible.",
+      "undoExpired": "Les sept jours sont écoulés — cet import ne peut plus être annulé d'un coup."
+    }
   }
 }
