@@ -9,23 +9,28 @@
  * the Gérant's, the accountant's, everyone's — with no further consent and no
  * trace in anyone's inbox. Microsoft's own documentation is blunt about this.
  *
- * The fix is an Application Access Policy: a tenant-level rule that limits this
- * application to a named mail-enabled security group. It is set in Exchange
- * Online PowerShell, not in the Azure portal, which is why it gets skipped.
+ * The fix is RBAC for Applications in Exchange Online: a role granted to this
+ * app *paired with a resource scope* naming which mailboxes it covers. It is
+ * configured in Exchange Online PowerShell, not in the Azure portal, which is
+ * why it gets skipped.
  *
- *   New-ApplicationAccessPolicy `
- *     -AppId <MS_CLIENT_ID> `
- *     -PolicyScopeGroupId erp-mailboxes@supserv.dz `
- *     -AccessRight RestrictAccess `
- *     -Description "SUPSERV ERP reads only the shared mailbox"
+ *   docs/MAILBOX-ACCESS.md      the reasoning and the failure modes
+ *   scripts/scope-mailbox.ps1   runs it, and tests it in both directions
  *
- *   Test-ApplicationAccessPolicy -Identity contact@supserv.dz -AppId <MS_CLIENT_ID>
- *   Test-ApplicationAccessPolicy -Identity <the Gérant's own address> -AppId <MS_CLIENT_ID>
+ * NOT `New-ApplicationAccessPolicy`. That is the answer in every blog post and
+ * it still works, but Microsoft has marked it legacy and says not to create new
+ * ones. We are configuring this for the first time, so we configure it the way
+ * it will still be configured in three years.
  *
- * The first must return Granted, the second Denied. Until somebody has run
- * that second command and seen Denied, this module refuses to make a request —
- * see `assertScoped` below. That refusal is not defensive coding, it is the
- * only thing standing between an ERP and every email the company has.
+ * The sharp edge: Entra grants and Exchange RBAC grants are ADDED together, not
+ * intersected. A scoped `Mail.Read` in Exchange alongside an org-wide
+ * `Mail.Read` in Entra gives no scoping at all. The Entra consent has to be
+ * removed — that is step 5 of the doc, and skipping it makes the rest theatre.
+ *
+ * Until somebody has run the test against a mailbox that must NOT be readable
+ * and seen it denied, this module refuses to make a request — see
+ * `assertScoped` below. That refusal is not defensive coding; it is the only
+ * thing standing between an ERP and every email the company has.
  * ─────────────────────────────────────────────────────────────────────────────
  */
 
@@ -47,12 +52,12 @@ function assertScoped() {
   if (!address) {
     throw new MailboxNotScoped("MS_SHARED_MAILBOX is not set — there is no mailbox to read.");
   }
-  if (process.env.MS_MAILBOX_POLICY_CONFIRMED !== "true") {
+  if (process.env.MS_MAILBOX_SCOPE_CONFIRMED !== "true") {
     throw new MailboxNotScoped(
-      "MS_MAILBOX_POLICY_CONFIRMED is not true. Application Mail.Read reaches EVERY mailbox " +
-        "in the tenant until an Application Access Policy restricts it. Run " +
-        "New-ApplicationAccessPolicy, then Test-ApplicationAccessPolicy against a mailbox " +
-        "that must NOT be readable and confirm it returns Denied. Only then set this to true.",
+      "MS_MAILBOX_SCOPE_CONFIRMED is not true. Application Mail.Read reaches EVERY mailbox " +
+        "in the tenant until Exchange RBAC for Applications scopes it to one. Run " +
+        "scripts/scope-mailbox.ps1, confirm it reports PASS, remove the org-wide Mail.Read " +
+        "consent from Entra, and only then set this to true. See docs/MAILBOX-ACCESS.md.",
     );
   }
   return address;
@@ -119,12 +124,13 @@ async function get<T>(path: string): Promise<T> {
   });
 
   if (res.status === 403) {
-    // The most likely cause is the Application Access Policy denying this
-    // mailbox — which means the policy is working and pointed at the wrong
-    // group. Say so, rather than "forbidden".
+    // Three real causes, in order of likelihood, and none of them is "forbidden".
     throw new MailboxNotScoped(
-      "Graph returned 403. Either admin consent has not been granted, or an Application " +
-        "Access Policy is denying this application access to this mailbox.",
+      "Graph returned 403. Most likely the Exchange permission cache has not caught up yet — " +
+        "changes take 30 minutes to 2 hours, and Test-ServicePrincipalAuthorization bypasses " +
+        "that cache, so the test can pass while this still fails. Otherwise: the RBAC role " +
+        "assignment did not take, or the org-wide consent was removed without a scoped grant " +
+        "replacing it. See docs/MAILBOX-ACCESS.md.",
     );
   }
   if (!res.ok) throw new Error(`Graph ${path} failed: ${res.status}`);

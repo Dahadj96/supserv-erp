@@ -65,10 +65,11 @@ half of the system works end to end.
 | The Inbox — deadline first, nothing expires unread | 02 |
 | The Excel move-in — read, preview, import, undo within 7 days | 62 |
 
-**The mailbox is not reading yet.** Application `Mail.Read` reaches every
-mailbox in the tenant until an Application Access Policy restricts it, so
-`src/capture/mail/graph.ts` refuses to make a request until
-`MS_MAILBOX_POLICY_CONFIRMED=true`. That comment is the instructions.
+**The mailbox is not reading yet, on purpose.** Application `Mail.Read` reaches
+every mailbox in the tenant until Exchange RBAC for Applications scopes it to
+one, so `src/capture/mail/graph.ts` refuses to make a request until
+`MS_MAILBOX_SCOPE_CONFIRMED=true`. **`docs/MAILBOX-ACCESS.md`** is the
+procedure and `scripts/scope-mailbox.ps1` runs it.
 
 **Two screens ship as domain, not as screens.** 73 and 75 live inside a deal,
 and deals are phase 4. The rules and the alias memory are built and tested; the

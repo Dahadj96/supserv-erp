@@ -1,0 +1,136 @@
+# Letting the ERP read one mailbox — and only one
+
+**Status: not done yet. The ERP refuses to call Graph until it is.**
+
+## The problem, stated plainly
+
+`Mail.Read` granted as an **application permission** in Entra ID is not
+permission to read `contact@supserv.dz`. It is permission to read **every
+mailbox in the tenant** — the Gérant's, the accountant's, everyone's — with no
+further consent, no prompt, and nothing in anyone's inbox to show it happened.
+
+Microsoft says this outright:
+
+> By default, apps that have been granted application permissions to the
+> following data sets can access all the mailboxes in the organization:
+> Calendars, Contacts, Mail, Mailbox settings.
+
+An ERP for six people does not need that, and should never have it.
+
+## The correct fix, as of 2026
+
+**RBAC for Applications**, in Exchange Online. It grants a role to the
+application *paired with a resource scope* — a filter that names which mailboxes
+the role applies to.
+
+> **Not Application Access Policies.** `New-ApplicationAccessPolicy` is the
+> answer you will find in most blog posts and it still works, but Microsoft has
+> marked it legacy: *"Don't create new App Access Policies as these policies
+> will eventually require migration to Role Based Access Control for
+> Applications."* We are configuring this for the first time, so we configure it
+> the way it will still be configured in three years.
+
+The two systems are **additive**, which is the part that catches people:
+
+> if your Service Principal has `Mail.Read` granted in Microsoft Entra ID and
+> you configure a resource-scoped `Mail.Read` permission in Application RBAC,
+> it's important that you remove the assignment of `Mail.Read` from Microsoft
+> Entra ID. Otherwise, the union … results in **no effective resource scoping**.
+
+So the Entra consent that has already been granted is not the goal — it is the
+thing that has to come **off** at the end. Leaving it on makes the whole exercise
+decorative.
+
+## What you need before you start
+
+- The **Exchange Administrator** role, or membership of **Organization
+  Management**.
+- The `ExchangeOnlineManagement` PowerShell module:
+
+  ```powershell
+  Install-Module ExchangeOnlineManagement -Scope CurrentUser
+  ```
+
+- The **Object ID of the enterprise application** — not the app registration.
+  Entra admin centre → **Enterprise applications** → the ERP app → **Object ID**.
+  The App registrations page shows a different Object ID and it is the wrong one.
+
+## The steps
+
+`scripts/scope-mailbox.ps1` runs 1 to 5. Read it before running it.
+
+1. **A scope containing exactly one mailbox.**
+
+   ```powershell
+   New-ManagementScope -Name "SUPSERV ERP mailbox" `
+     -RecipientRestrictionFilter "PrimarySmtpAddress -eq 'contact@supserv.dz'"
+   ```
+
+2. **A pointer in Exchange to the Entra service principal.** Exchange cannot
+   create service principals; this is a reference to the one Entra already has.
+
+   ```powershell
+   New-ServicePrincipal -AppId <MS_CLIENT_ID> -ObjectId <enterprise app Object ID> `
+     -DisplayName "SUPSERV ERP"
+   ```
+
+3. **The role, scoped.** `Application Mail.Read` is all the ERP does today — it
+   reads. Add `Application Mail.ReadWrite` only when it starts marking messages
+   as read in the mailbox itself.
+
+   ```powershell
+   New-ManagementRoleAssignment -App <enterprise app Object ID> `
+     -Role "Application Mail.Read" -CustomResourceScope "SUPSERV ERP mailbox"
+   ```
+
+4. **Prove the fence exists, in both directions.** This is the step nobody does,
+   and it is the only one that actually tells you anything.
+
+   ```powershell
+   Test-ServicePrincipalAuthorization -Identity <MS_CLIENT_ID> -Resource contact@supserv.dz | Format-Table
+   Test-ServicePrincipalAuthorization -Identity <MS_CLIENT_ID> -Resource <your own address> | Format-Table
+   ```
+
+   The first must show `InScope: True`. The second must show `InScope: False`.
+   A pass on the first alone proves nothing — an unrestricted app passes it too.
+
+5. **Remove the Entra consent.** Entra admin centre → App registrations → the
+   ERP app → **API permissions** → remove `Mail.Read` and `Mail.ReadWrite` from
+   **Application permissions**, then **Grant admin consent** again to apply the
+   removal.
+
+   Until this is done, the app still has org-wide access and step 4 was theatre.
+
+6. **Tell the ERP.** In `.env`:
+
+   ```
+   MS_MAILBOX_SCOPE_CONFIRMED=true
+   ```
+
+   Then restart it, and press **Sync now** on the Inbox.
+
+## If step 6 fails with 403
+
+Permission changes are cached for **30 minutes to 2 hours** depending on how
+recently the app called Graph. `Test-ServicePrincipalAuthorization` bypasses that
+cache, which is why step 4 can pass while step 6 still fails. Wait, then retry.
+
+If it still fails after two hours, the likely cause is step 5: removing the Entra
+consent removed the app's only Graph grant, and the RBAC assignment did not take.
+Re-check step 3 with:
+
+```powershell
+Get-ManagementRoleAssignment -App <enterprise app Object ID> | Format-List Name,Role,CustomResourceScope
+```
+
+## Why the ERP refuses to run without this
+
+`src/capture/mail/graph.ts` will not make a single HTTP request while
+`MS_MAILBOX_SCOPE_CONFIRMED` is anything other than `true`. A boolean somebody
+has to type is a weak lock — but it cannot be opened by *forgetting*, and
+forgetting is how this particular mistake happens.
+
+## Sources
+
+- [Role Based Access Control for Applications in Exchange Online](https://learn.microsoft.com/exchange/permissions-exo/application-rbac)
+- [Application Access Policies (legacy)](https://learn.microsoft.com/exchange/permissions-exo/application-access-policies)
