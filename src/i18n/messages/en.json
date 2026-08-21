@@ -568,5 +568,66 @@
       "on": "On"
     },
     "railsNote": "Enforced means there is no setting. Those three are constants in the code, because the moment one becomes a switch is the moment somebody turns it off at six in the evening to get a batch through."
+  },
+  "inbox": {
+    "subtitle": "{unread} unread · {expiring, plural, =0 {nothing has a deadline inside 48 hours} =1 {1 item with a deadline inside 48 hours} other {# items with a deadline inside 48 hours}}",
+    "triageRules": "Triage rules",
+    "syncNow": "Sync now",
+    "synced": "{count, plural, =0 {Nothing new.} =1 {1 new message.} other {# new messages.}}",
+    "seeChannels": "See the channels screen.",
+    "error": {
+      "mailboxNotScoped": "The mailbox was not read, because the application is not yet restricted to it. Application Mail.Read reaches every mailbox in the tenant until an Application Access Policy says otherwise.",
+      "tradeRequired": "A candidate needs a trade — it is what you will search by."
+    },
+    "expiringBanner": "{count, plural, =1 {1 item expires} other {# items expire}} within 48 hours —",
+    "expiringItem": "{what} ({hours}h left)",
+    "facet": {
+      "all": "All",
+      "enquiry": "RFQ",
+      "tender": "Consultation",
+      "candidate": "CV",
+      "payment": "Invoice / Payment",
+      "supplierQuote": "Supplier quote",
+      "needsReview": "Needs review"
+    },
+    "type": {
+      "enquiry": "RFQ",
+      "tender": "Consultation",
+      "candidate": "CV",
+      "payment": "Payment",
+      "supplierQuote": "Supplier quote",
+      "needsReview": "Needs review"
+    },
+    "action": {
+      "enquiry": "Create enquiry",
+      "tender": "Create enquiry",
+      "candidate": "Create candidate",
+      "payment": "Link to invoice",
+      "supplierQuote": "Attach to sourcing",
+      "needsReview": "Classify"
+    },
+    "nothingToCreate": "Say what this is first.",
+    "unreadOnly": "Unread only",
+    "from": "From",
+    "subject": "Subject",
+    "typeColumn": "Type",
+    "deadline": "Deadline",
+    "received": "Received",
+    "noSubject": "(no subject)",
+    "dismiss": "Dismiss",
+    "deadlineIn": "{hours}h left",
+    "unconfirmed": "unconfirmed",
+    "deadlineUnconfirmedHelp": "Read from the document, not yet confirmed by anybody. It warns; nothing relies on it.",
+    "tradePlaceholder": "Trade — Soudeur",
+    "jobPlaceholder": "Job",
+    "emptyTitle": "Nothing waiting",
+    "emptyBody": "Everything that arrived has been dealt with. New mail appears here when the mailbox is synced.",
+    "needsAHuman": "Not classified with confidence — needs a human",
+    "nItems": "{n, plural, =1 {1 item} other {# items}}",
+    "notSureEnough": "looks like a {what}, but only {percent}% sure — so nothing was created",
+    "noRuleMatched": "no rule matched it",
+    "confirmAs": "It is a {what}",
+    "addContactUnder": "Add contact under {company}",
+    "itIsNoise": "It is noise"
   }
 }

@@ -57,6 +57,13 @@
       "when": 1787333510712,
       "tag": "0007_smooth_strong_guy",
       "breakpoints": true
+    },
+    {
+      "idx": 8,
+      "version": "7",
+      "when": 1787333960597,
+      "tag": "0008_dry_psylocke",
+      "breakpoints": true
     }
   ]
 }

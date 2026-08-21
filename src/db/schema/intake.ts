@@ -100,6 +100,20 @@ export const intakeMessage = pgTable("intake_message", {
   committedAt: timestamp("committed_at", { withTimezone: true }),
   committedBy: uuid("committed_by"),
 
+  /**
+   * Screen 02 — the deadline column, and the red banner above it.
+   *
+   * LAW 2: this is what extraction READ, not what is true. It drives the
+   * "expires within 48 hours" warning because a warning based on a guess is
+   * still worth more than silence — but until `deadlineConfirmedAt` is set, the
+   * screen marks it as unconfirmed and no document may rely on it.
+   */
+  deadlineAt: timestamp("deadline_at", { withTimezone: true }),
+  deadlineConfirmedAt: timestamp("deadline_confirmed_at", { withTimezone: true }),
+
+  /** Screen 02 counts unread. Null means nobody has opened it. */
+  readAt: timestamp("read_at", { withTimezone: true }),
+
   /** Everything the channel gave us, kept verbatim for when the parse was wrong. */
   raw: jsonb("raw"),
 

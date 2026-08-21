@@ -568,5 +568,66 @@
       "on": "Actif"
     },
     "railsNote": "« Imposé » veut dire qu'il n'y a pas de réglage. Ces trois-là sont des constantes dans le code, parce que le jour où l'une devient un interrupteur est le jour où quelqu'un la coupe à dix-huit heures pour faire passer un lot."
+  },
+  "inbox": {
+    "subtitle": "{unread} non lus · {expiring, plural, =0 {aucune échéance dans les 48 heures} =1 {1 élément dont l'échéance tombe dans 48 heures} other {# éléments dont l'échéance tombe dans 48 heures}}",
+    "triageRules": "Règles de tri",
+    "syncNow": "Synchroniser",
+    "synced": "{count, plural, =0 {Rien de nouveau.} =1 {1 nouveau message.} other {# nouveaux messages.}}",
+    "seeChannels": "Voir l'écran des canaux.",
+    "error": {
+      "mailboxNotScoped": "La boîte aux lettres n'a pas été lue : l'application n'y est pas encore restreinte. Une permission d'application Mail.Read atteint toutes les boîtes du locataire tant qu'une Application Access Policy ne l'en empêche pas.",
+      "tradeRequired": "Un candidat a besoin d'un métier — c'est ainsi que vous le retrouverez."
+    },
+    "expiringBanner": "{count, plural, =1 {1 élément expire} other {# éléments expirent}} dans moins de 48 heures —",
+    "expiringItem": "{what} ({hours} h restantes)",
+    "facet": {
+      "all": "Tout",
+      "enquiry": "Demande",
+      "tender": "Consultation",
+      "candidate": "CV",
+      "payment": "Facture / Règlement",
+      "supplierQuote": "Devis fournisseur",
+      "needsReview": "À examiner"
+    },
+    "type": {
+      "enquiry": "Demande",
+      "tender": "Consultation",
+      "candidate": "CV",
+      "payment": "Règlement",
+      "supplierQuote": "Devis fournisseur",
+      "needsReview": "À examiner"
+    },
+    "action": {
+      "enquiry": "Créer la demande",
+      "tender": "Créer la demande",
+      "candidate": "Créer le candidat",
+      "payment": "Rapprocher d'une facture",
+      "supplierQuote": "Rattacher au sourcing",
+      "needsReview": "Classer"
+    },
+    "nothingToCreate": "Dites d'abord de quoi il s'agit.",
+    "unreadOnly": "Non lus seulement",
+    "from": "De",
+    "subject": "Objet",
+    "typeColumn": "Type",
+    "deadline": "Échéance",
+    "received": "Reçu",
+    "noSubject": "(sans objet)",
+    "dismiss": "Écarter",
+    "deadlineIn": "{hours} h restantes",
+    "unconfirmed": "non confirmée",
+    "deadlineUnconfirmedHelp": "Lue sur le document, pas encore confirmée par quelqu'un. Elle alerte ; rien ne s'appuie dessus.",
+    "tradePlaceholder": "Métier — Soudeur",
+    "jobPlaceholder": "Fonction",
+    "emptyTitle": "Rien en attente",
+    "emptyBody": "Tout ce qui est arrivé a été traité. Les nouveaux messages apparaissent ici après une synchronisation.",
+    "needsAHuman": "Classement incertain — il faut quelqu'un",
+    "nItems": "{n, plural, =1 {1 élément} other {# éléments}}",
+    "notSureEnough": "ressemble à « {what} », mais sûr à {percent} % seulement — rien n'a été créé",
+    "noRuleMatched": "aucune règle ne correspond",
+    "confirmAs": "C'est bien « {what} »",
+    "addContactUnder": "Ajouter le contact chez {company}",
+    "itIsNoise": "C'est du bruit"
   }
 }
