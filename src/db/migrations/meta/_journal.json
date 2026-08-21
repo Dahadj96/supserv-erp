@@ -29,6 +29,13 @@
       "when": 1787323435367,
       "tag": "0003_search_indexes",
       "breakpoints": true
+    },
+    {
+      "idx": 4,
+      "version": "7",
+      "when": 1787324380519,
+      "tag": "0004_next_bruce_banner",
+      "breakpoints": true
     }
   ]
 }

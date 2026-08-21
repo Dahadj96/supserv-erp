@@ -16,6 +16,11 @@ export const party = pgTable("party", {
   rc: text("rc"),
   ai: text("ai"),
 
+  // Screen 84 detects duplicates by email domain and by phone, and shows both
+  // field-by-field. Neither existed in the schema until that screen was read.
+  email: text("email"),
+  phone: text("phone"),
+
   address: text("address"),
   wilaya: text("wilaya"),
   country: text("country").default("DZ").notNull(),
@@ -77,6 +82,8 @@ export const person = pgTable("person", {
   fullName: text("full_name").notNull(),
   trade: text("trade").notNull(), // the only other required field
   phone: text("phone"),
+  /** Screen 84: a discarded company email becomes a contact, not a deletion. */
+  email: text("email"),
   nationalId: text("national_id"),
   wilaya: text("wilaya"),
   source: text("source").notNull(), // cv | direct | subcontractor | import
