@@ -1,7 +1,7 @@
-import { and, eq, isNull, ne, or, sql } from "drizzle-orm";
+import { and, eq, isNull, sql } from "drizzle-orm";
 import { db } from "@/db";
 import { auditEntry, duplicateDismissal, mergeLog } from "@/db/schema/control";
-import { party, partyAlias } from "@/db/schema/party";
+import { party, partyAlias, person } from "@/db/schema/party";
 
 /**
  * Screen 84 — merge duplicates.
@@ -44,8 +44,61 @@ export type MergeResult = {
   keptId: string;
   retiredId: string;
   aliasesAdded: string[];
+  /** The contact made from the losing email address, if one was made. */
+  contactCreated: { id: string; fullName: string; email: string } | null;
   mergeLogId: string;
 };
+
+/**
+ * Screen 84: "the other one becomes a contact rather than being thrown away."
+ *
+ * But only if it is a person. `contact@touatgaz.dz` is a role, not a human, and
+ * a contact card called "Contact" is worse than no contact card — somebody will
+ * address an email to it.
+ */
+const ROLE_MAILBOXES = new Set([
+  "contact",
+  "info",
+  "infos",
+  "commercial",
+  "commande",
+  "commandes",
+  "admin",
+  "administration",
+  "direction",
+  "secretariat",
+  "compta",
+  "comptabilite",
+  "facturation",
+  "achat",
+  "achats",
+  "sales",
+  "support",
+  "hello",
+  "office",
+  "noreply",
+  "no-reply",
+  "ne-pas-repondre",
+]);
+
+/** "m.belkacem" becomes "M. Belkacem". Initials keep their full stop. */
+export function nameFromEmail(email: string): string | null {
+  const local = email.split("@")[0]?.toLowerCase().trim();
+  if (!local) return null;
+  if (ROLE_MAILBOXES.has(local.replace(/[._-]/g, ""))) return null;
+  if (ROLE_MAILBOXES.has(local)) return null;
+
+  const parts = local
+    .split(/[._\-+]+/)
+    .filter((p) => p.length > 0 && !/^\d+$/.test(p))
+    .map((p) => p.replace(/\d+$/, ""))
+    .filter(Boolean);
+
+  if (parts.length === 0) return null;
+  return parts
+    .map((p) => (p.length === 1 ? `${p.toUpperCase()}.` : p[0]?.toUpperCase() + p.slice(1)))
+    .join(" ");
+}
 
 const REVERSIBLE_DAYS = 30;
 
@@ -115,7 +168,39 @@ export async function mergeParties(opts: {
         .onConflictDoNothing();
     }
 
-    // 3. Retire. Not delete — `deleted_at` stays null, because this record was
+    // 3. The losing email becomes a contact rather than being thrown away.
+    //    `trade` is required, so it is stored as the neutral marker
+    //    "unspecified" and translated in the interface — a French string in a
+    //    data column would break LAW 4 the moment somebody works in English.
+    let contactCreated: MergeResult["contactCreated"] = null;
+    const losingEmail = choices.email === "retired" ? kept.email : retired.email;
+    if (losingEmail && losingEmail !== (choices.email === "retired" ? retired.email : kept.email)) {
+      const fullName = nameFromEmail(losingEmail);
+      if (fullName) {
+        const [already] = await tx
+          .select({ id: person.id })
+          .from(person)
+          .where(and(eq(person.email, losingEmail), isNull(person.deletedAt)))
+          .limit(1);
+
+        if (!already) {
+          const [created] = await tx
+            .insert(person)
+            .values({
+              fullName,
+              trade: "unspecified",
+              email: losingEmail,
+              source: "import",
+              relationship: "external",
+              employerPartyId: keptId,
+            })
+            .returning({ id: person.id });
+          if (created) contactCreated = { id: created.id, fullName, email: losingEmail };
+        }
+      }
+    }
+
+    // 4. Retire. Not delete — `deleted_at` stays null, because this record was
     //    never deleted and its documents must keep resolving.
     await tx.update(party).set({ supersededBy: keptId }).where(eq(party.id, retiredId));
 
@@ -147,6 +232,7 @@ export async function mergeParties(opts: {
       keptId,
       retiredId,
       aliasesAdded: toAdd,
+      contactCreated,
       mergeLogId: logged?.id ?? "",
     };
   });

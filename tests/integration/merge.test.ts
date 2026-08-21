@@ -3,7 +3,7 @@ import { afterAll, beforeAll, describe, expect, it } from "vitest";
 import { db } from "@/db";
 import { auditEntry, mergeLog } from "@/db/schema/control";
 import { document } from "@/db/schema/document";
-import { party, partyAlias } from "@/db/schema/party";
+import { party, partyAlias, person } from "@/db/schema/party";
 import { mergeParties } from "@/domain/merge";
 import { searchParties } from "@/domain/search";
 
@@ -77,6 +77,7 @@ beforeAll(async () => {
 });
 
 afterAll(async () => {
+  await db.delete(person).where(eq(person.email, "m.belkacem@touatgaz.dz"));
   await db.delete(document).where(eq(document.id, documentId));
   await db.delete(mergeLog).where(eq(mergeLog.keptId, keptId));
   await db.delete(auditEntry).where(eq(auditEntry.actorId, ACTOR));
@@ -164,5 +165,28 @@ describe("screen 84 — a merge is not a delete", () => {
     await expect(
       mergeParties({ keptId, retiredId: keptId, choices: {}, actorId: ACTOR }),
     ).rejects.toThrow(/into itself/);
+  });
+});
+
+describe("screen 84 — the losing email becomes a contact", () => {
+  it("made a person from m.belkacem@, attached to the surviving company", async () => {
+    const [contact] = await db
+      .select()
+      .from(person)
+      .where(eq(person.email, "m.belkacem@touatgaz.dz"));
+
+    expect(contact, "the discarded email was thrown away").toBeDefined();
+    expect(contact?.fullName).toBe("M. Belkacem");
+    expect(contact?.employerPartyId).toBe(keptId);
+    // Neutral marker, translated in the interface — LAW 4.
+    expect(contact?.trade).toBe("unspecified");
+  });
+
+  it("did not invent a person called Contact from contact@", async () => {
+    const [invented] = await db
+      .select()
+      .from(person)
+      .where(eq(person.email, "contact@touatgaz.dz"));
+    expect(invented).toBeUndefined();
   });
 });
