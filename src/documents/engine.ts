@@ -76,6 +76,7 @@ export type RenderedDocument = {
     legalName: string;
     address: string | null;
     nif: string | null;
+    nis: string | null;
     rc: string | null;
   };
   bank: { bankName: string; rib: string; agency: string | null } | null;
@@ -205,6 +206,7 @@ export async function render(request: RenderRequest): Promise<RenderedDocument> 
       legalName: counterparty.legalName,
       address: counterparty.address,
       nif: counterparty.nif,
+      nis: counterparty.nis,
       rc: counterparty.rc,
     },
     bank: bank ? { bankName: bank.bankName, rib: bank.rib, agency: bank.agency } : null,

@@ -36,6 +36,28 @@ export function can(role: Role, permission: Permission): boolean {
 }
 
 /**
+ * Which permission it takes to issue each kind of document.
+ *
+ * Deliberately exhaustive rather than defaulted. A kind nobody has thought about
+ * must not fall through to `invoices.issue` and quietly let a Commercial issue
+ * it — an unknown kind is refused until somebody decides who owns it.
+ */
+export const ISSUE_PERMISSION: Record<string, Permission> = {
+  invoice: "invoices.issue",
+  credit_note: "invoices.issue",
+  situation: "invoices.issue",
+  proforma: "offers.issue",
+  offer: "offers.issue",
+  purchase_order: "purchase.order.issue",
+};
+
+export function mayIssue(role: Role | null, kind: string): boolean {
+  const needed = ISSUE_PERMISSION[kind];
+  if (!needed || !role) return false;
+  return can(role, needed);
+}
+
+/**
  * LAW 6 — the assistant holds EXACTLY the caller's permissions. There is no
  * service account, no elevation, and no delete tool anywhere in its registry.
  */

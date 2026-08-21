@@ -958,5 +958,76 @@
       "ribTwentyDigits": "A RIB is twenty digits.",
       "invalid": "Something in the form was not accepted."
     }
+  },
+  "documents": {
+    "kind": {
+      "invoice": "Invoice",
+      "credit_note": "Credit note",
+      "situation": "Progress claim",
+      "proforma": "Pro forma invoice",
+      "offer": "Offer",
+      "purchase_order": "Purchase order"
+    },
+    "draft": "Draft — not issued",
+    "forClient": "For {client}",
+    "downloadPdf": "Download PDF",
+    "sendByEmail": "Send by email",
+    "sendUnavailable": "Sending is not available yet — the shared mailbox has not been scoped to a single account.",
+    "issue": "Issue",
+    "issuedOk": "Issued as {number}. It can no longer be edited — a correction is a new document.",
+    "alreadyIssued": "Already issued. An issued document is immutable; a correction is a new one.",
+    "notAllowed": "Your role may not issue this kind of document.",
+    "setupIncomplete": "Day one is not finished: {missing}.",
+    "cannotIssueBecause": "This document cannot be issued — {reason}.",
+    "fixIt": "Fix",
+    "ruleConfirmed": "Rule from {authority}, confirmed by {who} on {on}.",
+    "ruleUnconfirmed": "Rule from {authority}, not confirmed by anyone yet — it warns rather than blocks.",
+    "previewLabel": "Document preview",
+    "previewUnavailable": "Your browser will not display the PDF here.",
+    "output": "Output",
+    "stateIssued": "Issued",
+    "stateDraft": "Draft",
+    "field": {
+      "language": "Language",
+      "currency": "Currency",
+      "template": "Template",
+      "issuedOn": "Date"
+    },
+    "localeFromClient": "The language of a document comes from the client record, never from whoever is signed in.",
+    "error": {
+      "noSuchDocument": "That document no longer exists.",
+      "noCounterparty": "That document has no client.",
+      "notAllowed": "Your role may not issue this kind of document.",
+      "setupIncomplete": "Day one is not finished, so nothing can be issued yet.",
+      "alreadyIssued": "That document has already been issued.",
+      "blocked": "A confirmed rule refused this document",
+      "complianceBlocked": "A confirmed rule refused this document."
+    }
+  },
+  "checklist": {
+    "title": "Before issuing",
+    "summary": "{blockers, plural, =0 {no blocker} one {# blocker} other {# blockers}} · {warnings, plural, =0 {no warning} one {# warning} other {# warnings}}",
+    "footnote": "Green means we looked and it was there. Only a rule somebody has confirmed can refuse an issue; the rest warn.",
+    "row": {
+      "clientNif": "Client NIF",
+      "clientNis": "Client NIS",
+      "clientRc": "Client RC",
+      "clientAddress": "Client legal address",
+      "ourIdentifiers": "Our NIF / NIS / RC / AI",
+      "amountInWords": "Amount in words",
+      "documentNumber": "Document number",
+      "invoice": {
+        "stampDutyThreshold": "Stamp duty",
+        "retentionTreatment": "Retention",
+        "vatServicesAbroad": "VAT on services rendered abroad"
+      },
+      "proforma": {
+        "validityPeriod": "Pro forma validity"
+      }
+    },
+    "note": {
+      "notRecorded": "Not recorded — nothing will be printed",
+      "numberOnIssue": "Reserved on issue, never on a draft"
+    }
   }
 }

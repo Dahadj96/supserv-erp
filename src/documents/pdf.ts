@@ -191,6 +191,7 @@ export async function toPdf(doc: RenderedDocument): Promise<Buffer> {
   }
   const theirs = [
     doc.counterparty.nif ? `NIF ${doc.counterparty.nif}` : null,
+    doc.counterparty.nis ? `NIS ${doc.counterparty.nis}` : null,
     doc.counterparty.rc ? `RC ${doc.counterparty.rc}` : null,
   ]
     .filter(Boolean)

@@ -958,5 +958,76 @@
       "ribTwentyDigits": "Un RIB fait vingt chiffres.",
       "invalid": "Quelque chose dans le formulaire n'a pas été accepté."
     }
+  },
+  "documents": {
+    "kind": {
+      "invoice": "Facture",
+      "credit_note": "Avoir",
+      "situation": "Situation de travaux",
+      "proforma": "Facture proforma",
+      "offer": "Offre",
+      "purchase_order": "Bon de commande"
+    },
+    "draft": "Brouillon — non émise",
+    "forClient": "Pour {client}",
+    "downloadPdf": "Télécharger le PDF",
+    "sendByEmail": "Envoyer par e-mail",
+    "sendUnavailable": "L'envoi n'est pas encore disponible — la boîte partagée n'a pas été restreinte à un seul compte.",
+    "issue": "Émettre",
+    "issuedOk": "Émise sous le numéro {number}. Elle ne peut plus être modifiée — une correction est un nouveau document.",
+    "alreadyIssued": "Déjà émise. Un document émis est immuable ; une correction est un nouveau document.",
+    "notAllowed": "Votre rôle ne permet pas d'émettre ce type de document.",
+    "setupIncomplete": "Le premier jour n'est pas terminé : {missing}.",
+    "cannotIssueBecause": "Ce document ne peut pas être émis — {reason}.",
+    "fixIt": "Corriger",
+    "ruleConfirmed": "Règle de {authority}, confirmée par {who} le {on}.",
+    "ruleUnconfirmed": "Règle de {authority}, que personne n'a encore confirmée — elle avertit sans bloquer.",
+    "previewLabel": "Aperçu du document",
+    "previewUnavailable": "Votre navigateur n'affiche pas le PDF ici.",
+    "output": "Sortie",
+    "stateIssued": "Émise",
+    "stateDraft": "Brouillon",
+    "field": {
+      "language": "Langue",
+      "currency": "Devise",
+      "template": "Modèle",
+      "issuedOn": "Date"
+    },
+    "localeFromClient": "La langue d'un document vient de la fiche du client, jamais de la personne connectée.",
+    "error": {
+      "noSuchDocument": "Ce document n'existe plus.",
+      "noCounterparty": "Ce document n'a pas de client.",
+      "notAllowed": "Votre rôle ne permet pas d'émettre ce type de document.",
+      "setupIncomplete": "Le premier jour n'est pas terminé : rien ne peut encore être émis.",
+      "alreadyIssued": "Ce document a déjà été émis.",
+      "blocked": "Une règle confirmée a refusé ce document",
+      "complianceBlocked": "Une règle confirmée a refusé ce document."
+    }
+  },
+  "checklist": {
+    "title": "Avant d'émettre",
+    "summary": "{blockers, plural, =0 {aucun blocage} one {# blocage} other {# blocages}} · {warnings, plural, =0 {aucun avertissement} one {# avertissement} other {# avertissements}}",
+    "footnote": "Le vert signifie que nous avons regardé et que c'était là. Seule une règle confirmée par quelqu'un peut refuser une émission ; les autres avertissent.",
+    "row": {
+      "clientNif": "NIF du client",
+      "clientNis": "NIS du client",
+      "clientRc": "RC du client",
+      "clientAddress": "Adresse légale du client",
+      "ourIdentifiers": "Nos NIF / NIS / RC / AI",
+      "amountInWords": "Montant en lettres",
+      "documentNumber": "Numéro du document",
+      "invoice": {
+        "stampDutyThreshold": "Droit de timbre",
+        "retentionTreatment": "Retenue de garantie",
+        "vatServicesAbroad": "TVA sur services rendus à l'étranger"
+      },
+      "proforma": {
+        "validityPeriod": "Validité de la proforma"
+      }
+    },
+    "note": {
+      "notRecorded": "Non renseigné — rien ne sera imprimé",
+      "numberOnIssue": "Réservé à l'émission, jamais sur un brouillon"
+    }
   }
 }

@@ -34,6 +34,7 @@ const SAMPLE: RenderedDocument = {
     legalName: "GROUPEMENT TOUATGAZ",
     address: "Zone industrielle, Adrar",
     nif: "000116007654321",
+    nis: "000116007654322",
     rc: "16/00-1234567 B 09",
   },
   bank: { bankName: "BEA Adrar", rib: "00300123456789012345", agency: "Adrar" },
