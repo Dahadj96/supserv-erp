@@ -7,6 +7,7 @@ import { db } from "@/db";
 import { userRole } from "@/db/schema/auth";
 import { bankAccount, vatRate } from "@/db/schema/company";
 import { numberingSeries } from "@/db/schema/document";
+import { documentType } from "@/db/schema/document-type";
 import { intakeChannel } from "@/db/schema/intake";
 import { setupState } from "@/domain/setup";
 import { Link } from "@/i18n/navigation";
@@ -42,7 +43,7 @@ export default async function SettingsPage({ params }: { params: Promise<{ local
 
   const state = await setupState();
 
-  const [[banks], [rates], [series], [roles], [channels]] = await Promise.all([
+  const [[banks], [rates], [series], [roles], [channels], [types]] = await Promise.all([
     db
       .select({ n: sql<number>`count(*)::int` })
       .from(bankAccount)
@@ -53,6 +54,7 @@ export default async function SettingsPage({ params }: { params: Promise<{ local
     db
       .select({ n: sql<number>`count(*) filter (where ${intakeChannel.status} = 'live')::int` })
       .from(intakeChannel),
+    db.select({ n: sql<number>`count(*)::int` }).from(documentType),
   ]);
 
   const done = (label?: string) => ({
@@ -77,6 +79,7 @@ export default async function SettingsPage({ params }: { params: Promise<{ local
         { key: "bank", href: "/setup/bank", state: some(banks?.n ?? 0) },
         { key: "vat", href: "/setup/vat", state: some(rates?.n ?? 0) },
         { key: "numbering", href: "/setup/numbering", state: some(series?.n ?? 0) },
+        { key: "documentTypes", href: "/settings/document-types", state: some(types?.n ?? 0) },
       ],
     },
     {

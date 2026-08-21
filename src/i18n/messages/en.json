@@ -967,12 +967,26 @@
   },
   "documents": {
     "kind": {
-      "invoice": "Invoice",
-      "credit_note": "Credit note",
-      "situation": "Progress claim",
+      "quotation": "Quotation",
       "proforma": "Pro forma invoice",
-      "offer": "Offer",
-      "purchase_order": "Purchase order"
+      "client_order": "Client purchase order",
+      "delivery_note": "Delivery note",
+      "invoice": "Invoice",
+      "advance_invoice": "Advance invoice",
+      "situation": "Progress statement",
+      "credit_note": "Credit note",
+      "statement": "Statement of account",
+      "purchase_order": "Supplier purchase order",
+      "goods_receipt": "Goods receipt",
+      "supplier_invoice": "Supplier invoice",
+      "comparison_sheet": "Comparison sheet",
+      "work_order": "Work order",
+      "service_report": "Service report",
+      "reception_report": "PV de réception",
+      "retention_release": "Retention release",
+      "attestation": "Attestation",
+      "official_letter": "Official letter",
+      "cover_letter": "Cover letter"
     },
     "draft": "Draft — not issued",
     "forClient": "For {client}",
@@ -1284,6 +1298,10 @@
         "name": "Audit log",
         "what": "Who did what, and when.",
         "unbuilt": "Every action already writes an entry — screens 18, 30, 62 and 70 all do. The page that reads them back is not built."
+      },
+      "documentTypes": {
+        "name": "Document types",
+        "what": "The nineteen kinds, what each one is worth legally, and which of them take a number of ours."
       }
     }
   },
@@ -1450,5 +1468,101 @@
     "settledBy": "source {source}, confirmed by {who} on {on}",
     "footer": "Whatever you write here is entered into the software with your name and the date against it. Until then the software warns instead of refusing, which means a document can still go out — so the sooner these are settled, the fewer documents go out on an assumption.",
     "printHint": "Use your browser's print command to save this as a PDF."
+  },
+  "docTypes": {
+    "title": "Document types and numbering",
+    "subtitle": "{types} types in {families} families · all rendered by one engine",
+    "banner": "These are the document types used across the Algerian market, not one client's way of working. A client that wants something different gets a template, never a new structure.",
+    "setUpSeries": "Numbering series",
+    "empty": "The catalogue is empty. Nothing is broken — the engine issues whatever kind it is handed. Writing the types down is what lets a screen say that a delivery note is proof and a proforma is not, and what stops the system generating a number for a client purchase order that already has one.",
+    "writeThemDown": "Write down the types",
+    "written": "{count, plural, =0 {Everything was already written down} one {# type written down} other {# types written down}}. None of them has a numbering series until you set one.",
+    "seriesCount": "{with} of {total} types have a numbering series configured.",
+    "theirNumber": "the client's number",
+    "suggested": "suggested {pattern}",
+    "next": "next {value}",
+    "on": "On",
+    "off": "Off",
+    "col": {
+      "document": "Document",
+      "series": "Series",
+      "legal": "Legal value",
+      "numbering": "Numbering",
+      "becomes": "Becomes",
+      "languages": "Languages",
+      "active": "Active"
+    },
+    "family": {
+      "sell": "What we send a client",
+      "buy": "What we send a supplier",
+      "internal": "What stays inside, and what the site signs",
+      "correspondence": "Letters and attestations"
+    },
+    "legal": {
+      "accounting": "Accounting document",
+      "contractual": "Contractual",
+      "commitment": "Commitment",
+      "proof": "Proof",
+      "evidence": "Evidence",
+      "information": "Information",
+      "internal": "Internal",
+      "declaration": "Declaration",
+      "correspondence": "Correspondence",
+      "none": "None"
+    },
+    "numbering": {
+      "onIssue": "On issue",
+      "reservedOnIssue": "Reserved on issue",
+      "clientReference": "Client's reference"
+    },
+    "kind": {
+      "quotation": "Quotation",
+      "proforma": "Pro forma invoice",
+      "client_order": "Client purchase order",
+      "delivery_note": "Delivery note",
+      "invoice": "Invoice",
+      "advance_invoice": "Advance invoice",
+      "situation": "Progress statement",
+      "credit_note": "Credit note",
+      "statement": "Statement of account",
+      "purchase_order": "Supplier purchase order",
+      "goods_receipt": "Goods receipt",
+      "supplier_invoice": "Supplier invoice",
+      "comparison_sheet": "Comparison sheet",
+      "work_order": "Work order",
+      "service_report": "Service report",
+      "reception_report": "PV de réception",
+      "retention_release": "Retention release",
+      "attestation": "Attestation",
+      "official_letter": "Official letter",
+      "cover_letter": "Cover letter"
+    },
+    "neverChange": "Rules that never change",
+    "never": {
+      "reservedOnIssue": {
+        "what": "A number is taken at issue",
+        "detail": "never on a draft"
+      },
+      "neverReused": {
+        "what": "A number is never reused",
+        "detail": "even if the document is cancelled"
+      },
+      "neverEdited": {
+        "what": "An invoice is never edited",
+        "detail": "a credit note, or nothing"
+      },
+      "proformaNeverPaid": {
+        "what": "A proforma is never paid",
+        "detail": "it has no legal value"
+      },
+      "resets": {
+        "what": "Counters reset",
+        "detail": "on 1 January, if the series says yearly"
+      }
+    },
+    "error": {
+      "notAllowed": "Only a Gérant may change the document types.",
+      "noSuchType": "That type is not in the catalogue."
+    }
   }
 }

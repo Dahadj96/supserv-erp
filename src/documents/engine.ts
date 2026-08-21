@@ -4,6 +4,7 @@ import { bankAccount, COMPANY_ID, companyIdentity } from "@/db/schema/company";
 import { auditEntry } from "@/db/schema/control";
 import { document, documentLine } from "@/db/schema/document";
 import { party } from "@/db/schema/party";
+import { issuingRules } from "@/domain/document-types";
 import type { Totals } from "@/domain/money";
 import { assertCanIssue } from "@/domain/setup";
 import { storageFor } from "@/storage";
@@ -154,7 +155,14 @@ export async function render(request: RenderRequest): Promise<RenderedDocument> 
     settlementInCash: request.settlementInCash ?? false,
   });
 
+  // Screen 50 — what this KIND of document is. Null when the catalogue has not
+  // been written down: an empty catalogue must not stop a company issuing an
+  // invoice, because treating "nobody filled in screen 50" as a refusal would
+  // be the system inventing a requirement of its own.
+  const rules = await issuingRules(record.kind);
+
   if (purpose === "issue") {
+    if (rules && !rules.active) throw new NotRenderable("typeIsOff");
     // Everything on screen 85's first four rows, plus every confirmed rule.
     await assertCanIssue();
     const blocking = findings.filter((f) => f.severity === "block");
@@ -165,7 +173,12 @@ export async function render(request: RenderRequest): Promise<RenderedDocument> 
   const issuedOn = record.issuedOn ? new Date(record.issuedOn) : new Date();
   let number = record.number;
 
-  if (purpose === "issue") {
+  // A client purchase order carries the CLIENT's number. Generating one of ours
+  // for it would invent a reference the client has never seen and cannot match
+  // against their own order.
+  const reservesNumber = rules?.reservesNumber ?? true;
+
+  if (purpose === "issue" && reservesNumber) {
     number = await db.transaction(async (tx) => {
       const allocated = await reserveNumber(tx, record.kind, issuedOn);
       await tx
@@ -180,6 +193,15 @@ export async function render(request: RenderRequest): Promise<RenderedDocument> 
         .where(eq(document.id, record.id));
       return allocated;
     });
+  } else if (purpose === "issue") {
+    await db
+      .update(document)
+      .set({
+        status: "issued",
+        issuedOn: issuedOn.toISOString().slice(0, 10),
+        lockedAt: new Date(),
+      })
+      .where(eq(document.id, record.id));
   }
 
   /* 5 ── Formats ----------------------------------------------------------- */

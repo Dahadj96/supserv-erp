@@ -967,12 +967,26 @@
   },
   "documents": {
     "kind": {
-      "invoice": "Facture",
-      "credit_note": "Avoir",
-      "situation": "Situation de travaux",
+      "quotation": "Devis",
       "proforma": "Facture proforma",
-      "offer": "Offre",
-      "purchase_order": "Bon de commande"
+      "client_order": "Bon de commande client",
+      "delivery_note": "Bon de livraison",
+      "invoice": "Facture",
+      "advance_invoice": "Facture d'acompte",
+      "situation": "Situation de travaux",
+      "credit_note": "Avoir",
+      "statement": "Relevé de compte",
+      "purchase_order": "Bon de commande fournisseur",
+      "goods_receipt": "Bon de réception",
+      "supplier_invoice": "Facture fournisseur",
+      "comparison_sheet": "Tableau comparatif",
+      "work_order": "Bon de travail",
+      "service_report": "Rapport d'intervention",
+      "reception_report": "PV de réception",
+      "retention_release": "Levée de retenue de garantie",
+      "attestation": "Attestation",
+      "official_letter": "Lettre officielle",
+      "cover_letter": "Lettre d'accompagnement"
     },
     "draft": "Brouillon — non émise",
     "forClient": "Pour {client}",
@@ -1284,6 +1298,10 @@
         "name": "Journal",
         "what": "Qui a fait quoi, et quand.",
         "unbuilt": "Chaque action écrit déjà une entrée — les écrans 18, 30, 62 et 70 le font tous. La page qui les relit n'est pas construite."
+      },
+      "documentTypes": {
+        "name": "Types de documents",
+        "what": "Les dix-neuf types, ce que chacun vaut juridiquement, et lesquels prennent un de nos numéros."
       }
     }
   },
@@ -1450,5 +1468,101 @@
     "settledBy": "source {source}, confirmée par {who} le {on}",
     "footer": "Ce que vous écrivez ici est saisi dans le logiciel avec votre nom et la date en regard. En attendant, le logiciel avertit au lieu de refuser, ce qui veut dire qu'un document peut tout de même partir — plus tôt ces points seront réglés, moins de documents partiront sur une supposition.",
     "printHint": "Utilisez la commande d'impression de votre navigateur pour l'enregistrer en PDF."
+  },
+  "docTypes": {
+    "title": "Types de documents et numérotation",
+    "subtitle": "{types} types en {families} familles · tous rendus par un seul moteur",
+    "banner": "Ce sont les types de documents utilisés sur le marché algérien, pas la façon de travailler d'un seul client. Un client qui veut autre chose reçoit un modèle, jamais une nouvelle structure.",
+    "setUpSeries": "Séries de numérotation",
+    "empty": "Le catalogue est vide. Rien n'est cassé — le moteur émet le type qu'on lui donne. Écrire les types, c'est ce qui permet à un écran de dire qu'un bon de livraison est une preuve et qu'une proforma n'en est pas une, et ce qui empêche le système de générer un numéro pour un bon de commande client qui en a déjà un.",
+    "writeThemDown": "Écrire les types",
+    "written": "{count, plural, =0 {Tout était déjà écrit} one {# type écrit} other {# types écrits}}. Aucun n'a de série de numérotation tant que vous n'en réglez pas une.",
+    "seriesCount": "{with} types sur {total} ont une série de numérotation configurée.",
+    "theirNumber": "le numéro du client",
+    "suggested": "suggéré {pattern}",
+    "next": "prochain {value}",
+    "on": "Actif",
+    "off": "Inactif",
+    "col": {
+      "document": "Document",
+      "series": "Série",
+      "legal": "Valeur juridique",
+      "numbering": "Numérotation",
+      "becomes": "Devient",
+      "languages": "Langues",
+      "active": "Actif"
+    },
+    "family": {
+      "sell": "Ce que nous envoyons à un client",
+      "buy": "Ce que nous envoyons à un fournisseur",
+      "internal": "Ce qui reste à l'intérieur, et ce que le chantier signe",
+      "correspondence": "Lettres et attestations"
+    },
+    "legal": {
+      "accounting": "Document comptable",
+      "contractual": "Contractuel",
+      "commitment": "Engagement",
+      "proof": "Preuve",
+      "evidence": "Justificatif",
+      "information": "Information",
+      "internal": "Interne",
+      "declaration": "Déclaration",
+      "correspondence": "Correspondance",
+      "none": "Aucune"
+    },
+    "numbering": {
+      "onIssue": "À l'émission",
+      "reservedOnIssue": "Réservé à l'émission",
+      "clientReference": "Référence du client"
+    },
+    "kind": {
+      "quotation": "Devis",
+      "proforma": "Facture proforma",
+      "client_order": "Bon de commande client",
+      "delivery_note": "Bon de livraison",
+      "invoice": "Facture",
+      "advance_invoice": "Facture d'acompte",
+      "situation": "Situation de travaux",
+      "credit_note": "Avoir",
+      "statement": "Relevé de compte",
+      "purchase_order": "Bon de commande fournisseur",
+      "goods_receipt": "Bon de réception",
+      "supplier_invoice": "Facture fournisseur",
+      "comparison_sheet": "Tableau comparatif",
+      "work_order": "Bon de travail",
+      "service_report": "Rapport d'intervention",
+      "reception_report": "PV de réception",
+      "retention_release": "Levée de retenue de garantie",
+      "attestation": "Attestation",
+      "official_letter": "Lettre officielle",
+      "cover_letter": "Lettre d'accompagnement"
+    },
+    "neverChange": "Des règles qui ne changent jamais",
+    "never": {
+      "reservedOnIssue": {
+        "what": "Un numéro est pris à l'émission",
+        "detail": "jamais sur un brouillon"
+      },
+      "neverReused": {
+        "what": "Un numéro n'est jamais réutilisé",
+        "detail": "même si le document est annulé"
+      },
+      "neverEdited": {
+        "what": "Une facture n'est jamais modifiée",
+        "detail": "un avoir, ou rien"
+      },
+      "proformaNeverPaid": {
+        "what": "Une proforma n'est jamais payée",
+        "detail": "elle n'a aucune valeur juridique"
+      },
+      "resets": {
+        "what": "Les compteurs repartent",
+        "detail": "au 1er janvier, si la série est annuelle"
+      }
+    },
+    "error": {
+      "notAllowed": "Seul un Gérant peut modifier les types de documents.",
+      "noSuchType": "Ce type ne figure pas au catalogue."
+    }
   }
 }
