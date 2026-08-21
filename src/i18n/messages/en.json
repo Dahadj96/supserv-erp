@@ -218,9 +218,117 @@
       "retentionTreatment": "Retention treatment not confirmed",
       "vatServicesAbroad": "VAT on services rendered abroad not confirmed"
     },
-    "offer": { "annexIncomplete": "The technical annex is incomplete" },
-    "proforma": { "validityPeriod": "Proforma validity period not confirmed" },
+    "offer": {
+      "annexIncomplete": "The technical annex is incomplete"
+    },
+    "proforma": {
+      "validityPeriod": "Proforma validity period not confirmed"
+    },
     "unconfirmed": "This rule has not been confirmed yet. It warns rather than blocks.",
     "authority": "Source: {authority}"
+  },
+  "merge": {
+    "title": "Merge duplicates",
+    "subtitle": "Two records, one company · you choose field by field, and nothing is lost",
+    "showAll": "All duplicates",
+    "swap": "Swap sides",
+    "notADuplicate": "Not a duplicate",
+    "merge": "Merge",
+    "review": "Review",
+    "duplicatesTitle": "Suggested duplicates",
+    "duplicatesSubtitle": "Two records that look like one company. Suggested, never automatic.",
+    "noneTitle": "Nothing looks duplicated",
+    "noneBody": "No two companies share a registration number, a tax number, an email domain, or a name close enough to flag. Pairs you have dismissed are not suggested again.",
+    "fieldByField": "Field by field",
+    "leftIsKept": "the left one is kept, and it keeps its reference",
+    "keepThisOne": "keep this one",
+    "mergeIn": "merge in",
+    "field": {
+      "legalName": "Legal name",
+      "aliases": "Also known as",
+      "nif": "NIF",
+      "nis": "NIS",
+      "rc": "RC",
+      "ai": "Article d'imposition",
+      "address": "Address",
+      "wilaya": "Wilaya",
+      "email": "Email",
+      "phone": "Phone",
+      "docLocale": "Document language",
+      "paymentTerms": "Payment terms"
+    },
+    "note": {
+      "aliases": "Both lists are kept — aliases are never a choice, they are added together. The retired code and name join them, so the old reference stays searchable.",
+      "nif": "Fifteen digits. Often only one of the two records has them.",
+      "rcIdentical": "Identical — this is why the system flagged them.",
+      "email": "The other one becomes a contact rather than being thrown away.",
+      "paymentTerms": "The newer record is proposed — it came off the last signed contract."
+    },
+    "whatMoves": "What moves across",
+    "nothingDropped": "nothing is dropped, nothing is duplicated",
+    "nothingAttached": "Nothing is attached to either record yet. Documents, contacts and files appear here as they arrive.",
+    "what": "What",
+    "afterColumn": "After",
+    "moves": {
+      "aliases": "Also known as",
+      "contacts": "Contacts",
+      "document.offer": "Offers",
+      "document.invoice": "Invoices",
+      "document.order": "Orders",
+      "document.delivery": "Deliveries",
+      "document.purchase_order": "Purchase orders",
+      "document.credit_note": "Credit notes",
+      "document.proforma": "Proforma invoices",
+      "document.quote": "Quotes"
+    },
+    "auditNote": "Audit entries are not moved either — both trails are kept, and the merge itself is written into them: who, when, and every field chosen.",
+    "howFound": "How they were found",
+    "signal": {
+      "rc": "Same RC",
+      "nif": "Same NIF",
+      "emailDomain": "Same email domain",
+      "similarName": "Similar name",
+      "phone": "Same phone"
+    },
+    "signalYes": {
+      "rc": "the strongest signal there is",
+      "nif": "when both have one",
+      "emailDomain": "same domain",
+      "similarName": "after accents and spacing are stripped",
+      "phone": "the same number on both"
+    },
+    "signalNo": "not here",
+    "suggestedTitle": "Suggested, never automatic",
+    "suggestedBody": "Two companies can share a phone number and be genuinely different. The system proposes; a person decides. Not a duplicate is remembered, so the same pair is never suggested again.",
+    "afterTitle": "After the merge",
+    "after": {
+      "kept": "Kept",
+      "retired": "Retired",
+      "oldLinks": "Old links",
+      "oldLinksValue": "still work — they land on {code}",
+      "oldReference": "Old reference",
+      "oldReferenceValue": "searchable forever",
+      "reversible": "Reversible",
+      "reversibleValue": "{days} days",
+      "logged": "Logged",
+      "loggedValue": "who, when, every field chosen"
+    },
+    "notADeleteTitle": "A merge is not a delete",
+    "notADeleteBody": "{code} is retired, not removed. Every document that was ever issued under it keeps its number and still resolves. Nobody has to explain a missing reference to a client two years from now.",
+    "fourPlacesTitle": "The same shape, four places",
+    "entity": {
+      "companies": "Companies",
+      "contacts": "Contacts",
+      "items": "Items",
+      "people": "People"
+    },
+    "fourPlaces": {
+      "companies": "the same client entered twice",
+      "contacts": "the same person in two companies",
+      "items": "one product, two names",
+      "people": "one man, two records"
+    },
+    "fourPlacesBody": "One merge screen, four entities. Building it once is the difference between a tidy database and the Excel files this system replaces.",
+    "banner": "{count, plural, =1 {One pair of companies looks like the same client.} other {# pairs of companies look like the same client.}}"
   }
 }

@@ -173,5 +173,18 @@ export async function deletedPartyNotice(id: string) {
   };
 }
 
-/** Lists and search exclude both the binned and the archived, by default. */
-export const liveParty = and(isNull(party.deletedAt), isNull(party.archivedAt));
+/**
+ * Lists and search show only live companies: not binned, not archived, and not
+ * merged away.
+ *
+ * The third one is the easy one to forget. `mergeParties` repoints nothing, so
+ * a retired record is a perfectly normal row that would keep showing up in every
+ * list unless each query remembers to exclude it — which is exactly the cost
+ * written down in docs/DECISIONS/2026-08-21-merge-repoints-nothing.md. This
+ * constant is how that cost is paid once instead of everywhere.
+ */
+export const liveParty = and(
+  isNull(party.deletedAt),
+  isNull(party.archivedAt),
+  isNull(party.supersededBy),
+);

@@ -1,18 +1,21 @@
-import { asc, isNull } from "drizzle-orm";
+import { asc } from "drizzle-orm";
 import { Plus } from "lucide-react";
 import { getTranslations, setRequestLocale } from "next-intl/server";
 import { Button } from "@/components/ui/button";
 import { db } from "@/db";
 import { party } from "@/db/schema/party";
+import { liveParty } from "@/domain/deletion";
+import { suggestDuplicateParties } from "@/domain/merge";
 import { Link } from "@/i18n/navigation";
 import { CompaniesList, type CompanyRow } from "./companies-list";
 
 /**
  * Screen 21 — Companies. The first screen backed by the real database.
  *
- * `deleted_at is null` is the whole soft-delete contract on the read side: a
- * deleted company leaves the list but keeps resolving everywhere it is
- * referenced, and comes back from the 30-day bin intact (screen 83).
+ * `liveParty` is the whole contract on the read side: binned, archived and
+ * merged-away companies leave the list but keep resolving everywhere they are
+ * referenced — the binned ones come back intact from the 30-day bin (screen 83),
+ * and the merged ones land on their survivor (screen 84).
  */
 export const dynamic = "force-dynamic";
 
@@ -31,9 +34,13 @@ export default async function CompaniesPage({ params }: { params: Promise<{ loca
       docLocale: party.docLocale,
     })
     .from(party)
-    .where(isNull(party.deletedAt))
+    .where(liveParty)
     .orderBy(asc(party.legalName))
     .limit(100);
+
+  // Screen 84 — "every list since has had two rows for one client". The list is
+  // where a duplicate is felt, so it is where the offer to fix it belongs.
+  const duplicates = await suggestDuplicateParties(50);
 
   return (
     <main className="flex min-h-0 flex-1 flex-col">
@@ -52,6 +59,21 @@ export default async function CompaniesPage({ params }: { params: Promise<{ loca
           </Link>
         </div>
       </div>
+
+      {duplicates.length > 0 ? (
+        <div className="mx-7 mt-5 flex items-center gap-3 rounded-[var(--radius-control)] border border-warning bg-warning-bg px-4 py-2.5">
+          <p className="text-tiny text-warning-ink">
+            {t("merge.banner", { count: duplicates.length })}
+          </p>
+          <div className="ms-auto">
+            <Link href="/companies/duplicates">
+              <Button variant="secondary" size="small">
+                {t("merge.showAll")}
+              </Button>
+            </Link>
+          </div>
+        </div>
+      ) : null}
 
       <CompaniesList rows={rows} total={rows.length} />
     </main>

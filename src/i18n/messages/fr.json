@@ -218,9 +218,117 @@
       "retentionTreatment": "Traitement de la retenue de garantie non confirmé",
       "vatServicesAbroad": "TVA sur services rendus à l'étranger non confirmée"
     },
-    "offer": { "annexIncomplete": "L'annexe technique est incomplète" },
-    "proforma": { "validityPeriod": "Durée de validité de la proforma non confirmée" },
+    "offer": {
+      "annexIncomplete": "L'annexe technique est incomplète"
+    },
+    "proforma": {
+      "validityPeriod": "Durée de validité de la proforma non confirmée"
+    },
     "unconfirmed": "Cette règle n'a pas encore été confirmée. Elle avertit sans bloquer.",
     "authority": "Source : {authority}"
+  },
+  "merge": {
+    "title": "Fusionner les doublons",
+    "subtitle": "Deux fiches, une seule société · vous choisissez champ par champ, rien n'est perdu",
+    "showAll": "Tous les doublons",
+    "swap": "Inverser",
+    "notADuplicate": "Pas un doublon",
+    "merge": "Fusionner",
+    "review": "Examiner",
+    "duplicatesTitle": "Doublons proposés",
+    "duplicatesSubtitle": "Deux fiches qui semblent être une seule société. Proposé, jamais automatique.",
+    "noneTitle": "Aucun doublon apparent",
+    "noneBody": "Aucune société ne partage un RC, un NIF, un domaine de messagerie ou un nom assez proche pour être signalé. Les paires écartées ne sont plus proposées.",
+    "fieldByField": "Champ par champ",
+    "leftIsKept": "celle de gauche est conservée, avec sa référence",
+    "keepThisOne": "conserver celle-ci",
+    "mergeIn": "à fusionner",
+    "field": {
+      "legalName": "Raison sociale",
+      "aliases": "Aussi appelée",
+      "nif": "NIF",
+      "nis": "NIS",
+      "rc": "RC",
+      "ai": "Article d'imposition",
+      "address": "Adresse",
+      "wilaya": "Wilaya",
+      "email": "E-mail",
+      "phone": "Téléphone",
+      "docLocale": "Langue des documents",
+      "paymentTerms": "Conditions de paiement"
+    },
+    "note": {
+      "aliases": "Les deux listes sont conservées — les alias ne sont jamais un choix, ils s'additionnent. Le code et le nom de la fiche retirée s'y ajoutent : l'ancienne référence reste trouvable.",
+      "nif": "Quinze chiffres. Souvent, une seule des deux fiches les possède.",
+      "rcIdentical": "Identiques — c'est pour cela que le système les a signalées.",
+      "email": "L'autre adresse devient un contact au lieu d'être jetée.",
+      "paymentTerms": "La fiche la plus récente est proposée — elle vient du dernier contrat signé."
+    },
+    "whatMoves": "Ce qui est repris",
+    "nothingDropped": "rien n'est perdu, rien n'est dupliqué",
+    "nothingAttached": "Rien n'est encore rattaché à l'une ou l'autre fiche. Documents, contacts et fichiers apparaîtront ici au fur et à mesure.",
+    "what": "Quoi",
+    "afterColumn": "Après",
+    "moves": {
+      "aliases": "Aussi appelée",
+      "contacts": "Contacts",
+      "document.offer": "Offres",
+      "document.invoice": "Factures",
+      "document.order": "Commandes",
+      "document.delivery": "Livraisons",
+      "document.purchase_order": "Bons de commande",
+      "document.credit_note": "Avoirs",
+      "document.proforma": "Factures proforma",
+      "document.quote": "Devis"
+    },
+    "auditNote": "Les entrées du journal ne sont pas déplacées non plus — les deux pistes sont conservées, et la fusion elle-même y est inscrite : qui, quand, et chaque champ choisi.",
+    "howFound": "Comment elles ont été repérées",
+    "signal": {
+      "rc": "Même RC",
+      "nif": "Même NIF",
+      "emailDomain": "Même domaine e-mail",
+      "similarName": "Nom proche",
+      "phone": "Même téléphone"
+    },
+    "signalYes": {
+      "rc": "le signal le plus fort qui soit",
+      "nif": "quand les deux en ont un",
+      "emailDomain": "même domaine",
+      "similarName": "accents et espaces retirés",
+      "phone": "le même numéro des deux côtés"
+    },
+    "signalNo": "pas ici",
+    "suggestedTitle": "Proposé, jamais automatique",
+    "suggestedBody": "Deux sociétés peuvent partager un numéro de téléphone et être réellement différentes. Le système propose ; une personne décide. « Pas un doublon » est retenu, la même paire n'est plus jamais proposée.",
+    "afterTitle": "Après la fusion",
+    "after": {
+      "kept": "Conservée",
+      "retired": "Retirée",
+      "oldLinks": "Anciens liens",
+      "oldLinksValue": "fonctionnent toujours — ils mènent à {code}",
+      "oldReference": "Ancienne référence",
+      "oldReferenceValue": "trouvable pour toujours",
+      "reversible": "Réversible",
+      "reversibleValue": "{days} jours",
+      "logged": "Journalisé",
+      "loggedValue": "qui, quand, chaque champ choisi"
+    },
+    "notADeleteTitle": "Une fusion n'est pas une suppression",
+    "notADeleteBody": "{code} est retirée, pas supprimée. Chaque document jamais émis sous ce code garde son numéro et reste accessible. Personne n'aura à expliquer une référence manquante à un client dans deux ans.",
+    "fourPlacesTitle": "La même forme, à quatre endroits",
+    "entity": {
+      "companies": "Sociétés",
+      "contacts": "Contacts",
+      "items": "Articles",
+      "people": "Personnes"
+    },
+    "fourPlaces": {
+      "companies": "le même client saisi deux fois",
+      "contacts": "la même personne dans deux sociétés",
+      "items": "un produit, deux noms",
+      "people": "un homme, deux fiches"
+    },
+    "fourPlacesBody": "Un seul écran de fusion, quatre entités. Le construire une fois, c'est la différence entre une base propre et les fichiers Excel que ce système remplace.",
+    "banner": "{count, plural, =1 {Une paire de sociétés semble être le même client.} other {# paires de sociétés semblent être le même client.}}"
   }
 }
