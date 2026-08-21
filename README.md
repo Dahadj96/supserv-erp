@@ -41,7 +41,7 @@ mid-install. Back up by pushing to GitHub, not by syncing the folder.
 `CLAUDE.md` describes the repository as it is **meant** to be. This section says
 where it actually is, and is updated at the end of every phase.
 
-**Last updated: 2026-08-21 · phases 0 and 1 done, phase 2 started · 146 tests passing.**
+**Last updated: 2026-08-21 · phases 0 and 1 done, phase 2 in progress · 166 tests passing.**
 
 `pnpm dev` runs. Sign in with Microsoft, switch to Français, and the records
 half of the system works end to end.
@@ -64,6 +64,7 @@ half of the system works end to end.
 | Intake channels, the routing rules, the safety rails | 38 |
 | The Inbox — deadline first, nothing expires unread | 02 |
 | The Excel move-in — read, preview, import, undo within 7 days | 62 |
+| Reading a PDF from its text layer, and reviewing what was read | 39 40 |
 
 **The mailbox is not reading yet, on purpose.** Application `Mail.Read` reaches
 every mailbox in the tenant until Exchange RBAC for Applications scopes it to

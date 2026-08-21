@@ -725,5 +725,58 @@
       "noBatch": "That import is no longer available.",
       "undoExpired": "The seven days are up — this import can no longer be undone in one step."
     }
+  },
+  "review": {
+    "title": "Review what we read — {file}, page {page} of {pages}",
+    "subtitle": "{done} of {total} confirmed · nothing is saved until you confirm",
+    "skip": "Skip",
+    "confirmAllHigh": "Confirm all high confidence",
+    "becomesFact": "This is the only place extraction becomes fact. A wrong deadline or a missing document on this list loses the bid — so a person confirms every field against the page it came from.",
+    "confirmedCount": "{count, plural, =0 {Nothing was confident enough to confirm on its own.} =1 {1 field confirmed.} other {# fields confirmed.}}",
+    "unreadPages": "{count, plural, =1 {Page {pages} could not be read} other {Pages {pages} could not be read}} — they are scans, and the OCR step is not running on this machine yet. Everything else on this screen came from pages that were read.",
+    "textLayer": "Text layer — no OCR needed",
+    "partiallyRead": "Partially read",
+    "pageOf": "page {page} / {pages}",
+    "pageNotRead": "Page {page} is a scan. There is no text to show until OCR runs.",
+    "fieldsRead": "Fields read from this document",
+    "confirmCorrectReject": "confirm, correct, or reject each one",
+    "nothingRead": "Nothing was read from this document that matches a field we know how to check. That is a result, not a failure — the file is stored and can be read again once the rules know what to look for.",
+    "citation": "page {page}, {article}",
+    "confirm": "Confirm",
+    "reject": "Reject",
+    "field": {
+      "submissionDeadline": "Submission deadline",
+      "openingSession": "Opening session",
+      "whereToDeposit": "Where to deposit",
+      "bidBond": "Caution de soumission",
+      "offerValidity": "Offer validity",
+      "latePenalty": "Late penalty"
+    },
+    "caveat": {
+      "severalCandidates": "the document says this more than once",
+      "hedged": "the wording is conditional",
+      "longSentence": "read from a long paragraph",
+      "sameDayAsDeadline": "the day comes from the deadline, the time from this sentence",
+      "dayUnknown": "the time is clear, the day is not"
+    },
+    "status": {
+      "confirmed": "Confirmed by you",
+      "corrected": "Corrected by you",
+      "rejected": "Rejected"
+    }
+  },
+  "dossier": {
+    "title": "Read a document",
+    "subtitle": "a PDF goes in, and what it says comes out — with the page it said it on",
+    "textLayerFirst": "A digital PDF is read from its own text layer: instant, exact, and nothing leaves this machine. A scanned one needs OCR, which runs in a container that is not set up yet — those pages are named rather than guessed at.",
+    "readOne": "Read a document",
+    "file": "PDF",
+    "read": "Read it",
+    "recent": "Read so far",
+    "nPages": "{n, plural, =1 {1 page} other {# pages}}",
+    "review": "Review",
+    "error": {
+      "noFile": "Choose a PDF first."
+    }
   }
 }

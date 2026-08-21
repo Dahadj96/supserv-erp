@@ -88,10 +88,33 @@ export function needsBidiRepair(text: string): boolean {
   return /[ﭐ-﷿ﹰ-﻿]/.test(text);
 }
 
-export async function extractText(_file: Buffer, _mime: string): Promise<OcrResult> {
+export class NeedsOcr extends Error {
+  constructor(
+    readonly thinPages: number[],
+    readonly totalPages: number,
+  ) {
+    super("needsOcr");
+  }
+}
+
+export async function extractText(file: Buffer, mime: string): Promise<OcrResult> {
   // 1. always try the text layer first — free, instant, usually better
-  // 2. if it is thin, or Arabic and still in presentation forms, run OCR
+  if (mime === "application/pdf" || mime === "application/x-pdf") {
+    const { isFullyDigital, readTextLayer, toOcrResult } = await import("./text-layer");
+    const layer = await readTextLayer(file);
+
+    if (isFullyDigital(layer) && !layer.needsBidi) return toOcrResult(layer);
+
+    // 2. thin pages, or Arabic still in presentation forms, need OCR.
+    //
+    // Steps 2 to 4 run in a container that is not on this machine yet
+    // (docs/OCR.md). Saying so is the whole point: a half-read dossier that
+    // pretends to be complete is how a missing document loses a bid. The
+    // pages that DID read are still returned, by the caller, from `layer`.
+    throw new NeedsOcr(layer.thinPages, layer.totalPages);
+  }
+
   // 3. if OCR confidence < REVIEW_THRESHOLD, escalate to RapidOCR
   // 4. anything below threshold goes to extraction review regardless. LAW 2.
-  throw new Error("implement in phase 2: see docs/OCR.md");
+  throw new NeedsOcr([], 0);
 }

@@ -725,5 +725,58 @@
       "noBatch": "Cet import n'est plus disponible.",
       "undoExpired": "Les sept jours sont écoulés — cet import ne peut plus être annulé d'un coup."
     }
+  },
+  "review": {
+    "title": "Vérifier ce qui a été lu — {file}, page {page} sur {pages}",
+    "subtitle": "{done} sur {total} confirmés · rien n'est enregistré avant confirmation",
+    "skip": "Passer",
+    "confirmAllHigh": "Confirmer tout ce qui est sûr",
+    "becomesFact": "C'est le seul endroit où l'extraction devient un fait. Une échéance erronée ou un document manquant dans cette liste fait perdre le marché — alors une personne confirme chaque champ face à la page dont il vient.",
+    "confirmedCount": "{count, plural, =0 {Rien n'était assez sûr pour être confirmé tout seul.} =1 {1 champ confirmé.} other {# champs confirmés.}}",
+    "unreadPages": "{count, plural, =1 {La page {pages} n'a pas pu être lue} other {Les pages {pages} n'ont pas pu être lues}} — ce sont des scans, et l'étape OCR ne tourne pas encore sur cette machine. Tout le reste de cet écran vient de pages qui ont été lues.",
+    "textLayer": "Couche texte — pas d'OCR nécessaire",
+    "partiallyRead": "Lu partiellement",
+    "pageOf": "page {page} / {pages}",
+    "pageNotRead": "La page {page} est un scan. Aucun texte à afficher tant que l'OCR n'a pas tourné.",
+    "fieldsRead": "Champs lus dans ce document",
+    "confirmCorrectReject": "confirmer, corriger ou rejeter chacun",
+    "nothingRead": "Rien dans ce document ne correspond à un champ que nous savons vérifier. C'est un résultat, pas un échec — le fichier est conservé et pourra être relu quand les règles sauront quoi chercher.",
+    "citation": "page {page}, {article}",
+    "confirm": "Confirmer",
+    "reject": "Rejeter",
+    "field": {
+      "submissionDeadline": "Date limite de dépôt",
+      "openingSession": "Ouverture des plis",
+      "whereToDeposit": "Lieu de dépôt",
+      "bidBond": "Caution de soumission",
+      "offerValidity": "Délai de validité",
+      "latePenalty": "Pénalités de retard"
+    },
+    "caveat": {
+      "severalCandidates": "le document le dit plus d'une fois",
+      "hedged": "la formulation est conditionnelle",
+      "longSentence": "lu dans un long paragraphe",
+      "sameDayAsDeadline": "le jour vient de l'échéance, l'heure de cette phrase",
+      "dayUnknown": "l'heure est claire, le jour ne l'est pas"
+    },
+    "status": {
+      "confirmed": "Confirmé par vous",
+      "corrected": "Corrigé par vous",
+      "rejected": "Rejeté"
+    }
+  },
+  "dossier": {
+    "title": "Lire un document",
+    "subtitle": "un PDF entre, et ce qu'il dit en sort — avec la page où il le dit",
+    "textLayerFirst": "Un PDF numérique est lu depuis sa propre couche texte : instantané, exact, et rien ne quitte cette machine. Un document scanné demande l'OCR, qui tourne dans un conteneur pas encore installé — ces pages sont nommées plutôt que devinées.",
+    "readOne": "Lire un document",
+    "file": "PDF",
+    "read": "Le lire",
+    "recent": "Documents lus",
+    "nPages": "{n, plural, =1 {1 page} other {# pages}}",
+    "review": "Vérifier",
+    "error": {
+      "noFile": "Choisissez d'abord un PDF."
+    }
   }
 }
