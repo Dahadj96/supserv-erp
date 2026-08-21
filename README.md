@@ -41,17 +41,25 @@ mid-install. Back up by pushing to GitHub, not by syncing the folder.
 `CLAUDE.md` describes the repository as it is **meant** to be. This section says
 where it actually is, and is updated at the end of every phase.
 
-**Last updated: 2026-08-21 · ~20 of 83 screens have a working route · 166 tests passing.**
+**Last updated: 2026-08-22 · ~26 of 83 screens have a working route · 225 tests passing.**
 
 `pnpm dev` runs. Sign in with Microsoft, switch to Français, and the records
-half of the system works end to end.
+half of the system works end to end. Since 2026-08-22 an invoice does too:
+`/setup` → `/documents/new` → the document, its checklist and its PDF.
 
 **Correction, 2026-08-21:** this section previously said "phases 0 and 1 are
 done". Phase 1 is. **Phase 0 is not** — screens 29 (Settings), 30 (Users and
-roles), 31 (Modules), 53 (Language settings) and 85 (Day one) have no route.
-That last one matters most: screen 85 is where the company's RC, NIF, NIS,
-article d'imposition, VAT rates and numbering series are entered, and **no
-document can be issued until they exist**. Phase 3 is blocked behind it.
+roles), 31 (Modules) and 53 (Language settings) still have no route. Screen 85
+(Day one) now does, and it is the one that mattered: it is where the company's
+RC, NIF, NIS, article d'imposition, VAT rates and numbering series are entered,
+and **no document can be issued until they exist**.
+
+**Nobody has filled it in yet.** `company_identity`, `vat_rate`,
+`numbering_series` and `bank_account` are all empty, so `/documents/new` will
+let you draft an invoice and `/documents/[id]` will refuse to issue it, naming
+what is missing. That refusal is the system working, not a bug.
+
+**Phase 1:**
 
 | Built | Screens |
 |---|---|
@@ -83,9 +91,26 @@ procedure and `scripts/scope-mailbox.ps1` runs it.
 and deals are phase 4. The rules and the alias memory are built and tested; the
 pages arrive with the offer builder. `docs/DECISIONS/2026-08-21-designation-before-the-offer-builder.md`.
 
+**Phase 3, so far:**
+
+| Built | Screens |
+|---|---|
+| Day one — eleven steps, every one computed, four of them blocking | 85 |
+| The document engine — seven steps, one renderer, one numbering | 70 |
+| New invoice, typed *(the "start from an order" paths await phase 5)* | 72 |
+| The document, its ten-row checklist, its PDF and the Issue button | 18 |
+| Invoices — list, filters, an age computed rather than stored | 17 |
+
+**Four compliance rules still warn instead of blocking**, because nobody has
+confirmed them: the droit de timbre threshold, the retenue de garantie
+treatment, TVA on services rendered abroad, and how long a proforma stays valid.
+They are written down, they appear on every document that touches them, and the
+day somebody signs off on one it starts refusing. Screen 69 is where that
+signing happens, and it is not built yet — `confirmRule()` is.
+
 **Not started: the rest of phase 2 and everything after** — scanning, OCR,
-extraction review, the website forms, the phone screens, the document engine,
-and everything that issues a number.
+the website forms, the phone screens, the document builder proper, document
+types and templates, payments, and everything after them.
 
 **Nothing is seeded.** The database holds whatever you have typed into it. A
 screen with no rows is telling you the truth.
