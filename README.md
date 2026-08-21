@@ -38,26 +38,34 @@ mid-install. Back up by pushing to GitHub, not by syncing the folder.
 
 ## Status — read this before believing `CLAUDE.md`
 
-`CLAUDE.md` describes the repository as it is **meant** to be. Today it is a
-scaffold. The difference matters when you pick up a task.
+`CLAUDE.md` describes the repository as it is **meant** to be. This section says
+where it actually is, and is updated at the end of every phase.
 
-**The environment is finished.** Postgres runs, dependencies install, the unit
-tests pass, the repository is on GitHub.
+**Last updated: 2026-08-21 · phases 0 and 1 are done · 103 tests passing.**
 
-**The application is not started.** `pnpm dev` will not run yet — there is no
-Next.js app to serve.
+`pnpm dev` runs. Sign in with Microsoft, switch to Français, and the records
+half of the system works end to end.
 
-| Exists | Does not exist yet |
+| Built | Screens |
 |---|---|
-| `src/domain/` — money, state, rules, numbering | `src/app/` — no routes at all |
-| `src/db/schema/` — four tables | `next.config.ts`, Tailwind setup, next-intl middleware |
-| `src/i18n/messages/{fr,en}.json` | `src/components/` — including `components/data/` |
-| `src/auth/can.ts`, `src/storage/`, `src/capture/ocr/` | `src/documents/`, `src/jobs/` |
-| `tests/unit/` — 10 passing | `drizzle/` migrations, `tests/e2e/` |
+| Shell, auth, roles, the shared table, filters, saved views, states | 79 80 81 34 35 36 |
+| Companies — list, create, edit, aliases | 21 22 |
+| Deletion — discard, archive, restore, the 30-day bin | 83 |
+| Merge duplicates — suggestions, field by field, what moves across | 84 |
+| Contacts — facets, quality, the bouncing banner | 76 |
+| People — four origins, two required fields | 51 |
+| Search — companies, people, contacts, items, each saying why it matched | 82 |
+| Designation rules and item alias memory *(domain only — see below)* | 73 75 |
 
-So: **Phase 0 has not been built.** When `CLAUDE.md` says "reuse, never rebuild"
-and points at `src/components/data/`, that component does not exist yet — it is
-the thing Phase 0 has to produce, once, before ten screens share it.
+**Two screens ship as domain, not as screens.** 73 and 75 live inside a deal,
+and deals are phase 4. The rules and the alias memory are built and tested; the
+pages arrive with the offer builder. `docs/DECISIONS/2026-08-21-designation-before-the-offer-builder.md`.
+
+**Not started: phase 2 onwards** — the mailbox, OCR, the document engine, and
+everything that issues a number.
+
+**Nothing is seeded.** The database holds whatever you have typed into it. A
+screen with no rows is telling you the truth.
 
 ## The six laws, in one line each
 
