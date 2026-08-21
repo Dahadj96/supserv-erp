@@ -41,7 +41,7 @@ mid-install. Back up by pushing to GitHub, not by syncing the folder.
 `CLAUDE.md` describes the repository as it is **meant** to be. This section says
 where it actually is, and is updated at the end of every phase.
 
-**Last updated: 2026-08-21 · phases 0 and 1 are done · 103 tests passing.**
+**Last updated: 2026-08-21 · phases 0 and 1 done, phase 2 started · 146 tests passing.**
 
 `pnpm dev` runs. Sign in with Microsoft, switch to Français, and the records
 half of the system works end to end.
@@ -57,12 +57,26 @@ half of the system works end to end.
 | Search — companies, people, contacts, items, each saying why it matched | 82 |
 | Designation rules and item alias memory *(domain only — see below)* | 73 75 |
 
+**Phase 2, so far:**
+
+| Built | Screens |
+|---|---|
+| Intake channels, the routing rules, the safety rails | 38 |
+| The Inbox — deadline first, nothing expires unread | 02 |
+| The Excel move-in — read, preview, import, undo within 7 days | 62 |
+
+**The mailbox is not reading yet.** Application `Mail.Read` reaches every
+mailbox in the tenant until an Application Access Policy restricts it, so
+`src/capture/mail/graph.ts` refuses to make a request until
+`MS_MAILBOX_POLICY_CONFIRMED=true`. That comment is the instructions.
+
 **Two screens ship as domain, not as screens.** 73 and 75 live inside a deal,
 and deals are phase 4. The rules and the alias memory are built and tested; the
 pages arrive with the offer builder. `docs/DECISIONS/2026-08-21-designation-before-the-offer-builder.md`.
 
-**Not started: phase 2 onwards** — the mailbox, OCR, the document engine, and
-everything that issues a number.
+**Not started: the rest of phase 2 and everything after** — scanning, OCR,
+extraction review, the website forms, the phone screens, the document engine,
+and everything that issues a number.
 
 **Nothing is seeded.** The database holds whatever you have typed into it. A
 screen with no rows is telling you the truth.
