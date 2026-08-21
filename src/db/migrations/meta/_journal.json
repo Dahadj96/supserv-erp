@@ -43,6 +43,13 @@
       "when": 1787330685817,
       "tag": "0005_uneven_pyro",
       "breakpoints": true
+    },
+    {
+      "idx": 6,
+      "version": "7",
+      "when": 1787331462690,
+      "tag": "0006_opposite_stone_men",
+      "breakpoints": true
     }
   ]
 }

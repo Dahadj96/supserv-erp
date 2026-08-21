@@ -1,4 +1,13 @@
-import { boolean, date, pgTable, primaryKey, text, timestamp, uuid } from "drizzle-orm/pg-core";
+import {
+  boolean,
+  date,
+  numeric,
+  pgTable,
+  primaryKey,
+  text,
+  timestamp,
+  uuid,
+} from "drizzle-orm/pg-core";
 
 /**
  * One table for every organisation we deal with. A company that is both a client
@@ -87,8 +96,19 @@ export const person = pgTable("person", {
   nationalId: text("national_id"),
   wilaya: text("wilaya"),
   source: text("source").notNull(), // cv | direct | subcontractor | import
-  relationship: text("relationship").notNull(), // employee|temporary|daily|subcontractor|external
+  /**
+   * candidate|employee|temporary|daily|subcontractor|external.
+   *
+   * THIS COLUMN, not `employer_party_id`, is what separates screen 51 from
+   * screen 76. A subcontractor's welder has an employer and belongs to People;
+   * a buyer at a client company has an employer and belongs to Contacts. Only
+   * `external` is a contact. Everything else is somebody who can be put on a
+   * project.
+   */
+  relationship: text("relationship").notNull(),
   employerPartyId: uuid("employer_party_id").references(() => party.id), // null = SUPSERV
+  /** Screen 51 — optional, and only ever meaningful for daily and temporary. */
+  dailyRate: numeric("daily_rate", { precision: 16, scale: 2 }),
 
   /**
    * Screen 76 — how to reach this person, and whether we actually can.

@@ -68,7 +68,9 @@
     "signOut": "Sign out",
     "retry": "Try again",
     "showing": "{shown} of {total}",
-    "rowsHidden": "{count} rows hidden — {permission}"
+    "rowsHidden": "{count} rows hidden — {permission}",
+    "optional": "optional",
+    "yes": "Yes"
   },
   "list": {
     "applied": "Applied",
@@ -390,6 +392,80 @@
       "jobRequired": "Say what they do at that company — it is how you will find them later.",
       "companyRequired": "A contact belongs to a company. Choose one.",
       "emailInvalid": "That email address does not look right.",
+      "invalid": "Something in the form was not accepted."
+    }
+  },
+  "people": {
+    "subtitle": "{total, plural, =1 {1 person} other {# people}} · {fromCv} came from a CV, {rest} did not · a CV is evidence, not a requirement",
+    "directlyBanner": "A person can be created directly — a name and a trade is enough. Day labourers, a subcontractor's welder, a driver hired for a week: none of them will ever send a CV, and all of them can be put on a project.",
+    "facet": {
+      "all": "All",
+      "cv": "From a CV",
+      "direct": "Added directly",
+      "subcontractor": "Subcontractor",
+      "import": "Imported"
+    },
+    "source": {
+      "cv": "From a CV",
+      "direct": "Added directly",
+      "subcontractor": "Subcontractor",
+      "import": "Imported"
+    },
+    "relationshipValue": {
+      "candidate": "Candidate",
+      "employee": "Employee",
+      "temporary": "Temporary",
+      "daily": "Journalier",
+      "subcontractor": "Subcontractor"
+    },
+    "name": "Name",
+    "trade": "Trade",
+    "tradePlaceholder": "Soudeur, Électricien BT, Chef de chantier",
+    "howAdded": "How they were added",
+    "relationship": "Relationship",
+    "certifications": "Certifications",
+    "wilaya": "Wilaya",
+    "phone": "Phone",
+    "idNumber": "ID number",
+    "employer": "Employer",
+    "employerSupserv": "SUPSERV",
+    "dailyRate": "Daily rate",
+    "fullName": "Full name",
+    "addTitle": "Add a person",
+    "onlyTwoRequired": "only two fields are required",
+    "addPerson": "Add person",
+    "attachments": "Attachments",
+    "attachment": {
+      "cv": "CV — optional",
+      "certification": "Certification — optional",
+      "idCopy": "ID copy — optional"
+    },
+    "emptyTitle": "Nobody here yet",
+    "emptyBody": "A name and a trade is enough to start. The first person you add can be the driver you hired this morning.",
+    "whereFromTitle": "Where people come from",
+    "allFourEqual": "all four are equal",
+    "origin": {
+      "cv": "A CV that arrived by any channel",
+      "direct": "Typed in directly",
+      "subcontractor": "A subcontractor's staff list",
+      "import": "Imported from a spreadsheet"
+    },
+    "nPeople": "{n, plural, =1 {1 person} other {# people}}",
+    "whereFromBody": "The candidate bank is one source of people, not the definition of one. A person exists in their own right; a CV, a certification and an ID copy are documents attached to them.",
+    "appliesTitle": "What still applies to everyone",
+    "applies": {
+      "expiry": "Certification expiry is tracked",
+      "project": "Can be put on a project",
+      "moyensHumains": "Counts in moyens humains for a bid",
+      "subcontractorRisk": "Subcontractor compliance is our risk",
+      "retention": "Personal data retention"
+    },
+    "ifCertified": "If certified",
+    "tracked": "Tracked",
+    "setInSettings": "Set in Settings",
+    "error": {
+      "nameTooShort": "A person needs a name.",
+      "tradeRequired": "A trade is the second required field — Soudeur, Manœuvre, Chauffeur.",
       "invalid": "Something in the form was not accepted."
     }
   }

@@ -1,0 +1,1 @@
+ALTER TABLE "person" ADD COLUMN "daily_rate" numeric(16, 2);

@@ -68,7 +68,9 @@
     "signOut": "Se déconnecter",
     "retry": "Réessayer",
     "showing": "{shown} sur {total}",
-    "rowsHidden": "{count} lignes masquées — {permission}"
+    "rowsHidden": "{count} lignes masquées — {permission}",
+    "optional": "facultatif",
+    "yes": "Oui"
   },
   "list": {
     "applied": "Appliqué",
@@ -390,6 +392,80 @@
       "jobRequired": "Indiquez sa fonction dans cette société — c'est ainsi que vous la retrouverez.",
       "companyRequired": "Un contact appartient à une société. Choisissez-en une.",
       "emailInvalid": "Cette adresse e-mail ne semble pas correcte.",
+      "invalid": "Quelque chose dans le formulaire n'a pas été accepté."
+    }
+  },
+  "people": {
+    "subtitle": "{total, plural, =1 {1 personne} other {# personnes}} · {fromCv} sont venues d'un CV, {rest} non · un CV est une preuve, pas une condition",
+    "directlyBanner": "Une personne peut être créée directement — un nom et un métier suffisent. Les journaliers, le soudeur d'un sous-traitant, un chauffeur embauché pour une semaine : aucun n'enverra jamais de CV, et tous peuvent être affectés à un chantier.",
+    "facet": {
+      "all": "Toutes",
+      "cv": "D'un CV",
+      "direct": "Saisies directement",
+      "subcontractor": "Sous-traitant",
+      "import": "Importées"
+    },
+    "source": {
+      "cv": "D'un CV",
+      "direct": "Saisie directement",
+      "subcontractor": "Sous-traitant",
+      "import": "Importée"
+    },
+    "relationshipValue": {
+      "candidate": "Candidat",
+      "employee": "Salarié",
+      "temporary": "Temporaire",
+      "daily": "Journalier",
+      "subcontractor": "Sous-traitant"
+    },
+    "name": "Nom",
+    "trade": "Métier",
+    "tradePlaceholder": "Soudeur, Électricien BT, Chef de chantier",
+    "howAdded": "Comment elle a été ajoutée",
+    "relationship": "Lien",
+    "certifications": "Habilitations",
+    "wilaya": "Wilaya",
+    "phone": "Téléphone",
+    "idNumber": "N° pièce d'identité",
+    "employer": "Employeur",
+    "employerSupserv": "SUPSERV",
+    "dailyRate": "Tarif journalier",
+    "fullName": "Nom complet",
+    "addTitle": "Ajouter une personne",
+    "onlyTwoRequired": "deux champs seulement sont obligatoires",
+    "addPerson": "Ajouter",
+    "attachments": "Pièces jointes",
+    "attachment": {
+      "cv": "CV — facultatif",
+      "certification": "Habilitation — facultatif",
+      "idCopy": "Copie pièce d'identité — facultatif"
+    },
+    "emptyTitle": "Personne pour l'instant",
+    "emptyBody": "Un nom et un métier suffisent pour commencer. La première personne peut être le chauffeur embauché ce matin.",
+    "whereFromTitle": "D'où viennent les personnes",
+    "allFourEqual": "les quatre se valent",
+    "origin": {
+      "cv": "Un CV arrivé par n'importe quel canal",
+      "direct": "Saisie directement",
+      "subcontractor": "La liste du personnel d'un sous-traitant",
+      "import": "Importée d'un tableur"
+    },
+    "nPeople": "{n, plural, =1 {1 personne} other {# personnes}}",
+    "whereFromBody": "La CVthèque est une source de personnes, pas leur définition. Une personne existe en elle-même ; un CV, une habilitation et une copie de pièce d'identité sont des documents qui lui sont rattachés.",
+    "appliesTitle": "Ce qui vaut pour tout le monde",
+    "applies": {
+      "expiry": "L'expiration des habilitations est suivie",
+      "project": "Peut être affectée à un chantier",
+      "moyensHumains": "Compte dans les moyens humains d'une soumission",
+      "subcontractorRisk": "La conformité du sous-traitant est notre risque",
+      "retention": "Conservation des données personnelles"
+    },
+    "ifCertified": "Si habilitée",
+    "tracked": "Suivi",
+    "setInSettings": "À régler dans Paramètres",
+    "error": {
+      "nameTooShort": "Une personne a besoin d'un nom.",
+      "tradeRequired": "Le métier est le second champ obligatoire — Soudeur, Manœuvre, Chauffeur.",
       "invalid": "Quelque chose dans le formulaire n'a pas été accepté."
     }
   }

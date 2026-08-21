@@ -106,6 +106,16 @@ beforeAll(async () => {
         source: "direct",
         relationship: "external",
       },
+      {
+        // A subcontractor's welder. He HAS an employer, which is why
+        // "has an employer" is the wrong test — he goes on a project,
+        // so he belongs to screen 51.
+        fullName: "A. Meziane",
+        trade: "Soudeur",
+        employerPartyId: supplierId,
+        source: "subcontractor",
+        relationship: "subcontractor",
+      },
     ])
     .returning({ id: person.id });
   madeIds.push(...made.map((m) => m.id));
@@ -136,6 +146,10 @@ describe("screen 76 — a contact is a person at another company", () => {
     expect(names, "the company was binned, so its contacts go with it").not.toContain(
       "Contact chez la binnée",
     );
+    expect(
+      names,
+      "he has an employer, but he goes on a project — that makes him screen 51",
+    ).not.toContain("A. Meziane");
   });
 
   it("carries the company through, because that is the second column", async () => {

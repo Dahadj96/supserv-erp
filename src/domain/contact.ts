@@ -11,9 +11,11 @@ import { liveParty } from "./deletion";
  * "A contact belongs to a company, but you deal with people. When a deadline is
  * in six hours you search a name, not a company."
  *
- * A contact is a person whose employer is somebody else. SUPSERV's own staff
- * have no employer here (`employer_party_id is null`) and belong to screen 51.
- * That one column is the whole difference between the two screens.
+ * A contact is a person we deal with AT another company — `relationship` is
+ * `external`. Not "has an employer": screen 51 shows A. Meziane, a welder
+ * employed by ETS Nadir, and he has an employer too. The difference is what we
+ * do with the person. A subcontractor's welder goes on a project; a buyer at a
+ * client company answers the phone about an offer.
  */
 
 export type ContactStatus = "active" | "unverified" | "bouncing";
@@ -62,8 +64,15 @@ export type ContactRow = {
   status: ContactStatus;
 };
 
-/** A contact is live, and so is the company they belong to. */
-const liveContact = and(isNull(person.deletedAt), isNull(person.supersededBy), liveParty);
+/** External, live, and at a company that is itself live. */
+export const CONTACT_RELATIONSHIP = "external";
+
+const liveContact = and(
+  eq(person.relationship, CONTACT_RELATIONSHIP),
+  isNull(person.deletedAt),
+  isNull(person.supersededBy),
+  liveParty,
+);
 
 const employerHasRole = (role: string) =>
   exists(
@@ -135,7 +144,8 @@ export async function contactCounts(): Promise<ContactCounts> {
       select p.id, p.verified_at, p.bounced_at, p.employer_party_id
       from person p
       join party c on c.id = p.employer_party_id
-      where p.deleted_at is null and p.superseded_by is null
+      where p.relationship = ${CONTACT_RELATIONSHIP}
+        and p.deleted_at is null and p.superseded_by is null
         and c.deleted_at is null and c.archived_at is null and c.superseded_by is null
     ),
     roles as (
@@ -184,7 +194,8 @@ export async function contactQuality(): Promise<ContactQuality> {
       select p.*
       from person p
       join party c on c.id = p.employer_party_id
-      where p.deleted_at is null and p.superseded_by is null
+      where p.relationship = ${CONTACT_RELATIONSHIP}
+        and p.deleted_at is null and p.superseded_by is null
         and c.deleted_at is null and c.archived_at is null and c.superseded_by is null
     )
     select
