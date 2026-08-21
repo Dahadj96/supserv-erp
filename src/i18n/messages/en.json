@@ -479,5 +479,94 @@
       "tradeRequired": "A trade is the second required field — Soudeur, Manœuvre, Chauffeur.",
       "invalid": "Something in the form was not accepted."
     }
+  },
+  "intake": {
+    "channelsTitle": "Intake channels",
+    "channelsSubtitle": "{total} ways work reaches SUPSERV · {live} are live · {losing, plural, =0 {none are losing records} =1 {1 is losing records today} other {# are losing records today}}",
+    "losingRecords": "The portal and paper channels have no path into the system. Anything arriving that way exists only in somebody's memory until it is typed in by hand.",
+    "mailboxNotReading": "The mailbox is not being read",
+    "channel": "Channel",
+    "accepts": "What it accepts",
+    "creates": "Creates",
+    "autoClassify": "Auto-classify",
+    "thirtyDays": "30 days",
+    "lastReceived": "Last received",
+    "status": "Status",
+    "on": "On",
+    "channelName": {
+      "mailbox": "contact@supserv.dz",
+      "manual": "Manual entry",
+      "upload": "File upload",
+      "portal_urbacon": "Client portal — Urbacon SAP",
+      "scan": "Scan station",
+      "web_quote": "Website — request a quote",
+      "web_careers": "Website — careers",
+      "whatsapp": "WhatsApp Business",
+      "phone_note": "Phone note"
+    },
+    "channelAccepts": {
+      "mailbox": "Email, attachments, body text",
+      "manual": "Anything a person types in",
+      "upload": "PDF, Word, Excel, images, ZIP",
+      "portal_urbacon": "RFQs that never reach email",
+      "scan": "Printed dossiers, CVs, signed BLs",
+      "web_quote": "Public form on supserv.dz",
+      "web_careers": "Public form on supserv.dz",
+      "whatsapp": "Photos of quotes, CVs, BLs",
+      "phone_note": "A person writes down a call"
+    },
+    "channelCreates": {
+      "mailbox": "Enquiry · CV · Quote · Invoice",
+      "manual": "Any record",
+      "upload": "Any document",
+      "portal_urbacon": "Enquiry · Tender",
+      "scan": "Tender · CV · Delivery proof",
+      "web_quote": "Enquiry",
+      "web_careers": "Candidate",
+      "whatsapp": "Quote · CV · Delivery proof",
+      "phone_note": "Enquiry · Contact"
+    },
+    "statusValue": {
+      "live": "Live",
+      "not_connected": "Not connected",
+      "not_built": "Not built",
+      "considered": "Considered"
+    },
+    "routingRules": "Routing rules",
+    "firstMatchWins": "applied in order, first match wins",
+    "addRule": "Add rule",
+    "mode": {
+      "auto": "Auto",
+      "suggest": "Suggest",
+      "manual": "Manual"
+    },
+    "rule": {
+      "cvFromStranger": "Attachment is a CV and sender is not a known company",
+      "cvFromStrangerAction": "Candidate, status New",
+      "rfq": "Subject contains PR / RFQ / demande de cotation",
+      "rfqAction": "Enquiry, linked to the sender's company",
+      "tender": "Subject contains consultation / avis / appel d'offres",
+      "tenderAction": "Tender, deadline extraction queued",
+      "supplierPrice": "Sender is a known supplier and body contains a price",
+      "supplierPriceAction": "Supplier quote, attach to the open enquiry",
+      "payment": "Subject contains facture / règlement / virement",
+      "paymentAction": "Payment, match against an open invoice",
+      "anythingElse": "Anything else",
+      "anythingElseAction": "Needs review, nothing is auto-created"
+    },
+    "safetyRails": "Safety rails",
+    "sameAsAssistant": "the same rules the assistant obeys",
+    "rail": {
+      "confidenceFloor": "Nothing is auto-created below 85% confidence",
+      "neverAutoDelete": "Nothing is ever auto-deleted",
+      "neverAutoReply": "Nothing is auto-replied to a client",
+      "originalKept": "Original email kept as the archive",
+      "unmatchedToReview": "Unmatched mail goes to Needs review"
+    },
+    "railState": {
+      "enforced": "Enforced",
+      "on": "On"
+    },
+    "railsNote": "Enforced means there is no setting. Those three are constants in the code, because the moment one becomes a switch is the moment somebody turns it off at six in the evening to get a batch through."
   }
 }

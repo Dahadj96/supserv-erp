@@ -50,6 +50,13 @@
       "when": 1787331462690,
       "tag": "0006_opposite_stone_men",
       "breakpoints": true
+    },
+    {
+      "idx": 7,
+      "version": "7",
+      "when": 1787333510712,
+      "tag": "0007_smooth_strong_guy",
+      "breakpoints": true
     }
   ]
 }

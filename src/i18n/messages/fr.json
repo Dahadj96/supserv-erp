@@ -479,5 +479,94 @@
       "tradeRequired": "Le métier est le second champ obligatoire — Soudeur, Manœuvre, Chauffeur.",
       "invalid": "Quelque chose dans le formulaire n'a pas été accepté."
     }
+  },
+  "intake": {
+    "channelsTitle": "Canaux d'entrée",
+    "channelsSubtitle": "{total} façons dont le travail arrive chez SUPSERV · {live} sont actifs · {losing, plural, =0 {aucun ne perd de données} =1 {1 perd des données aujourd'hui} other {# perdent des données aujourd'hui}}",
+    "losingRecords": "Le portail et le papier n'ont aucun chemin vers le système. Tout ce qui arrive par là n'existe que dans la mémoire de quelqu'un, jusqu'à ce qu'on le ressaisisse à la main.",
+    "mailboxNotReading": "La boîte aux lettres n'est pas lue",
+    "channel": "Canal",
+    "accepts": "Ce qu'il accepte",
+    "creates": "Ce qu'il crée",
+    "autoClassify": "Classement auto",
+    "thirtyDays": "30 jours",
+    "lastReceived": "Dernière réception",
+    "status": "État",
+    "on": "Actif",
+    "channelName": {
+      "mailbox": "contact@supserv.dz",
+      "manual": "Saisie manuelle",
+      "upload": "Dépôt de fichier",
+      "portal_urbacon": "Portail client — Urbacon SAP",
+      "scan": "Poste de numérisation",
+      "web_quote": "Site web — demande de devis",
+      "web_careers": "Site web — candidatures",
+      "whatsapp": "WhatsApp Business",
+      "phone_note": "Note téléphonique"
+    },
+    "channelAccepts": {
+      "mailbox": "E-mails, pièces jointes, corps du message",
+      "manual": "Tout ce qu'une personne saisit",
+      "upload": "PDF, Word, Excel, images, ZIP",
+      "portal_urbacon": "Des demandes qui n'arrivent jamais par e-mail",
+      "scan": "Dossiers papier, CV, BL signés",
+      "web_quote": "Formulaire public sur supserv.dz",
+      "web_careers": "Formulaire public sur supserv.dz",
+      "whatsapp": "Photos de devis, CV, BL",
+      "phone_note": "Une personne note un appel"
+    },
+    "channelCreates": {
+      "mailbox": "Demande · CV · Devis · Facture",
+      "manual": "N'importe quelle fiche",
+      "upload": "N'importe quel document",
+      "portal_urbacon": "Demande · Appel d'offres",
+      "scan": "Appel d'offres · CV · Preuve de livraison",
+      "web_quote": "Demande",
+      "web_careers": "Candidat",
+      "whatsapp": "Devis · CV · Preuve de livraison",
+      "phone_note": "Demande · Contact"
+    },
+    "statusValue": {
+      "live": "Actif",
+      "not_connected": "Non connecté",
+      "not_built": "Non construit",
+      "considered": "Envisagé"
+    },
+    "routingRules": "Règles d'aiguillage",
+    "firstMatchWins": "appliquées dans l'ordre, la première qui correspond gagne",
+    "addRule": "Ajouter une règle",
+    "mode": {
+      "auto": "Auto",
+      "suggest": "Proposer",
+      "manual": "Manuel"
+    },
+    "rule": {
+      "cvFromStranger": "La pièce jointe est un CV et l'expéditeur n'est pas une société connue",
+      "cvFromStrangerAction": "Candidat, statut Nouveau",
+      "rfq": "L'objet contient PR / RFQ / demande de cotation",
+      "rfqAction": "Demande, rattachée à la société de l'expéditeur",
+      "tender": "L'objet contient consultation / avis / appel d'offres",
+      "tenderAction": "Appel d'offres, extraction de l'échéance mise en file",
+      "supplierPrice": "L'expéditeur est un fournisseur connu et le corps contient un prix",
+      "supplierPriceAction": "Devis fournisseur, rattaché à la demande ouverte",
+      "payment": "L'objet contient facture / règlement / virement",
+      "paymentAction": "Règlement, à rapprocher d'une facture ouverte",
+      "anythingElse": "Tout le reste",
+      "anythingElseAction": "À examiner, rien n'est créé automatiquement"
+    },
+    "safetyRails": "Garde-fous",
+    "sameAsAssistant": "les mêmes règles que suit l'assistant",
+    "rail": {
+      "confidenceFloor": "Rien n'est créé automatiquement en dessous de 85 % de confiance",
+      "neverAutoDelete": "Rien n'est jamais supprimé automatiquement",
+      "neverAutoReply": "Aucune réponse automatique à un client",
+      "originalKept": "L'e-mail d'origine est conservé comme archive",
+      "unmatchedToReview": "Le courrier non rattaché part dans À examiner"
+    },
+    "railState": {
+      "enforced": "Imposé",
+      "on": "Actif"
+    },
+    "railsNote": "« Imposé » veut dire qu'il n'y a pas de réglage. Ces trois-là sont des constantes dans le code, parce que le jour où l'une devient un interrupteur est le jour où quelqu'un la coupe à dix-huit heures pour faire passer un lot."
   }
 }
