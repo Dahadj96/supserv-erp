@@ -1,5 +1,6 @@
 import { PDFDocument, type PDFFont, type PDFPage, rgb, StandardFonts } from "pdf-lib";
 import type { RenderedDocument } from "./engine";
+import { percent } from "./format";
 
 /**
  * Screen 70, step 6 — "Renders: HTML → PDF."
@@ -122,6 +123,7 @@ const WORDS = {
       totalIncl: "Total TTC",
       stampDuty: "Droit de timbre",
       advanceDeducted: "Avance déduite",
+      discountTotal: "Remise",
     } as Record<string, string>,
   },
   en: {
@@ -142,6 +144,7 @@ const WORDS = {
       totalIncl: "Total incl. VAT",
       stampDuty: "Stamp duty",
       advanceDeducted: "Advance deducted",
+      discountTotal: "Discount",
     } as Record<string, string>,
   },
 };
@@ -249,15 +252,28 @@ export async function toPdf(doc: RenderedDocument): Promise<Buffer> {
   /* ── the money ──────────────────────────────────────────────────────── */
   ctx.y -= 16;
   // Total TTC goes last, whatever order the record happened to store them in.
-  const order = ["totalExcl", "totalVat", "stampDuty", "advanceDeducted", "totalIncl"];
+  const order = [
+    "totalExcl",
+    "discountTotal",
+    "vat",
+    "totalVat",
+    "advanceDeducted",
+    "stampDuty",
+    "totalIncl",
+  ];
   const rank = (label: string) => {
-    const at = order.indexOf(label);
+    const at = order.indexOf(label.startsWith("vat:") ? "vat" : label);
     return at === -1 ? order.length : at;
   };
   const sorted = [...doc.totals].sort((a, b) => rank(a.label) - rank(b.label));
 
   for (const total of sorted) {
-    const label = w.totals[total.label] ?? total.label;
+    // `vat:19.00` — one line per rate, because an invoice mixing 19% and 9%
+    // has to show its arithmetic. The rate is formatted in the document's
+    // language like every other number on the page.
+    const label = total.label.startsWith("vat:")
+      ? `${w.totals.totalVat} ${percent(Number(total.label.slice(4)), doc.locale)}`
+      : (w.totals[total.label] ?? total.label);
     const isGrand = total.label === "totalIncl";
     text(ctx, label, {
       x: 360,

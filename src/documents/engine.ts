@@ -4,6 +4,7 @@ import { bankAccount, COMPANY_ID, companyIdentity } from "@/db/schema/company";
 import { auditEntry } from "@/db/schema/control";
 import { document, documentLine } from "@/db/schema/document";
 import { party } from "@/db/schema/party";
+import type { Totals } from "@/domain/money";
 import { assertCanIssue } from "@/domain/setup";
 import { storageFor } from "@/storage";
 import { amountInWords } from "./amount-in-words";
@@ -225,9 +226,7 @@ export async function render(request: RenderRequest): Promise<RenderedDocument> 
       total: money(Number(l.totalExcl ?? 0), locale),
     })),
 
-    totals: Object.entries(totals)
-      .filter(([, v]) => v !== null && v !== undefined)
-      .map(([key, value]) => ({ label: key, value: money(Number(value), locale) })),
+    totals: totalRows(record.totals, locale),
 
     /* 6 ── Amount in words, in the document language ----------------------- */
     amountInWords: amountInWords(grandTotal, locale, record.currency),
@@ -257,6 +256,44 @@ export async function render(request: RenderRequest): Promise<RenderedDocument> 
   }
 
   return rendered;
+}
+
+/**
+ * The totals block, in the order a reader expects and with one line per VAT
+ * rate — an Algerian invoice carrying 19% and 9% lines has to show both, and a
+ * single "TVA" line would be arithmetic nobody can check.
+ *
+ * This used to be `Object.entries(totals).map(...)`, which is why it is a
+ * function now: `Totals.vatByRate` is an object, `Number({})` is NaN, and the
+ * first real two-rate invoice would have printed "NaN DZD" in the VAT line.
+ * Zero rows are dropped — a discount of nothing is not a line, it is noise.
+ */
+export function totalRows(stored: unknown, locale: string): { label: string; value: string }[] {
+  const totals = (stored ?? {}) as Partial<Totals> & Record<string, unknown>;
+  const rows: { label: string; value: string }[] = [];
+
+  const push = (label: string, raw: unknown, keepZero = false) => {
+    const amount = Number(raw ?? 0);
+    if (!Number.isFinite(amount)) return;
+    if (amount === 0 && !keepZero) return;
+    rows.push({ label, value: money(amount, locale) });
+  };
+
+  push("totalExcl", totals.totalExcl, true);
+  push("discountTotal", totals.discountTotal);
+
+  const byRate = (totals.vatByRate ?? {}) as Record<string, string>;
+  for (const rate of Object.keys(byRate).sort((a, b) => Number(b) - Number(a))) {
+    push(`vat:${rate}`, byRate[rate], true);
+  }
+  // A record written before vatByRate existed still has a flat totalVat.
+  if (Object.keys(byRate).length === 0) push("totalVat", totals.totalVat);
+
+  push("advanceDeducted", totals.advanceDeducted);
+  push("stampDuty", totals.stampDuty);
+  push("totalIncl", totals.totalIncl, true);
+
+  return rows;
 }
 
 /**

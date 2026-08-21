@@ -1029,5 +1029,98 @@
       "notRecorded": "Not recorded — nothing will be printed",
       "numberOnIssue": "Reserved on issue, never on a draft"
     }
+  },
+  "newInvoice": {
+    "title": "New invoice",
+    "subtitle": "Nothing is known yet, so this one is typed. Later ones start from an order.",
+    "startFrom": "Start from",
+    "start": {
+      "myself": "Nothing — enter it myself",
+      "order": "An order",
+      "offer": "An offer or proforma",
+      "situation": "A situation de travaux",
+      "laterReason": "Starting from an order, an offer or a situation needs those records to exist. They arrive with the sales modules; until then an invoice is typed."
+    },
+    "client": "Client",
+    "pickClient": "Choose a company…",
+    "date": "Invoice date",
+    "dateHint": "The date that goes on the document. Today unless you change it.",
+    "languageFrom": "This document will be written in {language} — that comes from the client.",
+    "clientHasNoNif": "This client has no NIF recorded. You can draft, but not issue.",
+    "lines": "Lines",
+    "linesHint": "A line with no description or no quantity is not saved",
+    "col": {
+      "designation": "Description",
+      "unit": "Unit",
+      "qty": "Qty",
+      "unitPrice": "Unit price",
+      "vat": "VAT",
+      "total": "Total excl."
+    },
+    "addLine": "Add a line",
+    "removeLine": "Remove this line",
+    "totalExcl": "Total excl. VAT",
+    "vatAt": "VAT {rate}%",
+    "totalIncl": "Total incl. VAT",
+    "stampDutyLater": "Stamp duty is not added here. It applies to cash settlement, and the rule is one of the four still waiting on the accountant.",
+    "saveDraft": "Save draft",
+    "noNumberYet": "No number is taken yet — that happens when you issue.",
+    "whenYouSave": "When you save",
+    "saveStep": {
+      "draft": "A draft is created. Nothing is sent and nothing is registered.",
+      "number": "No invoice number is reserved. Drafts never consume one.",
+      "preview": "You land on the document, with the PDF the client would receive.",
+      "issue": "Issuing is a separate, deliberate act — and it cannot be undone."
+    },
+    "notHereYet": "Not here yet",
+    "notHereYetBody": "Discounts, advances, retenue de garantie, option lines and section headings are in the schema but have no controls on this screen. They arrive with the full document builder.",
+    "noClientsYet": "There are no companies yet, so there is nobody to invoice.",
+    "addCompany": "Add a company",
+    "goToSetup": "Finish day one",
+    "setupWarning": "You can draft this invoice, but not issue it yet: {missing} still to do.",
+    "error": {
+      "notAllowed": "Your role may not create invoices.",
+      "noClient": "Choose a client before saving.",
+      "noLines": "An invoice needs at least one line with a description and a quantity."
+    }
+  },
+  "invoices": {
+    "title": "Invoices",
+    "subtitle": "{unpaid, plural, =0 {nothing unpaid} one {# unpaid} other {# unpaid}} · {outstanding} outstanding · overdue is computed from the due date, not stored",
+    "export": "Export",
+    "exportLater": "Export arrives with the reports module.",
+    "newProforma": "New proforma",
+    "proformaLater": "A proforma needs its own numbering series and its own validity rule. Both are still to be set up.",
+    "newInvoice": "New invoice",
+    "filter": {
+      "all": "All",
+      "draft": "Draft",
+      "issued": "Issued",
+      "part_paid": "Partly paid",
+      "paid": "Paid"
+    },
+    "col": {
+      "number": "Number",
+      "type": "Type",
+      "client": "Client",
+      "total": "Total incl. VAT",
+      "issued": "Issued",
+      "age": "Age",
+      "status": "Status"
+    },
+    "status": {
+      "draft": "Draft",
+      "issued": "Issued",
+      "part_paid": "Partly paid",
+      "paid": "Paid",
+      "credited": "Credited",
+      "written_off": "Written off"
+    },
+    "noNumber": "Draft — no number",
+    "ageDraft": "not issued",
+    "notDue": "not due",
+    "overdueDays": "{days} d · overdue",
+    "empty": "Nothing here yet.",
+    "paymentsLater": "There is no Paid column and no relance banner because payments are not recorded yet. Overdue is worked out from the due date and the balance whenever this page loads — it is never a status somebody sets."
   }
 }

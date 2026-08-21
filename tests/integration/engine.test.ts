@@ -1,4 +1,5 @@
 import { eq, inArray, like } from "drizzle-orm";
+import { extractText, getDocumentProxy } from "unpdf";
 import { afterAll, beforeAll, describe, expect, it } from "vitest";
 import { db } from "@/db";
 import { bankAccount, COMPANY_ID, companyIdentity, vatRate } from "@/db/schema/company";
@@ -6,10 +7,13 @@ import { auditEntry } from "@/db/schema/control";
 import { document, documentLine, numberingSeries } from "@/db/schema/document";
 import { blockingRule } from "@/db/schema/interface";
 import { party } from "@/db/schema/party";
+import { checklist, summarise } from "@/documents/checklist";
 import { Blocked, confirmRule, ensureRulesExist } from "@/documents/compliance";
 import { NotRenderable, render } from "@/documents/engine";
 import { peekNumber } from "@/documents/numbering";
+import { toPdf } from "@/documents/pdf";
 import { saveIdentity, setLogo } from "@/domain/company";
+import { computeTotals, lineTotalExcl } from "@/domain/money";
 
 /** Intl uses a narrow no-break space in French, which is correct typography. */
 const spaces = (s: string | undefined) => (s ?? "").replace(/[  ]/g, " ");
@@ -24,6 +28,14 @@ const spaces = (s: string | undefined) => (s ?? "").replace(/[  ]/g, " ");
  * fails a confirmed rule never consumes a number.
  */
 const ACTOR = "test-engine-actor";
+
+/** Read the finished PDF back the way screen 39 reads a supplier's. */
+async function pdfText(bytes: Buffer): Promise<string> {
+  const { text } = await extractText(await getDocumentProxy(new Uint8Array(bytes)), {
+    mergePages: true,
+  });
+  return text;
+}
 
 /**
  * The REAL kind, not `test_invoice`.
@@ -319,5 +331,76 @@ describe("screen 70 — one engine", () => {
         actorId: ACTOR,
       }),
     ).rejects.toBeInstanceOf(NotRenderable);
+  });
+
+  /**
+   * Screen 72 → screen 18. A draft typed by hand, stored exactly the way the
+   * New invoice action stores it — totals from `computeTotals`, no number — and
+   * then carried all the way to bytes. This is the join between the two screens
+   * and it is the join that was never exercised before.
+   */
+  it("carries a hand-typed draft through to a PDF a client could read", async () => {
+    const lines = [
+      { qty: "3", unitPrice: "12000", vatRate: "19" },
+      { qty: "2", unitPrice: "5000", vatRate: "9" },
+    ];
+    const totals = computeTotals(lines);
+
+    const [row] = await db
+      .insert(document)
+      .values({
+        kind: KIND,
+        partyId: clientId,
+        locale: "fr",
+        currency: "DZD",
+        status: "draft",
+        issuedOn: "2026-08-19",
+        totals,
+      })
+      .returning({ id: document.id });
+    const id = row?.id as string;
+    docIds.push(id);
+
+    await db.insert(documentLine).values(
+      lines.map((line, index) => ({
+        documentId: id,
+        position: index + 1,
+        lineKind: "item",
+        designation: index === 0 ? "Galets de convoyeur" : "Transport",
+        unit: "U",
+        qty: line.qty,
+        unitPrice: line.unitPrice,
+        vatRate: line.vatRate,
+        totalExcl: lineTotalExcl(line).toFixed(2),
+      })),
+    );
+
+    const preview = await render({ documentId: id, purpose: "preview", actorId: ACTOR });
+
+    // LAW 5, on the screen and in the bytes: a draft carries no number.
+    expect(preview.number).toBeNull();
+    expect(preview.totals.map((t) => t.label)).toEqual([
+      "totalExcl",
+      "vat:19.00",
+      "vat:9.00",
+      "totalIncl",
+    ]);
+
+    const text = await pdfText(await toPdf(preview));
+    expect(text).toContain("BROUILLON");
+    expect(spaces(text)).toContain("TVA 19");
+    expect(spaces(text)).toContain("TVA 9");
+    expect(text, "the VAT object must never reach the page as NaN").not.toContain("NaN");
+
+    // 46 000 HT + 6 840 (19% of 36 000) + 900 (9% of 10 000) = 53 740, and the
+    // sentence underneath has to agree with the figure above it.
+    expect(spaces(text)).toContain("53 740,00");
+    expect(text).toContain("cinquante-trois mille sept cent quarante dinars algériens");
+
+    // The checklist the screen draws over the same render.
+    const rows = checklist(preview);
+    expect(summarise(rows).blockers, "this client has a NIF").toBe(0);
+    expect(rows.find((r) => r.key === "documentNumber")?.noteKey).toBe("numberOnIssue");
+    expect(rows.find((r) => r.key === "clientNif")?.state).toBe("pass");
   });
 });

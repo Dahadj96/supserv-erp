@@ -1029,5 +1029,98 @@
       "notRecorded": "Non renseigné — rien ne sera imprimé",
       "numberOnIssue": "Réservé à l'émission, jamais sur un brouillon"
     }
+  },
+  "newInvoice": {
+    "title": "Nouvelle facture",
+    "subtitle": "Rien n'est encore connu, celle-ci se saisit. Les suivantes partiront d'une commande.",
+    "startFrom": "Partir de",
+    "start": {
+      "myself": "Rien — je saisis moi-même",
+      "order": "Une commande",
+      "offer": "Une offre ou une proforma",
+      "situation": "Une situation de travaux",
+      "laterReason": "Partir d'une commande, d'une offre ou d'une situation suppose que ces documents existent. Ils arrivent avec les modules de vente ; en attendant, une facture se saisit."
+    },
+    "client": "Client",
+    "pickClient": "Choisir une société…",
+    "date": "Date de la facture",
+    "dateHint": "La date portée sur le document. Aujourd'hui, sauf si vous la changez.",
+    "languageFrom": "Ce document sera rédigé en {language} — cela vient de la fiche client.",
+    "clientHasNoNif": "Ce client n'a pas de NIF. Vous pouvez préparer, pas émettre.",
+    "lines": "Lignes",
+    "linesHint": "Une ligne sans désignation ou sans quantité n'est pas enregistrée",
+    "col": {
+      "designation": "Désignation",
+      "unit": "U",
+      "qty": "Qté",
+      "unitPrice": "P.U. HT",
+      "vat": "TVA",
+      "total": "Montant HT"
+    },
+    "addLine": "Ajouter une ligne",
+    "removeLine": "Supprimer cette ligne",
+    "totalExcl": "Total HT",
+    "vatAt": "TVA {rate} %",
+    "totalIncl": "Total TTC",
+    "stampDutyLater": "Le droit de timbre n'est pas ajouté ici. Il concerne le règlement en espèces, et la règle fait partie des quatre encore en attente du comptable.",
+    "saveDraft": "Enregistrer le brouillon",
+    "noNumberYet": "Aucun numéro n'est pris pour l'instant — cela arrive à l'émission.",
+    "whenYouSave": "À l'enregistrement",
+    "saveStep": {
+      "draft": "Un brouillon est créé. Rien n'est envoyé, rien n'est enregistré au registre.",
+      "number": "Aucun numéro de facture n'est réservé. Un brouillon n'en consomme jamais.",
+      "preview": "Vous arrivez sur le document, avec le PDF que le client recevrait.",
+      "issue": "L'émission est un acte distinct et volontaire — et elle est irréversible."
+    },
+    "notHereYet": "Pas encore ici",
+    "notHereYetBody": "Remises, avances, retenue de garantie, lignes en option et titres de section existent dans le schéma mais n'ont pas de commandes sur cet écran. Ils arrivent avec le constructeur de documents complet.",
+    "noClientsYet": "Il n'y a encore aucune société, donc personne à facturer.",
+    "addCompany": "Ajouter une société",
+    "goToSetup": "Terminer le premier jour",
+    "setupWarning": "Vous pouvez préparer cette facture, mais pas encore l'émettre : {missing} restent à faire.",
+    "error": {
+      "notAllowed": "Votre rôle ne permet pas de créer des factures.",
+      "noClient": "Choisissez un client avant d'enregistrer.",
+      "noLines": "Une facture demande au moins une ligne avec une désignation et une quantité."
+    }
+  },
+  "invoices": {
+    "title": "Factures",
+    "subtitle": "{unpaid, plural, =0 {rien d'impayé} one {# impayée} other {# impayées}} · {outstanding} en attente · le retard est calculé à partir de l'échéance, jamais stocké",
+    "export": "Exporter",
+    "exportLater": "L'export arrive avec le module rapports.",
+    "newProforma": "Nouvelle proforma",
+    "proformaLater": "Une proforma demande sa propre série de numérotation et sa propre règle de validité. Les deux restent à paramétrer.",
+    "newInvoice": "Nouvelle facture",
+    "filter": {
+      "all": "Toutes",
+      "draft": "Brouillon",
+      "issued": "Émises",
+      "part_paid": "Partiellement payées",
+      "paid": "Payées"
+    },
+    "col": {
+      "number": "Numéro",
+      "type": "Type",
+      "client": "Client",
+      "total": "Total TTC",
+      "issued": "Émise le",
+      "age": "Ancienneté",
+      "status": "Statut"
+    },
+    "status": {
+      "draft": "Brouillon",
+      "issued": "Émise",
+      "part_paid": "Partiellement payée",
+      "paid": "Payée",
+      "credited": "Avoir émis",
+      "written_off": "Passée en perte"
+    },
+    "noNumber": "Brouillon — sans numéro",
+    "ageDraft": "non émise",
+    "notDue": "pas échue",
+    "overdueDays": "{days} j · en retard",
+    "empty": "Rien ici pour l'instant.",
+    "paymentsLater": "Il n'y a ni colonne Payé ni bandeau de relance parce que les règlements ne sont pas encore enregistrés. Le retard est calculé à partir de l'échéance et du solde à chaque affichage — ce n'est jamais un statut que quelqu'un pose."
   }
 }
