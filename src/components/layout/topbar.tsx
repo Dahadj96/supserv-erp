@@ -1,6 +1,7 @@
 "use client";
 
 import { Bell, Check, LogOut, Search, User } from "lucide-react";
+import { useSearchParams } from "next/navigation";
 import { useTranslations } from "next-intl";
 import { useState } from "react";
 import { setUiLocale, signOut } from "@/auth/actions";
@@ -28,6 +29,8 @@ export function Topbar({
   const t = useTranslations();
   const tNav = useTranslations("nav");
   const pathname = usePathname();
+  const searchParams = useSearchParams();
+  const query = searchParams.get("q") ?? "";
   const [open, setOpen] = useState(false);
 
   const entry = NAV_GROUPS.flatMap((g) => g.entries).find(
@@ -55,14 +58,20 @@ export function Topbar({
       </nav>
 
       <div className="ms-auto flex items-center gap-2">
-        <label className="flex h-[34px] w-[300px] items-center gap-2 rounded-[var(--radius-control)] border border-line bg-surface px-2.5">
+        {/* Screen 82 — this box was drawn on all 86 frames and did nothing. */}
+        <form
+          action={`/${locale}/search`}
+          className="flex h-[34px] w-[300px] items-center gap-2 rounded-[var(--radius-control)] border border-line bg-surface px-2.5 focus-within:border-ink"
+        >
           <Search className="size-4 shrink-0 text-muted" aria-hidden />
           <input
             type="search"
+            name="q"
+            defaultValue={query}
             placeholder={t("common.search")}
             className="w-full bg-transparent text-tiny text-ink outline-none placeholder:text-muted"
           />
-        </label>
+        </form>
 
         <button
           type="button"

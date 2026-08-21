@@ -119,6 +119,15 @@
       "nothingSentYetAsks": "Demande ouverte, sans offre, plus de 3 jours"
     }
   },
+  "search": {
+    "title": "Recherche",
+    "prompt": "Sociétés, contacts, articles et références. L'orthographe n'a pas besoin d'être exacte.",
+    "resultsFor": "Résultats pour « {term} »",
+    "count": "{count} trouvé(s)",
+    "viaAlias": "correspond à « {alias} »",
+    "noneTitle": "Aucun résultat",
+    "noneBody": "Essayez moins de mots, ou une partie d'un nom. Si une société est connue ici sous une autre orthographe, ajoutez-la comme alias sur sa fiche et toutes les recherches suivantes la trouveront."
+  },
   "companies": {
     "code": "Code",
     "legalName": "Raison sociale",

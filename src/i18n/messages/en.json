@@ -119,6 +119,15 @@
       "nothingSentYetAsks": "Enquiry open, no offer, older than 3 days"
     }
   },
+  "search": {
+    "title": "Search",
+    "prompt": "Companies, contacts, items and references. Spelling does not have to be exact.",
+    "resultsFor": "Results for “{term}”",
+    "count": "{count} found",
+    "viaAlias": "matched “{alias}”",
+    "noneTitle": "Nothing matched",
+    "noneBody": "Try fewer words, or part of a name. If a company is known here by another spelling, add it as an alias on its page and every future search will find it."
+  },
   "companies": {
     "code": "Code",
     "legalName": "Legal name",
