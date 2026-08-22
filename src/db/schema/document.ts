@@ -60,6 +60,22 @@ export const document = pgTable("document", {
   /** LAW 5 — set at issue. Immutable from then on. Correction is a new document. */
   lockedAt: timestamp("locked_at", { withTimezone: true }),
 
+  /**
+   * Screen 71: "Reprinting an invoice from 2026 in 2029 must produce the 2026
+   * document, not the current layout. The version is stored on the document,
+   * not looked up."
+   *
+   * The same is true of the company's own address, its RC, and the bank account
+   * that was on the footer. Every one of those is master data that will change,
+   * and every one of them is printed on a document a tax inspector may ask for
+   * years later. At issue the engine freezes what it used into `renderSnapshot`
+   * and never reads master data for that document again. Null on a draft, which
+   * is exactly right: a draft has no promise to keep.
+   */
+  templateId: uuid("template_id"),
+  templateVersion: integer("template_version"),
+  renderSnapshot: jsonb("render_snapshot"),
+
   createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
 });
 

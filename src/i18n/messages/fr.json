@@ -1302,6 +1302,10 @@
       "documentTypes": {
         "name": "Types de documents",
         "what": "Les dix-neuf types, ce que chacun vaut juridiquement, et lesquels prennent un de nos numéros."
+      },
+      "templates": {
+        "name": "Modèles de documents",
+        "what": "Formulations et mentions de bas de page. Tout le reste d'un document vient du référentiel."
       }
     }
   },
@@ -1563,6 +1567,67 @@
     "error": {
       "notAllowed": "Seul un Gérant peut modifier les types de documents.",
       "noSuchType": "Ce type ne figure pas au catalogue."
+    }
+  },
+  "templates": {
+    "title": "Modèles de documents",
+    "subtitle": "{current} en service · {retired} retirés · les données de la société viennent du référentiel, jamais d'un modèle",
+    "documentTypes": "Types de documents",
+    "banner": "Un modèle contient une mise en page et des formulations. Il ne contient jamais votre adresse, votre RC, votre NIF, vos coordonnées bancaires ni votre logo — tout cela est lu dans le référentiel de la société au moment du rendu. Changez le logo une fois et tous les modèles changent avec lui.",
+    "inUse": "En service",
+    "oneEach": "un par type et par langue",
+    "empty": "Aucun modèle n'est écrit. Rien n'est cassé — le moteur de rendu porte déjà un jeu de formulations en français et en anglais, et un catalogue vide signifie qu'il les utilise. Les écrire, c'est ce qui permet d'ajouter une mention de bas de page aux factures sans toucher à rien d'autre.",
+    "writeThemDown": "Écrire les modèles",
+    "written": "{count, plural, =0 {Tout était déjà écrit} one {# modèle écrit} other {# modèles écrits}}. Chacun démarre en v1 avec les formulations du moteur.",
+    "revised": "Enregistré en v{version}. La version précédente est retirée et tous les documents qui l'ont utilisée y renvoient toujours.",
+    "noExtraMentions": "aucune mention supplémentaire",
+    "extraMentions": "{count, plural, one {# mention supplémentaire} other {# mentions supplémentaires}}",
+    "footerMentions": "Mentions de bas de page supplémentaires — une par ligne",
+    "footerMentionsHint": "Pénalités de retard : … · Réserve de propriété : …",
+    "saveAsVersion": "Enregistrer en v{version}",
+    "savingMakesAVersion": "Enregistrer crée une nouvelle version. Les documents déjà émis gardent l'ancienne.",
+    "anatomy": "D'où vient chaque bloc d'un document",
+    "anatomyWhat": "onze blocs · deux appartiennent au modèle",
+    "anatomyWhy": "Cette séparation est toute la conception. « Changez le logo une fois et tous les documents changent » n'est vrai que parce qu'un modèle ne peut pas contenir de logo — et un modèle n'est sûr à modifier que parce qu'il ne peut pas contenir votre RC non plus.",
+    "fromMaster": "Du référentiel",
+    "inTheTemplate": "Dans le modèle",
+    "block": {
+      "logo": "Logo et en-tête",
+      "identity": "Raison sociale, adresse, wilaya",
+      "identifiers": "RC, NIF, NIS, AI",
+      "bank": "Coordonnées bancaires et RIB",
+      "signature": "Bloc signature",
+      "client": "Bloc client",
+      "number": "Numéro et date du document",
+      "lines": "Tableau des lignes et totaux",
+      "amountInWords": "Montant en lettres",
+      "wording": "Formulations et ordre des sections",
+      "footerMentions": "Mentions légales de bas de page"
+    },
+    "retired": "Versions retirées",
+    "retiredWhy": "conservées parce que des documents y renvoient",
+    "versions": "Versions",
+    "version": {
+      "versioned": {
+        "q": "Un modèle est versionné",
+        "a": "Oui"
+      },
+      "documentRemembers": {
+        "q": "Un document émis retient",
+        "a": "la version qui l'a produit"
+      },
+      "editing": {
+        "q": "Modifier un modèle",
+        "a": "ne change jamais un document passé"
+      }
+    },
+    "reprintNote": "Réimprimer en 2029 une facture de 2026 doit produire le document de 2026, pas la mise en page actuelle. La version est stockée sur le document, et tout le reste de ce que le document a imprimé sur la société aussi — l'adresse, le RC, le compte bancaire. Rien n'est relu.",
+    "byLanguage": "Par langue",
+    "noArabic": "Il n'existe aucun modèle en arabe ni de mise en page de droite à gauche. L'écran 53 dit la même chose ; c'est indiqué ici pour que le manque soit visible plutôt que découvert.",
+    "error": {
+      "notAllowed": "Seul un Gérant peut modifier un modèle.",
+      "noSuchTemplate": "Ce modèle n'existe plus.",
+      "notCurrent": "C'est une version retirée. Modifiez celle en service."
     }
   }
 }

@@ -1,4 +1,4 @@
-import { isNull, sql } from "drizzle-orm";
+import { eq, isNull, sql } from "drizzle-orm";
 import { CircleAlert } from "lucide-react";
 import { getTranslations, setRequestLocale } from "next-intl/server";
 import { Badge, type BadgeTone } from "@/components/ui/badge";
@@ -7,6 +7,7 @@ import { db } from "@/db";
 import { userRole } from "@/db/schema/auth";
 import { bankAccount, vatRate } from "@/db/schema/company";
 import { numberingSeries } from "@/db/schema/document";
+import { documentTemplate } from "@/db/schema/document-template";
 import { documentType } from "@/db/schema/document-type";
 import { intakeChannel } from "@/db/schema/intake";
 import { setupState } from "@/domain/setup";
@@ -43,19 +44,25 @@ export default async function SettingsPage({ params }: { params: Promise<{ local
 
   const state = await setupState();
 
-  const [[banks], [rates], [series], [roles], [channels], [types]] = await Promise.all([
-    db
-      .select({ n: sql<number>`count(*)::int` })
-      .from(bankAccount)
-      .where(isNull(bankAccount.archivedAt)),
-    db.select({ n: sql<number>`count(*)::int` }).from(vatRate),
-    db.select({ n: sql<number>`count(*)::int` }).from(numberingSeries),
-    db.select({ n: sql<number>`count(*)::int` }).from(userRole),
-    db
-      .select({ n: sql<number>`count(*) filter (where ${intakeChannel.status} = 'live')::int` })
-      .from(intakeChannel),
-    db.select({ n: sql<number>`count(*)::int` }).from(documentType),
-  ]);
+  const [[banks], [rates], [series], [roles], [channels], [types], [templates]] = await Promise.all(
+    [
+      db
+        .select({ n: sql<number>`count(*)::int` })
+        .from(bankAccount)
+        .where(isNull(bankAccount.archivedAt)),
+      db.select({ n: sql<number>`count(*)::int` }).from(vatRate),
+      db.select({ n: sql<number>`count(*)::int` }).from(numberingSeries),
+      db.select({ n: sql<number>`count(*)::int` }).from(userRole),
+      db
+        .select({ n: sql<number>`count(*) filter (where ${intakeChannel.status} = 'live')::int` })
+        .from(intakeChannel),
+      db.select({ n: sql<number>`count(*)::int` }).from(documentType),
+      db
+        .select({ n: sql<number>`count(*)::int` })
+        .from(documentTemplate)
+        .where(eq(documentTemplate.active, true)),
+    ],
+  );
 
   const done = (label?: string) => ({
     tone: "good" as BadgeTone,
@@ -80,6 +87,7 @@ export default async function SettingsPage({ params }: { params: Promise<{ local
         { key: "vat", href: "/setup/vat", state: some(rates?.n ?? 0) },
         { key: "numbering", href: "/setup/numbering", state: some(series?.n ?? 0) },
         { key: "documentTypes", href: "/settings/document-types", state: some(types?.n ?? 0) },
+        { key: "templates", href: "/settings/templates", state: some(templates?.n ?? 0) },
       ],
     },
     {

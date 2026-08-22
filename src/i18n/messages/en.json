@@ -1302,6 +1302,10 @@
       "documentTypes": {
         "name": "Document types",
         "what": "The nineteen kinds, what each one is worth legally, and which of them take a number of ours."
+      },
+      "templates": {
+        "name": "Document templates",
+        "what": "Wording and footer mentions. Everything else on a document comes from master data."
       }
     }
   },
@@ -1563,6 +1567,67 @@
     "error": {
       "notAllowed": "Only a Gérant may change the document types.",
       "noSuchType": "That type is not in the catalogue."
+    }
+  },
+  "templates": {
+    "title": "Document templates",
+    "subtitle": "{current} in use · {retired} retired · company data comes from master, never from a template",
+    "documentTypes": "Document types",
+    "banner": "A template holds layout and wording. It never holds your address, RC, NIF, bank details or logo — those are read from company master data at render time. Change the logo once and every template changes with it.",
+    "inUse": "In use",
+    "oneEach": "one per kind and language",
+    "empty": "No templates are written down. Nothing is broken — the renderer already carries a default set of words in French and English, and an empty catalogue means it uses those. Writing them down is what lets you add a footer mention to invoices without touching anything else.",
+    "writeThemDown": "Write down the templates",
+    "written": "{count, plural, =0 {Everything was already written down} one {# template written down} other {# templates written down}}. Each starts at v1 with the renderer's own wording.",
+    "revised": "Saved as v{version}. The previous version is retired and every document that used it still resolves to it.",
+    "noExtraMentions": "no extra footer mentions",
+    "extraMentions": "{count, plural, one {# extra footer mention} other {# extra footer mentions}}",
+    "footerMentions": "Extra footer mentions — one per line",
+    "footerMentionsHint": "Pénalités de retard : … · Réserve de propriété : …",
+    "saveAsVersion": "Save as v{version}",
+    "savingMakesAVersion": "Saving writes a new version. Documents already issued keep the old one.",
+    "anatomy": "Where every block on a document comes from",
+    "anatomyWhat": "eleven blocks · two of them belong to the template",
+    "anatomyWhy": "This split is the whole design. \"Change the logo once and every document changes\" is only true because a template cannot hold a logo — and a template is only safe to edit because it cannot hold your RC either.",
+    "fromMaster": "From master data",
+    "inTheTemplate": "In the template",
+    "block": {
+      "logo": "Logo and letterhead",
+      "identity": "Legal name, address, wilaya",
+      "identifiers": "RC, NIF, NIS, AI",
+      "bank": "Bank details and RIB",
+      "signature": "Signature block",
+      "client": "Client block",
+      "number": "Document number and date",
+      "lines": "Line table and totals",
+      "amountInWords": "Amount in words",
+      "wording": "Wording and order of sections",
+      "footerMentions": "Footer legal mentions"
+    },
+    "retired": "Retired versions",
+    "retiredWhy": "kept because documents point at them",
+    "versions": "Versions",
+    "version": {
+      "versioned": {
+        "q": "A template is versioned",
+        "a": "Yes"
+      },
+      "documentRemembers": {
+        "q": "An issued document remembers",
+        "a": "the version that produced it"
+      },
+      "editing": {
+        "q": "Editing a template",
+        "a": "never changes a past document"
+      }
+    },
+    "reprintNote": "Reprinting an invoice from 2026 in 2029 must produce the 2026 document, not the current layout. The version is stored on the document, and so is everything else the document printed about the company — the address, the RC, the bank account. None of it is looked up again.",
+    "byLanguage": "By language",
+    "noArabic": "There is no Arabic template and no right-to-left layout. Screen 53 says the same thing; it is listed here so the gap is visible rather than discovered.",
+    "error": {
+      "notAllowed": "Only a Gérant may change a template.",
+      "noSuchTemplate": "That template no longer exists.",
+      "notCurrent": "That is a retired version. Edit the one in use."
     }
   }
 }

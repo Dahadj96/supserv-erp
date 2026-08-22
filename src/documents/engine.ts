@@ -12,6 +12,7 @@ import { amountInWords } from "./amount-in-words";
 import { Blocked, check, type Finding } from "./compliance";
 import { dateline, money, percent, shortDate } from "./format";
 import { reserveNumber } from "./numbering";
+import { currentTemplate } from "./templates";
 
 /**
  * Screen 70 — ONE document engine, five callers.
@@ -99,18 +100,28 @@ export class NotRenderable extends Error {
 }
 
 /**
+ * What an issued document froze about the world at the moment it was issued.
+ *
+ * Not the lines and not the totals — those are already on the record and locked
+ * by `lockedAt`. This is the master data the document PRINTS but does not own:
+ * the company's own identity, the bank account on the footer, and which version
+ * of the wording produced it.
+ */
+type Snapshot = {
+  company: typeof companyIdentity.$inferSelect | null;
+  bank: typeof bankAccount.$inferSelect | null;
+  templateId: string | null;
+  templateVersion: number;
+  frozenAt: string;
+};
+
+/**
  * The one call. Five callers, five results.
  */
 export async function render(request: RenderRequest): Promise<RenderedDocument> {
   const { purpose } = request;
 
   /* 1 ── Pulls master data ------------------------------------------------ */
-  const [company] = await db
-    .select()
-    .from(companyIdentity)
-    .where(eq(companyIdentity.id, COMPANY_ID))
-    .limit(1);
-
   const [record] = await db
     .select()
     .from(document)
@@ -124,23 +135,47 @@ export async function render(request: RenderRequest): Promise<RenderedDocument> 
   const [counterparty] = await db.select().from(party).where(eq(party.id, record.partyId)).limit(1);
   if (!counterparty) throw new NotRenderable("noCounterparty");
 
-  const [bank] = await db
-    .select()
-    .from(bankAccount)
-    .where(and(isNull(bankAccount.archivedAt), eq(bankAccount.isDefault, true)))
-    .limit(1);
-
   const lines = await db
     .select()
     .from(documentLine)
     .where(eq(documentLine.documentId, record.id))
     .orderBy(documentLine.position);
 
+  // Screen 71: "Reprinting an invoice from 2026 in 2029 must produce the 2026
+  // document, not the current layout."
+  //
+  // Everything the company prints about ITSELF is master data that will change:
+  // the address, the RC once the register is renewed, the bank the money should
+  // go to. A document already sent to a client and filed with an accountant
+  // must not quietly change when one of those does. So an issued document reads
+  // the snapshot it froze at issue, and master data is only consulted for a
+  // document that has not been sent to anybody yet.
+  const frozen = record.renderSnapshot as Snapshot | null;
+
+  const company = frozen
+    ? frozen.company
+    : ((
+        await db.select().from(companyIdentity).where(eq(companyIdentity.id, COMPANY_ID)).limit(1)
+      )[0] ?? null);
+
+  const bank = frozen
+    ? frozen.bank
+    : ((
+        await db
+          .select()
+          .from(bankAccount)
+          .where(and(isNull(bankAccount.archivedAt), eq(bankAccount.isDefault, true)))
+          .limit(1)
+      )[0] ?? null);
+
   /* 2 ── Resolves the template -------------------------------------------- */
   //     family · kind · language · version. The locale comes from the
   //     COUNTERPARTY (LAW 4) — never from the session, never from a parameter.
   const locale = record.locale || counterparty.docLocale || "fr";
-  const template = `SUPSERV ${record.kind} — ${locale.toUpperCase()} v1`;
+
+  const chosen = frozen ? null : await currentTemplate(record.kind, locale);
+  const templateVersion = frozen?.templateVersion ?? chosen?.version ?? 1;
+  const template = `SUPSERV ${record.kind} — ${locale.toUpperCase()} v${templateVersion}`;
 
   /* 3 ── Applies the compliance profile ------------------------------------ */
   //     Before the number, so a refusal costs nothing.
@@ -178,30 +213,40 @@ export async function render(request: RenderRequest): Promise<RenderedDocument> 
   // against their own order.
   const reservesNumber = rules?.reservesNumber ?? true;
 
-  if (purpose === "issue" && reservesNumber) {
-    number = await db.transaction(async (tx) => {
-      const allocated = await reserveNumber(tx, record.kind, issuedOn);
-      await tx
-        .update(document)
-        .set({
-          number: allocated,
-          status: "issued",
-          issuedOn: issuedOn.toISOString().slice(0, 10),
-          // LAW 5 — from this moment the totals above are frozen into the row.
-          lockedAt: new Date(),
-        })
-        .where(eq(document.id, record.id));
-      return allocated;
-    });
-  } else if (purpose === "issue") {
-    await db
-      .update(document)
-      .set({
-        status: "issued",
-        issuedOn: issuedOn.toISOString().slice(0, 10),
-        lockedAt: new Date(),
-      })
-      .where(eq(document.id, record.id));
+  if (purpose === "issue") {
+    // The snapshot is written in the SAME statement that takes the number, so
+    // there is no instant in which a document is issued but does not know what
+    // it printed.
+    const snapshot: Snapshot = {
+      company: company ?? null,
+      bank: bank ?? null,
+      templateId: chosen?.id ?? null,
+      templateVersion,
+      frozenAt: new Date().toISOString(),
+    };
+
+    const issuedFields = {
+      status: "issued",
+      issuedOn: issuedOn.toISOString().slice(0, 10),
+      templateId: chosen?.id ?? null,
+      templateVersion,
+      renderSnapshot: snapshot,
+      // LAW 5 — from this moment the totals above are frozen into the row.
+      lockedAt: new Date(),
+    };
+
+    if (reservesNumber) {
+      number = await db.transaction(async (tx) => {
+        const allocated = await reserveNumber(tx, record.kind, issuedOn);
+        await tx
+          .update(document)
+          .set({ ...issuedFields, number: allocated })
+          .where(eq(document.id, record.id));
+        return allocated;
+      });
+    } else {
+      await db.update(document).set(issuedFields).where(eq(document.id, record.id));
+    }
   }
 
   /* 5 ── Formats ----------------------------------------------------------- */

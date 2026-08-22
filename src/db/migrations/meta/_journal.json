@@ -99,6 +99,13 @@
       "when": 1787355975170,
       "tag": "0013_large_multiple_man",
       "breakpoints": true
+    },
+    {
+      "idx": 14,
+      "version": "7",
+      "when": 1787356585773,
+      "tag": "0014_solid_nemesis",
+      "breakpoints": true
     }
   ]
 }
