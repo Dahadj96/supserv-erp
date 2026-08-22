@@ -360,6 +360,13 @@ export function totalRows(stored: unknown, locale: string): { label: string; val
   push("stampDuty", totals.stampDuty);
   push("totalIncl", totals.totalIncl, true);
 
+  // Only when an advance actually moved the figure. "Net à payer" repeated
+  // under an identical total is a line that teaches people to skim.
+  if (Number(totals.advanceDeducted ?? 0) !== 0) push("dueNow", totals.dueNow, true);
+
+  // Last, and outside the arithmetic above: what the client did NOT buy.
+  push("optionsExcl", totals.optionsExcl);
+
   return rows;
 }
 

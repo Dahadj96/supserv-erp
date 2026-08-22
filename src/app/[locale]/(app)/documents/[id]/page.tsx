@@ -83,6 +83,13 @@ export default async function DocumentPage({
         </div>
 
         <div className="ms-auto flex items-center gap-2">
+          {/* A draft can still be changed; an issued document cannot, and the
+              way to say so is not to offer the door. */}
+          {doc.number ? null : (
+            <Link href={`/documents/${id}/edit`}>
+              <Button variant="secondary">{t("documents.edit")}</Button>
+            </Link>
+          )}
           <a href={`/api/documents/${id}/pdf`} target="_blank" rel="noreferrer">
             <Button variant="secondary">{t("documents.downloadPdf")}</Button>
           </a>

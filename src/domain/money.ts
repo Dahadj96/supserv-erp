@@ -26,6 +26,12 @@ export type Totals = {
   totalVat: string;
   stampDuty: string;
   totalIncl: string;
+  /** Already invoiced on an advance invoice, and deducted from what is due. */
+  advanceDeducted: string;
+  /** What the client actually has to pay on this document. */
+  dueNow: string;
+  /** Shown, never subtracted — see the note on `computeTotals`. */
+  optionsExcl: string;
 };
 
 const D = (v: string | number | undefined, fallback = 0) =>
@@ -45,15 +51,30 @@ export function lineTotalExcl(line: Line): Decimal {
  */
 export function computeTotals(
   lines: Line[],
-  opts: { globalDiscountPct?: string | number; stampDuty?: string | number } = {},
+  opts: {
+    globalDiscountPct?: string | number;
+    stampDuty?: string | number;
+    /** Screen 47 — "Advance already invoiced". Deducted from what is due. */
+    advanceDeducted?: string | number;
+  } = {},
 ): Totals {
   let subtotal = new Decimal(0);
+  let optionsExcl = new Decimal(0);
   const buckets = new Map<string, Decimal>();
 
   for (const line of lines) {
+    // Screen 47 — "options are not counted". An option is priced and printed so
+    // the client can see what they did not buy, and it is added to nothing.
+    if (line.isOption) {
+      const gross = D(line.qty).times(D(line.unitPrice));
+      optionsExcl = optionsExcl.plus(
+        gross.minus(gross.times(D(line.discountPct).div(100))).toDecimalPlaces(2),
+      );
+      continue;
+    }
+
     const excl = lineTotalExcl(line);
     subtotal = subtotal.plus(excl);
-    if (line.isOption) continue;
     const rate = D(line.vatRate).toFixed(2);
     buckets.set(rate, (buckets.get(rate) ?? new Decimal(0)).plus(excl));
   }
@@ -76,6 +97,18 @@ export function computeTotals(
   const stampDuty = D(opts.stampDuty).toDecimalPlaces(2);
   const totalIncl = totalExcl.plus(totalVat).plus(stampDuty).toDecimalPlaces(2);
 
+  // An advance already invoiced was already taxed on its own invoice, so it
+  // comes off the total INCLUDING VAT, not off the base. `totalIncl` stays the
+  // value of the work; `dueNow` is what the client pays on this piece of paper.
+  const advanceDeducted = D(opts.advanceDeducted).toDecimalPlaces(2);
+  const dueNow = totalIncl.minus(advanceDeducted).toDecimalPlaces(2);
+
+  // Retenue de garantie is deliberately absent. Whether it comes off the base or
+  // off the total, and whether VAT is computed before or after it, is one of the
+  // four questions waiting on the accountant — see the compliance profile. The
+  // percentage is stored on the document and printed; it is not arithmetic this
+  // file is entitled to perform yet.
+
   return {
     totalExcl: totalExcl.toFixed(2),
     discountTotal: discountTotal.toFixed(2),
@@ -83,6 +116,9 @@ export function computeTotals(
     totalVat: totalVat.toFixed(2),
     stampDuty: stampDuty.toFixed(2),
     totalIncl: totalIncl.toFixed(2),
+    advanceDeducted: advanceDeducted.toFixed(2),
+    dueNow: dueNow.toFixed(2),
+    optionsExcl: optionsExcl.toFixed(2),
   };
 }
 

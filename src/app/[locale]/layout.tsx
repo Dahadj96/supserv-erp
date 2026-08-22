@@ -1,5 +1,5 @@
+import { GeistSans } from "geist/font/sans";
 import type { Metadata } from "next";
-import { Geist } from "next/font/google";
 import { notFound } from "next/navigation";
 import { hasLocale, NextIntlClientProvider } from "next-intl";
 import { setRequestLocale } from "next-intl/server";
@@ -9,7 +9,16 @@ import { Toaster } from "sonner";
 import { routing } from "@/i18n/routing";
 import "../globals.css";
 
-const geist = Geist({ subsets: ["latin"], variable: "--font-geist" });
+/**
+ * Self-hosted, not fetched.
+ *
+ * `next/font/google` downloads the face from fonts.googleapis.com AT BUILD TIME,
+ * which means a build in Adrar fails whenever the line to Google is having a bad
+ * evening — and it did, exactly that way. The `geist` package ships the same
+ * font files inside node_modules, so the build needs no network and the browser
+ * fetches nothing from a third party either.
+ */
+const geist = GeistSans;
 
 export const metadata: Metadata = {
   title: "SUPSERV",

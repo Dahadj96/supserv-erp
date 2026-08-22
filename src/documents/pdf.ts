@@ -124,6 +124,8 @@ const WORDS = {
       stampDuty: "Droit de timbre",
       advanceDeducted: "Avance déduite",
       discountTotal: "Remise",
+      dueNow: "Net à payer",
+      optionsExcl: "Options non comprises (HT)",
     } as Record<string, string>,
   },
   en: {
@@ -145,6 +147,8 @@ const WORDS = {
       stampDuty: "Stamp duty",
       advanceDeducted: "Advance deducted",
       discountTotal: "Discount",
+      dueNow: "Net payable",
+      optionsExcl: "Options not included (excl. VAT)",
     } as Record<string, string>,
   },
 };
@@ -260,6 +264,8 @@ export async function toPdf(doc: RenderedDocument): Promise<Buffer> {
     "advanceDeducted",
     "stampDuty",
     "totalIncl",
+    "dueNow",
+    "optionsExcl",
   ];
   const rank = (label: string) => {
     const at = order.indexOf(label.startsWith("vat:") ? "vat" : label);

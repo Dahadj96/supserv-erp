@@ -1022,7 +1022,8 @@
       "alreadyIssued": "That document has already been issued.",
       "blocked": "A confirmed rule refused this document",
       "complianceBlocked": "A confirmed rule refused this document."
-    }
+    },
+    "edit": "Edit"
   },
   "checklist": {
     "title": "Before issuing",
@@ -1048,60 +1049,6 @@
     "note": {
       "notRecorded": "Not recorded — nothing will be printed",
       "numberOnIssue": "Reserved on issue, never on a draft"
-    }
-  },
-  "newInvoice": {
-    "title": "New invoice",
-    "subtitle": "Nothing is known yet, so this one is typed. Later ones start from an order.",
-    "startFrom": "Start from",
-    "start": {
-      "myself": "Nothing — enter it myself",
-      "order": "An order",
-      "offer": "An offer or proforma",
-      "situation": "A situation de travaux",
-      "laterReason": "Starting from an order, an offer or a situation needs those records to exist. They arrive with the sales modules; until then an invoice is typed."
-    },
-    "client": "Client",
-    "pickClient": "Choose a company…",
-    "date": "Invoice date",
-    "dateHint": "The date that goes on the document. Today unless you change it.",
-    "languageFrom": "This document will be written in {language} — that comes from the client.",
-    "clientHasNoNif": "This client has no NIF recorded. You can draft, but not issue.",
-    "lines": "Lines",
-    "linesHint": "A line with no description or no quantity is not saved",
-    "col": {
-      "designation": "Description",
-      "unit": "Unit",
-      "qty": "Qty",
-      "unitPrice": "Unit price",
-      "vat": "VAT",
-      "total": "Total excl."
-    },
-    "addLine": "Add a line",
-    "removeLine": "Remove this line",
-    "totalExcl": "Total excl. VAT",
-    "vatAt": "VAT {rate}%",
-    "totalIncl": "Total incl. VAT",
-    "stampDutyLater": "Stamp duty is not added here. It applies to cash settlement, and the rule is one of the four still waiting on the accountant.",
-    "saveDraft": "Save draft",
-    "noNumberYet": "No number is taken yet — that happens when you issue.",
-    "whenYouSave": "When you save",
-    "saveStep": {
-      "draft": "A draft is created. Nothing is sent and nothing is registered.",
-      "number": "No invoice number is reserved. Drafts never consume one.",
-      "preview": "You land on the document, with the PDF the client would receive.",
-      "issue": "Issuing is a separate, deliberate act — and it cannot be undone."
-    },
-    "notHereYet": "Not here yet",
-    "notHereYetBody": "Discounts, advances, retenue de garantie, option lines and section headings are in the schema but have no controls on this screen. They arrive with the full document builder.",
-    "noClientsYet": "There are no companies yet, so there is nobody to invoice.",
-    "addCompany": "Add a company",
-    "goToSetup": "Finish day one",
-    "setupWarning": "You can draft this invoice, but not issue it yet: {missing} still to do.",
-    "error": {
-      "notAllowed": "Your role may not create invoices.",
-      "noClient": "Choose a client before saving.",
-      "noLines": "An invoice needs at least one line with a description and a quantity."
     }
   },
   "invoices": {
@@ -1628,6 +1575,112 @@
       "notAllowed": "Only a Gérant may change a template.",
       "noSuchTemplate": "That template no longer exists.",
       "notCurrent": "That is a retired version. Edit the one in use."
+    }
+  },
+  "newDoc": {
+    "title": "New document",
+    "subtitle": "Three questions, then the lines.",
+    "whatKind": "What are you making?",
+    "kindHint": "Only the kinds your role may issue, and only the ones switched on in the catalogue.",
+    "counterparty": "Counterparty",
+    "pickCounterparty": "Choose a company…",
+    "date": "Document date",
+    "dateHint": "Today unless you change it.",
+    "languageFromClient": "The document will be written in the counterparty's language, taken from their record — not from the language you are reading this in.",
+    "create": "Create the draft",
+    "thenLines": "You will land in the builder, with nothing on it yet.",
+    "startFrom": "Start from",
+    "start": {
+      "myself": "Nothing — enter it myself",
+      "order": "An order",
+      "offer": "An offer or proforma",
+      "situation": "A situation de travaux",
+      "laterReason": "Starting from an order, an offer or a situation needs those records to exist. They arrive with the sales modules; until then a document is typed."
+    },
+    "whenYouSave": "What happens",
+    "saveStep": {
+      "draft": "A draft is created. Nothing is sent and nothing is registered.",
+      "number": "No number is reserved. Drafts never consume one.",
+      "lines": "You add the lines in the builder, and can change the kind while it is a draft.",
+      "issue": "Issuing is a separate, deliberate act — and it cannot be undone."
+    },
+    "noClientsYet": "There are no companies yet, so there is nobody to write to.",
+    "addCompany": "Add a company",
+    "goToSetup": "Finish day one",
+    "setupWarning": "You can prepare a document, but not issue it yet: {missing} still to do.",
+    "error": {
+      "notAllowed": "Your role may not create this kind of document.",
+      "noClient": "Choose a counterparty before creating the draft.",
+      "typeIsOff": "That document type is switched off in the catalogue."
+    }
+  },
+  "builder": {
+    "title": "Building",
+    "draft": "Draft",
+    "forClient": "For {client} · written in {language}",
+    "preview": "Preview and issue",
+    "saved": "Saved. Nothing has been sent and no number has been taken.",
+    "kind": "Kind",
+    "lines": "Lines",
+    "linesHint": "a row with no description, or no quantity, is not saved",
+    "col": {
+      "designation": "Designation",
+      "unit": "Unit",
+      "qty": "Qty",
+      "unitPrice": "Unit price",
+      "discount": "Disc. %",
+      "vat": "VAT",
+      "total": "Total excl."
+    },
+    "lineKind": {
+      "item": "item",
+      "section": "lot",
+      "text": "text",
+      "subtotal": "subtotal",
+      "page_break": "break"
+    },
+    "add": {
+      "item": "Line",
+      "section": "Lot",
+      "text": "Free text",
+      "subtotal": "Subtotal",
+      "page_break": "Page break"
+    },
+    "placeholder": {
+      "item": "What the client is buying",
+      "section": "LOT 1 — SUPPLY",
+      "text": "A sentence the client should read",
+      "subtotal": "Subtotal lot 1",
+      "page_break": ""
+    },
+    "pageBreak": "The document continues on a new page here.",
+    "option": "Show it, do not charge for it",
+    "optionShort": "OPT",
+    "moveUp": "Move up",
+    "moveDown": "Move down",
+    "removeLine": "Remove this line",
+    "totals": "Totals",
+    "totalExcl": "Total excl. VAT",
+    "globalDiscount": "Global discount",
+    "vatAt": "VAT {rate}%",
+    "totalIncl": "Total incl. VAT",
+    "advance": "Advance already invoiced",
+    "dueNow": "Due on this document",
+    "optionsNotIncluded": "Options not included: {amount} excl. VAT",
+    "adjustments": "Adjustments",
+    "globalDiscountPct": "Global discount %",
+    "advanceDeducted": "Advance already invoiced",
+    "retentionPct": "Retention %",
+    "retentionUnconfirmed": "Stored and printed, not subtracted. Whether a retenue de garantie comes off the base or off the total, and whether VAT is computed before or after it, is one of the questions waiting on your accountant.",
+    "date": "Document date",
+    "save": "Save draft",
+    "saveAndPreview": "Save and preview",
+    "noNumberYet": "No number is taken until you issue it, and a draft can be changed as often as you like.",
+    "error": {
+      "notAllowed": "Your role may not edit this kind of document.",
+      "alreadyIssued": "That document is issued. A correction is a new document.",
+      "noLines": "A document needs at least one line with a description and a quantity.",
+      "noSuchDocument": "That document no longer exists."
     }
   }
 }

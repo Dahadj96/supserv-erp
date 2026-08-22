@@ -1022,7 +1022,8 @@
       "alreadyIssued": "Ce document a déjà été émis.",
       "blocked": "Une règle confirmée a refusé ce document",
       "complianceBlocked": "Une règle confirmée a refusé ce document."
-    }
+    },
+    "edit": "Modifier"
   },
   "checklist": {
     "title": "Avant d'émettre",
@@ -1048,60 +1049,6 @@
     "note": {
       "notRecorded": "Non renseigné — rien ne sera imprimé",
       "numberOnIssue": "Réservé à l'émission, jamais sur un brouillon"
-    }
-  },
-  "newInvoice": {
-    "title": "Nouvelle facture",
-    "subtitle": "Rien n'est encore connu, celle-ci se saisit. Les suivantes partiront d'une commande.",
-    "startFrom": "Partir de",
-    "start": {
-      "myself": "Rien — je saisis moi-même",
-      "order": "Une commande",
-      "offer": "Une offre ou une proforma",
-      "situation": "Une situation de travaux",
-      "laterReason": "Partir d'une commande, d'une offre ou d'une situation suppose que ces documents existent. Ils arrivent avec les modules de vente ; en attendant, une facture se saisit."
-    },
-    "client": "Client",
-    "pickClient": "Choisir une société…",
-    "date": "Date de la facture",
-    "dateHint": "La date portée sur le document. Aujourd'hui, sauf si vous la changez.",
-    "languageFrom": "Ce document sera rédigé en {language} — cela vient de la fiche client.",
-    "clientHasNoNif": "Ce client n'a pas de NIF. Vous pouvez préparer, pas émettre.",
-    "lines": "Lignes",
-    "linesHint": "Une ligne sans désignation ou sans quantité n'est pas enregistrée",
-    "col": {
-      "designation": "Désignation",
-      "unit": "U",
-      "qty": "Qté",
-      "unitPrice": "P.U. HT",
-      "vat": "TVA",
-      "total": "Montant HT"
-    },
-    "addLine": "Ajouter une ligne",
-    "removeLine": "Supprimer cette ligne",
-    "totalExcl": "Total HT",
-    "vatAt": "TVA {rate} %",
-    "totalIncl": "Total TTC",
-    "stampDutyLater": "Le droit de timbre n'est pas ajouté ici. Il concerne le règlement en espèces, et la règle fait partie des quatre encore en attente du comptable.",
-    "saveDraft": "Enregistrer le brouillon",
-    "noNumberYet": "Aucun numéro n'est pris pour l'instant — cela arrive à l'émission.",
-    "whenYouSave": "À l'enregistrement",
-    "saveStep": {
-      "draft": "Un brouillon est créé. Rien n'est envoyé, rien n'est enregistré au registre.",
-      "number": "Aucun numéro de facture n'est réservé. Un brouillon n'en consomme jamais.",
-      "preview": "Vous arrivez sur le document, avec le PDF que le client recevrait.",
-      "issue": "L'émission est un acte distinct et volontaire — et elle est irréversible."
-    },
-    "notHereYet": "Pas encore ici",
-    "notHereYetBody": "Remises, avances, retenue de garantie, lignes en option et titres de section existent dans le schéma mais n'ont pas de commandes sur cet écran. Ils arrivent avec le constructeur de documents complet.",
-    "noClientsYet": "Il n'y a encore aucune société, donc personne à facturer.",
-    "addCompany": "Ajouter une société",
-    "goToSetup": "Terminer le premier jour",
-    "setupWarning": "Vous pouvez préparer cette facture, mais pas encore l'émettre : {missing} restent à faire.",
-    "error": {
-      "notAllowed": "Votre rôle ne permet pas de créer des factures.",
-      "noClient": "Choisissez un client avant d'enregistrer.",
-      "noLines": "Une facture demande au moins une ligne avec une désignation et une quantité."
     }
   },
   "invoices": {
@@ -1628,6 +1575,112 @@
       "notAllowed": "Seul un Gérant peut modifier un modèle.",
       "noSuchTemplate": "Ce modèle n'existe plus.",
       "notCurrent": "C'est une version retirée. Modifiez celle en service."
+    }
+  },
+  "newDoc": {
+    "title": "Nouveau document",
+    "subtitle": "Trois questions, ensuite les lignes.",
+    "whatKind": "Que faites-vous ?",
+    "kindHint": "Seulement les types que votre rôle peut émettre, et seulement ceux activés au catalogue.",
+    "counterparty": "Tiers",
+    "pickCounterparty": "Choisir une société…",
+    "date": "Date du document",
+    "dateHint": "Aujourd'hui, sauf si vous la changez.",
+    "languageFromClient": "Le document sera rédigé dans la langue du tiers, prise sur sa fiche — pas dans celle où vous lisez ceci.",
+    "create": "Créer le brouillon",
+    "thenLines": "Vous arriverez dans le constructeur, encore vide.",
+    "startFrom": "Partir de",
+    "start": {
+      "myself": "Rien — je saisis moi-même",
+      "order": "Une commande",
+      "offer": "Une offre ou une proforma",
+      "situation": "Une situation de travaux",
+      "laterReason": "Partir d'une commande, d'une offre ou d'une situation suppose que ces documents existent. Ils arrivent avec les modules de vente ; en attendant, un document se saisit."
+    },
+    "whenYouSave": "Ce qui se passe",
+    "saveStep": {
+      "draft": "Un brouillon est créé. Rien n'est envoyé, rien n'est porté au registre.",
+      "number": "Aucun numéro n'est réservé. Un brouillon n'en consomme jamais.",
+      "lines": "Vous ajoutez les lignes dans le constructeur, et vous pouvez changer le type tant que c'est un brouillon.",
+      "issue": "L'émission est un acte distinct et volontaire — et elle est irréversible."
+    },
+    "noClientsYet": "Il n'y a encore aucune société, donc personne à qui écrire.",
+    "addCompany": "Ajouter une société",
+    "goToSetup": "Terminer le premier jour",
+    "setupWarning": "Vous pouvez préparer un document, mais pas encore l'émettre : {missing} restent à faire.",
+    "error": {
+      "notAllowed": "Votre rôle ne permet pas de créer ce type de document.",
+      "noClient": "Choisissez un tiers avant de créer le brouillon.",
+      "typeIsOff": "Ce type de document est désactivé au catalogue."
+    }
+  },
+  "builder": {
+    "title": "En construction",
+    "draft": "Brouillon",
+    "forClient": "Pour {client} · rédigé en {language}",
+    "preview": "Aperçu et émission",
+    "saved": "Enregistré. Rien n'a été envoyé et aucun numéro n'a été pris.",
+    "kind": "Type",
+    "lines": "Lignes",
+    "linesHint": "une ligne sans désignation, ou sans quantité, n'est pas enregistrée",
+    "col": {
+      "designation": "Désignation",
+      "unit": "U",
+      "qty": "Qté",
+      "unitPrice": "P.U. HT",
+      "discount": "Rem. %",
+      "vat": "TVA",
+      "total": "Montant HT"
+    },
+    "lineKind": {
+      "item": "ligne",
+      "section": "lot",
+      "text": "texte",
+      "subtotal": "sous-total",
+      "page_break": "saut"
+    },
+    "add": {
+      "item": "Ligne",
+      "section": "Lot",
+      "text": "Texte libre",
+      "subtotal": "Sous-total",
+      "page_break": "Saut de page"
+    },
+    "placeholder": {
+      "item": "Ce que le client achète",
+      "section": "LOT 1 — FOURNITURE",
+      "text": "Une phrase que le client doit lire",
+      "subtotal": "Sous-total lot 1",
+      "page_break": ""
+    },
+    "pageBreak": "Le document continue sur une nouvelle page ici.",
+    "option": "L'afficher sans le facturer",
+    "optionShort": "OPT",
+    "moveUp": "Monter",
+    "moveDown": "Descendre",
+    "removeLine": "Supprimer cette ligne",
+    "totals": "Totaux",
+    "totalExcl": "Total HT",
+    "globalDiscount": "Remise globale",
+    "vatAt": "TVA {rate} %",
+    "totalIncl": "Total TTC",
+    "advance": "Avance déjà facturée",
+    "dueNow": "Net à payer sur ce document",
+    "optionsNotIncluded": "Options non comprises : {amount} HT",
+    "adjustments": "Ajustements",
+    "globalDiscountPct": "Remise globale %",
+    "advanceDeducted": "Avance déjà facturée",
+    "retentionPct": "Retenue de garantie %",
+    "retentionUnconfirmed": "Enregistrée et imprimée, pas déduite. Savoir si une retenue de garantie se prend sur le HT ou sur le TTC, et si la TVA se calcule avant ou après, fait partie des questions en attente de votre comptable.",
+    "date": "Date du document",
+    "save": "Enregistrer le brouillon",
+    "saveAndPreview": "Enregistrer et voir l'aperçu",
+    "noNumberYet": "Aucun numéro n'est pris avant l'émission, et un brouillon se modifie autant de fois qu'il le faut.",
+    "error": {
+      "notAllowed": "Votre rôle ne permet pas de modifier ce type de document.",
+      "alreadyIssued": "Ce document est émis. Une correction est un nouveau document.",
+      "noLines": "Un document demande au moins une ligne avec une désignation et une quantité.",
+      "noSuchDocument": "Ce document n'existe plus."
     }
   }
 }
