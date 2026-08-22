@@ -41,20 +41,18 @@ mid-install. Back up by pushing to GitHub, not by syncing the folder.
 `CLAUDE.md` describes the repository as it is **meant** to be. This section says
 where it actually is, and is updated at the end of every phase.
 
-**Last updated: 2026-08-22 · ~26 of 83 screens have a working route · 225 tests passing.**
+**Last updated: 2026-08-22 · ~33 of 83 screens have a working route · 272 tests passing.**
 
 `pnpm dev` runs. Sign in with Microsoft, switch to Français, and the records
 half of the system works end to end. Since 2026-08-22 an invoice does too:
 `/setup` → `/documents/new` → the document, its checklist and its PDF.
 
-**Correction, 2026-08-21:** this section previously said "phases 0 and 1 are
-done". Phase 1 is. **Phase 0 is not** — screens 29 (Settings), 30 (Users and
-roles), 31 (Modules) and 53 (Language settings) still have no route. Screen 85
-(Day one) now does, and it is the one that mattered: it is where the company's
-RC, NIF, NIS, article d'imposition, VAT rates and numbering series are entered,
-and **no document can be issued until they exist**.
+**Phases 0, 1 and 3 are done. Phase 2 is not** — the scan station (41), the
+website forms (46), quick capture (61) and the phone screens (86) have no route,
+and the mailbox is not reading (see below). Of phase 0 only screen 31, Modules,
+is still missing, and it is a switchboard for modules that do not exist yet.
 
-**Nobody has filled it in yet.** `company_identity`, `vat_rate`,
+**Day one has not been filled in yet.** `company_identity`, `vat_rate`,
 `numbering_series` and `bank_account` are all empty, so `/documents/new` will
 let you draft an invoice and `/documents/[id]` will refuse to issue it, naming
 what is missing. That refusal is the system working, not a bug.
@@ -91,26 +89,33 @@ procedure and `scripts/scope-mailbox.ps1` runs it.
 and deals are phase 4. The rules and the alias memory are built and tested; the
 pages arrive with the offer builder. `docs/DECISIONS/2026-08-21-designation-before-the-offer-builder.md`.
 
-**Phase 3, so far:**
+**Phase 3 — done:**
 
 | Built | Screens |
 |---|---|
 | Day one — eleven steps, every one computed, four of them blocking | 85 |
 | The document engine — seven steps, one renderer, one numbering | 70 |
-| New invoice, typed *(the "start from an order" paths await phase 5)* | 72 |
-| The document, its ten-row checklist, its PDF and the Issue button | 18 |
+| Document templates, versioned, and a reprint that reproduces the original | 71 |
+| Document types — eighteen kinds and what each one is worth | 50 |
+| The builder — lots, options, subtotals, free text, page breaks | 47 |
+| New document, typed *(the "start from an order" paths await phase 5)* | 72 |
+| The document, its checklist, its PDF and the Issue button | 18 |
 | Invoices — list, filters, an age computed rather than stored | 17 |
+
+**Also built, out of order because everything pointed at it:** the compliance
+profile (69), where a person confirms a rule and it starts refusing; users and
+roles (30); settings (29); language (53).
 
 **Four compliance rules still warn instead of blocking**, because nobody has
 confirmed them: the droit de timbre threshold, the retenue de garantie
 treatment, TVA on services rendered abroad, and how long a proforma stays valid.
 They are written down, they appear on every document that touches them, and the
-day somebody signs off on one it starts refusing. Screen 69 is where that
-signing happens, and it is not built yet — `confirmRule()` is.
+day somebody signs off on one it starts refusing. `/settings/compliance` is
+where that happens, and the one-pager to send your accountant is on it.
 
-**Not started: the rest of phase 2 and everything after** — scanning, OCR,
-the website forms, the phone screens, the document builder proper, document
-types and templates, payments, and everything after them.
+**Not started: the rest of phase 2, and phases 4 onward** — the scan station,
+the website forms, the phone screens, the whole sell side (enquiry → item list →
+prices → offer → technical annex), payments and ageing, and the assistant.
 
 **Nothing is seeded.** The database holds whatever you have typed into it. A
 screen with no rows is telling you the truth.
