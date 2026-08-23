@@ -14,6 +14,17 @@ const nextConfig: NextConfig = {
   typedRoutes: false,
 
   /**
+   * The dev server refuses cross-origin requests for its own assets unless the
+   * origin is named here — so reaching `next dev` through a tunnel at
+   * erp.supserv-dz.com loads the page and then fails to load a single script,
+   * which looks like a broken app rather than a blocked origin.
+   *
+   * Only ever the dev server. A production build serves its assets from the
+   * same origin and does not consult this list. See docs/REMOTE-ACCESS.md.
+   */
+  allowedDevOrigins: ["erp.supserv-dz.com", "*.supserv-dz.com", "*.ts.net"],
+
+  /**
    * The local storage driver reads and writes paths built at runtime, which
    * Turbopack cannot follow — so it traces the whole project into the
    * standalone output "to be safe" and the image doubles.

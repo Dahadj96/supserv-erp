@@ -192,6 +192,17 @@ no user limit. Do not do this on day one; know it exists.
 
 ### supserv.dz — leave it alone
 
+> **Update, 22 Aug 2026 — the escape hatch below was taken, and correctly.**
+> SUPSERV owns a second domain, `supserv-dz.com`, already on Cloudflare and
+> carrying no email. The ERP is published at `erp.supserv-dz.com` through a
+> Cloudflare Tunnel, behind Cloudflare Access. **`supserv.dz` is untouched and
+> Microsoft 365 email did not move** — which is the only thing the paragraph
+> below was ever protecting. See **`docs/REMOTE-ACCESS.md`**.
+>
+> Tailscale is still the better answer for staff who work here every day, and
+> `docs/NETWORK.md` still stands. The tunnel exists so that one person testing
+> from outside the office does not have to install anything.
+
 Cloudflare Tunnel is the other free way to reach a server with no public IP, and
 it works well. But on the free plan **it requires moving your whole domain's
 nameservers to Cloudflare** — including the MX records that carry your Microsoft
