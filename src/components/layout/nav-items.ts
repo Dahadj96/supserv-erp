@@ -12,6 +12,7 @@ import {
   LayoutDashboard,
   MessagesSquare,
   Package,
+  Printer,
   Receipt,
   Search,
   Settings,
@@ -47,6 +48,7 @@ export const NAV_GROUPS: NavGroup[] = [
     entries: [
       { key: "today", messageKey: "today", href: "/today", icon: CalendarClock, badge: "today" },
       { key: "inbox", messageKey: "inbox", href: "/inbox", icon: Inbox, badge: "inbox" },
+      { key: "scan", messageKey: "scan", href: "/inbox/scan", icon: Printer },
       {
         key: "conversations",
         messageKey: "conversations",

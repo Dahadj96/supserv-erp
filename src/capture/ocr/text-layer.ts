@@ -1,4 +1,5 @@
 import { getDocumentProxy, extractText as unpdfExtractText } from "unpdf";
+import { repairArabic } from "./arabic";
 import { needsBidiRepair, type OcrBlock, type OcrResult } from "./provider";
 
 /**
@@ -30,7 +31,13 @@ export type TextLayer = {
   totalPages: number;
   /** Pages whose text layer is too thin to be the document. These need OCR. */
   thinPages: number[];
-  /** True when the text is Arabic in presentation forms — see provider.ts. */
+  /** True when Arabic on this document was reversed and has been put right. */
+  arabicRepaired: boolean;
+  /**
+   * True when Arabic is STILL in presentation forms after the repair, which
+   * means this text layer cannot be searched and the page belongs in OCR.
+   * See provider.ts and docs/OCR.md §4.
+   */
   needsBidi: boolean;
 };
 
@@ -39,8 +46,20 @@ export async function readTextLayer(file: Buffer): Promise<TextLayer> {
   const pdf = await getDocumentProxy(bytes);
   const { totalPages, text } = await unpdfExtractText(pdf, { mergePages: false });
 
+  let repairedAny = false;
+  let stillBroken = false;
+
   const pages: PageText[] = (text as string[]).map((raw, i) => {
-    const cleaned = normalise(raw);
+    // Arabic comes out of a PDF as reversed presentation glyphs. Repaired here,
+    // once, before anything else in the system ever sees it — because every
+    // consumer downstream (search, extraction, a citation on screen 40) needs
+    // the letters a person would type, not the glyphs a typesetter chose.
+    // docs/OCR.md §4.
+    const repair = repairArabic(normalise(raw));
+    if (repair.repaired) repairedAny = true;
+    if (repair.stillBroken) stillBroken = true;
+
+    const cleaned = repair.text;
     return {
       page: i + 1,
       text: cleaned,
@@ -55,7 +74,11 @@ export async function readTextLayer(file: Buffer): Promise<TextLayer> {
     pages,
     totalPages,
     thinPages: pages.filter((p) => p.text.length < THIN_PAGE).map((p) => p.page),
-    needsBidi: pages.some((p) => needsBidiRepair(p.text)),
+    arabicRepaired: repairedAny,
+    // Only true when the repair FAILED. A page still holding presentation forms
+    // cannot be trusted or searched, and Tesseract reads printed Arabic well —
+    // so that page belongs in OCR. A page that repaired cleanly does not.
+    needsBidi: stillBroken || pages.some((p) => needsBidiRepair(p.text)),
   };
 }
 

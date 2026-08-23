@@ -26,7 +26,8 @@
     "files": "Fichiers",
     "reports": "Rapports",
     "settings": "Paramètres",
-    "notifications": "Notifications"
+    "notifications": "Notifications",
+    "scan": "Numérisation"
   },
   "auth": {
     "signIn": "Connexion",
@@ -1681,6 +1682,67 @@
       "alreadyIssued": "Ce document est émis. Une correction est un nouveau document.",
       "noLines": "Un document demande au moins une ligne avec une désignation et une quantité.",
       "noSuchDocument": "Ce document n'existe plus."
+    }
+  },
+  "scan": {
+    "title": "Station de numérisation",
+    "subtitle": "Le papier, et comment il entre",
+    "uploadOne": "Envoyer un fichier",
+    "readNow": "Lire le dossier maintenant",
+    "banner": "Votre scanner sait déjà déposer un PDF dans un dossier : c'est donc la voie retenue. Numérisez vers le dossier ci-dessous et le système lit ce qu'il y trouve. Rien n'est supprimé — un fichier lu part dans un sous-dossier, et un fichier en échec reste exactement là où vous l'avez mis.",
+    "theFolder": "Le dossier où le scanner écrit",
+    "watching": "Réglé",
+    "notSetUp": "Non réglé",
+    "folderLabel": "Chemin complet sur cet ordinateur",
+    "saveFolder": "Enregistrer",
+    "folderHow": "Un chemin complet, sur la machine qui fait tourner l'application. Après lecture, le fichier part dans {readFolder} à côté, pour que le passage suivant ne le relise pas et que vous retrouviez l'original.",
+    "lastPickedUp": "Dernière prise le {when}",
+    "folderSaved": "Dossier enregistré. Appuyez sur « Lire le dossier maintenant » pour prendre ce qu'il contient.",
+    "sweepDone": "{found, plural, =0 {Rien dans le dossier} other {# fichier(s) trouvé(s)}} · {read} lu(s) · {left} laissé(s) sur place.",
+    "recent": "Lus récemment",
+    "recentWhat": "cliquez pour vérifier ce qui en a été lu",
+    "nothingYet": "Rien n'a encore été lu.",
+    "nPages": "{n} pages",
+    "pagesNeedOcr": "{n} pages à passer en OCR",
+    "fullyRead": "Entièrement lu",
+    "howPaperGetsIn": "Comment le papier entre",
+    "route": {
+      "folder": {
+        "what": "Numériser vers un dossier",
+        "state": "Fonctionne",
+        "detail": "Le scanner écrit un PDF, le système le récupère. Sans pilote, sans envoi manuel."
+      },
+      "upload": {
+        "what": "Envoyer un fichier à la main",
+        "state": "Fonctionne",
+        "detail": "Un fichier à la fois, sur l'écran des dossiers. Utile pour ce que quelqu'un vous a envoyé par e-mail."
+      },
+      "mailbox": {
+        "what": "Directement depuis la boîte partagée",
+        "state": "En attente",
+        "detail": "Construit, et refusant de s'exécuter tant que la boîte n'est pas restreinte à un seul compte. Voir docs/MAILBOX-ACCESS.md."
+      },
+      "driver": {
+        "what": "Un bouton qui parle au scanner",
+        "state": "Non prévu",
+        "detail": "Il faudrait un pilote par modèle, et il casserait le jour où le scanner est remplacé. Le dossier fait le même travail et survit au matériel."
+      }
+    },
+    "readingThePages": "La lecture des pages",
+    "textFirst": "Un PDF qui contient déjà du texte est lu directement — mesuré à 0,055 s et plus fiable que l'OCR. Cela couvre la plupart des offres fournisseurs et des pièces d'appel d'offres, parce qu'elles ont été produites sur ordinateur.",
+    "arabicNote": "L'arabe sort d'un PDF à l'envers et en lettres isolées, ce qui le rend introuvable. Il est réparé à l'entrée, pour que quelqu'un qui tape الجزائرية retrouve le document.",
+    "notHereYet": "Pas encore ici",
+    "missing": {
+      "deskew": "Pivoter, redresser ou retirer une page — il faut les images des pages.",
+      "split": "Découper un classeur numérisé en documents distincts — même raison.",
+      "ocr": "Lire une page qui ne contient aucun texte. Le conteneur OCR est conçu et mesuré dans docs/OCR.md ; il n'est pas installé.",
+      "worker": "Surveiller le dossier tout seul. Aujourd'hui c'est un bouton que vous appuyez."
+    },
+    "error": {
+      "notAllowed": "Seul un Gérant peut régler le dossier de numérisation.",
+      "notConfigured": "Aucun dossier n'est réglé.",
+      "notAbsolute": "Il faut un chemin complet, depuis la lettre du lecteur.",
+      "notADirectory": "Il n'y a aucun dossier à ce chemin sur cet ordinateur."
     }
   }
 }

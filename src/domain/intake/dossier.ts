@@ -56,7 +56,34 @@ export async function ingestPdf(opts: {
   let unreadPages: number[] = [];
   let provider = "text-layer";
 
-  const layer = await readTextLayer(opts.body);
+  // A file that turns out not to be a PDF at all — a scanner set to JPEG, a
+  // download that stopped halfway — must not leave a dossier sitting in
+  // `reading` for ever. The row is marked failed and the error is re-thrown so
+  // the caller can leave the file where the person put it.
+  let layer: Awaited<ReturnType<typeof readTextLayer>>;
+  try {
+    layer = await readTextLayer(opts.body);
+  } catch (error) {
+    await db
+      .update(intakeDossier)
+      .set({ storagePath: path, status: "failed" })
+      .where(eq(intakeDossier.id, dossierId));
+
+    await db.insert(auditEntry).values({
+      actorId: opts.actorId,
+      actorKind: "system",
+      entity: "intake_dossier",
+      entityId: dossierId,
+      action: "unreadable",
+      after: {
+        filename: opts.filename,
+        error: error instanceof Error ? error.message : "unknown",
+      },
+      sourceScreen: "39",
+    });
+
+    throw error;
+  }
   if (layer.thinPages.length > 0 || layer.needsBidi) {
     // The OCR container is not on this machine yet (docs/OCR.md). The pages
     // that DID read are kept and reviewable; the rest are named.

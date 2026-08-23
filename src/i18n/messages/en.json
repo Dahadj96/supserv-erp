@@ -26,7 +26,8 @@
     "files": "Files",
     "reports": "Reports",
     "settings": "Settings",
-    "notifications": "Notifications"
+    "notifications": "Notifications",
+    "scan": "Scan station"
   },
   "auth": {
     "signIn": "Sign in",
@@ -1681,6 +1682,67 @@
       "alreadyIssued": "That document is issued. A correction is a new document.",
       "noLines": "A document needs at least one line with a description and a quantity.",
       "noSuchDocument": "That document no longer exists."
+    }
+  },
+  "scan": {
+    "title": "Scan station",
+    "subtitle": "Paper, and how it gets in",
+    "uploadOne": "Upload one file",
+    "readNow": "Read the folder now",
+    "banner": "Your scanner already knows how to put a PDF in a folder, so that is the route: scan to the folder below and the system reads whatever it finds. Nothing is deleted — a file that has been read moves into a subfolder, and a file that fails is left exactly where you put it.",
+    "theFolder": "The folder the scanner writes to",
+    "watching": "Set",
+    "notSetUp": "Not set",
+    "folderLabel": "Full path on this computer",
+    "saveFolder": "Save",
+    "folderHow": "A full path, on the machine running the app. After a file is read it moves into {readFolder} beside it, so the next sweep does not read it twice and you can still find the original.",
+    "lastPickedUp": "Last picked something up {when}",
+    "folderSaved": "Folder saved. Press “Read the folder now” to take what is in it.",
+    "sweepDone": "{found, plural, =0 {Nothing in the folder} other {# file(s) found}} · {read} read · {left} left where they were.",
+    "recent": "Read recently",
+    "recentWhat": "click one to check what was read from it",
+    "nothingYet": "Nothing has been read yet.",
+    "nPages": "{n} pages",
+    "pagesNeedOcr": "{n} pages need OCR",
+    "fullyRead": "Fully read",
+    "howPaperGetsIn": "How paper gets in",
+    "route": {
+      "folder": {
+        "what": "Scan to a folder",
+        "state": "Works",
+        "detail": "The scanner writes a PDF, the system picks it up. No driver, no upload."
+      },
+      "upload": {
+        "what": "Upload a file by hand",
+        "state": "Works",
+        "detail": "One file at a time, on the dossier screen. Good for something somebody emailed you."
+      },
+      "mailbox": {
+        "what": "Straight from the shared mailbox",
+        "state": "Waiting",
+        "detail": "Built, and refusing to run until the mailbox is scoped to one account. See docs/MAILBOX-ACCESS.md."
+      },
+      "driver": {
+        "what": "A button that talks to the scanner",
+        "state": "Not planned",
+        "detail": "It would need a driver per scanner model and would break the day the scanner is replaced. The folder does the same job and outlives the hardware."
+      }
+    },
+    "readingThePages": "Reading the pages",
+    "textFirst": "A PDF that already has text in it is read directly — measured at 0.055s and more accurate than OCR. That covers most supplier quotes and most tender documents, because they were made on a computer.",
+    "arabicNote": "Arabic comes out of a PDF backwards and in isolated letterforms, which makes it unsearchable. It is repaired on the way in, so somebody typing الجزائرية finds the document.",
+    "notHereYet": "Not here yet",
+    "missing": {
+      "deskew": "Rotating, deskewing or dropping a page — needs the page images.",
+      "split": "Splitting a scanned binder into separate documents — same reason.",
+      "ocr": "Reading a page that has no text at all. The OCR container is designed and measured in docs/OCR.md; it is not installed.",
+      "worker": "Watching the folder by itself. Today it is a button you press."
+    },
+    "error": {
+      "notAllowed": "Only a Gérant may set the scan folder.",
+      "notConfigured": "No folder is set yet.",
+      "notAbsolute": "That must be a full path, starting from the drive letter.",
+      "notADirectory": "There is no folder at that path on this computer."
     }
   }
 }
