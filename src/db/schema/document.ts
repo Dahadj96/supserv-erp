@@ -60,8 +60,19 @@ export const document = pgTable("document", {
   dueOn: date("due_on"),
   validDays: integer("valid_days"),
 
-  /** draft | issued | part_paid | paid | credited | written_off.
-   *  NOT overdue — that is computed. See LAW 1 and src/domain/state.ts. */
+  /**
+   * WHAT THE DOCUMENT IS: draft | issued | credited | written_off.
+   *
+   * Not overdue, and — since phase 5 — not paid or part-paid either. Those
+   * three are arithmetic over `payment_allocation` and a date, and they change
+   * without anybody touching this row. Storing them here means a transition
+   * somebody has to remember to fire; the first screen that forgets leaves an
+   * invoice reading "issued" with its balance at nought.
+   *
+   * `part_paid` and `paid` still appear in rows written before that, and
+   * `paidStateOf` ignores them in favour of the allocations. See LAW 1 and
+   * src/domain/money/invoices.ts.
+   */
   status: text("status").notNull().default("draft"),
 
   globalDiscountPct: numeric("global_discount_pct", { precision: 6, scale: 3 }).default("0"),

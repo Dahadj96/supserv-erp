@@ -1072,34 +1072,42 @@
     "newInvoice": "Nouvelle facture",
     "filter": {
       "all": "Toutes",
+      "proforma": "Pro forma",
       "draft": "Brouillon",
-      "issued": "Émises",
-      "part_paid": "Partiellement payées",
-      "paid": "Payées"
+      "unpaid": "Émise",
+      "partPaid": "Partiellement réglée",
+      "paid": "Réglée"
     },
     "col": {
       "number": "Numéro",
       "type": "Type",
       "client": "Client",
+      "object": "Objet",
       "total": "Total TTC",
-      "issued": "Émise le",
+      "paid": "Réglé",
+      "issued": "Émise",
       "age": "Ancienneté",
       "status": "Statut"
     },
-    "status": {
-      "draft": "Brouillon",
-      "issued": "Émise",
-      "part_paid": "Partiellement payée",
-      "paid": "Payée",
-      "credited": "Avoir émis",
-      "written_off": "Passée en perte"
-    },
     "noNumber": "Brouillon — sans numéro",
     "ageDraft": "non émise",
-    "notDue": "pas échue",
-    "overdueDays": "{days} j · en retard",
     "empty": "Rien ici pour l'instant.",
-    "paymentsLater": "Il n'y a ni colonne Payé ni bandeau de relance parce que les règlements ne sont pas encore enregistrés. Le retard est calculé à partir de l'échéance et du solde à chaque affichage — ce n'est jamais un statut que quelqu'un pose."
+    "state": {
+      "draft": "Brouillon",
+      "noLegalValue": "Sans valeur légale",
+      "unpaid": "Émise",
+      "partPaid": "Partiellement réglée",
+      "paid": "Réglée",
+      "credited": "Avoir émis",
+      "writtenOff": "Passée en perte"
+    },
+    "nDays": "{n} j",
+    "ageOverdue": "{n} j · en retard",
+    "over90": "{n, plural, one {# facture dépasse} other {# factures dépassent}} 90 jours chez {clients}, pour un total de {amount}.",
+    "and": " et ",
+    "silentFor": "Aucune relance n'a été envoyée depuis {n} jours.",
+    "neverChased": "Aucune d'elles n'a jamais été relancée.",
+    "chaseThem": "Les relancer"
   },
   "users": {
     "title": "Utilisateurs et rôles",

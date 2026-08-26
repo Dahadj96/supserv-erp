@@ -473,3 +473,86 @@ export async function receivedSince(from: string): Promise<Received[]> {
     .from(payment)
     .where(and(isNull(payment.deletedAt), sql`${payment.receivedOn} >= ${from}`));
 }
+
+/**
+ * Screen 17's table — every document that behaves like a bill, drafts and
+ * proformas included.
+ *
+ * Wider than `owings()` on purpose. `owings()` answers "what is owed", so it
+ * drops drafts and proformas; this answers "what have we billed", so it keeps
+ * them and lets `paidStateOf` say what each one is. Two questions, two queries,
+ * rather than one query with a flag and a comment explaining when to pass it.
+ *
+ * The Object column has no column behind it: the frame shows "Climatiseurs et
+ * accessoires", which is the first line of the document. Derived, not stored —
+ * a copy of the first line kept on the header is a copy that goes stale the
+ * moment somebody edits the line.
+ */
+export type BilledRow = {
+  documentId: string;
+  kind: string;
+  number: string | null;
+  status: string;
+  partyId: string;
+  clientName: string;
+  clientCode: string | null;
+  object: string | null;
+  issuedOn: Date | null;
+  dueOn: Date | null;
+  currency: string;
+  totalIncl: string;
+  paid: string;
+};
+
+const BILLED_KINDS = ["invoice", "advance_invoice", "situation", "proforma", "credit_note"];
+
+export async function billed(): Promise<BilledRow[]> {
+  const rows = await db
+    .select({
+      documentId: document.id,
+      kind: document.kind,
+      number: document.number,
+      status: document.status,
+      partyId: document.partyId,
+      clientName: sql<string>`coalesce(nullif(trim(${party.tradeName}), ''), ${party.legalName})`,
+      clientCode: party.code,
+      issuedOn: document.issuedOn,
+      dueOn: document.dueOn,
+      currency: document.currency,
+      totals: document.totals,
+      createdAt: document.createdAt,
+      object: sql<string | null>`(
+        select dl.designation from document_line dl
+        where dl.document_id = ${document.id} and dl.line_kind = 'item'
+        order by dl.position limit 1
+      )`,
+      paid: sql<string>`coalesce((
+        select sum(pa.amount) from payment_allocation pa
+        join ${payment} p on p.id = pa.payment_id
+        where pa.document_id = ${document.id} and p.deleted_at is null
+      ), 0)::text`,
+    })
+    .from(document)
+    .innerJoin(party, eq(party.id, document.partyId))
+    .where(inArray(document.kind, BILLED_KINDS))
+    .orderBy(desc(document.createdAt));
+
+  return rows.map((row) => {
+    const totals = (row.totals ?? {}) as { totalIncl?: string; totalExcl?: string };
+    return {
+      documentId: row.documentId,
+      kind: row.kind,
+      number: row.number,
+      status: row.status,
+      partyId: row.partyId,
+      clientName: row.clientName,
+      clientCode: row.clientCode,
+      object: row.object,
+      issuedOn: row.issuedOn ? new Date(`${row.issuedOn}T00:00:00Z`) : null,
+      dueOn: row.dueOn ? new Date(`${row.dueOn}T00:00:00Z`) : null,
+      currency: row.currency,
+      totalIncl: totals.totalIncl ?? totals.totalExcl ?? "0",
+      paid: row.paid,
+    };
+  });
+}

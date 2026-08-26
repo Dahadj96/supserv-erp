@@ -7,9 +7,11 @@ import { payment, paymentAllocation, relance } from "@/db/schema/money";
 import { party, partyRole } from "@/db/schema/party";
 import { ageingOf, balanceOf, isOverdue } from "@/domain/money/ageing";
 import { collectionOf } from "@/domain/money/collection";
+import { over90, paidStateOf } from "@/domain/money/invoices";
 import { dueNow } from "@/domain/money/relance";
 import {
   allocationsFor,
+  billed,
   draftRelance,
   listPayments,
   markRelanceSent,
@@ -416,5 +418,54 @@ describe("what screen 19 asks the database", () => {
     expect(card.stillRunning).toBe(1);
     expect(card.averageDaysToPay).toBe(74);
     expect(card.stillToCollect).toBe("2640000.00");
+  });
+});
+
+/**
+ * Screen 17's table, once payments exist.
+ *
+ * `billed()` is deliberately wider than `owings()`: it keeps drafts and
+ * proformas, because the question is "what have we billed" rather than "what is
+ * owed". What each row IS falls out of `paidStateOf` over the allocations, not
+ * out of `document.status`.
+ */
+describe("what screen 17 shows", () => {
+  it("keeps the draft that owings() drops", async () => {
+    const mine = (await billed()).filter((r) => invoices.includes(r.documentId));
+    expect(mine).toHaveLength(3);
+    expect((await ours()).length).toBe(2);
+  });
+
+  it("derives paid, part-paid and draft from the rows, not from a status column", async () => {
+    const mine = (await billed()).filter((r) => invoices.includes(r.documentId));
+    const state = (id: string) => paidStateOf(mine.find((r) => r.documentId === id) as never);
+
+    // 3 000 000 of 5 640 000 has arrived...
+    expect(state(invoices[0] as string)).toBe("partPaid");
+    // ...this one was settled in full...
+    expect(state(invoices[1] as string)).toBe("paid");
+    // ...and nobody has ever seen this one.
+    expect(state(invoices[2] as string)).toBe("draft");
+
+    // Every one of those documents still says `issued` or `draft` in the
+    // database. Nothing fired a transition, and nothing had to.
+    const stored = mine.map((r) => r.status).sort();
+    expect(stored).toEqual(["draft", "issued", "issued"]);
+  });
+
+  it("has no object to show when the document has no lines", async () => {
+    const mine = (await billed()).filter((r) => invoices.includes(r.documentId));
+    // Derived from the first line, so a header with no lines says nothing
+    // rather than inventing a subject.
+    expect(mine.every((r) => r.object === null)).toBe(true);
+  });
+
+  it("hands the banner the same figures screen 20 buckets", async () => {
+    const ledger = await ours();
+    const banner = over90(ledger, TODAY);
+    // Only the April invoice is past ninety days, at its remaining balance.
+    expect(banner?.invoices).toBe(1);
+    expect(banner?.amount).toBe("2640000.00");
+    expect(banner?.clients).toEqual(["URBACON (UCC)"]);
   });
 });

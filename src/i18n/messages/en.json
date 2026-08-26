@@ -1072,34 +1072,42 @@
     "newInvoice": "New invoice",
     "filter": {
       "all": "All",
+      "proforma": "Pro forma",
       "draft": "Draft",
-      "issued": "Issued",
-      "part_paid": "Partly paid",
+      "unpaid": "Issued",
+      "partPaid": "Partly paid",
       "paid": "Paid"
     },
     "col": {
       "number": "Number",
       "type": "Type",
       "client": "Client",
+      "object": "Object",
       "total": "Total incl. VAT",
+      "paid": "Paid",
       "issued": "Issued",
       "age": "Age",
       "status": "Status"
     },
-    "status": {
-      "draft": "Draft",
-      "issued": "Issued",
-      "part_paid": "Partly paid",
-      "paid": "Paid",
-      "credited": "Credited",
-      "written_off": "Written off"
-    },
     "noNumber": "Draft — no number",
     "ageDraft": "not issued",
-    "notDue": "not due",
-    "overdueDays": "{days} d · overdue",
     "empty": "Nothing here yet.",
-    "paymentsLater": "There is no Paid column and no relance banner because payments are not recorded yet. Overdue is worked out from the due date and the balance whenever this page loads — it is never a status somebody sets."
+    "state": {
+      "draft": "Draft",
+      "noLegalValue": "No legal value",
+      "unpaid": "Issued",
+      "partPaid": "Partly paid",
+      "paid": "Paid",
+      "credited": "Credited",
+      "writtenOff": "Written off"
+    },
+    "nDays": "{n} d",
+    "ageOverdue": "{n} d · overdue",
+    "over90": "{n, plural, one {# invoice is} other {# invoices are}} past 90 days with {clients}, totalling {amount}.",
+    "and": " and ",
+    "silentFor": "No relance has been sent in {n} days.",
+    "neverChased": "Not one of them has ever been chased.",
+    "chaseThem": "Chase them"
   },
   "users": {
     "title": "Users and roles",

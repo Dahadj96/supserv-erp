@@ -1,41 +1,41 @@
-import { desc, eq, inArray } from "drizzle-orm";
+import { AlertCircle } from "lucide-react";
 import { getTranslations, setRequestLocale } from "next-intl/server";
 import { Badge, type BadgeTone } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { db } from "@/db";
-import { document } from "@/db/schema/document";
-import { party } from "@/db/schema/party";
 import { formatMoney } from "@/domain/money";
-import { daysOverdue, isOverdue } from "@/domain/state";
+import { ageOf, daysLate } from "@/domain/money/ageing";
+import { isOwing, over90, type PaidState, paidStateOf } from "@/domain/money/invoices";
+import { billed, owings } from "@/domain/money/store";
 import { Link } from "@/i18n/navigation";
 
 /**
  * Screen 17 — Invoices.
  *
- * The subtitle on that screen ends "overdue is computed from the due date, not
- * stored", and this page is where that sentence has to be true: there is no
- * overdue status in the table, only a status the record holds and an age this
- * file works out from today's date.
+ * The subtitle ends "overdue is computed from the due date, not stored", and
+ * this page is where that sentence has to be true. It shipped in phase 3 with a
+ * note at the foot of the table saying the Paid column would arrive with the
+ * payments module, rather than showing a column of zeroes that meant nothing.
+ * It has arrived, and the note is gone.
  *
- * The design also draws a Paid column, an Export button and a relance banner.
- * Payments do not exist yet, so a Paid column would read "0" on every row and
- * mean nothing. They arrive together, and the note at the foot of the table
- * says so rather than the screen pretending.
+ * Paid and Partly paid are NOT statuses here. `document.status` keeps what the
+ * document is — draft, issued, credited, written off — and paid-ness is
+ * arithmetic over allocations, worked out on every load. See
+ * `src/domain/money/invoices.ts` for why the two must not share a column.
  */
 export const dynamic = "force-dynamic";
 
-const KINDS = ["invoice", "proforma", "credit_note", "situation"];
-
-const STATUS_TONE: Record<string, BadgeTone> = {
+const STATE_TONE: Record<PaidState, BadgeTone> = {
   draft: "neutral",
-  issued: "accent",
-  part_paid: "warning",
+  noLegalValue: "neutral",
+  unpaid: "accent",
+  partPaid: "warning",
   paid: "good",
   credited: "serious",
-  written_off: "serious",
+  writtenOff: "serious",
 };
 
-const FILTERS = ["all", "draft", "issued", "part_paid", "paid"] as const;
+const FILTERS = ["all", "proforma", "draft", "unpaid", "partPaid", "paid"] as const;
+type Filter = (typeof FILTERS)[number];
 
 export default async function InvoicesPage({
   params,
@@ -49,67 +49,63 @@ export default async function InvoicesPage({
   setRequestLocale(locale);
   const t = await getTranslations();
 
-  const rows = await db
-    .select({
-      id: document.id,
-      kind: document.kind,
-      number: document.number,
-      status: document.status,
-      issuedOn: document.issuedOn,
-      dueOn: document.dueOn,
-      currency: document.currency,
-      totals: document.totals,
-      clientName: party.legalName,
-      clientCode: party.code,
-    })
-    .from(document)
-    .innerJoin(party, eq(document.partyId, party.id))
-    .where(inArray(document.kind, KINDS))
-    .orderBy(desc(document.createdAt));
-
-  const withMoney = rows.map((row) => {
-    const totals = (row.totals ?? {}) as Record<string, string>;
-    const totalIncl = totals.totalIncl ?? totals.totalExcl ?? "0";
-    // No payments module yet, so nothing has been paid and the balance is the
-    // whole total. When payments arrive this line reads from them; until then
-    // it is honest arithmetic over the facts that exist.
-    const balanceValue = row.status === "paid" ? "0" : totalIncl;
-    const dueOn = row.dueOn ? new Date(row.dueOn) : null;
-
+  const today = new Date();
+  const rows = (await billed()).map((row) => {
+    const state = paidStateOf(row);
     return {
       ...row,
-      totalIncl,
-      overdue: isOverdue(dueOn, balanceValue),
-      days: daysOverdue(dueOn),
-      unpaid: row.status !== "paid" && row.status !== "draft" && row.status !== "credited",
+      state,
+      ageDays: ageOf(row.issuedOn, today),
+      lateDays: daysLate(row.dueOn, today),
+      balance: (Number(row.totalIncl) - Number(row.paid)).toFixed(2),
     };
   });
 
-  const counts: Record<string, number> = { all: withMoney.length };
-  for (const key of FILTERS.slice(1)) {
-    counts[key] = withMoney.filter((r) => r.status === key).length;
-  }
+  // The banner runs off the same ledger screen 20 uses, so the two screens
+  // cannot disagree about what is past ninety days.
+  const alert = over90(await owings(), today);
 
-  const active = status && FILTERS.includes(status as (typeof FILTERS)[number]) ? status : "all";
-  const shown = active === "all" ? withMoney : withMoney.filter((r) => r.status === active);
+  const counts: Record<Filter, number> = {
+    all: rows.length,
+    proforma: rows.filter((r) => r.state === "noLegalValue").length,
+    draft: rows.filter((r) => r.state === "draft").length,
+    unpaid: rows.filter((r) => r.state === "unpaid").length,
+    partPaid: rows.filter((r) => r.state === "partPaid").length,
+    paid: rows.filter((r) => r.state === "paid").length,
+  };
 
-  const outstanding = withMoney
-    .filter((r) => r.unpaid)
-    .reduce((sum, r) => sum + Number(r.totalIncl), 0);
+  const active: Filter = FILTERS.includes(status as Filter) ? (status as Filter) : "all";
+  const wanted: Partial<Record<Filter, PaidState>> = {
+    proforma: "noLegalValue",
+    draft: "draft",
+    unpaid: "unpaid",
+    partPaid: "partPaid",
+    paid: "paid",
+  };
+  const shown = active === "all" ? rows : rows.filter((r) => r.state === wanted[active]);
+
+  const owed = rows.filter((r) => isOwing(r.state));
+  const outstanding = owed.reduce((sum, r) => sum + Number(r.balance), 0);
+
+  const money = (amount: string, currency = "DZD") => formatMoney(amount, { locale, currency });
+  const day = new Intl.DateTimeFormat(locale === "fr" ? "fr-DZ" : "en-GB", {
+    day: "2-digit",
+    month: "short",
+  });
 
   return (
     <main className="min-h-0 flex-1 overflow-auto">
-      <div className="flex items-start gap-3 border-b border-line-subtle bg-surface px-7 py-5">
-        <div>
+      <div className="flex flex-wrap items-start gap-3 border-b border-line-subtle bg-surface px-4 py-4 md:px-7 md:py-5">
+        <div className="min-w-0">
           <h1 className="text-[19px] font-semibold text-ink">{t("invoices.title")}</h1>
           <p className="mt-1 text-tiny text-muted">
             {t("invoices.subtitle", {
-              unpaid: withMoney.filter((r) => r.unpaid).length,
-              outstanding: formatMoney(outstanding.toFixed(2), { locale }),
+              unpaid: owed.length,
+              outstanding: money(outstanding.toFixed(2)),
             })}
           </p>
         </div>
-        <div className="ms-auto flex items-center gap-2">
+        <div className="ms-auto flex flex-wrap items-center gap-2">
           <Button variant="secondary" disabledReason={t("invoices.exportLater")}>
             {t("invoices.export")}
           </Button>
@@ -122,7 +118,34 @@ export default async function InvoicesPage({
         </div>
       </div>
 
-      <div className="flex flex-wrap items-center gap-2 px-7 pt-5">
+      {alert ? (
+        <div className="mx-4 mt-4 flex flex-wrap items-center gap-3 rounded-[var(--radius-control)] border border-critical bg-critical-bg px-4 py-3 md:mx-7">
+          <AlertCircle className="size-4 shrink-0 text-critical-ink" aria-hidden />
+          <p className="min-w-0 flex-1 text-tiny leading-relaxed text-critical-ink">
+            {t("invoices.over90", {
+              n: alert.invoices,
+              clients: alert.clients.join(t("invoices.and")),
+              amount: money(alert.amount),
+            })}{" "}
+            {alert.silentDays === null
+              ? t("invoices.neverChased")
+              : t("invoices.silentFor", { n: alert.silentDays })}
+          </p>
+          {/*
+            The frame's button says "Send relances". Nothing here sends. It goes
+            to the screen where a person drafts one and puts it in front of a
+            client themselves — LAW 6.
+          */}
+          <Link
+            href="/payments/ageing"
+            className="shrink-0 rounded-[var(--radius-control)] border border-critical bg-surface px-3 py-1.5 text-tiny text-critical-ink hover:bg-critical-bg"
+          >
+            {t("invoices.chaseThem")}
+          </Link>
+        </div>
+      ) : null}
+
+      <div className="flex flex-wrap items-center gap-2 px-4 pt-5 md:px-7">
         {FILTERS.map((key) => (
           <Link key={key} href={key === "all" ? "/invoices" : `/invoices?status=${key}`}>
             <span
@@ -137,7 +160,7 @@ export default async function InvoicesPage({
         ))}
       </div>
 
-      <div className="px-7 py-5">
+      <div className="px-4 py-5 md:px-7">
         <section className="rounded-[var(--radius-card)] border border-line bg-surface">
           {shown.length === 0 ? (
             <div className="p-6">
@@ -149,70 +172,90 @@ export default async function InvoicesPage({
               </Link>
             </div>
           ) : (
-            <table className="w-full border-collapse text-tiny">
-              <thead>
-                <tr className="border-b border-line-subtle text-micro text-muted">
-                  <th className="py-2.5 ps-5 text-start font-medium">{t("invoices.col.number")}</th>
-                  <th className="py-2.5 pe-4 text-start font-medium">{t("invoices.col.type")}</th>
-                  <th className="py-2.5 pe-4 text-start font-medium">{t("invoices.col.client")}</th>
-                  <th className="py-2.5 pe-4 text-end font-medium">{t("invoices.col.total")}</th>
-                  <th className="py-2.5 pe-4 text-start font-medium">{t("invoices.col.issued")}</th>
-                  <th className="py-2.5 pe-4 text-start font-medium">{t("invoices.col.age")}</th>
-                  <th className="py-2.5 pe-5 text-start font-medium">{t("invoices.col.status")}</th>
-                </tr>
-              </thead>
-              <tbody>
-                {shown.map((row) => (
-                  <tr key={row.id} className="border-b border-line-subtle last:border-0">
-                    <td className="py-2.5 ps-5">
-                      <Link
-                        href={`/documents/${row.id}`}
-                        className="font-medium text-ink hover:underline"
-                      >
-                        {row.number ?? t("invoices.noNumber")}
-                      </Link>
-                    </td>
-                    <td className="py-2.5 pe-4">
-                      <Badge tone={row.kind === "invoice" ? "neutral" : "accent"}>
-                        {t.has(`documents.kind.${row.kind}`)
-                          ? t(`documents.kind.${row.kind}`)
-                          : row.kind}
-                      </Badge>
-                    </td>
-                    <td className="py-2.5 pe-4 text-secondary">
-                      {row.clientCode} — {row.clientName}
-                    </td>
-                    <td className="py-2.5 pe-4 text-end tabular-nums text-ink">
-                      {formatMoney(row.totalIncl, { locale, currency: row.currency })}
-                    </td>
-                    <td className="py-2.5 pe-4 text-muted">{row.issuedOn ?? "—"}</td>
-                    <td className="py-2.5 pe-4">
-                      {row.status === "draft" ? (
-                        <span className="text-muted">{t("invoices.ageDraft")}</span>
-                      ) : row.overdue ? (
-                        <Badge tone="critical">
-                          {t("invoices.overdueDays", { days: row.days })}
-                        </Badge>
-                      ) : (
-                        <span className="text-muted">{t("invoices.notDue")}</span>
-                      )}
-                    </td>
-                    <td className="py-2.5 pe-5">
-                      <Badge tone={STATUS_TONE[row.status] ?? "neutral"}>
-                        {t.has(`invoices.status.${row.status}`)
-                          ? t(`invoices.status.${row.status}`)
-                          : row.status}
-                      </Badge>
-                    </td>
+            <div className="overflow-x-auto">
+              <table className="w-full border-collapse text-tiny">
+                <thead>
+                  <tr className="border-b border-line-subtle text-micro text-muted">
+                    <th className="py-2.5 ps-5 text-start font-medium">
+                      {t("invoices.col.number")}
+                    </th>
+                    <th className="py-2.5 pe-4 text-start font-medium">{t("invoices.col.type")}</th>
+                    <th className="py-2.5 pe-4 text-start font-medium">
+                      {t("invoices.col.client")}
+                    </th>
+                    <th className="py-2.5 pe-4 text-start font-medium">
+                      {t("invoices.col.object")}
+                    </th>
+                    <th className="py-2.5 pe-4 text-end font-medium">{t("invoices.col.total")}</th>
+                    <th className="py-2.5 pe-4 text-end font-medium">{t("invoices.col.paid")}</th>
+                    <th className="py-2.5 pe-4 text-start font-medium">
+                      {t("invoices.col.issued")}
+                    </th>
+                    <th className="py-2.5 pe-4 text-start font-medium">{t("invoices.col.age")}</th>
+                    <th className="py-2.5 pe-5 text-start font-medium">
+                      {t("invoices.col.status")}
+                    </th>
                   </tr>
-                ))}
-              </tbody>
-            </table>
+                </thead>
+                <tbody>
+                  {shown.map((row) => (
+                    <tr key={row.documentId} className="border-b border-line-subtle last:border-0">
+                      <td className="py-2.5 ps-5">
+                        <Link
+                          href={`/documents/${row.documentId}`}
+                          className="font-medium text-ink hover:underline"
+                        >
+                          {row.number ?? t("invoices.noNumber")}
+                        </Link>
+                      </td>
+                      <td className="py-2.5 pe-4">
+                        <Badge tone={row.kind === "invoice" ? "neutral" : "accent"}>
+                          {t.has(`documents.kind.${row.kind}`)
+                            ? t(`documents.kind.${row.kind}`)
+                            : row.kind}
+                        </Badge>
+                      </td>
+                      <td className="py-2.5 pe-4 text-secondary">{row.clientName}</td>
+                      <td className="max-w-[220px] truncate py-2.5 pe-4 text-muted">
+                        {row.object ?? "—"}
+                      </td>
+                      <td className="py-2.5 pe-4 text-end tabular-nums text-ink">
+                        {money(row.totalIncl, row.currency)}
+                      </td>
+                      <td className="py-2.5 pe-4 text-end tabular-nums text-secondary">
+                        {/* A proforma cannot be paid — there is nothing to pay. */}
+                        {row.state === "noLegalValue" ? "—" : money(row.paid, row.currency)}
+                      </td>
+                      <td className="py-2.5 pe-4 text-muted">
+                        {row.issuedOn ? day.format(row.issuedOn) : "—"}
+                      </td>
+                      <td className="py-2.5 pe-4">
+                        {row.state === "draft" ? (
+                          <span className="text-muted">{t("invoices.ageDraft")}</span>
+                        ) : row.lateDays > 0 && isOwing(row.state) ? (
+                          // Age is days since ISSUE; the red is for being LATE.
+                          // Both are on the chip because the frame shows both:
+                          // "128 d · overdue".
+                          <Badge tone="critical">
+                            {t("invoices.ageOverdue", { n: row.ageDays })}
+                          </Badge>
+                        ) : (
+                          <Badge tone={row.ageDays > 60 ? "warning" : "good"}>
+                            {t("invoices.nDays", { n: row.ageDays })}
+                          </Badge>
+                        )}
+                      </td>
+                      <td className="py-2.5 pe-5">
+                        <Badge tone={STATE_TONE[row.state]}>
+                          {t(`invoices.state.${row.state}`)}
+                        </Badge>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
           )}
-
-          <p className="border-t border-line-subtle px-5 py-3 text-micro leading-relaxed text-muted">
-            {t("invoices.paymentsLater")}
-          </p>
         </section>
       </div>
     </main>
