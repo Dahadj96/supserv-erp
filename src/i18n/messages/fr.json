@@ -121,7 +121,16 @@
       "waitingOnSupplierAsks": "Demandé, sans réponse, 2 jours ou plus",
       "nothingSentYet": "Rien d'envoyé",
       "nothingSentYetAsks": "Demande ouverte, sans offre, plus de 3 jours"
-    }
+    },
+    "all": "Toutes",
+    "closed": "clôturée",
+    "won": "Gagnée",
+    "lost": "Perdue",
+    "noBid": "Sans suite",
+    "openCount": "{n, plural, =0 {aucune en cours} one {# en cours} other {# en cours}}",
+    "stageIsDerived": "l’étape est calculée d’après les documents, l’issue est lue sur l’offre",
+    "stageDerivedLabel": "Étape — calculée",
+    "newEnquiry": "Nouvelle consultation"
   },
   "search": {
     "title": "Recherche",
@@ -1886,6 +1895,92 @@
       "price": "Prix",
       "approve": "Approuver",
       "today": "Aujourd’hui"
+    }
+  },
+  "enquiry": {
+    "received": "Reçue le",
+    "clientDeadline": "Date limite client",
+    "submissionMethod": "Mode de dépôt",
+    "contact": "Contact",
+    "reference": "Leur référence",
+    "currency": "Devise",
+    "source": "Origine",
+    "details": "Détails",
+    "requestedItems": "Articles demandés",
+    "noClientCodes": "aucun code article client enregistré — référence seulement",
+    "nLines": "{n, plural, one {# ligne} other {# lignes}}",
+    "noLines": "Rien de saisi. Collez la liste du client et elle devient des lignes.",
+    "qty": "Qté",
+    "unit": "Unité",
+    "designation": "Désignation",
+    "lineRef": "Référence",
+    "lastPrice": "Dernier prix",
+    "instructions": "Instructions du client, tirées de l’e-mail",
+    "verbatim": "mot pour mot — l’e-mail est l’archive",
+    "noInstructions": "Rien d’enregistré. Si l’e-mail précisait le mode de dépôt, collez-le ici.",
+    "decision": "Décision go / no-go",
+    "decisionWhy": "enregistrée pour qu’on puisse en tirer quelque chose",
+    "pursue": "Poursuivre",
+    "pursueHint": "fournisseur probable, délai tenable",
+    "noBid": "Sans suite",
+    "noBidHint": "indiquez la raison ci-dessous",
+    "reasonLabel": "Raison",
+    "chooseReason": "Choisissez une raison",
+    "noteLabel": "Autre chose à retenir",
+    "expectedValue": "Valeur attendue ({currency})",
+    "save": "Enregistrer la décision",
+    "decidedOn": "Décidé le {when}",
+    "reasons": {
+      "noSupplier": "Pas de fournisseur",
+      "deadlineImpossible": "Délai intenable",
+      "outsideQualification": "Hors de notre qualification",
+      "paymentTerms": "Conditions de paiement",
+      "priceNotCompetitive": "Prix non compétitif"
+    },
+    "method": {
+      "email": "E-mail",
+      "deposit_sealed": "Dépôt sous pli cacheté",
+      "portal": "Portail client",
+      "hand_delivered": "Remise en main propre",
+      "unknown": "Non précisé"
+    },
+    "sealedBanner": "{client} n’accepte pas le dépôt par e-mail. Cette offre doit être déposée en personne — une offre envoyée par courriel est écartée, pas en retard.",
+    "portalBanner": "{client} reçoit les offres par son portail. Personne ne l’a connecté, donc quelqu’un doit s’y connecter à la main.",
+    "deadlinePassed": "La date limite du client est dépassée.",
+    "hoursLeft": "{n, plural, one {# heure restante} other {# heures restantes}}",
+    "daysLeft": "{n, plural, one {# jour restant} other {# jours restants}}",
+    "lost": "Perdue",
+    "markLost": "Ils sont allés ailleurs",
+    "lostReason": "Qui l’a emportée, et pourquoi, si vous le savez",
+    "reopen": "Rouvrir",
+    "lostOn": "Perdue le {when}",
+    "error": {
+      "noSuchDeal": "Cette consultation n’existe plus.",
+      "reasonRequired": "Un « sans suite » demande une raison — c’est tout l’intérêt de l’enregistrer.",
+      "unknownReason": "Choisissez une des raisons listées pour qu’elle puisse être comptée.",
+      "alreadyClosed": "Celle-ci est déjà terminée. Rouvrez-la d’abord si c’est une erreur."
+    }
+  },
+  "facts": {
+    "lines": "Lignes demandées par le client",
+    "suppliersAsked": "Fournisseurs consultés",
+    "offersIssued": "Offres émises",
+    "ordersReceived": "Leurs commandes reçues",
+    "invoicesIssued": "Factures émises"
+  },
+  "newEnquiry": {
+    "subtitle": "Une consultation est arrivée. Enregistrez la demande avant qu’elle refroidisse.",
+    "referenceHint": "Leur référence, exactement telle qu’ils l’ont écrite. C’est ainsi qu’ils en parleront.",
+    "instructionsHint": "Collez le passage de l’e-mail qui précise où et comment déposer — mot pour mot.",
+    "pasteLabel": "La liste des articles, collée",
+    "pastePlaceholder": "Collez directement depuis l’e-mail ou le tableur.\n\n1. VP-DN80-16 Vanne papillon DN80 PN16 — 12 pc\n2. RAC-BR-2 Raccord bride 2\" — 40 pc",
+    "pasteHint": "Un tableau venu d’Excel ou une liste venue d’un e-mail fonctionnent tous les deux. Ce qui ne peut pas être lu vous est montré sur la consultation plutôt que jeté, et les références restent telles que le client les a écrites — elles ne deviennent jamais nos codes articles.",
+    "create": "Créer la consultation",
+    "noClientsTitle": "Il n’y a encore aucune société",
+    "noClientsBody": "Une consultation appartient à quelqu’un. Ajoutez d’abord le client, puis revenez.",
+    "addCompany": "Ajouter une société",
+    "error": {
+      "clientAndSubject": "Une consultation demande un client et un objet."
     }
   }
 }

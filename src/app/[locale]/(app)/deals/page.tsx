@@ -1,51 +1,121 @@
 import { Plus } from "lucide-react";
+import { redirect as hardRedirect } from "next/navigation";
 import { getTranslations, setRequestLocale } from "next-intl/server";
+import { getSession } from "@/auth/session";
 import { Button } from "@/components/ui/button";
+import { listDeals } from "@/domain/deal/deal";
+import { DEADLINE_WARNING_HOURS, isStage } from "@/domain/deal/stage";
+import { formatMoney } from "@/domain/money";
+import { Link } from "@/i18n/navigation";
 import { type DealRow, DealsList } from "./deals-list";
 
 /**
  * Screen 05 — Deals.
  *
- * There is no `deal` table yet: the schema so far covers documents, items and
- * parties. Until it exists this list is genuinely empty rather than seeded —
- * fake companies teach people to ignore what is on screen (CLAUDE.md).
+ * The stage column is derived on every load. There is no `stage` column to read
+ * and no job that keeps one up to date; see `src/domain/deal/stage.ts` for why
+ * that is worth the join.
  */
-export default async function DealsPage({ params }: { params: Promise<{ locale: string }> }) {
+export const dynamic = "force-dynamic";
+
+export default async function DealsPage({
+  params,
+  searchParams,
+}: {
+  params: Promise<{ locale: string }>;
+  searchParams: Promise<{ stage?: string; open?: string }>;
+}) {
   const { locale } = await params;
+  const { stage, open } = await searchParams;
   setRequestLocale(locale);
   const t = await getTranslations();
 
-  const rows: DealRow[] = [];
-  const total = 0;
+  const session = await getSession();
+  if (!session) hardRedirect(`/${locale}/sign-in`);
 
-  // The button is grey because the offer builder does not exist yet — not
-  // because a compliance rule refused anything. It used to claim the latter,
-  // citing a rule from a seed list that said it had been confirmed by a person
-  // who never confirmed it. Screen 80 asks for a reason on every grey control;
-  // it does not ask for an impressive one.
-  const notYet = t("rules.comingInPhase", { phase: 4 });
+  const { rows, total, counts } = await listDeals({
+    stage: isStage(stage) ? stage : undefined,
+    openOnly: open === "1",
+  });
+
+  const day = new Intl.DateTimeFormat(locale === "fr" ? "fr-DZ" : "en-GB", {
+    day: "2-digit",
+    month: "short",
+  });
+
+  const listRows: DealRow[] = rows.map((row) => ({
+    id: row.id,
+    reference: row.ref,
+    client: row.clientName,
+    subject: row.subject,
+    value: row.expectedValue ? formatMoney(row.expectedValue, row.currency, locale) : null,
+    deadline:
+      row.deadline.kind === "closed"
+        ? t("deals.closed")
+        : row.deadline.at
+          ? day.format(row.deadline.at)
+          : null,
+    // Red inside 48 hours, and only while it is still live.
+    deadlineUrgent:
+      row.deadline.kind === "at" &&
+      row.deadline.hoursLeft !== null &&
+      row.deadline.hoursLeft < DEADLINE_WARNING_HOURS,
+    stage: t(`deals.filters.${row.badge}`),
+    stageKey: row.badge,
+    owner: row.ownerId ? row.ownerId.slice(0, 2).toUpperCase() : null,
+  }));
+
+  const chips: { key: string; href: string; count: number; active: boolean }[] = [
+    { key: "all", href: "/deals", count: counts.all ?? 0, active: !stage },
+    ...(["new", "qualifying", "sourcing", "offerOut", "ordered", "invoiced"] as const).map((s) => ({
+      key: s,
+      href: `/deals?stage=${s}`,
+      count: counts[s] ?? 0,
+      active: stage === s,
+    })),
+  ];
 
   return (
     <main className="flex min-h-0 flex-1 flex-col">
-      <div className="flex shrink-0 items-start gap-3 border-b border-line-subtle bg-surface px-7 py-5">
+      <div className="flex shrink-0 items-start gap-3 border-b border-line-subtle bg-surface px-4 py-4 md:px-7 md:py-5">
         <div>
           <h1 className="text-[19px] font-semibold text-ink">{t("nav.deals")}</h1>
           <p className="mt-1 text-tiny text-muted">
-            {t("common.showing", { shown: rows.length, total })}
+            {t("deals.openCount", { n: rows.filter((r) => r.open).length })} ·{" "}
+            {t("deals.stageIsDerived")}
           </p>
         </div>
         <div className="ms-auto">
-          <Button
-            variant="primary"
-            icon={<Plus className="size-4" aria-hidden />}
-            disabledReason={notYet}
-          >
-            {t("nav.offers")}
-          </Button>
+          <Link href="/deals/new">
+            <Button variant="primary" icon={<Plus className="size-4" aria-hidden />}>
+              {t("deals.newEnquiry")}
+            </Button>
+          </Link>
         </div>
       </div>
 
-      <DealsList rows={rows} total={total} />
+      <div className="flex shrink-0 flex-wrap items-center gap-2 border-b border-line-subtle bg-surface px-4 py-2.5 md:px-7">
+        <span className="me-1 text-micro uppercase tracking-wide text-muted">
+          {t("deals.stageDerivedLabel")}
+        </span>
+        {chips.map((chip) => (
+          <Link
+            key={chip.key}
+            href={chip.href}
+            aria-current={chip.active ? "page" : undefined}
+            className={`flex items-center gap-1.5 rounded-full border px-3 py-1 text-tiny ${
+              chip.active
+                ? "border-ink bg-ink text-surface"
+                : "border-line bg-surface text-secondary hover:border-line-strong"
+            }`}
+          >
+            {t(`deals.filters.${chip.key}`)}
+            <span className={chip.active ? "text-surface/70" : "text-muted"}>{chip.count}</span>
+          </Link>
+        ))}
+      </div>
+
+      <DealsList rows={listRows} total={total} />
     </main>
   );
 }

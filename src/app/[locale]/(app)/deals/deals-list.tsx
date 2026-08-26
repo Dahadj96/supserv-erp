@@ -3,6 +3,7 @@
 import { useTranslations } from "next-intl";
 import type { BulkAction, ColumnDef, FilterField, SavedView } from "@/components/data";
 import { DataTable } from "@/components/data";
+import { Badge } from "@/components/ui/badge";
 
 export type DealRow = {
   id: string;
@@ -11,8 +12,33 @@ export type DealRow = {
   subject: string;
   value: string | null;
   deadline: string | null;
+  /** Inside 48 hours AND still live. A closed deal's deadline is never red. */
+  deadlineUrgent: boolean;
+  /** Already translated — it is `badgeOf()`, so it may be a stage or an outcome. */
   stage: string;
+  stageKey: string;
   owner: string | null;
+};
+
+/**
+ * The badge tone per stage and outcome.
+ *
+ * Won is green and lost is red, which is obvious. The one worth explaining is
+ * `noBid`: it is neutral, not red. Walking away from a consultation you cannot
+ * win on time is a good decision, and a list that scolds people for making it
+ * teaches them to leave enquiries open instead — which is how twelve of them
+ * expired unread.
+ */
+const TONE: Record<string, "good" | "warning" | "critical" | "neutral" | "accent"> = {
+  new: "accent",
+  qualifying: "neutral",
+  sourcing: "warning",
+  offerOut: "accent",
+  ordered: "good",
+  invoiced: "good",
+  won: "good",
+  lost: "critical",
+  noBid: "neutral",
 };
 
 const COLUMNS: ColumnDef<DealRow>[] = [
@@ -26,8 +52,24 @@ const COLUMNS: ColumnDef<DealRow>[] = [
     align: "end",
     sortable: true,
   },
-  { key: "deadline", labelKey: "deals.deadline", render: (r) => r.deadline ?? "—", sortable: true },
-  { key: "stage", labelKey: "deals.stage", render: (r) => r.stage },
+  {
+    key: "deadline",
+    labelKey: "deals.deadline",
+    render: (r) =>
+      r.deadline ? (
+        <span className={r.deadlineUrgent ? "font-medium text-critical-ink" : undefined}>
+          {r.deadline}
+        </span>
+      ) : (
+        "—"
+      ),
+    sortable: true,
+  },
+  {
+    key: "stage",
+    labelKey: "deals.stage",
+    render: (r) => <Badge tone={TONE[r.stageKey] ?? "neutral"}>{r.stage}</Badge>,
+  },
   { key: "owner", labelKey: "deals.owner", render: (r) => r.owner ?? "—" },
   // Listed but off by default; a permission greys it, it is never hidden.
   {
@@ -50,7 +92,7 @@ const FILTERS: FilterField[] = [
       { value: "new", labelKey: "deals.filters.new" },
       { value: "qualifying", labelKey: "deals.filters.qualifying" },
       { value: "sourcing", labelKey: "deals.filters.sourcing" },
-      { value: "offer_out", labelKey: "deals.filters.offerOut" },
+      { value: "offerOut", labelKey: "deals.filters.offerOut" },
       { value: "ordered", labelKey: "deals.filters.ordered" },
       { value: "invoiced", labelKey: "deals.filters.invoiced" },
     ],
@@ -80,7 +122,7 @@ const SEED_VIEWS: (Omit<SavedView, "name" | "question"> & {
     id: "closing-this-week",
     nameKey: "deals.views.closingThisWeek",
     questionKey: "deals.views.closingThisWeekAsks",
-    filter: { stage: ["offer_out"] },
+    filter: { stage: ["offerOut"] },
     shared: true,
     isDefault: false,
   },

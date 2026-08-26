@@ -121,7 +121,16 @@
       "waitingOnSupplierAsks": "Asked, no reply, 2 days or more",
       "nothingSentYet": "Nothing sent yet",
       "nothingSentYetAsks": "Enquiry open, no offer, older than 3 days"
-    }
+    },
+    "all": "All",
+    "closed": "closed",
+    "won": "Won",
+    "lost": "Lost",
+    "noBid": "No-bid",
+    "openCount": "{n, plural, =0 {nothing open} one {# open} other {# open}}",
+    "stageIsDerived": "stage is computed from the documents, outcome is read from the offer",
+    "stageDerivedLabel": "Stage — derived",
+    "newEnquiry": "New enquiry"
   },
   "search": {
     "title": "Search",
@@ -1886,6 +1895,92 @@
       "price": "Price",
       "approve": "Approve",
       "today": "Today"
+    }
+  },
+  "enquiry": {
+    "received": "Received",
+    "clientDeadline": "Client deadline",
+    "submissionMethod": "Submission method",
+    "contact": "Contact",
+    "reference": "Their reference",
+    "currency": "Currency",
+    "source": "Source",
+    "details": "Details",
+    "requestedItems": "Requested items",
+    "noClientCodes": "no client item codes stored — reference only",
+    "nLines": "{n, plural, one {# line} other {# lines}}",
+    "noLines": "Nothing typed in yet. Paste the client's list and it becomes lines.",
+    "qty": "Qty",
+    "unit": "Unit",
+    "designation": "Designation",
+    "lineRef": "Reference",
+    "lastPrice": "Last price",
+    "instructions": "Client instructions from the email",
+    "verbatim": "verbatim — the email is the archive",
+    "noInstructions": "Nothing recorded. If the email said how to submit, paste it here.",
+    "decision": "Go / no-go decision",
+    "decisionWhy": "recorded so we can learn from it",
+    "pursue": "Pursue",
+    "pursueHint": "supplier likely, deadline reachable",
+    "noBid": "No-bid",
+    "noBidHint": "record the reason below",
+    "reasonLabel": "Reason",
+    "chooseReason": "Choose a reason",
+    "noteLabel": "Anything else worth remembering",
+    "expectedValue": "Expected value ({currency})",
+    "save": "Record the decision",
+    "decidedOn": "Decided {when}",
+    "reasons": {
+      "noSupplier": "No supplier",
+      "deadlineImpossible": "Deadline impossible",
+      "outsideQualification": "Outside our qualification",
+      "paymentTerms": "Payment terms",
+      "priceNotCompetitive": "Price not competitive"
+    },
+    "method": {
+      "email": "Email",
+      "deposit_sealed": "Sealed deposit",
+      "portal": "Client portal",
+      "hand_delivered": "Hand delivered",
+      "unknown": "Not stated"
+    },
+    "sealedBanner": "{client} does not accept submission by email. This offer must be deposited in person — an emailed offer is discarded, not late.",
+    "portalBanner": "{client} takes offers through their portal. Nobody has connected it, so somebody has to log in by hand.",
+    "deadlinePassed": "The client's deadline has passed.",
+    "hoursLeft": "{n, plural, one {# hour left} other {# hours left}}",
+    "daysLeft": "{n, plural, one {# day left} other {# days left}}",
+    "lost": "Lost",
+    "markLost": "They went elsewhere",
+    "lostReason": "Who won it, and why, if you know",
+    "reopen": "Reopen",
+    "lostOn": "Lost {when}",
+    "error": {
+      "noSuchDeal": "That enquiry no longer exists.",
+      "reasonRequired": "A no-bid needs a reason — that is the point of recording it.",
+      "unknownReason": "Choose one of the listed reasons so it can be counted later.",
+      "alreadyClosed": "This one is already finished. Reopen it first if that is wrong."
+    }
+  },
+  "facts": {
+    "lines": "Lines the client asked for",
+    "suppliersAsked": "Suppliers asked",
+    "offersIssued": "Offers issued",
+    "ordersReceived": "Their orders received",
+    "invoicesIssued": "Invoices issued"
+  },
+  "newEnquiry": {
+    "subtitle": "An enquiry arrived. Record what they asked for before it goes cold.",
+    "referenceHint": "Their reference, exactly as they wrote it. It is how they will refer to this.",
+    "instructionsHint": "Paste the part of the email that says how and where to submit — word for word.",
+    "pasteLabel": "The list of items, pasted",
+    "pastePlaceholder": "Paste straight out of the email or the spreadsheet.\n\n1. VP-DN80-16 Vanne papillon DN80 PN16 — 12 pc\n2. RAC-BR-2 Raccord bride 2\" — 40 pc",
+    "pasteHint": "A table out of Excel or a list out of an email both work. Whatever cannot be read is shown to you on the enquiry rather than dropped, and the references stay as the client wrote them — they are never turned into our item codes.",
+    "create": "Create the enquiry",
+    "noClientsTitle": "There are no companies yet",
+    "noClientsBody": "An enquiry belongs to somebody. Add the client first and come back.",
+    "addCompany": "Add a company",
+    "error": {
+      "clientAndSubject": "An enquiry needs a client and a subject."
     }
   }
 }
