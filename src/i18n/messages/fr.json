@@ -1194,7 +1194,8 @@
       "lastGerant": "C'est le dernier Gérant. Donnez d'abord ce rôle à quelqu'un d'autre, sinon le système se verrouille sans que personne puisse le déverrouiller.",
       "unknownRole": "Ce n'est pas un rôle connu du système.",
       "noSuchUser": "Cette personne n'existe plus."
-    }
+    },
+    "nobody": "Personne"
   },
   "settings": {
     "title": "Paramètres",
@@ -2941,5 +2942,109 @@
     "noRiskFigure": "Pas de montant « à risque ». Une affaire n'a pas de valeur tant que personne ne l'a chiffrée, et la plupart ne le sont pas — un chiffre qui veut dire « celles qu'on a chiffrées » a l'air complet sans l'être.",
     "nothingHidden": "Rien n'est caché",
     "nothingHiddenBody": "Tout ce qui est sur cette page apparaît aussi sur Aujourd'hui le jour venu. Cette vue existe pour voir dès lundi un jeudi chargé, pas pour vous donner une deuxième liste à tenir. Elle lit exactement à la même source qu'Aujourd'hui."
+  },
+  "approvals": {
+    "title": "Approbations",
+    "subtitle": "{n, plural, =0 {rien qui vous attende} one {# en attente de votre décision} other {# en attente de votre décision}} · {total, plural, =0 {rien en attente} one {# en attente au total} other {# en attente au total}} · des règles qui bloquent une action, pas seulement qui l'enregistrent",
+    "logVsGate": "Le journal d'audit consigne ce qui s'est passé. Ces règles empêchent que ça se passe tant que quelqu'un ayant l'autorité n'est pas d'accord. Deux métiers différents — le système a besoin des deux.",
+    "nothingWaiting": "Aucune décision en attente.",
+    "nothingWaitingWhy": "Une règle n'apparaît ici que lorsque quelqu'un s'y est heurté. Rien n'est bloqué rétroactivement : une page vide signifie que rien n'a été bloqué, pas que les règles sont désactivées.",
+    "needsRole": "Décision du {role}",
+    "requestedBy": "Demandé par {who}",
+    "theirReason": "Leur motif",
+    "blockedUntil": "Bloqué tant que vous n'avez pas décidé.",
+    "note": "Un mot à joindre",
+    "decline": "Refuser",
+    "approve": "Approuver",
+    "notYours": "Ce n'est pas à vous de trancher.",
+    "approved": "Approuvé et consigné.",
+    "declined": "Refusé. Le brouillon reste — rien n'est perdu.",
+    "selfApprovalNote": "C'est vous qui l'avez demandé. Trancher est autorisé et sera consigné comme auto-approbation.",
+    "decided": "Décidé le mois dernier",
+    "selfApproved": "Auto-approuvé",
+    "status": {
+      "approved": "Approuvé",
+      "declined": "Refusé",
+      "withdrawn": "Retiré",
+      "waiting": "En attente"
+    },
+    "whatIsGated": "Ce qui est verrouillé",
+    "nRules": "{n, plural, one {# règle} other {# règles}}",
+    "atThreshold": "· {n}",
+    "nobodyNotPossible": "Personne — impossible",
+    "gate": {
+      "offer": {
+        "marginBelowFloor": "Marge sous le plancher",
+        "discountAbove": "Remise supérieure à",
+        "termsBeyond": "Délai de paiement au-delà de (jours)"
+      },
+      "sourcing": {
+        "notCheapest": "Fournisseur retenu pas le moins cher"
+      },
+      "deal": {
+        "noBidAbove": "Renoncement au-delà de"
+      },
+      "client": {
+        "blockedForDebt": "Vendre à un client bloqué"
+      },
+      "document": {
+        "creditNote": "Émettre un avoir",
+        "changeIssued": "Modifier un document émis"
+      },
+      "invoice": {
+        "writeOff": "Passer une créance en perte"
+      }
+    },
+    "reason": {
+      "matchCompetitor": "S'aligner sur un concurrent",
+      "deliveryTime": "Délai de livraison",
+      "strategicClient": "Client stratégique",
+      "overrideRequested": "Dérogation demandée",
+      "other": "Autre"
+    },
+    "field": {
+      "margin": "Marge",
+      "totalExcl": "Total HT",
+      "reasonCode": "Code motif",
+      "selected": "Retenu",
+      "difference": "Écart",
+      "client": "Client",
+      "overdue": "Impayé",
+      "policy": "Politique",
+      "step": "Étape"
+    },
+    "howAGateBehaves": "Comment se comporte un verrou",
+    "behaviour": {
+      "theAction": "L'action est",
+      "theDraft": "Le brouillon est",
+      "reasonCode": "Un code motif est",
+      "justification": "Justification en clair",
+      "approverSees": "L'approbateur voit",
+      "decision": "Une décision est",
+      "ifDeclined": "En cas de refus"
+    },
+    "behaviourValue": {
+      "blockedNotWarned": "Bloquée, pas simplement signalée",
+      "savedAndKept": "Conservé",
+      "required": "Obligatoire",
+      "beforeAndAfter": "L'avant et l'après",
+      "timestampedAndAttributed": "Horodatée et attribuée",
+      "draftStaysNothingLost": "Le brouillon reste, rien n'est perdu"
+    },
+    "oneManCompany": "Quand une seule personne est l'entreprise",
+    "oneManCompanyBody": "Si vous êtes à la fois le Gérant et le Commercial, ces verrous vous coûtent un clic chacun. Gardez-les quand même. La valeur, ce n'est pas la deuxième personne — c'est que six mois plus tard le journal dise pourquoi la marge était de 11,4 % sur ce chantier, sans avoir à le reconstituer de mémoire.",
+    "selfApproval": "Auto-approbation",
+    "allowedStillRecorded": "Autorisée, toujours consignée",
+    "delegation": "Délégation en cas d'absence",
+    "delegationLater": "pas encore construite",
+    "error": {
+      "gateNotFound": "Cette règle n'existe plus.",
+      "gateDisabled": "Cette règle a été désactivée.",
+      "notApprovable": "Personne ne peut approuver cela. Un document émis ne se modifie pas — une correction est un avoir.",
+      "reasonCodeRequired": "Choisissez un code motif.",
+      "justificationRequired": "Dites pourquoi, avec vos mots.",
+      "notYourDecision": "Cette décision appartient à quelqu'un d'autre.",
+      "alreadyDecided": "Celle-ci a déjà été tranchée."
+    }
   }
 }

@@ -1,5 +1,6 @@
 import { drizzle } from "drizzle-orm/postgres-js";
 import postgres from "postgres";
+import * as approval from "./schema/approval";
 import * as authSchema from "./schema/auth";
 import * as control from "./schema/control";
 import * as delivery from "./schema/delivery";
@@ -24,6 +25,7 @@ const conn =
 if (process.env.NODE_ENV !== "production") globalForDb.conn = conn;
 
 export const schema = {
+  ...approval,
   ...authSchema,
   ...control,
   ...delivery,

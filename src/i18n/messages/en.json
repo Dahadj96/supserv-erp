@@ -1194,7 +1194,8 @@
       "lastGerant": "This is the last Gérant. Give somebody else that role first, or the system locks with nobody able to unlock it.",
       "unknownRole": "That is not a role this system knows.",
       "noSuchUser": "That person no longer exists."
-    }
+    },
+    "nobody": "Nobody"
   },
   "settings": {
     "title": "Settings",
@@ -2941,5 +2942,109 @@
     "noRiskFigure": "No “money at risk” figure. An enquiry has no value until somebody has priced it, and most of these have not been — a number meaning “the ones we happen to have priced” looks complete and is not.",
     "nothingHidden": "Nothing is hidden",
     "nothingHiddenBody": "Everything on this page also appears on Today when its day comes. This view exists so you can see a crowded Thursday on Monday, not so you have a second list to manage. It reads from exactly the same place Today does."
+  },
+  "approvals": {
+    "title": "Approvals",
+    "subtitle": "{n, plural, =0 {nothing waiting on you} one {# waiting on you} other {# waiting on you}} · {total, plural, =0 {nothing waiting at all} one {# waiting in total} other {# waiting in total}} · rules that stop an action, not just record it",
+    "logVsGate": "The audit log records what happened. These rules stop it happening until someone with the authority agrees. Different jobs — the system needs both.",
+    "nothingWaiting": "Nothing is waiting on a decision.",
+    "nothingWaitingWhy": "A gate only appears here when somebody has actually run into one. Nothing is gated retrospectively, and an empty page means nothing has been blocked — not that the rules are off.",
+    "needsRole": "Needs the {role}",
+    "requestedBy": "Requested by {who}",
+    "theirReason": "Their reason",
+    "blockedUntil": "Blocked until you decide.",
+    "note": "Anything to say with it",
+    "decline": "Decline",
+    "approve": "Approve",
+    "notYours": "This one is not yours to decide.",
+    "approved": "Approved and recorded.",
+    "declined": "Declined. The draft stays — nothing is lost.",
+    "selfApprovalNote": "You asked for this one yourself. Deciding it is allowed and will be recorded as a self-approval.",
+    "decided": "Decided in the last month",
+    "selfApproved": "Self-approved",
+    "status": {
+      "approved": "Approved",
+      "declined": "Declined",
+      "withdrawn": "Withdrawn",
+      "waiting": "Waiting"
+    },
+    "whatIsGated": "What is gated",
+    "nRules": "{n, plural, one {# rule} other {# rules}}",
+    "atThreshold": "· {n}",
+    "nobodyNotPossible": "Nobody — not possible",
+    "gate": {
+      "offer": {
+        "marginBelowFloor": "Margin below the floor",
+        "discountAbove": "Discount above",
+        "termsBeyond": "Payment terms beyond (days)"
+      },
+      "sourcing": {
+        "notCheapest": "Supplier not the cheapest"
+      },
+      "deal": {
+        "noBidAbove": "No-bid above"
+      },
+      "client": {
+        "blockedForDebt": "Selling to a blocked client"
+      },
+      "document": {
+        "creditNote": "Issuing a credit note",
+        "changeIssued": "Changing an issued document"
+      },
+      "invoice": {
+        "writeOff": "Writing off a debt"
+      }
+    },
+    "reason": {
+      "matchCompetitor": "Match a competitor",
+      "deliveryTime": "Delivery time",
+      "strategicClient": "Strategic client",
+      "overrideRequested": "Override requested",
+      "other": "Other"
+    },
+    "field": {
+      "margin": "Margin",
+      "totalExcl": "Total HT",
+      "reasonCode": "Reason code",
+      "selected": "Selected",
+      "difference": "Difference",
+      "client": "Client",
+      "overdue": "Overdue",
+      "policy": "Policy",
+      "step": "Step"
+    },
+    "howAGateBehaves": "How a gate behaves",
+    "behaviour": {
+      "theAction": "The action is",
+      "theDraft": "A draft is",
+      "reasonCode": "A reason code is",
+      "justification": "Free-text justification",
+      "approverSees": "The approver sees",
+      "decision": "A decision is",
+      "ifDeclined": "If declined"
+    },
+    "behaviourValue": {
+      "blockedNotWarned": "Blocked, not warned",
+      "savedAndKept": "Saved and kept",
+      "required": "Required",
+      "beforeAndAfter": "Before and after",
+      "timestampedAndAttributed": "Timestamped and attributed",
+      "draftStaysNothingLost": "The draft stays, nothing is lost"
+    },
+    "oneManCompany": "When one person is the company",
+    "oneManCompanyBody": "If you are the Gérant and the Commercial at once, these gates cost you a click each. Keep them anyway. The value is not the second person — it is that six months later the audit log says why the margin was 11.4% on that job, and you are not reconstructing it from memory.",
+    "selfApproval": "Self-approval",
+    "allowedStillRecorded": "Allowed, still recorded",
+    "delegation": "Delegation while away",
+    "delegationLater": "not built yet",
+    "error": {
+      "gateNotFound": "That rule no longer exists.",
+      "gateDisabled": "That rule has been switched off.",
+      "notApprovable": "Nobody can approve that. An issued document cannot be changed — a correction is a credit note.",
+      "reasonCodeRequired": "Choose a reason code.",
+      "justificationRequired": "Say why, in your own words.",
+      "notYourDecision": "That decision belongs to somebody else.",
+      "alreadyDecided": "That one has already been decided."
+    }
   }
 }

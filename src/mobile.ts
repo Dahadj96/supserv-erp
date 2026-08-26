@@ -46,7 +46,7 @@ export const PHONE_JOBS: PhoneJob[] = [
 
   // 3 — Approving from anywhere. Approving is a decision, not data entry, which
   // is exactly why it fits on a phone and building an offer does not.
-  { key: "approve", screen: 65, href: "/approvals", built: false, phase: 6 },
+  { key: "approve", screen: 65, href: "/approvals", built: true, phase: null },
 
   // 4 — Reading, not writing. Today, and a tap that dials a client. Everything
   // else on a phone is read-only, on purpose.
