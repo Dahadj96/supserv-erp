@@ -24,6 +24,9 @@ import { issueDocument } from "./actions";
  */
 export const dynamic = "force-dynamic";
 
+/** What goods can be delivered against — something the client agreed to. */
+const DELIVERABLE = ["quotation", "proforma", "invoice", "situation"];
+
 export default async function DocumentPage({
   params,
   searchParams,
@@ -101,6 +104,13 @@ export default async function DocumentPage({
           {doc.number && targetsFor(doc.kind).length > 0 ? (
             <Link href={`/documents/${id}/convert`}>
               <Button variant="secondary">{t("documents.convert")}</Button>
+            </Link>
+          ) : null}
+          {/* Screen 49. Goods can only be delivered against something the
+              client has actually agreed to, and a BL cannot deliver a BL. */}
+          {doc.number && DELIVERABLE.includes(doc.kind) ? (
+            <Link href={`/deliveries/new?source=${id}`}>
+              <Button variant="secondary">{t("documents.recordDelivery")}</Button>
             </Link>
           ) : null}
           <a href={`/api/documents/${id}/pdf`} target="_blank" rel="noreferrer">

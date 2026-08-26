@@ -115,6 +115,20 @@ export const documentLine = pgTable("document_line", {
   /** An option is shown but excluded from the totals. */
   isOption: boolean("is_option").notNull().default(false),
 
+  /**
+   * The line on another document that this one delivers, invoices or answers.
+   *
+   * Screen 49 needs "ordered 24, already delivered 12, this delivery 12,
+   * remaining 0" across three separate bons de livraison, and the only honest
+   * way to add those up is for each BL line to point at the line it is
+   * delivering. Matching on designation instead would collapse two lines that
+   * happen to read the same and silently over-deliver one of them.
+   *
+   * Self-referencing and nullable: most lines are not delivering anything.
+   * No cascade — deleting a draft must never touch an issued document's line.
+   */
+  sourceLineId: uuid("source_line_id"),
+
   itemId: uuid("item_id").references(() => item.id),
   reference: text("reference"),
   designation: text("designation"),
