@@ -114,6 +114,26 @@ export const documentLine = pgTable("document_line", {
   unit: text("unit"),
   qty: numeric("qty", { precision: 16, scale: 4 }),
   unitPrice: numeric("unit_price", { precision: 16, scale: 4 }),
+
+  /**
+   * WHAT THE LINE COST US, and where that figure came from. Screen 12's Cost
+   * and Margin columns — visible to the Gérant, hidden from the Commercial.
+   *
+   * Margin has NO column and will not get one. It is
+   * `(unitPrice − unitCost) / unitCost`, computed wherever it is shown. Storing
+   * cost, price AND margin is three numbers that can disagree, and the day they
+   * do, nobody can say which two are right.
+   *
+   * The cost is stored rather than looked up from `price_quote` at render time
+   * because it is the figure the price was actually set from. Six weeks later
+   * the supplier's quote may have expired or been superseded, and an offer
+   * whose margin silently changes because a supplier re-quoted is an offer
+   * nobody can reason about. `costQuoteId` keeps the trail back to the quote.
+   */
+  unitCost: numeric("unit_cost", { precision: 16, scale: 4 }),
+  /** supplier_quote | internal_costing | previous_offer | manual */
+  costSource: text("cost_source"),
+  costQuoteId: uuid("cost_quote_id"),
   discountPct: numeric("discount_pct", { precision: 6, scale: 3 }).default("0"),
   vatRate: numeric("vat_rate", { precision: 5, scale: 2 }), // 19.00 | 9.00 | 0.00
   /** When VAT is 0, the exemption must name its article. */

@@ -12,9 +12,11 @@ import { getDeal, NO_BID_REASONS } from "@/domain/deal/deal";
 import { requestsForDeal } from "@/domain/deal/sourcing-store";
 import { DEADLINE_WARNING_HOURS } from "@/domain/deal/stage";
 import { formatMoney } from "@/domain/money";
+import { offersForDeal } from "@/domain/offer/store";
 import { Link } from "@/i18n/navigation";
 import { decideAction, lostAction, reopenAction } from "./actions";
 import { askSuppliersAction } from "./ask-actions";
+import { buildOfferAction } from "./build-actions";
 
 /**
  * Screen 06 — the enquiry.
@@ -59,7 +61,7 @@ export default async function EnquiryPage({
 
   const { deal: row, clientName, lines, facts, badge, open, deadline } = found;
 
-  const [suppliers, requests] = await Promise.all([
+  const [suppliers, requests, offers] = await Promise.all([
     db
       .selectDistinct({ id: party.id, legalName: party.legalName, tradeName: party.tradeName })
       .from(party)
@@ -67,6 +69,7 @@ export default async function EnquiryPage({
       .where(and(eq(partyRole.role, "supplier"), isNull(party.deletedAt)))
       .orderBy(party.legalName),
     requestsForDeal(id),
+    offersForDeal(id),
   ]);
 
   const when = new Intl.DateTimeFormat(locale === "fr" ? "fr-DZ" : "en-GB", {
@@ -412,6 +415,50 @@ export default async function EnquiryPage({
                         {request.sentAt
                           ? t("ask.askedReplied", { asked: request.asked, replied: request.quoted })
                           : t("ask.draft")}
+                      </span>
+                    </li>
+                  ))}
+                </ul>
+              ) : null}
+            </section>
+          ) : null}
+
+          {open && lines.length > 0 ? (
+            <section className="rounded-[var(--radius-card)] border border-line bg-surface p-5">
+              <h2 className="text-tiny font-semibold text-ink">{t("offer.build.title")}</h2>
+              <p className="mt-1.5 text-micro leading-relaxed text-muted">
+                {t("offer.build.hint")}
+              </p>
+
+              <form
+                action={buildOfferAction.bind(null, locale, id)}
+                className="mt-3 flex items-end gap-2"
+              >
+                <label className="flex-1">
+                  <span className="text-micro text-secondary">{t("offer.build.marginLabel")}</span>
+                  <input
+                    name="marginPct"
+                    inputMode="decimal"
+                    defaultValue="20"
+                    className={`${INPUT} mt-1 text-end tabular-nums`}
+                  />
+                </label>
+                <Button type="submit" variant="primary">
+                  {t("offer.build.go")}
+                </Button>
+              </form>
+
+              {offers.length > 0 ? (
+                <ul className="mt-4 flex flex-col gap-1.5 border-t border-line-subtle pt-3">
+                  {offers.map((offer) => (
+                    <li key={offer.id} className="flex items-baseline gap-2 text-tiny">
+                      <Link className="text-ink hover:underline" href={`/offers/${offer.id}/build`}>
+                        {offer.number ?? t("offer.noNumberYet")}
+                      </Link>
+                      <span className="ms-auto">
+                        <Badge tone={offer.number ? "good" : "neutral"}>
+                          {offer.number ? t("offer.issued") : t("offer.draft")}
+                        </Badge>
                       </span>
                     </li>
                   ))}
