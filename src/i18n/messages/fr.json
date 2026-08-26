@@ -1034,7 +1034,9 @@
       "blocked": "Une règle confirmée a refusé ce document",
       "complianceBlocked": "Une règle confirmée a refusé ce document."
     },
-    "edit": "Modifier"
+    "edit": "Modifier",
+    "convert": "Convertir",
+    "convertedOk": "Créé à partir du document d’origine, qui reste intact au dossier. À relire avant de l’émettre."
   },
   "checklist": {
     "title": "Avant d'émettre",
@@ -2535,5 +2537,102 @@
       "exceedsBalance": "C'est plus que ce que cette facture doit encore."
     },
     "seeAgeing": "Balance âgée et relances"
+  },
+  "convert": {
+    "title": "Convertir {number} en {kind}",
+    "cancel": "Annuler",
+    "create": "Créer le brouillon",
+    "createsADraft": "Crée un brouillon. Rien n'est émis et aucun numéro n'est réservé.",
+    "neverReplaced": "La proforma n'est jamais remplacée. Elle reste au dossier, liée à la facture, et son numéro n'est pas réutilisé.",
+    "chain": "Chaîne documentaire",
+    "ownNumber": "chaque étape garde son propre numéro",
+    "chainNote": "La même chaîne s'applique quel que soit le client. Un devis peut aller directement à la facture, une proforma peut être sautée, une situation remplace la facture sur travaux — les étapes se configurent, les règles de numérotation non.",
+    "toCreate": "à créer",
+    "toGenerate": "à générer",
+    "step": {
+      "quotation": "Devis",
+      "proforma": "Pro forma",
+      "purchase_order": "Bon de commande client",
+      "delivery_note": "Bon de livraison",
+      "invoice": "Facture",
+      "payment": "Règlement",
+      "credit_note": "Avoir",
+      "situation": "Situation"
+    },
+    "whatCarries": "Ce qui est repris",
+    "nOpen": "{n, plural, =0 {plus rien à décider} one {# décision à prendre} other {# décisions à prendre}}",
+    "state": {
+      "unchanged": "Inchangé",
+      "changes": "Modifié",
+      "toDecide": "À décider"
+    },
+    "row": {
+      "lines": "Lignes et prix",
+      "lots": "Lots et sous-totaux",
+      "options": "Lignes optionnelles",
+      "client": "Client et identifiants",
+      "kind": "Type de document",
+      "number": "Numéro",
+      "date": "Date",
+      "legalValue": "Valeur légale",
+      "mentions": "Mentions obligatoires",
+      "deliveryNote": "Bon de livraison",
+      "deliveryDate": "Date de livraison",
+      "paymentMethod": "Mode de règlement"
+    },
+    "value": {
+      "unchanged": "inchangé",
+      "none": "aucune",
+      "nLines": "{n, plural, one {# ligne} other {# lignes}}, {total} HT",
+      "nLots": "{n, plural, =0 {aucun lot} one {# lot} other {# lots}}",
+      "nOptions": "{n, plural, =0 {aucune} one {# ligne non comptée} other {# lignes non comptées}}",
+      "optionsRemoved": "retirées du document",
+      "seriesUnset": "série non configurée",
+      "noLegalValue": "Aucune",
+      "accountingDocument": "Pièce comptable",
+      "mentionsFrom": "Partielles",
+      "mentionsComplete": "Complètes — {n} règles sur {total}",
+      "mentionsBlocked": "{n, plural, one {# règle refuse} other {# règles refusent}}",
+      "deliveryNoteLater": "à générer depuis la facture",
+      "toEnter": "à saisir",
+      "confirm": "à confirmer"
+    },
+    "decisions": "Trois décisions",
+    "invoiceDate": "Date de facture",
+    "dueDate": "Échéance",
+    "paymentMethod": "Mode de règlement",
+    "termsDefault": "Virement bancaire — {n} jours",
+    "stampDutyNote": "Rien n'ajoute un droit de timbre tout seul. Ni le seuil ni le taux n'ont été confirmés : un règlement en espèces est signalé sur l'écran des encaissements pour qu'une personne s'en occupe.",
+    "checks": "Vérifications avant émission",
+    "nToFix": "{n, plural, one {# à corriger} other {# à corriger}}",
+    "allClear": "rien ne refuse",
+    "noRules": "Aucune règle ne s'applique encore à ce type de document.",
+    "fixIt": "Corriger",
+    "severity": {
+      "pass": "Conforme",
+      "warn": "Non confirmée",
+      "block": "Refuse"
+    },
+    "rules": "Règles de conversion",
+    "sameForEveryone": "identiques pour tous les clients",
+    "rule": {
+      "kept": "La proforma est conservée",
+      "always": "Toujours",
+      "numberReuse": "Le numéro de la proforma",
+      "never": "Jamais réutilisé",
+      "newSeries": "Le nouveau numéro ressemblera à",
+      "numberWhen": "Le numéro est réservé",
+      "atIssue": "À l'émission, pas ici",
+      "editable": "Facture modifiable après émission",
+      "creditNoteOnly": "Non — avoir uniquement",
+      "allowed": "Conversions autorisées"
+    },
+    "error": {
+      "noSuchDocument": "Ce document n'existe plus.",
+      "notIssued": "Ce document n'a jamais été émis : il n'y a rien à conserver. Modifiez-le directement.",
+      "conversionNotAllowed": "Cette conversion ne fait pas partie de celles autorisées.",
+      "alreadyConverted": "Ce document a déjà été converti une fois.",
+      "nothingToCopy": "Il n'y a rien à reprendre sur ce document."
+    }
   }
 }

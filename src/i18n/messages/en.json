@@ -1034,7 +1034,9 @@
       "blocked": "A confirmed rule refused this document",
       "complianceBlocked": "A confirmed rule refused this document."
     },
-    "edit": "Edit"
+    "edit": "Edit",
+    "convert": "Convert",
+    "convertedOk": "Created from the document it was converted from, which is untouched and still on file. Read this one before issuing it."
   },
   "checklist": {
     "title": "Before issuing",
@@ -2535,5 +2537,102 @@
       "exceedsBalance": "That is more than this invoice still owes."
     },
     "seeAgeing": "Ageing and relances"
+  },
+  "convert": {
+    "title": "Convert {number} into a {kind}",
+    "cancel": "Cancel",
+    "create": "Create the draft",
+    "createsADraft": "Creates a draft. Nothing is issued and no number is reserved.",
+    "neverReplaced": "The proforma is never replaced. It stays on file, linked to the facture, and its number is not reused.",
+    "chain": "Document chain",
+    "ownNumber": "every step keeps its own number",
+    "chainNote": "The same chain applies whatever the client is. A devis can go straight to a facture, a proforma can be skipped, a situation replaces the facture on works — the steps are configurable, the numbering rules are not.",
+    "toCreate": "to create",
+    "toGenerate": "to generate",
+    "step": {
+      "quotation": "Quotation",
+      "proforma": "Pro forma",
+      "purchase_order": "Client purchase order",
+      "delivery_note": "Delivery note",
+      "invoice": "Invoice",
+      "payment": "Payment",
+      "credit_note": "Credit note",
+      "situation": "Progress statement"
+    },
+    "whatCarries": "What carries over",
+    "nOpen": "{n, plural, =0 {nothing left to decide} one {# still to decide} other {# still to decide}}",
+    "state": {
+      "unchanged": "Unchanged",
+      "changes": "Changes",
+      "toDecide": "To decide"
+    },
+    "row": {
+      "lines": "Lines and prices",
+      "lots": "Lots and subtotals",
+      "options": "Optional lines",
+      "client": "Client and identifiers",
+      "kind": "Document type",
+      "number": "Number",
+      "date": "Date",
+      "legalValue": "Legal value",
+      "mentions": "Mandatory mentions",
+      "deliveryNote": "Delivery note",
+      "deliveryDate": "Delivery date",
+      "paymentMethod": "Payment method"
+    },
+    "value": {
+      "unchanged": "unchanged",
+      "none": "none",
+      "nLines": "{n, plural, one {# line} other {# lines}}, {total} excl. VAT",
+      "nLots": "{n, plural, =0 {no lots} one {# lot} other {# lots}}",
+      "nOptions": "{n, plural, =0 {none} one {# line not counted} other {# lines not counted}}",
+      "optionsRemoved": "removed from the document",
+      "seriesUnset": "series not set up",
+      "noLegalValue": "None",
+      "accountingDocument": "Accounting document",
+      "mentionsFrom": "Partial",
+      "mentionsComplete": "Complete — {n} of {total} profile rules",
+      "mentionsBlocked": "{n, plural, one {# rule refuses} other {# rules refuse}}",
+      "deliveryNoteLater": "generate it from the facture",
+      "toEnter": "to enter",
+      "confirm": "confirm"
+    },
+    "decisions": "Three decisions",
+    "invoiceDate": "Invoice date",
+    "dueDate": "Due date",
+    "paymentMethod": "Payment method",
+    "termsDefault": "Bank transfer — {n} days",
+    "stampDutyNote": "Nothing adds a droit de timbre on its own. Nobody has confirmed the threshold or the rate, so a cash settlement is flagged on the payment screen for a person to handle.",
+    "checks": "Checks before issuing",
+    "nToFix": "{n, plural, one {# to fix} other {# to fix}}",
+    "allClear": "nothing refuses",
+    "noRules": "No rule applies to this document type yet.",
+    "fixIt": "Fix it",
+    "severity": {
+      "pass": "Passes",
+      "warn": "Not confirmed",
+      "block": "Refuses"
+    },
+    "rules": "Conversion rules",
+    "sameForEveryone": "the same for every client",
+    "rule": {
+      "kept": "The proforma is kept",
+      "always": "Always",
+      "numberReuse": "The proforma number",
+      "never": "Never reused",
+      "newSeries": "New number will look like",
+      "numberWhen": "The number is reserved",
+      "atIssue": "At issue, not here",
+      "editable": "Invoice editable after issue",
+      "creditNoteOnly": "No — credit note only",
+      "allowed": "Allowed conversions"
+    },
+    "error": {
+      "noSuchDocument": "That document no longer exists.",
+      "notIssued": "That document has never been issued, so there is nothing to preserve. Edit it instead.",
+      "conversionNotAllowed": "That conversion is not one of the allowed ones.",
+      "alreadyConverted": "This document has already been converted once.",
+      "nothingToCopy": "There is nothing on this document to carry over."
+    }
   }
 }

@@ -6,6 +6,7 @@ import { getSession } from "@/auth/session";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { type ChecklistRow, checklist, summarise } from "@/documents/checklist";
+import { targetsFor } from "@/documents/conversion";
 import { NotRenderable, render } from "@/documents/engine";
 import { setupState } from "@/domain/setup";
 import { Link } from "@/i18n/navigation";
@@ -28,10 +29,15 @@ export default async function DocumentPage({
   searchParams,
 }: {
   params: Promise<{ locale: string; id: string }>;
-  searchParams: Promise<{ issued?: string; error?: string; rule?: string }>;
+  searchParams: Promise<{
+    issued?: string;
+    converted?: string;
+    error?: string;
+    rule?: string;
+  }>;
 }) {
   const { locale, id } = await params;
-  const { issued, error, rule } = await searchParams;
+  const { issued, converted, error, rule } = await searchParams;
   setRequestLocale(locale);
   const t = await getTranslations();
 
@@ -90,6 +96,13 @@ export default async function DocumentPage({
               <Button variant="secondary">{t("documents.edit")}</Button>
             </Link>
           )}
+          {/* Screen 48. Offered only on an issued document that may become
+              something else — converting a draft is just editing it. */}
+          {doc.number && targetsFor(doc.kind).length > 0 ? (
+            <Link href={`/documents/${id}/convert`}>
+              <Button variant="secondary">{t("documents.convert")}</Button>
+            </Link>
+          ) : null}
           <a href={`/api/documents/${id}/pdf`} target="_blank" rel="noreferrer">
             <Button variant="secondary">{t("documents.downloadPdf")}</Button>
           </a>
@@ -107,6 +120,12 @@ export default async function DocumentPage({
       {issued ? (
         <p className="mx-7 mt-4 rounded-[var(--radius-control)] bg-good-bg px-4 py-2.5 text-tiny text-good-ink">
           {t("documents.issuedOk", { number: doc.number ?? "" })}
+        </p>
+      ) : null}
+
+      {converted ? (
+        <p className="mx-7 mt-4 rounded-[var(--radius-control)] bg-accent-bg px-4 py-2.5 text-tiny text-accent-ink">
+          {t("documents.convertedOk")}
         </p>
       ) : null}
 
