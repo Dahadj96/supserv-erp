@@ -2251,5 +2251,115 @@
       "go": "Construire l’offre",
       "existing": "Offres sur cette consultation"
     }
+  },
+  "technical": {
+    "title": "Dossier technique — {ref}",
+    "summary": "{items} articles · {complete} complets · {missing} manquants · {na} sans objet",
+    "blockedBanner": "{client} a demandé les fiches techniques avec l’offre. {n, plural, one {Un article n’en a pas} other {# articles n’en ont pas}}, l’annexe technique est donc incomplète et l’offre ne peut pas être déposée en l’état.",
+    "didTheyAsk": "Le client les a-t-il demandées ?",
+    "whenRequired": "quand elles sont exigées, une fiche manquante bloque le dépôt",
+    "requirement": {
+      "required": "Oui — exigées avec l’offre",
+      "kept_anyway": "Non — mais nous les gardons quand même",
+      "not_stated": "Non précisé"
+    },
+    "itemByItem": "Article par article",
+    "kinds": "fiche · photo · certificat",
+    "fiche": "Fiche",
+    "photo": "Photo",
+    "whereFrom": "Provenance",
+    "state": {
+      "complete": "Complet",
+      "notApplicable": "Sans objet",
+      "datasheetMissing": "Fiche manquante",
+      "nothingFound": "Rien trouvé",
+      "noSupplierYet": "Pas encore de fournisseur"
+    },
+    "provenance": {
+      "supplier": "Fournisseur",
+      "manufacturer": "Site du fabricant",
+      "our_photo": "Notre photo",
+      "client": "Envoyée par le client"
+    },
+    "naIsReal": "« Sans objet » est une vraie réponse",
+    "naIsNotFailure": "et ce n’est pas la même chose que « nous n’avons pas trouvé »",
+    "explain": {
+      "notApplicable": "Câble HP, boulonnerie, main-d'œuvre. Produits génériques et prestations pour lesquels aucun fabricant ne publie de fiche. Marqué une fois, avec une raison, et cela compte comme complet.",
+      "nothingFound": "Un vrai produit qui devrait avoir une fiche et que nous n’avons pas. Cela compte comme un manque, et cela bloque l’annexe si le client l’a demandée."
+    },
+    "markOne": "Marquer un article sans objet",
+    "markOneHint": "La raison est obligatoire. Sans elle, impossible de distinguer cela d’un clic pour faire disparaître une ligne rouge.",
+    "reason": "Pourquoi aucune fiche n’existe",
+    "reasonPlaceholder": "aucun fabricant n’en publie pour du câble générique",
+    "markIt": "Marquer",
+    "marked": "Marqué, avec sa raison.",
+    "undo": "Annuler",
+    "annexe": "Annexe technique",
+    "annexeHow": "générée par le moteur documentaire, une page par article",
+    "annexeField": {
+      "pages": "Pages",
+      "language": "Langue",
+      "includes": "Contient",
+      "coverPage": "Page de garde"
+    },
+    "nPages": "{n, plural, one {# page} other {# pages}} — une par article",
+    "coverPageValue": "En-tête SUPSERV + l’offre",
+    "annexeIsOneDocument": "Pas un dossier de PDF épars envoyés à côté de l’offre. Un seul document, numéroté, dans la langue du client, classé sur l’affaire et enregistré comme tout autre document émis.",
+    "blockedN": "{n, plural, one {Bloquée — # article manquant} other {Bloquée — # articles manquants}}",
+    "readyToBuild": "Prête à générer",
+    "nothingToBuild": "Rien à y mettre pour l’instant",
+    "buildAnnexe": "Générer l’annexe",
+    "coverageRow": {
+      "items": "Articles",
+      "complete": "Complets",
+      "notApplicable": "Sans objet",
+      "missing": "Manquants",
+      "fromSupplier": "D’un fournisseur",
+      "fromManufacturer": "D’un site fabricant",
+      "ourPhotos": "Nos propres photos",
+      "fromClient": "Envoyées par le client"
+    },
+    "whereTheyCameFrom": "D’où viennent les fichiers",
+    "theMissing": "{n, plural, one {Celui qui manque} other {Les {n} qui manquent}}",
+    "nextStep": {
+      "askSupplier": "demander au fournisseur",
+      "findSupplier": "aucun fournisseur",
+      "none": "—"
+    },
+    "howFilesArrive": "Comment arrivent les fichiers",
+    "sameePlace": "ils finissent tous au même endroit",
+    "arrive": {
+      "supplierPdf": {
+        "what": "Un fournisseur joint un PDF",
+        "state": "classé sur l’article"
+      },
+      "supplierPhoto": {
+        "what": "Un fournisseur envoie une photo",
+        "state": "classé sur l’article"
+      },
+      "youPhotograph": {
+        "what": "Vous la photographiez en boutique",
+        "state": "saisie rapide au téléphone"
+      },
+      "clientSends": {
+        "what": "Le client envoie une image",
+        "state": "verrouillée, gardée sur cette affaire"
+      },
+      "makerSite": {
+        "what": "Vous la trouvez sur le site du fabricant",
+        "state": "collez le lien ou le fichier"
+      },
+      "nobodyHas": {
+        "what": "Personne n’en a",
+        "state": "marquer sans objet, avec une raison"
+      }
+    },
+    "error": {
+      "noSuchDeal": "Cette consultation n’existe plus.",
+      "noSuchLine": "Cette ligne n’appartient pas à cette consultation.",
+      "notMatched": "Cette ligne n’a pas encore été rapprochée d’un article du catalogue, il n’y a donc nulle part où l’enregistrer.",
+      "reasonRequired": "Dites pourquoi aucune fiche n’existe. Une marque sans raison n’apprend rien à personne."
+    },
+    "tab": "Dossier technique"
   }
 }

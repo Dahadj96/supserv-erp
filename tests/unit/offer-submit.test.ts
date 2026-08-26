@@ -22,6 +22,7 @@ const READY: SubmitFacts = {
   proofRef: null,
   validDays: 90,
   requiredValidityDays: 90,
+  annexe: null,
 };
 
 const facts = (over: Partial<SubmitFacts>): SubmitFacts => ({ ...READY, ...over });
@@ -110,5 +111,40 @@ describe("the count on the card", () => {
       lines: [{ unitPrice: "1", unitCost: null }],
     });
     expect(countChecks(submitChecks(messy))).toEqual({ blockers: 1, warnings: 1 });
+  });
+});
+
+describe("the annexe technique carries screen 78's verdict", () => {
+  const withAnnexe = (over: Partial<SubmitFacts["annexe"]> & object) =>
+    facts({ annexe: { blocksSubmission: false, gaps: 0, dealId: "deal-1", ...over } });
+
+  it("blocks when the client asked and the file has holes", () => {
+    const check = submitChecks(withAnnexe({ blocksSubmission: true, gaps: 3 })).find(
+      (c) => c.key === "annexeTechnique",
+    );
+    expect(check?.state).toBe("block");
+    expect(check?.detail?.n).toBe(3);
+    expect(check?.fixHref).toBe("/deals/deal-1/technical");
+  });
+
+  it("warns rather than blocks when the client never asked", () => {
+    // The same holes. Worth seeing, worth nothing on the offer — the decision
+    // was already made by `annexeVerdict` and is not re-made here.
+    const check = submitChecks(withAnnexe({ blocksSubmission: false, gaps: 3 })).find(
+      (c) => c.key === "annexeTechnique",
+    );
+    expect(check?.state).toBe("warn");
+    expect(canSubmit(submitChecks(withAnnexe({ blocksSubmission: false, gaps: 3 })))).toBe(true);
+  });
+
+  it("passes when there are no holes", () => {
+    expect(submitChecks(withAnnexe({})).find((c) => c.key === "annexeTechnique")?.state).toBe(
+      "pass",
+    );
+  });
+
+  it("says nothing at all for an offer with no enquiry behind it", () => {
+    // A direct proforma has no technical file to be incomplete.
+    expect(submitChecks(READY).find((c) => c.key === "annexeTechnique")).toBeUndefined();
   });
 });

@@ -100,9 +100,12 @@ export default async function EnquiryPage({
             <Badge tone={TONE[badge] ?? "neutral"}>{t(`deals.filters.${badge}`)}</Badge>
           </p>
         </div>
-        <div className="ms-auto flex items-center gap-2">
+        <div className="ms-auto flex flex-wrap items-center gap-2">
           <Link href={`/deals/${id}/prices`}>
             <Button variant="secondary">{t("prices.gathered")}</Button>
+          </Link>
+          <Link href={`/deals/${id}/technical`}>
+            <Button variant="secondary">{t("technical.tab")}</Button>
           </Link>
         </div>
       </div>

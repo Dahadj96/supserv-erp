@@ -4,6 +4,7 @@ import { auditEntry } from "@/db/schema/control";
 import { deal } from "@/db/schema/deal";
 import { document, documentLine } from "@/db/schema/document";
 import { party } from "@/db/schema/party";
+import { technicalFile } from "@/domain/deal/technical-store";
 import { marginPct, summariseMargin } from "./margin";
 import { type SubmitFacts, submitChecks } from "./submit";
 
@@ -117,7 +118,19 @@ export async function getOffer(id: string) {
     place?: string;
   };
 
+  // Screen 78's verdict, computed fresh. Nothing about the technical file is
+  // stored on the offer, so a datasheet uploaded a minute ago unblocks this
+  // page without a job running anywhere.
+  const file = row.dealId ? await technicalFile(row.dealId) : null;
+
   const facts: SubmitFacts = {
+    annexe: file
+      ? {
+          blocksSubmission: file.verdict.blocksSubmission,
+          gaps: file.verdict.gaps.length,
+          dealId: row.dealId as string,
+        }
+      : null,
     clientNif: row.clientNif,
     clientId: row.clientId,
     lines: lines

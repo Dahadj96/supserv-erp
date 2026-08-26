@@ -122,6 +122,16 @@ export const deal = pgTable("deal", {
    */
   requiredValidityDays: integer("required_validity_days"),
   requiredDeliveryDays: integer("required_delivery_days"),
+
+  /**
+   * Screen 78's toggle: did the client ask for fiches techniques?
+   *
+   * required | kept_anyway | not_stated. It decides whether a missing datasheet
+   * BLOCKS the offer or is merely worth knowing — "when required, a missing
+   * datasheet blocks submission". Defaults to `not_stated`, which blocks
+   * nothing, because a requirement nobody stated is not a requirement.
+   */
+  datasheetRequirement: text("datasheet_requirement").notNull().default("not_stated"),
   /** "1‰ par jour, plafonné à 10%" — verbatim, because it is contractual. */
   latePenalty: text("late_penalty"),
 

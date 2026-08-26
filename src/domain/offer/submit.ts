@@ -24,6 +24,7 @@ export const SUBMIT_CHECKS = [
   "submissionMethod",
   "proofOfSubmission",
   "validityCoversDeadline",
+  "annexeTechnique",
 ] as const;
 export type SubmitCheckKey = (typeof SUBMIT_CHECKS)[number];
 
@@ -52,6 +53,12 @@ export type SubmitFacts = {
   validDays: number | null;
   /** What the client requires it to stand for. Null until confirmed. */
   requiredValidityDays: number | null;
+
+  /**
+   * Screen 78's verdict, carried over. Null when the offer has no enquiry
+   * behind it — a direct proforma has no technical file to be incomplete.
+   */
+  annexe: { blocksSubmission: boolean; gaps: number; dealId: string } | null;
 };
 
 export function submitChecks(facts: SubmitFacts): SubmitCheck[] {
@@ -123,6 +130,34 @@ export function submitChecks(facts: SubmitFacts): SubmitCheck[] {
               shortBy: facts.requiredValidityDays - facts.validDays,
             },
           },
+    );
+  }
+
+  /**
+   * The annexe technique, from screen 78.
+   *
+   * It BLOCKS only when the client asked for fiches techniques — which is a
+   * decision `annexeVerdict` already made, so this does not re-decide it. When
+   * they did not ask, an incomplete technical file is still worth seeing, so a
+   * gap becomes a warning rather than disappearing.
+   */
+  if (facts.annexe) {
+    out.push(
+      facts.annexe.blocksSubmission
+        ? {
+            key: "annexeTechnique",
+            state: "block",
+            detail: { n: facts.annexe.gaps },
+            fixHref: `/deals/${facts.annexe.dealId}/technical`,
+          }
+        : facts.annexe.gaps > 0
+          ? {
+              key: "annexeTechnique",
+              state: "warn",
+              detail: { n: facts.annexe.gaps },
+              fixHref: `/deals/${facts.annexe.dealId}/technical`,
+            }
+          : { key: "annexeTechnique", state: "pass" },
     );
   }
 
