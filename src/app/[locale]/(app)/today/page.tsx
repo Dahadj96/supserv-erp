@@ -92,6 +92,13 @@ export default async function TodayPage({ params }: { params: Promise<{ locale: 
           >
             {t("today.quickCapture")}
           </Link>
+          {/* Screen 63. Same source as this page — see the note on week.ts. */}
+          <Link
+            href="/week"
+            className="rounded-[var(--radius-control)] border border-line px-3 py-1.5 text-tiny text-secondary hover:bg-plane"
+          >
+            {t("week.title")}
+          </Link>
         </div>
       </div>
 

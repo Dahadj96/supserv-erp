@@ -2899,5 +2899,47 @@
     "thresholdNote": "Dans ce groupe, tout silence de {n} jours ou plus passe en rouge. Les trois groupes n'ont pas la même horloge, et c'est voulu : un fournisseur muet depuis trois jours est lent, une banque muette depuis trois jours est normale.",
     "whatIsMissing": "Ce qui n'est pas encore sur cette page",
     "authoritiesLater": "La maquette montre un troisième groupe — administrations et banques, pour une caution de soumission ou une attestation CASNOS. Ce sont des documents de conformité et ce module n'est pas construit : rien ici ne sait qu'une caution a été demandée. Un groupe vide se lirait « rien en attente », soit l'inverse de la vérité."
+  },
+  "week": {
+    "title": "Semaine à venir",
+    "summary": "{deadlines, plural, =0 {aucune échéance} one {# échéance} other {# échéances}} · {deliveries, plural, =0 {aucune livraison à prouver} one {# livraison à prouver} other {# livraisons à prouver}} · {chases, plural, =0 {rien à relancer} one {# relance à faire} other {# relances à faire}}",
+    "previous": "Précédente",
+    "thisWeek": "Cette semaine",
+    "next": "Suivante",
+    "today": "aujourd'hui",
+    "nothing": "rien",
+    "nItems": "{n, plural, one {# élément} other {# éléments}}",
+    "kind": {
+      "tenderDeadline": "Échéances client",
+      "complianceExpiry": "Expiration conformité",
+      "unpaidChase": "Relances",
+      "uninvoiced": "Livraisons non facturées",
+      "unsignedDelivery": "Livraisons",
+      "awaitingReply": "Réponses dues",
+      "missingIdentifier": "Identifiants manquants",
+      "approval": "Approbations",
+      "note": "Notes"
+    },
+    "fixedOrMoves": "Ce qui est fixe et ce qui peut bouger",
+    "move": {
+      "fixed": "Ne bouge pas",
+      "byAgreement": "Peut bouger — accord du client",
+      "automatic": "Automatique, peut être mis en pause",
+      "yours": "À vous de planifier"
+    },
+    "movabilityNote": "C'est une propriété du type de chose, pas d'un élément. Une échéance client est fixe parce qu'un client l'a fixée, et aucun souhait sur un appel d'offres particulier n'y change rien. Ce qui sépare une semaine tenue d'une semaine subie, c'est presque toujours ce qu'on a réalisé pouvoir décaler.",
+    "quietDays": "Journées calmes",
+    "useThem": "servez-vous-en",
+    "noQuietDays": "Chaque jour de la semaine a quelque chose.",
+    "nothingScheduled": "Rien de prévu",
+    "busiestDay": "{n} des {total} éléments datés de la semaine tombent {day}. Tout ce que vous pouvez avancer, c'est la différence entre serein et dans l'urgence.",
+    "inNumbers": "La semaine en chiffres",
+    "moneyDueIn": "Argent attendu",
+    "deadlines": "Échéances",
+    "deliveriesToProve": "Livraisons à prouver",
+    "chasesDue": "Relances dues",
+    "noRiskFigure": "Pas de montant « à risque ». Une affaire n'a pas de valeur tant que personne ne l'a chiffrée, et la plupart ne le sont pas — un chiffre qui veut dire « celles qu'on a chiffrées » a l'air complet sans l'être.",
+    "nothingHidden": "Rien n'est caché",
+    "nothingHiddenBody": "Tout ce qui est sur cette page apparaît aussi sur Aujourd'hui le jour venu. Cette vue existe pour voir dès lundi un jeudi chargé, pas pour vous donner une deuxième liste à tenir. Elle lit exactement à la même source qu'Aujourd'hui."
   }
 }

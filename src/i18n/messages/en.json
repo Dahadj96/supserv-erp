@@ -2899,5 +2899,47 @@
     "thresholdNote": "Anything quiet for {n} days or more in this group is marked red. The three groups keep different clocks on purpose: a supplier silent for three days is slow, a bank silent for three days is normal.",
     "whatIsMissing": "What is not on this page yet",
     "authoritiesLater": "The frame shows a third group — authorities and banks, for things like a caution de soumission or a CASNOS attestation. Those are compliance documents and that module is not built, so nothing here knows a bank guarantee was ever requested. An empty group would read as “nothing outstanding”, which is the opposite of what is true."
+  },
+  "week": {
+    "title": "Week ahead",
+    "summary": "{deadlines, plural, =0 {no deadline} one {# deadline} other {# deadlines}} · {deliveries, plural, =0 {no delivery to prove} one {# delivery to prove} other {# deliveries to prove}} · {chases, plural, =0 {nothing to chase} one {# chase due} other {# chases due}}",
+    "previous": "Previous",
+    "thisWeek": "This week",
+    "next": "Next week",
+    "today": "today",
+    "nothing": "nothing",
+    "nItems": "{n, plural, one {# item} other {# items}}",
+    "kind": {
+      "tenderDeadline": "Client deadlines",
+      "complianceExpiry": "Compliance expiry",
+      "unpaidChase": "Relances",
+      "uninvoiced": "Uninvoiced deliveries",
+      "unsignedDelivery": "Deliveries",
+      "awaitingReply": "Replies owed",
+      "missingIdentifier": "Missing identifiers",
+      "approval": "Approvals",
+      "note": "Notes"
+    },
+    "fixedOrMoves": "What is fixed and what can move",
+    "move": {
+      "fixed": "Cannot move",
+      "byAgreement": "Can move — client agreement",
+      "automatic": "Automatic, can be paused",
+      "yours": "Yours to plan"
+    },
+    "movabilityNote": "This is a property of the kind of thing, not of one item. A client's deadline is fixed because a client set it, and no amount of wishing about one particular tender changes that. The difference between a week that works and one that does not is usually which of these somebody realised they could shift.",
+    "quietDays": "Quiet days",
+    "useThem": "use them",
+    "noQuietDays": "Every day this week has something on it.",
+    "nothingScheduled": "Nothing scheduled",
+    "busiestDay": "{n} of the week's {total} dated items land on {day}. Anything you can pull forward is the difference between calm and rushed.",
+    "inNumbers": "This week in numbers",
+    "moneyDueIn": "Money due in",
+    "deadlines": "Deadlines",
+    "deliveriesToProve": "Deliveries to prove",
+    "chasesDue": "Chases due",
+    "noRiskFigure": "No “money at risk” figure. An enquiry has no value until somebody has priced it, and most of these have not been — a number meaning “the ones we happen to have priced” looks complete and is not.",
+    "nothingHidden": "Nothing is hidden",
+    "nothingHiddenBody": "Everything on this page also appears on Today when its day comes. This view exists so you can see a crowded Thursday on Monday, not so you have a second list to manage. It reads from exactly the same place Today does."
   }
 }
