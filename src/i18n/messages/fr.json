@@ -27,7 +27,8 @@
     "reports": "Rapports",
     "settings": "Paramètres",
     "notifications": "Notifications",
-    "scan": "Numérisation"
+    "scan": "Numérisation",
+    "capture": "Saisie rapide"
   },
   "auth": {
     "signIn": "Connexion",
@@ -1743,6 +1744,138 @@
       "notConfigured": "Aucun dossier n'est réglé.",
       "notAbsolute": "Il faut un chemin complet, depuis la lettre du lecteur.",
       "notADirectory": "Il n'y a aucun dossier à ce chemin sur cet ordinateur."
+    }
+  },
+  "capture": {
+    "title": "Saisie rapide",
+    "subtitle": "Une seule case pour tout · un papier, une photo, un e-mail collé, un appel",
+    "mode": {
+      "email": "Coller un e-mail",
+      "file": "Déposer un fichier",
+      "photo": "Photo d'un papier",
+      "phone": "Note d'appel",
+      "typed": "Écrire simplement"
+    },
+    "placeholder": {
+      "email": "Collez tout l'e-mail — en-têtes, corps, signature. Plus il y a de texte, mieux c'est lu.",
+      "phone": "Qui a appelé, ce qu'il voulait, ce que vous avez promis. Écrivez comme vous le diriez.",
+      "typed": "N'importe quoi. Une référence, un prix, un nom, une note pour vous-même."
+    },
+    "handOff": {
+      "file": {
+        "what": "Un fichier passe par le lecteur de dossiers",
+        "why": "Il lit la couche texte, conserve l'original et découpe un classeur en documents. Le déposer ici ne ferait que jeter les pages.",
+        "go": "Ouvrir le lecteur de dossiers"
+      },
+      "photo": {
+        "what": "Une photo passe par la station de numérisation",
+        "why": "Les photos demandent l'OCR, et l'OCR demande que les images des pages soient conservées. La station fait les deux ; cette case ne fait ni l'un ni l'autre.",
+        "go": "Ouvrir la station de numérisation"
+      }
+    },
+    "understood": "Ce que le système a compris",
+    "changeAnything": "confirmez ou modifiez ce que vous voulez",
+    "reading": "lecture…",
+    "nothingUntilButton": "Rien n'est créé tant que vous n'avez pas appuyé sur le bouton.",
+    "discard": "Abandonner",
+    "save": "Enregistrer",
+    "saving": "Enregistrement…",
+    "savedIt": "Enregistré.",
+    "seeItInInbox": "Le voir dans la boîte de réception",
+    "recent": "Saisi ici récemment",
+    "nothingYet": "Rien n'a encore été saisi par cette case.",
+    "error": {
+      "nothingToSave": "Il n'y avait rien à enregistrer dans la case."
+    },
+    "handlesToo": "Elle gère aussi ceci",
+    "handles": {
+      "deliveryNote": {
+        "what": "Photo d'un bon de livraison signé",
+        "state": "En partie",
+        "detail": "La photo est conservée et rattachée. Débloquer la facture demande les livraisons, qui arrivent en phase 5."
+      },
+      "dossier": {
+        "what": "Un dossier papier numérisé",
+        "state": "Fonctionne",
+        "detail": "Lu page par page, couche texte d'abord, et rattaché là où vous l'envoyez."
+      },
+      "phoneCall": {
+        "what": "Un appel que vous venez de recevoir",
+        "state": "Fonctionne",
+        "detail": "Devient une note en quinze secondes, classée sous la société si l'on peut savoir qui c'était."
+      },
+      "priceList": {
+        "what": "Une liste de prix fournisseur en Excel",
+        "state": "Fonctionne",
+        "detail": "La reprise lit les colonnes et les rapproche de vos références."
+      },
+      "businessCard": {
+        "what": "Une carte de visite",
+        "state": "En partie",
+        "detail": "L'adresse devient une note sous la bonne société. En faire un contact demande un clic de plus dans la boîte de réception."
+      }
+    },
+    "whyThisExists": "Pourquoi cet écran existe",
+    "why": "Ce qui se perd, ce sont les choses qui n'ont nulle part où aller — un papier qu'on vous tend sur un chantier, un prix convenu au téléphone, une photo sur votre portable. Une case, quinze secondes, et c'est dans le système, rattaché à la bonne chose.",
+    "field": {
+      "this": "C'est",
+      "from": "De",
+      "about": "Concerne",
+      "filedTo": "Classé dans",
+      "changes": "Ce que cela change",
+      "followUp": "Relance"
+    },
+    "state": {
+      "matched": "rapproché",
+      "auto": "auto",
+      "suggested": "proposé",
+      "safe": "sans effet",
+      "unknown": "incertain",
+      "none": "aucun"
+    },
+    "shape": {
+      "paymentUpdate": "Une nouvelle sur le règlement d'une facture",
+      "deliveryProof": "La preuve qu'une livraison a été faite",
+      "priceList": "Des prix venant d'un fournisseur",
+      "enquiry": "Quelqu'un qui nous demande un prix",
+      "contactCard": "Les coordonnées de quelqu'un",
+      "phoneNote": "Une note prise après un appel",
+      "unknown": "Impossible de dire"
+    },
+    "from": {
+      "knownClient": "{v0} — client connu",
+      "knownSupplier": "{v0} — fournisseur connu",
+      "unplacedAddress": "{v0}",
+      "nobody": "Aucun expéditeur dans le texte"
+    },
+    "about": {
+      "document": "{v0} — {money}",
+      "unmatchedReference": "{v0} — aucun document sous ce numéro",
+      "amountOnly": "{money}",
+      "nothing": "Rien qu'elle désigne"
+    },
+    "filedTo": {
+      "path": "{v0} / {v1} / {v2} / {v3}",
+      "noCompanyYet": "Nulle part tant que la société est inconnue"
+    },
+    "changes": {
+      "nothing": "Rien — il n'y a rien à enregistrer",
+      "creates": "Une note dans la boîte de réception. Rien d'autre."
+    },
+    "followUp": {
+      "on": "Me rappeler le {v0}",
+      "none": "Aucune proposée"
+    },
+    "caveat": {
+      "couldNotTell": "Dites ce que c'est et le classement se fera correctement.",
+      "addressNotOnAnyCompany": "Cette adresse n'est rattachée à aucune société.",
+      "noDocumentWithThatNumber": "Rien n'a été émis sous ce numéro. Vérifiez-le, ou il appartient à quelqu'un d'autre.",
+      "amountDiffersFromDocument": "Le montant ici n'est pas celui du document. En général un acompte.",
+      "filingNotConnected": "Le chemin est calculé et conservé. Rien n'est encore copié vers SharePoint.",
+      "remindersNotBuiltYet": "Conservé sur la note. Rien ne vous rappellera tant que les relances ne sont pas construites."
+    },
+    "writes": {
+      "note": "Une note dans la boîte de réception"
     }
   }
 }

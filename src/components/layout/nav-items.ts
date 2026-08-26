@@ -21,6 +21,7 @@ import {
   UserPlus,
   Users,
   Wallet,
+  Zap,
 } from "lucide-react";
 
 /**
@@ -49,6 +50,7 @@ export const NAV_GROUPS: NavGroup[] = [
       { key: "today", messageKey: "today", href: "/today", icon: CalendarClock, badge: "today" },
       { key: "inbox", messageKey: "inbox", href: "/inbox", icon: Inbox, badge: "inbox" },
       { key: "scan", messageKey: "scan", href: "/inbox/scan", icon: Printer },
+      { key: "capture", messageKey: "capture", href: "/capture", icon: Zap },
       {
         key: "conversations",
         messageKey: "conversations",

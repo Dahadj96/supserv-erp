@@ -27,7 +27,8 @@
     "reports": "Reports",
     "settings": "Settings",
     "notifications": "Notifications",
-    "scan": "Scan station"
+    "scan": "Scan station",
+    "capture": "Quick capture"
   },
   "auth": {
     "signIn": "Sign in",
@@ -1743,6 +1744,138 @@
       "notConfigured": "No folder is set yet.",
       "notAbsolute": "That must be a full path, starting from the drive letter.",
       "notADirectory": "There is no folder at that path on this computer."
+    }
+  },
+  "capture": {
+    "title": "Quick capture",
+    "subtitle": "One box for anything · a paper, a photo, a pasted email, a phone call",
+    "mode": {
+      "email": "Paste an email",
+      "file": "Drop a file",
+      "photo": "Photo of a paper",
+      "phone": "Phone note",
+      "typed": "Just type it"
+    },
+    "placeholder": {
+      "email": "Paste the whole email — headers, body, signature. More text reads better, not worse.",
+      "phone": "Who called, what they wanted, what you promised. Write it the way you would say it.",
+      "typed": "Anything. A reference, a price, a name, a note to yourself."
+    },
+    "handOff": {
+      "file": {
+        "what": "A file goes through the dossier reader",
+        "why": "It reads the text layer, keeps the original, and splits a binder into documents. Dropping it here would only throw the pages away.",
+        "go": "Open the dossier reader"
+      },
+      "photo": {
+        "what": "A photo goes through the scan station",
+        "why": "Photos need OCR, and OCR needs the page images kept. The scan station holds both; this box holds neither.",
+        "go": "Open the scan station"
+      }
+    },
+    "understood": "What the system understood",
+    "changeAnything": "confirm or change anything",
+    "reading": "reading…",
+    "nothingUntilButton": "Nothing is created until you press the button.",
+    "discard": "Discard",
+    "save": "Save it",
+    "saving": "Saving…",
+    "savedIt": "Saved.",
+    "seeItInInbox": "See it in the Inbox",
+    "recent": "Captured here recently",
+    "nothingYet": "Nothing captured through this box yet.",
+    "error": {
+      "nothingToSave": "There was nothing in the box to save."
+    },
+    "handlesToo": "It handles these too",
+    "handles": {
+      "deliveryNote": {
+        "what": "Photo of a signed delivery note",
+        "state": "Partly",
+        "detail": "The photo is kept and attached. Unblocking the invoice needs deliveries, which arrive in phase 5."
+      },
+      "dossier": {
+        "what": "A scanned paper dossier",
+        "state": "Works",
+        "detail": "Read page by page, text layer first, and attached where you send it."
+      },
+      "phoneCall": {
+        "what": "A phone call you just had",
+        "state": "Works",
+        "detail": "Becomes a note in fifteen seconds, filed against the company if we can tell who it was."
+      },
+      "priceList": {
+        "what": "A supplier price list in Excel",
+        "state": "Works",
+        "detail": "The move-in reads the columns and matches them to your references."
+      },
+      "businessCard": {
+        "what": "A business card",
+        "state": "Partly",
+        "detail": "The address becomes a note under the right company. Making it a contact is one more click on the Inbox."
+      }
+    },
+    "whyThisExists": "Why this exists",
+    "why": "The things that get lost are the ones with nowhere obvious to go — a paper handed to you at a site, a price agreed on the phone, a photo on your phone. One box, fifteen seconds, and it is in the system attached to the right thing.",
+    "field": {
+      "this": "This is",
+      "from": "From",
+      "about": "About",
+      "filedTo": "Filed to",
+      "changes": "What it changes",
+      "followUp": "Follow-up"
+    },
+    "state": {
+      "matched": "matched",
+      "auto": "auto",
+      "suggested": "suggested",
+      "safe": "safe",
+      "unknown": "unsure",
+      "none": "none"
+    },
+    "shape": {
+      "paymentUpdate": "A payment update on an invoice",
+      "deliveryProof": "Proof that something was delivered",
+      "priceList": "Prices from a supplier",
+      "enquiry": "Somebody asking us for a price",
+      "contactCard": "Somebody's details",
+      "phoneNote": "A note from a phone call",
+      "unknown": "Could not tell"
+    },
+    "from": {
+      "knownClient": "{v0} — known client",
+      "knownSupplier": "{v0} — known supplier",
+      "unplacedAddress": "{v0}",
+      "nobody": "No sender in the text"
+    },
+    "about": {
+      "document": "{v0} — {money}",
+      "unmatchedReference": "{v0} — no document with that number",
+      "amountOnly": "{money}",
+      "nothing": "Nothing it points at"
+    },
+    "filedTo": {
+      "path": "{v0} / {v1} / {v2} / {v3}",
+      "noCompanyYet": "Nowhere until we know the company"
+    },
+    "changes": {
+      "nothing": "Nothing — there is nothing to save",
+      "creates": "One note in the Inbox. Nothing else."
+    },
+    "followUp": {
+      "on": "Remind me on {v0}",
+      "none": "None proposed"
+    },
+    "caveat": {
+      "couldNotTell": "Say what it is and it will file itself correctly.",
+      "addressNotOnAnyCompany": "This address is not on any company yet.",
+      "noDocumentWithThatNumber": "Nothing issued under that number. Check it, or it belongs to someone else.",
+      "amountDiffersFromDocument": "The amount here is not the amount on the document. Usually a part payment.",
+      "filingNotConnected": "The path is worked out and recorded. Nothing is copied to SharePoint yet.",
+      "remindersNotBuiltYet": "Recorded on the note. Nothing will remind you until reminders are built."
+    },
+    "writes": {
+      "note": "One note in the Inbox"
     }
   }
 }

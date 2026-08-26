@@ -48,7 +48,10 @@ export const CHANNELS: ChannelSeed[] = [
   { key: "web_quote", status: "not_built", autoClassify: false, position: 6 },
   { key: "web_careers", status: "not_built", autoClassify: false, position: 7 },
   { key: "whatsapp", status: "considered", autoClassify: false, position: 8 },
-  { key: "phone_note", status: "not_built", autoClassify: false, position: 9 },
+  // Screen 61 built this. A person presses "Phone note", types what was said,
+  // and it lands here — which is why the status changed from not_built. It does
+  // NOT auto-classify: the shape is read and shown, and a person presses Save.
+  { key: "phone_note", status: "live", autoClassify: false, position: 9 },
 ];
 
 /** A channel that is live but has never received anything is a channel to check. */
