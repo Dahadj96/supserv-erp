@@ -12,7 +12,7 @@ import { party } from "@/db/schema/party";
 import { peekNumber } from "@/documents/numbering";
 import { type LineState, progress, unlocks } from "@/domain/delivery/lines";
 import {
-  deliveredAgainst,
+  coveredAgainst,
   deliveryLines,
   detailFor,
   sourceLines,
@@ -74,7 +74,7 @@ export default async function DeliveryPage({
 
   const [source] = await sourceOf(id);
   const sources = source ? await sourceLines(source.id) : [];
-  const delivered = await deliveredAgainst(sources.map((line) => line.lineId));
+  const delivered = await coveredAgainst(sources.map((line) => line.lineId));
   const current = await deliveryLines(id);
   const detail = await detailFor(id);
 

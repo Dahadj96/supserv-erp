@@ -1037,7 +1037,8 @@
     "edit": "Edit",
     "convert": "Convert",
     "convertedOk": "Created from the document it was converted from, which is untouched and still on file. Read this one before issuing it.",
-    "recordDelivery": "Record a delivery"
+    "recordDelivery": "Record a delivery",
+    "invoiceDelivered": "Invoice what is delivered"
   },
   "checklist": {
     "title": "Before issuing",
@@ -2730,6 +2731,79 @@
       "nothingToDeliver": "Enter a quantity on at least one line.",
       "quantityNotPositive": "A delivered quantity has to be greater than zero.",
       "alreadySigned": "A signed copy is already on file for this delivery note."
+    }
+  },
+  "newInvoice": {
+    "title": "New invoice — from {number}",
+    "checkDontRetype": "most of this is already known · check it rather than type it",
+    "cancel": "Cancel",
+    "create": "Create the draft",
+    "createsADraft": "Creates a draft. It is issued on the document screen, where the number is reserved.",
+    "nothingLeft": "Every line has already been invoiced.",
+    "partialBanner": "{n} of {m} lines are delivered. You can invoice those now, or wait for the rest — invoicing what is delivered is the faster route to cash.",
+    "scope": {
+      "delivered": "What is delivered",
+      "remaining": "Everything not yet invoiced"
+    },
+    "carried": "Carried over — check, do not retype",
+    "fromWhere": "and where each came from",
+    "row": {
+      "client": "Client",
+      "billingAddress": "Billing address",
+      "identifiers": "NIF / NIS / RC",
+      "source": "From",
+      "lines": "Lines delivered",
+      "bank": "Bank account",
+      "language": "Document language",
+      "invoiceDate": "Invoice date",
+      "whichLines": "Which lines to invoice"
+    },
+    "from": {
+      "partyMaster": "party master",
+      "theSource": "the source document",
+      "sourceAndBLs": "source + delivery notes",
+      "settings": "settings",
+      "theClientNotYou": "the client, not you",
+      "ask": "ask"
+    },
+    "allThree": "present — all three",
+    "someMissing": "one or more missing",
+    "notRecorded": "not recorded",
+    "notSetUp": "not set up",
+    "nOfM": "{n} of {m}",
+    "deliveredOrAll": "{n} delivered, or all {m} — decide",
+    "linesToInvoice": "Lines to invoice",
+    "editBeforeIssuing": "edit anything before issuing",
+    "designation": "Designation",
+    "ordered": "Ordered",
+    "delivered": "Delivered",
+    "alreadyInvoiced": "Already invoiced",
+    "unitPrice": "Unit price",
+    "thisInvoice": "This invoice",
+    "notDelivered": "not delivered",
+    "invoiceDate": "Invoice date",
+    "dueDate": "Due date",
+    "totals": "Totals",
+    "totalExcl": "Total excl. VAT",
+    "linesChosen": "Lines with something to bill",
+    "stampDuty": "Droit de timbre",
+    "atSettlement": "decided at settlement",
+    "numbering": "Numbering",
+    "nextAvailable": "Next available",
+    "reserved": "Reserved",
+    "onIssueOnly": "No — on issue only",
+    "numberingNote": "The number is reserved inside the transaction that issues the document, so the register stays gapless. Until then this is what it will look like, not what it will be.",
+    "beforeIssuing": "Before issuing",
+    "fromYourProfile": "from your compliance profile",
+    "lifecycle": "Lifecycle",
+    "sameMachine": "the same machine as every other document",
+    "lifecycleNote": "Draft and Issued are stored on the document. Partly paid and Paid are not — they are worked out from the payments allocated against it, and change without anybody touching the invoice. Overdue is not a state either: it is a date passing while a balance is still owed. Cancelling an issued invoice is a credit note, never a status change.",
+    "error": {
+      "noSuchDocument": "That document no longer exists.",
+      "sourceNotIssued": "That document has never been issued, so there is nothing to invoice from.",
+      "nothingLeftToBill": "There is nothing left to invoice on that document.",
+      "nothingDelivered": "Nothing has been delivered against it yet.",
+      "nothingChosen": "Enter a quantity on at least one line."
     }
   }
 }

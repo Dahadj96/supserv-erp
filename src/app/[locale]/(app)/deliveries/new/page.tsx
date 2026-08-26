@@ -9,7 +9,7 @@ import { db } from "@/db";
 import { document } from "@/db/schema/document";
 import { party } from "@/db/schema/party";
 import { progress } from "@/domain/delivery/lines";
-import { deliveredAgainst, sourceLines } from "@/domain/delivery/store";
+import { coveredAgainst, sourceLines } from "@/domain/delivery/store";
 import { Link } from "@/i18n/navigation";
 import { startDeliveryAction } from "../actions";
 
@@ -53,7 +53,7 @@ export default async function NewDeliveryPage({
   if (!doc) notFound();
 
   const sources = await sourceLines(doc.id);
-  const delivered = await deliveredAgainst(sources.map((line) => line.lineId));
+  const delivered = await coveredAgainst(sources.map((line) => line.lineId));
   const p = progress({ sources, delivered });
 
   const today = new Date().toISOString().slice(0, 10);

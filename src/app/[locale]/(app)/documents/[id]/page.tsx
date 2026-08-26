@@ -8,6 +8,7 @@ import { Button } from "@/components/ui/button";
 import { type ChecklistRow, checklist, summarise } from "@/documents/checklist";
 import { targetsFor } from "@/documents/conversion";
 import { NotRenderable, render } from "@/documents/engine";
+import { deliveryNotesFor } from "@/domain/delivery/store";
 import { setupState } from "@/domain/setup";
 import { Link } from "@/i18n/navigation";
 import { issueDocument } from "./actions";
@@ -57,6 +58,10 @@ export default async function DocumentPage({
 
   const rows = checklist(doc);
   const summary = summarise(rows);
+  // Whether anything has actually been delivered against this document, which
+  // is what decides if "invoice what is delivered" is a sentence that means
+  // anything here.
+  const notes = doc.number ? await deliveryNotesFor(id) : [];
   const setup = await setupState();
   const allowed = mayIssue(session.role, doc.kind);
 
@@ -111,6 +116,18 @@ export default async function DocumentPage({
           {doc.number && DELIVERABLE.includes(doc.kind) ? (
             <Link href={`/deliveries/new?source=${id}`}>
               <Button variant="secondary">{t("documents.recordDelivery")}</Button>
+            </Link>
+          ) : null}
+          {/*
+            Screen 72. Offered only once something has actually been delivered
+            against this document — "invoice what is delivered" is a route to
+            cash, and offering it when nothing has gone out is offering to
+            invoice a client for goods still in the warehouse. The whole-document
+            case is Convert, above.
+          */}
+          {doc.number && notes.length > 0 && doc.kind !== "invoice" ? (
+            <Link href={`/invoices/new?source=${id}`}>
+              <Button variant="secondary">{t("documents.invoiceDelivered")}</Button>
             </Link>
           ) : null}
           <a href={`/api/documents/${id}/pdf`} target="_blank" rel="noreferrer">

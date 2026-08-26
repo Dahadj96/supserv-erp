@@ -1037,7 +1037,8 @@
     "edit": "Modifier",
     "convert": "Convertir",
     "convertedOk": "Créé à partir du document d’origine, qui reste intact au dossier. À relire avant de l’émettre.",
-    "recordDelivery": "Enregistrer une livraison"
+    "recordDelivery": "Enregistrer une livraison",
+    "invoiceDelivered": "Facturer ce qui est livré"
   },
   "checklist": {
     "title": "Avant d'émettre",
@@ -2730,6 +2731,79 @@
       "nothingToDeliver": "Saisissez une quantité sur au moins une ligne.",
       "quantityNotPositive": "Une quantité livrée doit être supérieure à zéro.",
       "alreadySigned": "Un exemplaire signé est déjà au dossier pour ce bon de livraison."
+    }
+  },
+  "newInvoice": {
+    "title": "Nouvelle facture — à partir de {number}",
+    "checkDontRetype": "l'essentiel est déjà connu · vérifiez plutôt que de ressaisir",
+    "cancel": "Annuler",
+    "create": "Créer le brouillon",
+    "createsADraft": "Crée un brouillon. Il s'émet depuis l'écran du document, là où le numéro est réservé.",
+    "nothingLeft": "Toutes les lignes ont déjà été facturées.",
+    "partialBanner": "{n} lignes sur {m} sont livrées. Vous pouvez les facturer maintenant ou attendre le reste — facturer ce qui est livré, c'est encaisser plus vite.",
+    "scope": {
+      "delivered": "Ce qui est livré",
+      "remaining": "Tout ce qui reste à facturer"
+    },
+    "carried": "Repris — à vérifier, pas à ressaisir",
+    "fromWhere": "et d'où cela vient",
+    "row": {
+      "client": "Client",
+      "billingAddress": "Adresse de facturation",
+      "identifiers": "NIF / NIS / RC",
+      "source": "À partir de",
+      "lines": "Lignes livrées",
+      "bank": "Compte bancaire",
+      "language": "Langue du document",
+      "invoiceDate": "Date de facture",
+      "whichLines": "Quelles lignes facturer"
+    },
+    "from": {
+      "partyMaster": "fiche client",
+      "theSource": "le document source",
+      "sourceAndBLs": "source + bons de livraison",
+      "settings": "paramètres",
+      "theClientNotYou": "le client, pas vous",
+      "ask": "à décider"
+    },
+    "allThree": "présents — tous les trois",
+    "someMissing": "un ou plusieurs manquants",
+    "notRecorded": "non renseignée",
+    "notSetUp": "non configuré",
+    "nOfM": "{n} sur {m}",
+    "deliveredOrAll": "{n} livrées, ou les {m} — à décider",
+    "linesToInvoice": "Lignes à facturer",
+    "editBeforeIssuing": "tout reste modifiable avant émission",
+    "designation": "Désignation",
+    "ordered": "Commandé",
+    "delivered": "Livré",
+    "alreadyInvoiced": "Déjà facturé",
+    "unitPrice": "Prix unitaire",
+    "thisInvoice": "Cette facture",
+    "notDelivered": "non livré",
+    "invoiceDate": "Date de facture",
+    "dueDate": "Échéance",
+    "totals": "Totaux",
+    "totalExcl": "Total HT",
+    "linesChosen": "Lignes à facturer",
+    "stampDuty": "Droit de timbre",
+    "atSettlement": "décidé au règlement",
+    "numbering": "Numérotation",
+    "nextAvailable": "Prochain disponible",
+    "reserved": "Réservé",
+    "onIssueOnly": "Non — à l'émission seulement",
+    "numberingNote": "Le numéro est réservé dans la transaction qui émet le document, pour que le registre reste sans trou. D'ici là, c'est à quoi il ressemblera, pas ce qu'il sera.",
+    "beforeIssuing": "Avant émission",
+    "fromYourProfile": "d'après votre profil de conformité",
+    "lifecycle": "Cycle de vie",
+    "sameMachine": "la même mécanique que pour tout autre document",
+    "lifecycleNote": "Brouillon et Émise sont enregistrés sur le document. Partiellement réglée et Réglée ne le sont pas : elles se déduisent des règlements affectés, et changent sans que personne ne touche à la facture. « En retard » n'est pas non plus un état : c'est une date qui passe alors qu'un solde reste dû. Annuler une facture émise, c'est un avoir, jamais un changement de statut.",
+    "error": {
+      "noSuchDocument": "Ce document n'existe plus.",
+      "sourceNotIssued": "Ce document n'a jamais été émis : il n'y a rien à facturer dessus.",
+      "nothingLeftToBill": "Il ne reste rien à facturer sur ce document.",
+      "nothingDelivered": "Rien n'a encore été livré dessus.",
+      "nothingChosen": "Saisissez une quantité sur au moins une ligne."
     }
   }
 }

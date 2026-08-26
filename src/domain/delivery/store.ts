@@ -57,7 +57,17 @@ export async function sourceLines(documentId: string): Promise<SourceLine[]> {
  * PLANNED across the drafts. Filtering at the query would make the second
  * unavailable without a second query.
  */
-export async function deliveredAgainst(sourceLineIds: string[]): Promise<DeliveredLine[]> {
+export async function coveredAgainst(
+  sourceLineIds: string[],
+  /**
+   * Which kind of document counts as covering. `delivery_note` answers "what
+   * has gone out"; `invoice` answers "what has been billed", which screen 72
+   * asks with the same arithmetic — one proforma becomes several factures as
+   * the lorries leave, and "already invoiced 4 of 9" is the same subtraction as
+   * "already delivered 12 of 24".
+   */
+  kinds: string[] = ["delivery_note"],
+): Promise<DeliveredLine[]> {
   if (sourceLineIds.length === 0) return [];
 
   const rows = await db
@@ -71,8 +81,8 @@ export async function deliveredAgainst(sourceLineIds: string[]): Promise<Deliver
     .where(
       and(
         inArray(documentLine.sourceLineId, sourceLineIds),
-        eq(document.kind, "delivery_note"),
-        // A cancelled BL delivered nothing.
+        inArray(document.kind, kinds),
+        // A cancelled document covered nothing.
         sql`${document.status} <> 'credited'`,
       ),
     );

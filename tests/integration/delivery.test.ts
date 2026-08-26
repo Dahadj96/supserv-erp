@@ -8,7 +8,7 @@ import { party, partyRole } from "@/db/schema/party";
 import { progress } from "@/domain/delivery/lines";
 import {
   CannotDeliver,
-  deliveredAgainst,
+  coveredAgainst,
   deliveries,
   deliveryLines,
   detailFor,
@@ -161,7 +161,7 @@ describe("recording a delivery", () => {
 
   it("counts the draft as having delivered NOTHING", async () => {
     // The whole point. A draft is a lorry that has not left.
-    const delivered = await deliveredAgainst(lineIds);
+    const delivered = await coveredAgainst(lineIds);
     expect(delivered).toHaveLength(2);
     expect(delivered.every((line) => line.issued === false)).toBe(true);
 
@@ -177,7 +177,7 @@ describe("recording a delivery", () => {
       .set({ number: `BL-${stamp}-0118`, status: "issued" })
       .where(eq(document.id, notes[1] as string));
 
-    const delivered = await deliveredAgainst(lineIds);
+    const delivered = await coveredAgainst(lineIds);
     const p = progress({ sources: await sourceLines(orderId), delivered });
 
     // 40 of 40 on line one, 12 of 24 on line two.
@@ -202,7 +202,7 @@ describe("recording a delivery", () => {
 
     const p = progress({
       sources: await sourceLines(orderId),
-      delivered: await deliveredAgainst(lineIds),
+      delivered: await coveredAgainst(lineIds),
     });
     expect(p.linesComplete).toBe(2);
     expect(p.open).toBe(0);
