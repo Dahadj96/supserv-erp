@@ -48,7 +48,9 @@ export default async function DealsPage({
     reference: row.ref,
     client: row.clientName,
     subject: row.subject,
-    value: row.expectedValue ? formatMoney(row.expectedValue, row.currency, locale) : null,
+    value: row.expectedValue
+      ? formatMoney(row.expectedValue, { locale, currency: row.currency })
+      : null,
     deadline:
       row.deadline.kind === "closed"
         ? t("deals.closed")

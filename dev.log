@@ -12,3 +12,5 @@
  GET /fr/deals 307 in 2.3s (next.js: 381ms, proxy.ts: 250ms, generate-params: 1114ms, application-code: 524ms)
  GET /fr/deals/new 307 in 1309ms (next.js: 67ms, proxy.ts: 6ms, generate-params: 1128ms, application-code: 107ms)
  GET /fr/capture 307 in 1204ms (next.js: 51ms, proxy.ts: 7ms, generate-params: 1039ms, application-code: 106ms)
+ GET /fr/deals 307 in 2.5s (next.js: 1445ms, proxy.ts: 326ms, generate-params: 7ms, application-code: 732ms)
+ GET /fr/deals/00000000-0000-0000-0000-000000000000/prices 307 in 4.5s (next.js: 4.3s, proxy.ts: 8ms, application-code: 199ms)

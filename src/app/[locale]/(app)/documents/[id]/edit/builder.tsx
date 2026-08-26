@@ -110,7 +110,7 @@ export function Builder({
     [rows, discount, advance],
   );
 
-  const money = (value: string) => formatMoney(value, locale, currency);
+  const money = (value: string) => formatMoney(value, { locale, currency });
 
   return (
     <form action={action} className="grid grid-cols-3 items-start gap-5">

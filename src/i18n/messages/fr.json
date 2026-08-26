@@ -1982,5 +1982,78 @@
     "error": {
       "clientAndSubject": "Une consultation demande un client et un objet."
     }
+  },
+  "prices": {
+    "title": "Prix — {ref}",
+    "summary": "{items} articles · {priced} chiffrés · {open} encore ouverts · les prix viennent d’où vous les avez trouvés",
+    "backToEnquiry": "Retour à la consultation",
+    "banner": "Un prix n’a pas besoin de venir d’un e-mail. Une boutique où vous êtes passé, un appel, une proforma qu’on vous a remise, ou votre propre chiffrage comptent tous — et chacun est enregistré avec sa provenance.",
+    "gathered": "Prix recueillis",
+    "bestHighlighted": "le meilleur prix par article est surligné",
+    "nonePlease": "Aucun prix pour l’instant. Ajoutez le premier ci-dessous — un chiffre pris au comptoir compte.",
+    "noLinesYet": "Cette consultation n’a pas encore de lignes. Saisissez d’abord la demande du client.",
+    "item": "Article",
+    "whereFrom": "Provenance",
+    "price": "Prix",
+    "gotOn": "Obtenu le",
+    "holdsUntil": "Tient jusqu’au",
+    "firm": "Ferme ?",
+    "supplier": "Boutique ou fournisseur",
+    "supplierHint": "S’ils ne sont pas encore dans Sociétés, ils seront créés comme fournisseur, avec ce seul nom. Personne ne demande un NIF à un comptoir.",
+    "wherePlace": "Wilaya / adresse",
+    "spokeTo": "Personne rencontrée",
+    "pricePerUnit": "Prix unitaire",
+    "writtenOrVerbal": "Écrit ou verbal",
+    "verbalNoDocument": "Verbal — sans document",
+    "vat": "Avant ou après TVA",
+    "excl": "Avant TVA",
+    "incl": "Après TVA",
+    "addTitle": "Ajouter un prix",
+    "addHint": "les champs changent selon la provenance",
+    "save": "Enregistrer ce prix",
+    "saved": "Prix enregistré.",
+    "addFor": "Ajouter un prix",
+    "stillOpen": "Encore ouverts",
+    "allPriced": "Chaque ligne a au moins un prix.",
+    "nItems": "{n, plural, one {# article} other {# articles}}",
+    "nLines": "{n, plural, one {# ligne} other {# lignes}}",
+    "coverage": "Couverture",
+    "coverageRow": {
+      "items": "Articles",
+      "withAnyPrice": "Avec au moins un prix",
+      "withTwoOrMore": "Avec deux prix ou plus",
+      "noPriceYet": "Sans prix",
+      "pricedByUs": "Chiffrés par nous",
+      "verbalOnly": "Verbal seulement — risqué"
+    },
+    "riskTitle": "Ce qu’un prix verbal vous coûte",
+    "riskBody": "{verbal, plural, =0 {Rien ici ne repose sur la parole de quelqu’un.} one {Un de vos prix repose sur la parole de quelqu’un.} other {# de vos prix reposent sur la parole de quelqu’un.}} Si {client} décide vers le {when}, tout ce qui aura expiré d’ici là n’engage personne. L’offre part quand même — le risque est noté en face de ces lignes plutôt que découvert plus tard.",
+    "riskNoDeadline": "Le client n’a donné aucune date limite, donc il n’y a aucune date à laquelle comparer un prix. Rien ici ne prétend qu’un prix expirera avant leur réponse — ce serait une supposition déguisée en chiffre.",
+    "riskRow": {
+      "firm": "Écrits et fermes",
+      "verbal": "Verbaux",
+      "expiresFirst": "Expire avant la décision du client"
+    },
+    "firmness": {
+      "written": "Écrit",
+      "verbal": "Verbal",
+      "internal": "Interne"
+    },
+    "source": {
+      "supplier_email": "E-mail",
+      "supplier_proforma": "Proforma",
+      "shop_visit": "Visite en boutique",
+      "phone": "Appel téléphonique",
+      "internal_costing": "Notre propre chiffrage"
+    },
+    "error": {
+      "noSuchDeal": "Cette consultation n’existe plus.",
+      "closed": "Cette consultation est clôturée. Rouvrez-la avant d’ajouter des prix.",
+      "unknownSource": "Indiquez d’où vient le prix.",
+      "noPrice": "Un prix demande un nombre supérieur à zéro.",
+      "noSubject": "Choisissez la ligne concernée par ce prix.",
+      "supplierRequired": "Dites qui l’a annoncé — un nom de boutique suffit.",
+      "verbalCannotHaveEvidence": "Un prix accompagné d’un document n’est pas verbal. Marquez-le écrit."
+    }
   }
 }

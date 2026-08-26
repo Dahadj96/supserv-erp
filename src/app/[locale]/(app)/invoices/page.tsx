@@ -105,7 +105,7 @@ export default async function InvoicesPage({
           <p className="mt-1 text-tiny text-muted">
             {t("invoices.subtitle", {
               unpaid: withMoney.filter((r) => r.unpaid).length,
-              outstanding: formatMoney(outstanding.toFixed(2), locale),
+              outstanding: formatMoney(outstanding.toFixed(2), { locale }),
             })}
           </p>
         </div>
@@ -183,7 +183,7 @@ export default async function InvoicesPage({
                       {row.clientCode} — {row.clientName}
                     </td>
                     <td className="py-2.5 pe-4 text-end tabular-nums text-ink">
-                      {formatMoney(row.totalIncl, locale, row.currency)}
+                      {formatMoney(row.totalIncl, { locale, currency: row.currency })}
                     </td>
                     <td className="py-2.5 pe-4 text-muted">{row.issuedOn ?? "—"}</td>
                     <td className="py-2.5 pe-4">

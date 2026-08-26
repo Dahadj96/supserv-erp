@@ -8,6 +8,7 @@ import { Button } from "@/components/ui/button";
 import { getDeal, NO_BID_REASONS } from "@/domain/deal/deal";
 import { DEADLINE_WARNING_HOURS } from "@/domain/deal/stage";
 import { formatMoney } from "@/domain/money";
+import { Link } from "@/i18n/navigation";
 import { decideAction, lostAction, reopenAction } from "./actions";
 
 /**
@@ -80,6 +81,11 @@ export default async function EnquiryPage({
             </span>
             <Badge tone={TONE[badge] ?? "neutral"}>{t(`deals.filters.${badge}`)}</Badge>
           </p>
+        </div>
+        <div className="ms-auto flex items-center gap-2">
+          <Link href={`/deals/${id}/prices`}>
+            <Button variant="secondary">{t("prices.gathered")}</Button>
+          </Link>
         </div>
       </div>
 
@@ -373,7 +379,7 @@ export default async function EnquiryPage({
             <section className="rounded-[var(--radius-card)] border border-line bg-surface p-5">
               <h2 className="text-tiny font-semibold text-ink">{t("deals.value")}</h2>
               <p className="mt-1 text-lead font-semibold tabular-nums text-ink">
-                {formatMoney(row.expectedValue, row.currency, locale)}
+                {formatMoney(row.expectedValue, { locale, currency: row.currency })}
               </p>
             </section>
           ) : null}

@@ -1982,5 +1982,78 @@
     "error": {
       "clientAndSubject": "An enquiry needs a client and a subject."
     }
+  },
+  "prices": {
+    "title": "Prices — {ref}",
+    "summary": "{items} items · {priced} priced · {open} still open · prices come from wherever you found them",
+    "backToEnquiry": "Back to the enquiry",
+    "banner": "A price does not have to come from an email. A shop you visited, a phone call, a proforma someone handed you, or your own costing all count — and each is recorded with where it came from.",
+    "gathered": "Prices gathered",
+    "bestHighlighted": "best price per item is highlighted",
+    "nonePlease": "No prices yet. Add the first one below — a number from a counter counts.",
+    "noLinesYet": "This enquiry has no lines yet. Add what the client asked for first.",
+    "item": "Item",
+    "whereFrom": "Where it came from",
+    "price": "Price",
+    "gotOn": "Got on",
+    "holdsUntil": "Holds until",
+    "firm": "Firm?",
+    "supplier": "Shop or supplier",
+    "supplierHint": "If they are not in Companies yet they will be created as a supplier, with just this name. Nobody asks for a NIF at a counter.",
+    "wherePlace": "Wilaya / address",
+    "spokeTo": "Person you spoke to",
+    "pricePerUnit": "Price per unit",
+    "writtenOrVerbal": "Written or verbal",
+    "verbalNoDocument": "Verbal — no document",
+    "vat": "Before or after VAT",
+    "excl": "Before VAT",
+    "incl": "After VAT",
+    "addTitle": "Add a price",
+    "addHint": "the fields change with where it came from",
+    "save": "Save this price",
+    "saved": "Price recorded.",
+    "addFor": "Add a price",
+    "stillOpen": "Still open",
+    "allPriced": "Every line has at least one price.",
+    "nItems": "{n, plural, one {# item} other {# items}}",
+    "nLines": "{n, plural, one {# line} other {# lines}}",
+    "coverage": "Coverage",
+    "coverageRow": {
+      "items": "Items",
+      "withAnyPrice": "With at least one price",
+      "withTwoOrMore": "With two or more",
+      "noPriceYet": "No price yet",
+      "pricedByUs": "Priced by us",
+      "verbalOnly": "Verbal only — risky"
+    },
+    "riskTitle": "What a verbal price costs you",
+    "riskBody": "{verbal, plural, =0 {Nothing here rests on somebody's word.} one {One of your prices is somebody's word.} other {# of your prices are somebody's word.}} If {client} decides around {when}, anything that has expired by then is not binding. The offer still goes out — the risk is recorded against those lines rather than discovered later.",
+    "riskNoDeadline": "The client gave no deadline, so there is no date to measure a price against. Nothing here claims a price will expire before they answer — that would be a guess wearing a number.",
+    "riskRow": {
+      "firm": "Written and firm",
+      "verbal": "Verbal",
+      "expiresFirst": "Expires before the client decides"
+    },
+    "firmness": {
+      "written": "Written",
+      "verbal": "Verbal",
+      "internal": "Internal"
+    },
+    "source": {
+      "supplier_email": "Email",
+      "supplier_proforma": "Proforma",
+      "shop_visit": "Shop visit",
+      "phone": "Phone call",
+      "internal_costing": "Our own costing"
+    },
+    "error": {
+      "noSuchDeal": "That enquiry no longer exists.",
+      "closed": "This enquiry is closed. Reopen it before adding prices.",
+      "unknownSource": "Choose where the price came from.",
+      "noPrice": "A price needs a number greater than zero.",
+      "noSubject": "Choose which line this price is for.",
+      "supplierRequired": "Say who quoted it — a shop name is enough.",
+      "verbalCannotHaveEvidence": "A price with a document attached is not verbal. Mark it written instead."
+    }
   }
 }

@@ -127,7 +127,10 @@ export function CaptureBox({ locale }: { locale: string }) {
                     {t(`capture.${field.labelKey}`, {
                       ...valuesFor(field.values),
                       money: field.money
-                        ? formatMoney(field.money.amount, field.money.currency, locale)
+                        ? formatMoney(field.money.amount, {
+                            locale,
+                            currency: field.money.currency,
+                          })
                         : "",
                     })}
                   </p>

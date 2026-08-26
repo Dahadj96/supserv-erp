@@ -127,8 +127,19 @@ export function balance(totalIncl: string, paid: string): string {
   return new Decimal(totalIncl).minus(new Decimal(paid)).toDecimalPlaces(2).toFixed(2);
 }
 
-/** "1 234 567,89 DZD" in fr, "1,234,567.89 DZD" in en. */
-export function formatMoney(amount: string, locale: string, currency = "DZD"): string {
+/**
+ * "1 234 567,89 DZD" in fr, "1,234,567.89 DZD" in en.
+ *
+ * Locale and currency are NAMED, not positional. They used to be two adjacent
+ * string parameters, and three call sites passed them the wrong way round —
+ * `formatMoney(value, "DZD", locale)` — which typechecks perfectly and renders
+ * amounts in a currency called "fr". Two strings in a row that mean different
+ * things is a trap, so the trap is removed rather than documented.
+ */
+export function formatMoney(
+  amount: string,
+  { locale, currency = "DZD" }: { locale: string; currency?: string },
+): string {
   return new Intl.NumberFormat(locale === "fr" ? "fr-DZ" : "en-GB", {
     style: "currency",
     currency,

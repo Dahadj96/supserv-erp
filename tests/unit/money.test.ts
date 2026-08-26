@@ -1,5 +1,29 @@
 import { describe, expect, it } from "vitest";
-import { balance, computeTotals, lineTotalExcl } from "@/domain/money";
+import { balance, computeTotals, formatMoney, lineTotalExcl } from "@/domain/money";
+
+/**
+ * `formatMoney` used to take locale and currency as two adjacent strings, and
+ * three call sites passed them the wrong way round. It typechecked, and it
+ * printed amounts in a currency called "fr". These are the tests that would
+ * have caught it.
+ */
+describe("printing an amount", () => {
+  it("groups the way each language does", () => {
+    // Non-breaking spaces in French, so the digits are compared rather than the
+    // exact whitespace the platform's ICU chose this week.
+    const fr = formatMoney("1234567.89", { locale: "fr" }).replace(/[\s ]/g, "");
+    expect(fr).toContain("1234567,89");
+    expect(fr).toContain("DZD");
+
+    const en = formatMoney("1234567.89", { locale: "en" });
+    expect(en).toContain("1,234,567.89");
+  });
+
+  it("defaults to dinars and takes any currency by name", () => {
+    expect(formatMoney("100", { locale: "en" })).toContain("DZD");
+    expect(formatMoney("100", { locale: "en", currency: "EUR" })).toContain("EUR");
+  });
+});
 
 describe("money", () => {
   it("does not lose a centime to floating point", () => {
