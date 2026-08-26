@@ -1877,5 +1877,15 @@
     "writes": {
       "note": "One note in the Inbox"
     }
+  },
+  "phone": {
+    "bar": "On the phone",
+    "phase": "phase {n}",
+    "job": {
+      "capture": "Capture",
+      "price": "Price",
+      "approve": "Approve",
+      "today": "Today"
+    }
   }
 }

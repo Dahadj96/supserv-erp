@@ -1877,5 +1877,15 @@
     "writes": {
       "note": "Une note dans la boîte de réception"
     }
+  },
+  "phone": {
+    "bar": "Sur le téléphone",
+    "phase": "phase {n}",
+    "job": {
+      "capture": "Saisir",
+      "price": "Prix",
+      "approve": "Approuver",
+      "today": "Aujourd’hui"
+    }
   }
 }

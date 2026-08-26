@@ -62,7 +62,7 @@ export default async function QuickCapturePage({
 
   return (
     <main className="min-h-0 flex-1 overflow-auto">
-      <div className="flex items-start gap-3 border-b border-line-subtle bg-surface px-7 py-5">
+      <div className="flex items-start gap-3 border-b border-line-subtle bg-surface px-4 py-4 md:px-7 md:py-5">
         <div>
           <h1 className="text-[19px] font-semibold text-ink">{t("capture.title")}</h1>
           <p className="mt-1 text-tiny text-muted">{t("capture.subtitle")}</p>
@@ -70,7 +70,7 @@ export default async function QuickCapturePage({
       </div>
 
       {saved ? (
-        <p className="mx-7 mt-4 rounded-[var(--radius-control)] bg-good-bg px-4 py-2.5 text-tiny text-good-ink">
+        <p className="mx-4 mt-4 md:mx-7 rounded-[var(--radius-control)] bg-good-bg px-4 py-2.5 text-tiny text-good-ink">
           {t("capture.savedIt")}{" "}
           <Link className="underline" href="/inbox">
             {t("capture.seeItInInbox")}
@@ -79,13 +79,13 @@ export default async function QuickCapturePage({
       ) : null}
 
       {error ? (
-        <p className="mx-7 mt-4 rounded-[var(--radius-control)] bg-critical-bg px-4 py-2.5 text-tiny text-critical-ink">
+        <p className="mx-4 mt-4 md:mx-7 rounded-[var(--radius-control)] bg-critical-bg px-4 py-2.5 text-tiny text-critical-ink">
           {t.has(`capture.error.${error}`) ? t(`capture.error.${error}`) : error}
         </p>
       ) : null}
 
-      <div className="grid max-w-[1400px] grid-cols-3 items-start gap-5 px-7 py-6">
-        <div className="col-span-2">
+      <div className="grid max-w-[1400px] grid-cols-1 items-start gap-5 px-4 py-5 md:grid-cols-3 md:px-7 md:py-6">
+        <div className="md:col-span-2">
           <CaptureBox locale={locale} />
         </div>
 

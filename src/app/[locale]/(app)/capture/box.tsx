@@ -115,7 +115,10 @@ export function CaptureBox({ locale }: { locale: string }) {
             </span>
           </div>
 
-          <div className="grid grid-cols-2 gap-x-5 gap-y-4 px-5 py-4">
+          {/* One column on a phone. Screen 86 draws the capture card as a
+              single stack of fields, because two 170px columns is not a form,
+              it is a puzzle. */}
+          <div className="grid grid-cols-1 gap-x-5 gap-y-4 px-4 py-4 sm:grid-cols-2 sm:px-5">
             {reading.fields.map((field) => (
               <div key={field.key}>
                 <p className="text-micro text-secondary">{t(`capture.field.${field.key}`)}</p>

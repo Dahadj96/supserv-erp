@@ -46,7 +46,7 @@ export function Topbar({
     .toUpperCase();
 
   return (
-    <header className="relative flex h-[58px] shrink-0 items-center gap-3 border-b border-line-subtle bg-surface pe-4 ps-7">
+    <header className="relative flex h-[58px] shrink-0 items-center gap-3 border-b border-line-subtle bg-surface pe-4 ps-4 md:ps-7">
       <nav aria-label="Breadcrumb" className="text-tiny text-muted">
         <span>SUPSERV</span>
         {entry ? (
@@ -61,7 +61,9 @@ export function Topbar({
         {/* Screen 82 — this box was drawn on all 86 frames and did nothing. */}
         <form
           action={`/${locale}/search`}
-          className="flex h-[34px] w-[300px] items-center gap-2 rounded-[var(--radius-control)] border border-line bg-surface px-2.5 focus-within:border-ink"
+          // Screen 86: on a phone the search box takes what is left rather than
+          // 300px it does not have. It stays — reading is one of the four.
+          className="flex h-[34px] w-[130px] items-center gap-2 rounded-[var(--radius-control)] border border-line bg-surface px-2.5 focus-within:border-ink sm:w-[220px] md:w-[300px]"
         >
           <Search className="size-4 shrink-0 text-muted" aria-hidden />
           <input

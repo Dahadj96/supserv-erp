@@ -51,10 +51,28 @@ describe("messages", () => {
     const missing: string[] = [];
     for (const file of globSync(`${root}/src/**/*.tsx`)) {
       const src = readFileSync(file, "utf8");
-      for (const match of src.matchAll(/\bt\(\s*"([a-zA-Z0-9_.]+)"/g)) {
-        const key = match[1] as string;
-        if (typeof get(en, key) !== "string") {
-          missing.push(`${key}  —  ${file.slice(root.length + 1)}`);
+
+      // Which translator variable is scoped to which namespace.
+      //   const t     = useTranslations();        → t("scan.title")
+      //   const tNav  = useTranslations("nav");   → tNav("inbox")
+      //
+      // Reading the namespace matters: without it this test resolved `tNav`
+      // calls against the root and quietly passed on keys that do not exist.
+      const scopes = new Map<string, string>();
+      for (const m of src.matchAll(
+        /\b(?:const|let)\s+(\w+)\s*=\s*(?:await\s+)?(?:useTranslations|getTranslations)\(\s*(?:"([^"]*)")?\s*\)/g,
+      )) {
+        if (m[1]) scopes.set(m[1], m[2] ?? "");
+      }
+      if (scopes.size === 0) scopes.set("t", "");
+
+      for (const [name, namespace] of scopes) {
+        const call = new RegExp(`\\b${name}\\(\\s*"([a-zA-Z0-9_.]+)"`, "g");
+        for (const match of src.matchAll(call)) {
+          const key = namespace ? `${namespace}.${match[1]}` : (match[1] as string);
+          if (typeof get(en, key) !== "string") {
+            missing.push(`${key}  —  ${file.slice(root.length + 1)}`);
+          }
         }
       }
     }

@@ -2,6 +2,7 @@ import { redirect } from "next/navigation";
 import { getTranslations, setRequestLocale } from "next-intl/server";
 import type { ReactNode } from "react";
 import { getSession } from "@/auth/session";
+import { PhoneBar } from "@/components/layout/phone-bar";
 import { Sidebar } from "@/components/layout/sidebar";
 import { Topbar } from "@/components/layout/topbar";
 import { StateBlock } from "@/components/ui/state-block";
@@ -50,6 +51,8 @@ export default async function AppLayout({
       <div className="flex min-w-0 flex-1 flex-col">
         <Topbar displayName={session.displayName} role={session.role} locale={locale} />
         {children}
+        {/* Screen 86. Below `md` only, and only the four things a phone is for. */}
+        <PhoneBar />
       </div>
     </div>
   );

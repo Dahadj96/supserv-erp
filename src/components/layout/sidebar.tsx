@@ -30,7 +30,10 @@ export function Sidebar({ displayName, roleLabel }: { displayName: string; roleL
     .toUpperCase();
 
   return (
-    <aside className="flex w-[236px] shrink-0 flex-col border-e border-line-subtle bg-surface">
+    // Hidden below `md`. Screen 86: the rail is a laptop object — twenty-eight
+    // destinations on a 390px screen is a menu, and a menu is what people stop
+    // opening. On a phone the four jobs live in the bottom bar instead.
+    <aside className="hidden w-[236px] shrink-0 flex-col border-e border-line-subtle bg-surface md:flex">
       <div className="flex h-[59px] items-center gap-3 ps-4">
         <span className="flex size-7 items-center justify-center rounded-[var(--radius-control)] bg-ink text-on-ink text-tiny font-semibold">
           S
