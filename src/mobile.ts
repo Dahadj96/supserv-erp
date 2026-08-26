@@ -50,7 +50,7 @@ export const PHONE_JOBS: PhoneJob[] = [
 
   // 4 — Reading, not writing. Today, and a tap that dials a client. Everything
   // else on a phone is read-only, on purpose.
-  { key: "today", screen: 55, href: "/today", built: false, phase: 6 },
+  { key: "today", screen: 55, href: "/today", built: true, phase: null },
 ];
 
 /** The width the four are drawn at. The other eighty-five are 1440. */

@@ -45,7 +45,11 @@ describe("what a phone is for", () => {
   it("puts only built jobs in the bar's links", () => {
     // The unbuilt ones still appear on the bar, greyed with their phase — but
     // `phoneBar()` is what may be linked, and a link to nothing is a dead end.
-    expect(phoneBar().map((j) => j.key)).toEqual(["capture"]);
+    //
+    // Written out rather than derived from PHONE_JOBS, which would make it
+    // tautological. The point is that shipping a phone job is a deliberate act:
+    // somebody flips `built` and comes here to say so.
+    expect(phoneBar().map((j) => j.key)).toEqual(["capture", "today"]);
   });
 });
 

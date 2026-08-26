@@ -2805,5 +2805,99 @@
       "nothingDelivered": "Nothing has been delivered against it yet.",
       "nothingChosen": "Enter a quantity on at least one line."
     }
+  },
+  "today": {
+    "headline": "{n, plural, one {# thing needs you today} other {# things need you today}} · about {minutes} minutes",
+    "nothingNeedsYou": "Nothing needs a decision from you today.",
+    "quickCapture": "Quick capture",
+    "nAndMinutes": "{n} · ~{minutes} min",
+    "band": {
+      "nowOrLost": "Now, or it is lost",
+      "money": "Money",
+      "waitingOnYou": "People are waiting on you",
+      "quick": "Under two minutes"
+    },
+    "bandWhy": {
+      "nowOrLost": "deadlines that expire today or tomorrow",
+      "money": "things that decide whether cash arrives",
+      "waitingOnYou": "they cannot move until you answer",
+      "quick": "clear these and the day is done"
+    },
+    "do": {
+      "open": "Open",
+      "chase": "Read and send",
+      "invoice": "Create invoice",
+      "reply": "Reply",
+      "attach": "Attach",
+      "fill": "Fill in",
+      "review": "Review"
+    },
+    "thatIsEverything": "That is everything for today",
+    "allClear": "Nothing needs a decision from you",
+    "waitingElsewhere": "{n, plural, one {# thing is waiting on somebody else} other {# things are waiting on other people}} — they are on the Waiting on page and come back to you when they move.",
+    "nothingWaitingElsewhere": "Nothing is waiting on anybody else either.",
+    "doneToday": "Done today",
+    "nothingDoneYet": "Nothing recorded yet today.",
+    "doneFromLog": "Taken from the audit log, not from a checkbox — this is what the system saw happen, not what somebody said they did.",
+    "laterThisWeek": "Later this week",
+    "notToday": "not today",
+    "nothingLater": "Nothing else has a date this week.",
+    "howItIsBuilt": "How the list is built",
+    "howItIsBuiltBody": "Ordered by what it costs you to ignore it, not by when it arrived. A deadline that expires tomorrow outranks an email from this morning. Anything waiting on somebody else is kept off this page on purpose.",
+    "noTaskTable": "Nothing here is a task somebody created. Every line is read from a fact another screen already holds, so when the payment lands or the signed copy comes back, the line is simply gone — there is nothing to tick and nothing to tidy up.",
+    "did": {
+      "payment": {
+        "create": "Recorded a payment"
+      },
+      "document": {
+        "create": "Created a document",
+        "update": "Edited a document",
+        "issue": "Issued a document"
+      },
+      "relance": {
+        "create": "Drafted a relance",
+        "update": "Updated a relance"
+      },
+      "delivery_detail": {
+        "update": "Updated a delivery note"
+      },
+      "deal": {
+        "create": "Opened an enquiry",
+        "update": "Updated an enquiry"
+      },
+      "party": {
+        "create": "Added a company",
+        "update": "Updated a company"
+      }
+    }
+  },
+  "waiting": {
+    "title": "Waiting on",
+    "subtitle": "{n, plural, =0 {Nothing is sitting with anybody else} one {# thing sitting with somebody else} other {# things sitting with other people}} · {overdue, plural, =0 {none has been quiet too long} one {# has been quiet too long} other {# have been quiet too long}}",
+    "nothingNeedsYou": "Nothing on this page needs you today. It is here so that when someone goes quiet, you find out before it costs you.",
+    "nobodyOwesAnything": "Nobody owes you an answer at the moment.",
+    "group": {
+      "supplier": "Suppliers",
+      "client": "Clients",
+      "authority": "Authorities and banks"
+    },
+    "groupWhat": {
+      "supplier": "a quote we asked for and have not received",
+      "client": "a decision, a document or money",
+      "authority": "things only they can move"
+    },
+    "who": "Who",
+    "what": "What",
+    "for": "For",
+    "since": "Since",
+    "quietFor": "Quiet for",
+    "chased": "Chased",
+    "nDays": "{n} d",
+    "nTimes": "{n}×",
+    "notRequested": "not requested",
+    "broken": "Bounced — not a slow reply",
+    "thresholdNote": "Anything quiet for {n} days or more in this group is marked red. The three groups keep different clocks on purpose: a supplier silent for three days is slow, a bank silent for three days is normal.",
+    "whatIsMissing": "What is not on this page yet",
+    "authoritiesLater": "The frame shows a third group — authorities and banks, for things like a caution de soumission or a CASNOS attestation. Those are compliance documents and that module is not built, so nothing here knows a bank guarantee was ever requested. An empty group would read as “nothing outstanding”, which is the opposite of what is true."
   }
 }

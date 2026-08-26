@@ -2805,5 +2805,99 @@
       "nothingDelivered": "Rien n'a encore été livré dessus.",
       "nothingChosen": "Saisissez une quantité sur au moins une ligne."
     }
+  },
+  "today": {
+    "headline": "{n, plural, one {# chose vous attend aujourd'hui} other {# choses vous attendent aujourd'hui}} · environ {minutes} minutes",
+    "nothingNeedsYou": "Rien n'attend de décision de votre part aujourd'hui.",
+    "quickCapture": "Saisie rapide",
+    "nAndMinutes": "{n} · ~{minutes} min",
+    "band": {
+      "nowOrLost": "Maintenant, ou c'est perdu",
+      "money": "Argent",
+      "waitingOnYou": "On vous attend",
+      "quick": "Moins de deux minutes"
+    },
+    "bandWhy": {
+      "nowOrLost": "échéances qui expirent aujourd'hui ou demain",
+      "money": "ce qui décide si l'argent rentre",
+      "waitingOnYou": "ils ne peuvent pas avancer sans votre réponse",
+      "quick": "réglez-les et la journée est faite"
+    },
+    "do": {
+      "open": "Ouvrir",
+      "chase": "Relire et envoyer",
+      "invoice": "Créer la facture",
+      "reply": "Répondre",
+      "attach": "Joindre",
+      "fill": "Compléter",
+      "review": "Relire"
+    },
+    "thatIsEverything": "C'est tout pour aujourd'hui",
+    "allClear": "Rien n'attend de décision de votre part",
+    "waitingElsewhere": "{n, plural, one {# chose attend quelqu'un d'autre} other {# choses attendent d'autres personnes}} — elles sont sur la page « On attend » et vous reviennent dès qu'elles bougent.",
+    "nothingWaitingElsewhere": "Rien n'attend non plus chez quelqu'un d'autre.",
+    "doneToday": "Fait aujourd'hui",
+    "nothingDoneYet": "Rien d'enregistré aujourd'hui pour l'instant.",
+    "doneFromLog": "Repris du journal d'audit, pas d'une case cochée — c'est ce que le système a vu se produire, pas ce que quelqu'un a déclaré avoir fait.",
+    "laterThisWeek": "Plus tard cette semaine",
+    "notToday": "pas aujourd'hui",
+    "nothingLater": "Rien d'autre n'a de date cette semaine.",
+    "howItIsBuilt": "Comment la liste est construite",
+    "howItIsBuiltBody": "Classée par ce que ça coûte de l'ignorer, pas par ordre d'arrivée. Une échéance qui expire demain passe avant un e-mail de ce matin. Tout ce qui attend quelqu'un d'autre est volontairement tenu hors de cette page.",
+    "noTaskTable": "Rien ici n'est une tâche créée par quelqu'un. Chaque ligne est lue depuis un fait qu'un autre écran connaît déjà : quand le règlement arrive ou que l'exemplaire signé revient, la ligne disparaît — rien à cocher, rien à ranger.",
+    "did": {
+      "payment": {
+        "create": "Encaissement enregistré"
+      },
+      "document": {
+        "create": "Document créé",
+        "update": "Document modifié",
+        "issue": "Document émis"
+      },
+      "relance": {
+        "create": "Relance rédigée",
+        "update": "Relance mise à jour"
+      },
+      "delivery_detail": {
+        "update": "Bon de livraison mis à jour"
+      },
+      "deal": {
+        "create": "Affaire ouverte",
+        "update": "Affaire mise à jour"
+      },
+      "party": {
+        "create": "Société ajoutée",
+        "update": "Société mise à jour"
+      }
+    }
+  },
+  "waiting": {
+    "title": "On attend",
+    "subtitle": "{n, plural, =0 {Rien n'est chez quelqu'un d'autre} one {# chose est chez quelqu'un d'autre} other {# choses sont chez d'autres personnes}} · {overdue, plural, =0 {aucune n'est silencieuse depuis trop longtemps} one {# est silencieuse depuis trop longtemps} other {# sont silencieuses depuis trop longtemps}}",
+    "nothingNeedsYou": "Rien sur cette page ne vous demande quoi que ce soit aujourd'hui. Elle existe pour que, quand quelqu'un se tait, vous le sachiez avant que ça vous coûte.",
+    "nobodyOwesAnything": "Personne ne vous doit de réponse en ce moment.",
+    "group": {
+      "supplier": "Fournisseurs",
+      "client": "Clients",
+      "authority": "Administrations et banques"
+    },
+    "groupWhat": {
+      "supplier": "un prix demandé et jamais reçu",
+      "client": "une décision, un document ou de l'argent",
+      "authority": "ce qu'eux seuls peuvent faire avancer"
+    },
+    "who": "Qui",
+    "what": "Quoi",
+    "for": "Sur",
+    "since": "Depuis",
+    "quietFor": "Silence depuis",
+    "chased": "Relancé",
+    "nDays": "{n} j",
+    "nTimes": "{n}×",
+    "notRequested": "jamais demandé",
+    "broken": "Adresse invalide — pas une lenteur",
+    "thresholdNote": "Dans ce groupe, tout silence de {n} jours ou plus passe en rouge. Les trois groupes n'ont pas la même horloge, et c'est voulu : un fournisseur muet depuis trois jours est lent, une banque muette depuis trois jours est normale.",
+    "whatIsMissing": "Ce qui n'est pas encore sur cette page",
+    "authoritiesLater": "La maquette montre un troisième groupe — administrations et banques, pour une caution de soumission ou une attestation CASNOS. Ce sont des documents de conformité et ce module n'est pas construit : rien ici ne sait qu'une caution a été demandée. Un groupe vide se lirait « rien en attente », soit l'inverse de la vérité."
   }
 }
