@@ -59,7 +59,10 @@ export async function discardParty(opts: {
     .update(party)
     .set({
       deletedAt: new Date(),
-      deletedBy: null,
+      // Was `null` while this column was `uuid` and the actor id is an opaque
+      // Entra string. Migration 0017 widened it to text, so the row can once
+      // again say who put it in the bin without a trip to the audit log.
+      deletedBy: opts.actorId,
       deleteReason: opts.reason.trim() || null,
     })
     .where(eq(party.id, opts.id));

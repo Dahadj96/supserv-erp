@@ -36,6 +36,21 @@ export const document = pgTable("document", {
   partyId: uuid("party_id")
     .notNull()
     .references(() => party.id),
+
+  /**
+   * The enquiry this document answers. Null for anything that started life
+   * without one — a direct invoice, a supplier's proforma filed on its own.
+   *
+   * Added in phase 4 and it is what makes screen 05's derived stage possible:
+   * "offer out" is not a flag somebody sets, it is `count(document) where
+   * deal_id = … and number is not null`. Without this column the stage would
+   * have to be stored, and a stored stage is a second opinion (see
+   * src/domain/deal/stage.ts).
+   *
+   * No cascade: deleting an enquiry must never delete an issued invoice.
+   */
+  dealId: uuid("deal_id"),
+
   /** LAW 4 — resolved from party.docLocale at creation, overridable per document. */
   locale: text("locale").notNull(),
   currency: text("currency").notNull().default("DZD"),

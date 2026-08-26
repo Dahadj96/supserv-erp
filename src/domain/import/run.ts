@@ -340,12 +340,27 @@ export async function runImport(opts: {
   });
 }
 
-/** CL-0001 / SU-0011, allocated inside the transaction like everywhere else. */
+/**
+ * CL-0001 / SU-0011, allocated inside the transaction like everywhere else.
+ *
+ * The `~ '^(CL|SU)-[0-9]+$'` guard is not decoration. This used to cast the tail
+ * of EVERY code beginning `CL-` to an integer, which meant one company whose
+ * code did not fit the shape — imported from a spreadsheet, typed by hand,
+ * carried over from the old system — made every subsequent import fail with
+ * `invalid input syntax for type integer`, and the message named the offending
+ * company rather than the query, so it read like a problem with the file being
+ * imported.
+ *
+ * A code we did not allocate is not a code we count from. It keeps its name and
+ * is ignored here.
+ */
 async function nextCode(tx: Parameters<Parameters<typeof db.transaction>[0]>[0], role: string) {
   const prefix = role === "supplier" ? "SU" : "CL";
   const [row] = await tx.execute<{ next: number }>(sql`
     select coalesce(max(substring(code from 4)::int), 0) + 1 as next
-    from party where code like ${`${prefix}-%`}
+    from party
+    where code like ${`${prefix}-%`}
+      and code ~ ${`^${prefix}-[0-9]+$`}
   `);
   return `${prefix}-${String(row?.next ?? 1).padStart(4, "0")}`;
 }

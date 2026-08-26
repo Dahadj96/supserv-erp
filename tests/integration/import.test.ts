@@ -304,4 +304,37 @@ describe("screen 62 — bring what you already have", () => {
     const after = logged?.after as { problems?: Record<string, number> };
     expect(after?.problems?.noName).toBe(1);
   });
+
+  it("is not derailed by a company whose code we did not allocate", async () => {
+    // A code carried over from the old system, or typed by hand. This used to
+    // make EVERY subsequent import fail — `nextCode` cast the tail of every
+    // `CL-` code to an integer — and the error named the company, so it read as
+    // a problem with the spreadsheet.
+    const [odd] = await db
+      .insert(party)
+      .values({ code: "CL-ANCIEN-07", legalName: "TEST IMPORT LEGACY CODE" })
+      .returning({ id: party.id });
+
+    try {
+      const [sheet] = await readWorkbook(await fixtureWorkbook());
+      const mapping = proposeMapping(sheet?.headers ?? [], "party");
+      const prepared = await prepare(sheetOrThrow(sheet), mapping, "party");
+      // The assertion is that this RETURNS. Before the fix it threw
+      // `invalid input syntax for type integer: "ANCIEN-07"`. How many rows it
+      // imports is not the point — by now the fixture's companies already
+      // exist, so most of them are correctly skipped as duplicates.
+      const { batchId } = await runImport({
+        prepared,
+        filename: "Clients.xlsx",
+        sheetName: "Clients 2026",
+        mapping,
+        actorId: ACTOR,
+        role: "client",
+      });
+      batchIds.push(batchId);
+      expect(batchId).toBeTruthy();
+    } finally {
+      await db.delete(party).where(eq(party.id, odd?.id as string));
+    }
+  });
 });

@@ -49,7 +49,7 @@ export const party = pgTable("party", {
 
   // soft delete only — 30-day bin
   deletedAt: timestamp("deleted_at", { withTimezone: true }),
-  deletedBy: uuid("deleted_by"),
+  deletedBy: text("deleted_by"),
   deleteReason: text("delete_reason"),
 
   createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
@@ -127,7 +127,7 @@ export const person = pgTable("person", {
   lastContactAt: timestamp("last_contact_at", { withTimezone: true }),
   supersededBy: uuid("superseded_by"),
   deletedAt: timestamp("deleted_at", { withTimezone: true }),
-  deletedBy: uuid("deleted_by"),
+  deletedBy: text("deleted_by"),
   deleteReason: text("delete_reason"),
   createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
 });

@@ -801,3 +801,4 @@ https://nextjs.org/docs/messages/module-not-found
  GET /fr/capture 307 in 2.1s (next.js: 412ms, proxy.ts: 7ms, generate-params: 1118ms, application-code: 568ms)
  GET /en/capture 307 in 133ms (next.js: 11ms, proxy.ts: 7ms, generate-params: 8ms, application-code: 107ms)
  GET /fr/capture 307 in 231ms (next.js: 97ms, proxy.ts: 7ms, generate-params: 8ms, application-code: 119ms)
+ GET /fr/capture 307 in 277ms (next.js: 66ms, proxy.ts: 9ms, generate-params: 8ms, application-code: 194ms)
