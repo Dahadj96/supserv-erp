@@ -1,3 +1,4 @@
+import { and, eq, isNull } from "drizzle-orm";
 import { AlertCircle } from "lucide-react";
 import { redirect as hardRedirect, notFound } from "next/navigation";
 import { getTranslations, setRequestLocale } from "next-intl/server";
@@ -5,11 +6,15 @@ import { INPUT } from "@/app/[locale]/(app)/setup/field";
 import { getSession } from "@/auth/session";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import { db } from "@/db";
+import { party, partyRole } from "@/db/schema/party";
 import { getDeal, NO_BID_REASONS } from "@/domain/deal/deal";
+import { requestsForDeal } from "@/domain/deal/sourcing-store";
 import { DEADLINE_WARNING_HOURS } from "@/domain/deal/stage";
 import { formatMoney } from "@/domain/money";
 import { Link } from "@/i18n/navigation";
 import { decideAction, lostAction, reopenAction } from "./actions";
+import { askSuppliersAction } from "./ask-actions";
 
 /**
  * Screen 06 — the enquiry.
@@ -53,6 +58,16 @@ export default async function EnquiryPage({
   if (!found) notFound();
 
   const { deal: row, clientName, lines, facts, badge, open, deadline } = found;
+
+  const [suppliers, requests] = await Promise.all([
+    db
+      .selectDistinct({ id: party.id, legalName: party.legalName, tradeName: party.tradeName })
+      .from(party)
+      .innerJoin(partyRole, eq(partyRole.partyId, party.id))
+      .where(and(eq(partyRole.role, "supplier"), isNull(party.deletedAt)))
+      .orderBy(party.legalName),
+    requestsForDeal(id),
+  ]);
 
   const when = new Intl.DateTimeFormat(locale === "fr" ? "fr-DZ" : "en-GB", {
     dateStyle: "medium",
@@ -349,6 +364,59 @@ export default async function EnquiryPage({
                   </Button>
                 </div>
               </form>
+            </section>
+          ) : null}
+
+          {open && lines.length > 0 ? (
+            <section className="rounded-[var(--radius-card)] border border-line bg-surface p-5">
+              <h2 className="text-tiny font-semibold text-ink">{t("ask.title")}</h2>
+              <p className="mt-1.5 text-micro leading-relaxed text-muted">{t("ask.hint")}</p>
+
+              {suppliers.length === 0 ? (
+                <p className="mt-3 text-tiny text-muted">{t("ask.noSuppliers")}</p>
+              ) : (
+                <form action={askSuppliersAction.bind(null, locale, id)} className="mt-3">
+                  <input type="hidden" name="subject" value={row.subject} />
+                  <div className="flex max-h-[220px] flex-col gap-1.5 overflow-auto">
+                    {suppliers.map((supplier) => (
+                      <label key={supplier.id} className="flex items-center gap-2 text-tiny">
+                        <input type="checkbox" name="supplierId" value={supplier.id} />
+                        <span className="min-w-0 truncate text-ink">
+                          {supplier.tradeName?.trim() || supplier.legalName}
+                        </span>
+                      </label>
+                    ))}
+                  </div>
+
+                  <label className="mt-3 block">
+                    <span className="text-micro text-secondary">{t("ask.replyBy")}</span>
+                    <input type="datetime-local" name="replyBy" className={`${INPUT} mt-1`} />
+                  </label>
+
+                  <div className="mt-3 flex justify-end">
+                    <Button type="submit" variant="secondary">
+                      {t("ask.create")}
+                    </Button>
+                  </div>
+                </form>
+              )}
+
+              {requests.length > 0 ? (
+                <ul className="mt-4 flex flex-col gap-1.5 border-t border-line-subtle pt-3">
+                  {requests.map((request) => (
+                    <li key={request.id} className="flex items-baseline gap-2 text-tiny">
+                      <Link className="text-ink hover:underline" href={`/sourcing/${request.id}`}>
+                        {request.ref}
+                      </Link>
+                      <span className="ms-auto text-micro text-muted">
+                        {request.sentAt
+                          ? t("ask.askedReplied", { asked: request.asked, replied: request.quoted })
+                          : t("ask.draft")}
+                      </span>
+                    </li>
+                  ))}
+                </ul>
+              ) : null}
             </section>
           ) : null}
 

@@ -106,6 +106,26 @@ export const deal = pgTable("deal", {
   expectedValue: numeric("expected_value", { precision: 16, scale: 2 }),
 
   /**
+   * WHAT THE CLIENT REQUIRES. Screen 67 checks every supplier answer against
+   * these three, and the checks are the most valuable thing sourcing does.
+   *
+   * All three are extracted by `proposeFields` and are null until a person
+   * confirms them (LAW 2) — a conflict raised against a requirement nobody
+   * confirmed is a false alarm, and false alarms are how people learn to click
+   * past red boxes.
+   *
+   * `requiredValidityDays` — how long our offer must stand. When a supplier
+   * holds their price for less, we would be committed at a price our supplier
+   * is not.
+   * `requiredDeliveryDays` — from order to site. A supplier slower than this
+   * means late penalties, which is why the penalty text is kept beside it.
+   */
+  requiredValidityDays: integer("required_validity_days"),
+  requiredDeliveryDays: integer("required_delivery_days"),
+  /** "1‰ par jour, plafonné à 10%" — verbatim, because it is contractual. */
+  latePenalty: text("late_penalty"),
+
+  /**
    * The client's instructions, verbatim, from the email or the dossier.
    * Screen 06: "verbatim — the email is the archive". Never summarised: the
    * sentence about the sealed double envelope is the one that loses the bid.

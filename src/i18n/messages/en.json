@@ -2055,5 +2055,116 @@
       "supplierRequired": "Say who quoted it — a shop name is enough.",
       "verbalCannotHaveEvidence": "A price with a document attached is not verbal. Mark it written instead."
     }
+  },
+  "sourcing": {
+    "forDeal": "for {ref} · {client}",
+    "askedReplied": "{asked} suppliers asked · {replied} replied",
+    "markSent": "Mark as sent",
+    "chaseN": "Chase {n}",
+    "chasedN": "{n, plural, one {# supplier chased} other {# suppliers chased}} — recorded, not sent.",
+    "sent": "Recorded as sent.",
+    "recorded": "Answer recorded.",
+    "responses": "Supplier responses",
+    "replyByWas": "reply-by was {when}",
+    "supplier": "Supplier",
+    "status": "Status",
+    "validity": "Validity",
+    "leadTime": "Lead time",
+    "total": "Their total",
+    "partial": "incomplete",
+    "nDays": "{n, plural, one {# day} other {# days}}",
+    "statusName": {
+      "asked": "Asked",
+      "quoted": "Quoted",
+      "declined": "Declined",
+      "no_reply": "No reply",
+      "bounced": "Bounced"
+    },
+    "conflictBanner": "{n, plural, one {One conflict between what the client requires and what a supplier offers. It does not stop you — it changes the risk if you win.} other {# conflicts between what the client requires and what suppliers offer. Neither stops you — both change the risk if you win.}}",
+    "conflictsFound": "Conflicts the system found",
+    "checkedAgainst": "checked against what the client asked for",
+    "clientRequires": "Client requires",
+    "supplierOffers": "Supplier offers",
+    "neitherStopsYou": "You can ask the supplier or accept the risk. Neither stops the bid going out.",
+    "conflict": {
+      "validityShorterThanRequired": {
+        "title": "Offer validity is shorter than the client requires",
+        "client": "{value} days",
+        "supplier": "{value} days — {supplier}",
+        "consequence": "If {client} decides after {heldUntil}, {supplier} is no longer held to {amount} {currency}. You would be committed at a price your supplier is not — {shortBy} days of exposure."
+      },
+      "leadTimeLongerThanRequired": {
+        "title": "Lead time is longer than the delivery deadline",
+        "client": "{value} days from order",
+        "supplier": "{value} days — {supplier}",
+        "consequence": "Choosing {supplier} means missing the contractual delivery date by {lateBy} days and exposing yourself to late penalties of {penalty}."
+      },
+      "currencyDiffers": {
+        "title": "Quoted in a currency the client is not buying in",
+        "client": "{value}",
+        "supplier": "{value} — {supplier}",
+        "consequence": "Converting {from} to {to} between the quote and the invoice is an exchange-rate risk somebody carries. It is normally you."
+      },
+      "pricedNothing": {
+        "title": "Marked as quoted, but no prices given",
+        "client": "{value} lines asked",
+        "supplier": "{value} priced — {supplier}",
+        "consequence": "Either the reply has not been entered yet, or {supplier} answered without prices. Nothing can be compared until it is one or the other."
+      }
+    },
+    "comparison": "Comparison",
+    "bestPerLine": "best price per line is highlighted",
+    "chosen": "Cheapest",
+    "nobody": "Nobody",
+    "recordAnswer": "Record what a supplier said",
+    "theirPrices": "Their prices, per line",
+    "noPrice": "no price",
+    "note": "Anything they added",
+    "saveAnswer": "Save this answer",
+    "thisRequest": "This request",
+    "field": {
+      "number": "Number",
+      "for": "For",
+      "client": "Client",
+      "items": "Items",
+      "sent": "Sent",
+      "replyBy": "Reply-by",
+      "clientDeadline": "Client deadline",
+      "buffer": "Buffer"
+    },
+    "notYet": "not yet",
+    "ofWithExcluded": "{n} of {total} — {excluded} excluded",
+    "bufferHours": "{n, plural, one {# hour} other {# hours}}",
+    "bufferNegative": "reply-by is after the client's deadline",
+    "replyRate": "Reply rate on this request",
+    "bouncedNote": "A bounced address is not a slow supplier — it is a broken record. {supplier} has never replied because the message never arrived. Fix the address before chasing again.",
+    "whatNext": "What happens next",
+    "splitAcross": "Split across",
+    "nSuppliers": "{n, plural, =0 {nobody} one {# supplier} other {# suppliers}}",
+    "bestCombined": "Best combined cost",
+    "singleSupplier": "Single supplier, {supplier}",
+    "savingBySplitting": "Saving by splitting",
+    "butAdds": "But adds {n, plural, one {a second delivery} other {# more deliveries}} to manage — and one more chance of being late against the penalty clause.",
+    "nobodyPriced": "{n, plural, one {# line has no price from anybody.} other {# lines have no price from anybody.}} Splitting cannot fix that.",
+    "error": {
+      "noSuchRequest": "That request no longer exists.",
+      "noSuchDeal": "That enquiry no longer exists.",
+      "closed": "The enquiry is closed. Reopen it before sourcing against it.",
+      "alreadySent": "This request has already gone out.",
+      "noSuppliers": "Pick at least one supplier to ask.",
+      "unknownStatus": "Choose one of the listed answers.",
+      "notQuoted": "Only a quoted supplier has terms to record."
+    },
+    "validityDays": "Validity, in days",
+    "leadTimeDays": "Lead time, in days"
+  },
+  "ask": {
+    "title": "Ask suppliers",
+    "hint": "Creates the request. Nothing is emailed — write to them yourself, then mark it sent.",
+    "noSuppliers": "No companies have the supplier role yet.",
+    "replyBy": "Ask them to reply by",
+    "create": "Create the request",
+    "draft": "draft — not sent",
+    "askedReplied": "{asked} asked · {replied} replied"
   }
 }

@@ -2055,5 +2055,116 @@
       "supplierRequired": "Dites qui l’a annoncé — un nom de boutique suffit.",
       "verbalCannotHaveEvidence": "Un prix accompagné d’un document n’est pas verbal. Marquez-le écrit."
     }
+  },
+  "sourcing": {
+    "forDeal": "pour {ref} · {client}",
+    "askedReplied": "{asked} fournisseurs consultés · {replied} ont répondu",
+    "markSent": "Marquer comme envoyée",
+    "chaseN": "Relancer {n}",
+    "chasedN": "{n, plural, one {# fournisseur relancé} other {# fournisseurs relancés}} — enregistré, pas envoyé.",
+    "sent": "Enregistrée comme envoyée.",
+    "recorded": "Réponse enregistrée.",
+    "responses": "Réponses des fournisseurs",
+    "replyByWas": "réponse attendue pour le {when}",
+    "supplier": "Fournisseur",
+    "status": "Statut",
+    "validity": "Validité",
+    "leadTime": "Délai",
+    "total": "Leur total",
+    "partial": "incomplet",
+    "nDays": "{n, plural, one {# jour} other {# jours}}",
+    "statusName": {
+      "asked": "Consulté",
+      "quoted": "A chiffré",
+      "declined": "A décliné",
+      "no_reply": "Sans réponse",
+      "bounced": "Adresse invalide"
+    },
+    "conflictBanner": "{n, plural, one {Un écart entre ce que le client exige et ce qu’un fournisseur propose. Cela ne vous arrête pas — cela change le risque si vous gagnez.} other {# écarts entre ce que le client exige et ce que les fournisseurs proposent. Aucun ne vous arrête — tous changent le risque si vous gagnez.}}",
+    "conflictsFound": "Écarts relevés par le système",
+    "checkedAgainst": "comparé à ce que le client a demandé",
+    "clientRequires": "Le client exige",
+    "supplierOffers": "Le fournisseur propose",
+    "neitherStopsYou": "Vous pouvez interroger le fournisseur ou accepter le risque. Ni l’un ni l’autre n’empêche l’offre de partir.",
+    "conflict": {
+      "validityShorterThanRequired": {
+        "title": "La validité de l’offre est plus courte que ce que le client exige",
+        "client": "{value} jours",
+        "supplier": "{value} jours — {supplier}",
+        "consequence": "Si {client} décide après le {heldUntil}, {supplier} n’est plus tenu par {amount} {currency}. Vous seriez engagé à un prix que votre fournisseur ne tient plus — {shortBy} jours d’exposition."
+      },
+      "leadTimeLongerThanRequired": {
+        "title": "Le délai est plus long que la date de livraison exigée",
+        "client": "{value} jours à compter de la commande",
+        "supplier": "{value} jours — {supplier}",
+        "consequence": "Choisir {supplier} revient à manquer la date contractuelle de {lateBy} jours et à s’exposer à des pénalités de retard de {penalty}."
+      },
+      "currencyDiffers": {
+        "title": "Chiffré dans une devise qui n’est pas celle du marché",
+        "client": "{value}",
+        "supplier": "{value} — {supplier}",
+        "consequence": "Convertir {from} en {to} entre le devis et la facture est un risque de change que quelqu’un porte. En général, c’est vous."
+      },
+      "pricedNothing": {
+        "title": "Marqué « a chiffré », mais aucun prix",
+        "client": "{value} lignes demandées",
+        "supplier": "{value} chiffrée — {supplier}",
+        "consequence": "Soit la réponse n’a pas encore été saisie, soit {supplier} a répondu sans prix. Rien ne peut être comparé tant que ce n’est pas l’un ou l’autre."
+      }
+    },
+    "comparison": "Comparaison",
+    "bestPerLine": "le meilleur prix par ligne est mis en évidence",
+    "chosen": "Le moins cher",
+    "nobody": "Personne",
+    "recordAnswer": "Enregistrer la réponse d’un fournisseur",
+    "theirPrices": "Leurs prix, ligne par ligne",
+    "noPrice": "sans prix",
+    "note": "Ce qu’ils ont ajouté",
+    "saveAnswer": "Enregistrer cette réponse",
+    "thisRequest": "Cette consultation",
+    "field": {
+      "number": "Numéro",
+      "for": "Pour",
+      "client": "Client",
+      "items": "Articles",
+      "sent": "Envoyée",
+      "replyBy": "Réponse attendue",
+      "clientDeadline": "Date limite client",
+      "buffer": "Marge"
+    },
+    "notYet": "pas encore",
+    "ofWithExcluded": "{n} sur {total} — {excluded} exclu(s)",
+    "bufferHours": "{n, plural, one {# heure} other {# heures}}",
+    "bufferNegative": "la réponse attendue est postérieure à la date limite du client",
+    "replyRate": "Taux de réponse sur cette consultation",
+    "bouncedNote": "Une adresse invalide n’est pas un fournisseur lent — c’est une fiche cassée. {supplier} n’a jamais répondu parce que le message n’est jamais arrivé. Corrigez l’adresse avant de relancer.",
+    "whatNext": "Ce qui vient ensuite",
+    "splitAcross": "Réparti sur",
+    "nSuppliers": "{n, plural, =0 {personne} one {# fournisseur} other {# fournisseurs}}",
+    "bestCombined": "Meilleur coût combiné",
+    "singleSupplier": "Fournisseur unique, {supplier}",
+    "savingBySplitting": "Économie en répartissant",
+    "butAdds": "Mais ajoute {n, plural, one {une deuxième livraison} other {# livraisons supplémentaires}} à gérer — et une chance de plus d’être en retard face à la clause de pénalité.",
+    "nobodyPriced": "{n, plural, one {# ligne n’a de prix chez personne.} other {# lignes n’ont de prix chez personne.}} Répartir n’y changera rien.",
+    "error": {
+      "noSuchRequest": "Cette consultation n’existe plus.",
+      "noSuchDeal": "Cette affaire n’existe plus.",
+      "closed": "L’affaire est clôturée. Rouvrez-la avant de consulter des fournisseurs.",
+      "alreadySent": "Cette consultation est déjà partie.",
+      "noSuppliers": "Choisissez au moins un fournisseur à consulter.",
+      "unknownStatus": "Choisissez une des réponses proposées.",
+      "notQuoted": "Seul un fournisseur qui a chiffré a des conditions à enregistrer."
+    },
+    "validityDays": "Validité, en jours",
+    "leadTimeDays": "Délai, en jours"
+  },
+  "ask": {
+    "title": "Consulter des fournisseurs",
+    "hint": "Crée la consultation. Rien n’est envoyé — écrivez-leur vous-même, puis marquez-la envoyée.",
+    "noSuppliers": "Aucune société n’a encore le rôle fournisseur.",
+    "replyBy": "Réponse demandée pour le",
+    "create": "Créer la consultation",
+    "draft": "brouillon — non envoyée",
+    "askedReplied": "{asked} consultés · {replied} ont répondu"
   }
 }

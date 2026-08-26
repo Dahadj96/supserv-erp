@@ -5,6 +5,7 @@ import { auditEntry } from "@/db/schema/control";
 import { deal, dealLine } from "@/db/schema/deal";
 import { document } from "@/db/schema/document";
 import { party, partyRole } from "@/db/schema/party";
+import { sourcingRequest, sourcingResponse } from "@/db/schema/sourcing";
 import {
   createDeal,
   DecisionRefused,
@@ -45,6 +46,8 @@ beforeAll(async () => {
 
 afterAll(async () => {
   if (made.length) {
+    // Requests cascade to responses and lines; deals cascade to requests.
+    await db.delete(sourcingRequest).where(inArray(sourcingRequest.dealId, made));
     await db.delete(document).where(inArray(document.dealId, made));
     await db.delete(dealLine).where(inArray(dealLine.dealId, made));
     await db.delete(deal).where(inArray(deal.id, made));
@@ -170,12 +173,31 @@ describe("the stage falls out of the documents", () => {
     expect(found?.open).toBe(false);
   });
 
-  it("counts sourcing as zero until sourcing requests exist", async () => {
-    // A known, deliberate understatement. `sourcing_request` is later in this
-    // phase; until it lands, a deal that has been sent to four suppliers reads
-    // `qualifying`. Recorded here so it is not discovered as a bug.
+  it("counts suppliers on a SENT request, and ignores a draft one", async () => {
     const id = await make();
+    const [request] = await db
+      .insert(sourcingRequest)
+      .values({ ref: `SR-TEST-${Date.now().toString().slice(-6)}`, dealId: id, subject: "Vannes" })
+      .returning({ id: sourcingRequest.id });
+    await db
+      .insert(sourcingResponse)
+      .values({ requestId: request?.id as string, partyId: clientId });
+
+    // Drafted, not sent. Somebody thinking about sourcing is not sourcing —
+    // the same line `offersIssued` draws between a draft and an offer out.
     expect((await getDeal(id))?.facts.suppliersAsked).toBe(0);
+    // Still `new`: no lines typed in, no decision recorded, and a draft request
+    // is not evidence that anybody is working on it.
+    expect((await getDeal(id))?.stage).toBe("new");
+
+    await db
+      .update(sourcingRequest)
+      .set({ sentAt: new Date() })
+      .where(eq(sourcingRequest.id, request?.id as string));
+
+    const found = await getDeal(id);
+    expect(found?.facts.suppliersAsked).toBe(1);
+    expect(found?.stage).toBe("sourcing");
   });
 });
 

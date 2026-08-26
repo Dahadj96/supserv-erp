@@ -5,6 +5,7 @@ import { auditEntry } from "@/db/schema/control";
 import { deal, dealLine } from "@/db/schema/deal";
 import { document } from "@/db/schema/document";
 import { party } from "@/db/schema/party";
+import { sourcingRequest, sourcingResponse } from "@/db/schema/sourcing";
 import { badgeOf, type DealFacts, deadlineDisplay, isOpen, type Stage, stageOf } from "./stage";
 
 /**
@@ -146,11 +147,10 @@ const INVOICE_KINDS = ["invoice", "advance_invoice", "situation"];
  * not an offer out. That distinction is the difference between a pipeline
  * report you can trust and one everybody quietly discounts.
  *
- * `sourcing` is not counted here — sourcing requests are their own table and
- * arrive later in this phase. It is passed in as zero until then, which makes
- * the stage read `qualifying` where it should read `sourcing`. That is a known,
- * temporary understatement rather than a guess, and `tests/integration/
- * deal.test.ts` records it so it is not forgotten.
+ * `suppliersAsked` counts suppliers on SENT requests only. A request sitting in
+ * a draft, with four suppliers picked and no message gone out, is not sourcing
+ * — it is somebody thinking about sourcing, and the distinction is the same one
+ * `offersIssued` draws between a draft offer and an offer out.
  */
 export async function factsFor(
   dealIds: string[],
@@ -187,6 +187,27 @@ export async function factsFor(
     // one counts rows, not issued rows.
     if (ORDER_KINDS.includes(row.kind)) facts.ordersReceived += row.any;
     if (INVOICE_KINDS.includes(row.kind)) facts.invoicesIssued += row.issued;
+  }
+
+  const asked = await db
+    .select({
+      dealId: sourcingRequest.dealId,
+      suppliers: sql<number>`count(distinct ${sourcingResponse.partyId})::int`,
+    })
+    .from(sourcingRequest)
+    .innerJoin(sourcingResponse, eq(sourcingResponse.requestId, sourcingRequest.id))
+    .where(
+      and(
+        inArray(sourcingRequest.dealId, dealIds),
+        // Sent, not drafted. See the note above.
+        sql`${sourcingRequest.sentAt} is not null`,
+      ),
+    )
+    .groupBy(sourcingRequest.dealId);
+
+  for (const row of asked) {
+    const facts = out.get(row.dealId);
+    if (facts) facts.suppliersAsked = row.suppliers;
   }
 
   return out;
