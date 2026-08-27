@@ -41,19 +41,59 @@ Write-Host "`n=== Connecting to Exchange Online ===" -ForegroundColor Cyan
 Connect-ExchangeOnline -ShowBanner:$false
 
 Write-Host "`n=== 1. A scope holding exactly one mailbox ===" -ForegroundColor Cyan
-if (Get-ManagementScope -Identity $ScopeName -ErrorAction SilentlyContinue) {
-    Write-Host "    '$ScopeName' already exists - leaving it alone."
+
+# The mailbox is checked BEFORE the scope is created, not after.
+#
+# It was the other way round for one run, and that run created a scope pointing
+# at an address no mailbox has - then stopped. Re-running would have found the
+# scope, said "already exists - leaving it alone", and carried on granting a
+# role against a filter matching nothing. A check that runs after the change it
+# is checking has already been made is not a check.
+#
+# @() around it on purpose. Get-Recipient returns nothing at all when the filter
+# matches nothing, and $null.Count is $null - so the count printed as blank and
+# the error read "The filter matched  recipients", which says less than it
+# should about the one thing that went wrong.
+$inScope = @(Get-Recipient -RecipientPreviewFilter "PrimarySmtpAddress -eq '$Mailbox'" -ErrorAction SilentlyContinue)
+Write-Host "    Mailboxes matched by that filter: $($inScope.Count)"
+
+if ($inScope.Count -eq 0) {
+    Write-Host ""
+    Write-Host "    Nothing in this tenant has $Mailbox as its PRIMARY address." -ForegroundColor Yellow
+    Write-Host "    It may not exist, or it may be an alias on some other mailbox." -ForegroundColor Yellow
+    Write-Host "    A scope filtered on PrimarySmtpAddress does not match an alias." -ForegroundColor Yellow
+    Write-Host ""
+    Write-Host "    What this tenant actually has:" -ForegroundColor Cyan
+    Get-Recipient -ResultSize 100 |
+        Select-Object DisplayName, PrimarySmtpAddress, RecipientTypeDetails |
+        Format-Table -AutoSize |
+        Out-String |
+        Write-Host
+    throw "No mailbox has $Mailbox as its primary address. Re-run with -Mailbox <the address listed above>."
+}
+
+if ($inScope.Count -ne 1) {
+    $inScope | Select-Object DisplayName, PrimarySmtpAddress | Format-Table -AutoSize | Out-String | Write-Host
+    throw "The filter matched $($inScope.Count) recipients. It must match exactly 1. Stopping."
+}
+
+Write-Host "    $($inScope[0].DisplayName) <$($inScope[0].PrimarySmtpAddress)>"
+
+# Only now is anything created. And an existing scope is checked rather than
+# trusted - one left behind by a failed run points somewhere else, and silently
+# reusing it would scope the grant to the wrong mailbox, or to none.
+$existing = Get-ManagementScope -Identity $ScopeName -ErrorAction SilentlyContinue
+if ($existing) {
+    if ($existing.RecipientFilter -notlike "*$Mailbox*") {
+        Write-Host "    Existing filter: $($existing.RecipientFilter)" -ForegroundColor Yellow
+        throw ("A scope named '$ScopeName' already exists and does not name $Mailbox. " +
+            "Remove it with:  Remove-ManagementScope -Identity '$ScopeName'")
+    }
+    Write-Host "    '$ScopeName' already exists and names the right mailbox."
 } else {
     New-ManagementScope -Name $ScopeName `
         -RecipientRestrictionFilter "PrimarySmtpAddress -eq '$Mailbox'" | Out-Null
     Write-Host "    Created '$ScopeName' -> $Mailbox"
-}
-
-# Confirm the scope really does hold one mailbox and not, say, all of them.
-$inScope = Get-Recipient -RecipientPreviewFilter "PrimarySmtpAddress -eq '$Mailbox'"
-Write-Host "    Mailboxes matched by that filter: $($inScope.Count)"
-if ($inScope.Count -ne 1) {
-    throw "The filter matched $($inScope.Count) recipients. It must match exactly 1. Stopping."
 }
 
 Write-Host "`n=== 2. Pointing Exchange at the Entra service principal ===" -ForegroundColor Cyan
