@@ -19,7 +19,13 @@ param(
     [string] $AppId = 'a6dcd142-9866-416f-ad89-c9f39e18d4c3',
 
     # The mailbox the ERP is allowed to read.
-    [string] $Mailbox = 'contact@supserv.dz',
+    #
+    # supserv-dz.com, not supserv.dz. The tenant has both, and they are not
+    # interchangeable: people are on supserv.dz (abderrahmane.dahadj@, admin@,
+    # commercial@, recrutement@) and the shared addresses are on supserv-dz.com
+    # (contact@, info@, Supserv@, allcompany@). This said supserv.dz for a
+    # while, which matches nothing, and the run failed at the recipient check.
+    [string] $Mailbox = 'contact@supserv-dz.com',
 
     # A mailbox it must NOT be able to read. Use your own address.
     # Testing only the allowed one proves nothing: an unrestricted app passes.

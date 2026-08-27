@@ -5,7 +5,7 @@
 ## The problem, stated plainly
 
 `Mail.Read` granted as an **application permission** in Entra ID is not
-permission to read `contact@supserv.dz`. It is permission to read **every
+permission to read `contact@supserv-dz.com`. It is permission to read **every
 mailbox in the tenant** — the Gérant's, the accountant's, everyone's — with no
 further consent, no prompt, and nothing in anyone's inbox to show it happened.
 
@@ -40,6 +40,28 @@ The two systems are **additive**, which is the part that catches people:
 So the Entra consent that has already been granted is not the goal — it is the
 thing that has to come **off** at the end. Leaving it on makes the whole exercise
 decorative.
+
+## The tenant has two domains, and they are not interchangeable
+
+Worth knowing before anything below, because getting it wrong fails at the first
+check with a message that does not explain itself:
+
+| Domain | What lives there |
+|---|---|
+| `supserv.dz` | people — `abderrahmane.dahadj@`, `admin@`, `commercial@`, `recrutement@`, `noreply@` |
+| `supserv-dz.com` | shared and functional — `contact@`, `info@`, `Supserv@`, `allcompany@`, and the project addresses |
+
+The mailbox the ERP reads is **`contact@supserv-dz.com`** ("SUPSERV Contact").
+`.env` said `contact@supserv.dz` for a while, which is not an address anything
+in this tenant answers to.
+
+To see the full list yourself:
+
+```powershell
+Set-ExecutionPolicy -Scope Process Bypass -Force
+Connect-ExchangeOnline -ShowBanner:$false
+Get-Recipient -ResultSize 100 | Select-Object DisplayName,PrimarySmtpAddress,RecipientTypeDetails | Format-Table -AutoSize
+```
 
 ## What you need before you start
 
@@ -104,7 +126,7 @@ Connect-ExchangeOnline -UserPrincipalName <your admin address>
 
    ```powershell
    New-ManagementScope -Name "SUPSERV ERP mailbox" `
-     -RecipientRestrictionFilter "PrimarySmtpAddress -eq 'contact@supserv.dz'"
+     -RecipientRestrictionFilter "PrimarySmtpAddress -eq 'contact@supserv-dz.com'"
    ```
 
 2. **A pointer in Exchange to the Entra service principal.** Exchange cannot
@@ -128,7 +150,7 @@ Connect-ExchangeOnline -UserPrincipalName <your admin address>
    and it is the only one that actually tells you anything.
 
    ```powershell
-   Test-ServicePrincipalAuthorization -Identity <MS_CLIENT_ID> -Resource contact@supserv.dz | Format-Table
+   Test-ServicePrincipalAuthorization -Identity <MS_CLIENT_ID> -Resource contact@supserv-dz.com | Format-Table
    Test-ServicePrincipalAuthorization -Identity <MS_CLIENT_ID> -Resource <your own address> | Format-Table
    ```
 
