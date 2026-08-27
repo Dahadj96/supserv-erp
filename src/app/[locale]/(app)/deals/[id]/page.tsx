@@ -101,6 +101,11 @@ export default async function EnquiryPage({
           </p>
         </div>
         <div className="ms-auto flex flex-wrap items-center gap-2">
+          {/* Screen 56 — everything that happened, and the only place a note
+              or a logged call can be written down. */}
+          <Link href={`/deals/${id}/timeline`}>
+            <Button variant="secondary">{t("timeline.everythingThatHappened")}</Button>
+          </Link>
           <Link href={`/deals/${id}/prices`}>
             <Button variant="secondary">{t("prices.gathered")}</Button>
           </Link>
