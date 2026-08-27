@@ -1,7 +1,13 @@
 node_modules
 .next
+# Every .env EXCEPT the example. The two lines this replaces named `.env` and
+# `.env.local` exactly, which meant a backup called `.env.before-public-url`
+# sat in `git status` as an untracked file waiting to be added by a wildcard -
+# and it holds MS_CLIENT_SECRET. One secret has already had to be rotated on
+# this project. The pattern, not the filename, is what has to be ignored.
 .env
-.env.local
+.env.*
+!.env.example
 dist
 coverage
 playwright-report

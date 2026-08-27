@@ -246,6 +246,34 @@ facing the internet.
 That path touches neither Cloudflare nor the tunnel, so it keeps working no
 matter what is misconfigured above.
 
+### If the tunnel is down and you need to actually sign in
+
+The page loads at `localhost:3000` no matter what. **Signing in there is a
+different question**, and it will fail while `.env` says this:
+
+```
+BETTER_AUTH_URL=https://erp.supserv-dz.com
+```
+
+Sign-in sends you to Microsoft and Microsoft sends you back — to whatever
+address that line names. If the tunnel is down, that address is unreachable, so
+you get as far as the Microsoft page and no further.
+
+To sign in at the machine itself, edit `C:\SUPSERV-ERP\.env`:
+
+```
+BETTER_AUTH_URL=http://localhost:3000
+```
+
+then restart the server (`scripts\server\mode.ps1 server`, or restart the
+"SUPSERV ERP" scheduled task). `http://localhost:3000/api/auth/callback/microsoft`
+is already registered in Entra alongside the public one, so nothing needs
+changing on Microsoft's side.
+
+**Put it back to `https://erp.supserv-dz.com` when the tunnel is working
+again.** While it says `localhost`, the public address loads the app and then
+cannot complete a sign-in — the same failure, pointed the other way.
+
 ---
 
 ## 6 · What is secure, and what is not

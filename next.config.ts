@@ -5,9 +5,21 @@ const withNextIntl = createNextIntlPlugin("./src/i18n/request.ts");
 
 const nextConfig: NextConfig = {
   reactStrictMode: true,
-  // The server runs in a container on a mini PC with no public IP; output
-  // tracing keeps the production image small. See docs/SERVER.md.
-  output: "standalone",
+
+  /**
+   * `output: "standalone"` is deliberately NOT set, and must not be re-added
+   * without changing how the server is launched.
+   *
+   * Standalone was here for a container image that was never built: the ERP
+   * runs straight from this directory on the mini PC, started by the
+   * "SUPSERV ERP" scheduled task, with node_modules already present. With
+   * standalone set, `next start` refuses ("does not work with output:
+   * standalone") and the only supported entry point becomes
+   * `node .next/standalone/server.js`, which does NOT read `.env` -- so
+   * DATABASE_URL, BETTER_AUTH_SECRET and MS_CLIENT_SECRET would all have to be
+   * injected into SYSTEM's environment instead. See docs/SERVER.md.
+   */
+
   // typedRoutes is off on purpose: every route is under `/[locale]/`, so almost
   // every redirect is a template string that the generated Route union cannot
   // accept. next-intl's own Link/redirect already keep the locale correct.
@@ -25,11 +37,12 @@ const nextConfig: NextConfig = {
   allowedDevOrigins: ["erp.supserv-dz.com", "*.supserv-dz.com", "*.ts.net"],
 
   /**
-   * The local storage driver reads and writes paths built at runtime, which
-   * Turbopack cannot follow — so it traces the whole project into the
-   * standalone output "to be safe" and the image doubles.
+   * Kept for the day someone builds a container image; inert while `output`
+   * is unset, because nothing copies the traced files anywhere.
    *
-   * This is the standard answer: the paths below are never needed at runtime.
+   * The local storage driver reads and writes paths built at runtime, which
+   * Turbopack cannot follow — so it traces the whole project "to be safe"
+   * and the image doubles. The paths below are never needed at runtime.
    * `.data` in particular is the uploaded-files volume itself, which must not
    * be baked into an image.
    */
