@@ -3046,5 +3046,70 @@
       "notYourDecision": "Cette décision appartient à quelqu'un d'autre.",
       "alreadyDecided": "Celle-ci a déjà été tranchée."
     }
+  },
+  "timeline": {
+    "everythingHere": "tout la concernant est sur cette page",
+    "backToDeal": "Retour à l'affaire",
+    "everythingThatHappened": "Tout ce qui s'est passé",
+    "nEvents": "{n, plural, =0 {aucun évènement} one {# évènement} other {# évènements}}",
+    "newestFirst": "les plus récents d'abord",
+    "nothingYet": "Rien ne s'est encore passé sur cette affaire.",
+    "system": "Système",
+    "open": "Ouvrir",
+    "noted": "Noté.",
+    "side": {
+      "in": "Reçu",
+      "out": "Envoyé",
+      "noted": "Noté",
+      "system": "Système"
+    },
+    "what": {
+      "note": "Note",
+      "call": "Appel",
+      "meeting": "Réunion",
+      "visit": "Visite de site",
+      "messageArrived": "Message reçu",
+      "askedSuppliers": "Demande de prix envoyée",
+      "quoteReceived": "Offre fournisseur reçue",
+      "documentIssued": "Document émis",
+      "draftCreated": "Brouillon créé",
+      "deal": {
+        "create": "Affaire ouverte",
+        "update": "Affaire mise à jour",
+        "decide": "Décision enregistrée"
+      }
+    },
+    "writeItDown": "Notez ce qui s'est passé",
+    "onlyRecord": "la seule trace d'une chose que le système n'a pas vue",
+    "kind": "De quoi s'agit-il",
+    "happenedOn": "Quand cela s'est passé",
+    "remindMe": "Me le rappeler le",
+    "dueGoesToToday": "Une date le fait apparaître sur Aujourd'hui le moment venu.",
+    "whatWasSaid": "Ce qui a été dit",
+    "verbatim": "Conservé mot pour mot. Une note remise au propre, c'est votre résumé d'après coup, pas ce qui a été dit.",
+    "reply": "Répondre",
+    "replyLater": "Rien dans ce système n'envoie encore. Écrivez la réponse depuis votre messagerie.",
+    "attach": "Joindre un fichier",
+    "filesLater": "Le stockage des fichiers n'est pas encore construit.",
+    "save": "Enregistrer",
+    "thisDeal": "Cette affaire",
+    "client": "Client",
+    "reference": "Leur référence",
+    "stage": "Étape",
+    "deadline": "Échéance",
+    "submission": "Dépôt",
+    "whoMovedLast": "Qui a bougé en dernier",
+    "lastMove": {
+      "in": "{n, plural, =0 {Ils ont écrit aujourd'hui — la balle est chez vous.} one {Ils ont écrit hier. La balle est chez vous depuis # jour.} other {Ils ont écrit il y a # jours. La balle est chez vous depuis.}}",
+      "out": "{n, plural, =0 {Vous avez écrit aujourd'hui — c'est chez eux.} one {Vous avez écrit hier. C'est chez eux depuis # jour.} other {Vous avez écrit il y a # jours. C'est chez eux depuis.}}"
+    },
+    "whoMovedLastNote": "Les notes et les évènements système sont écartés. La création d'un dossier n'est le coup de personne, et se noter quelque chose non plus.",
+    "nobodyHasMoved": "Rien n'a encore été envoyé ni reçu sur cette affaire.",
+    "whereItComesFrom": "D'où viennent ces lignes",
+    "noEventTable": "Il n'y a pas de table d'évènements. Chaque ligne sauf une note est lue depuis l'enregistrement qui la détient déjà — le message, l'offre, le document, le journal. Une seconde copie de chacune, ce serait deux versions de chaque fait, sans moyen de savoir laquelle s'est produite le jour où elles divergent.",
+    "error": {
+      "empty": "Une note sans mots n'enregistre que le fait d'avoir ouvert la boîte.",
+      "noSuchDeal": "Cette affaire n'existe plus."
+    }
   }
 }

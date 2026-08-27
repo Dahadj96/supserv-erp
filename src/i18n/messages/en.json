@@ -3046,5 +3046,70 @@
       "notYourDecision": "That decision belongs to somebody else.",
       "alreadyDecided": "That one has already been decided."
     }
+  },
+  "timeline": {
+    "everythingHere": "everything about it is on this page",
+    "backToDeal": "Back to the enquiry",
+    "everythingThatHappened": "Everything that happened",
+    "nEvents": "{n, plural, =0 {no events} one {# event} other {# events}}",
+    "newestFirst": "newest first",
+    "nothingYet": "Nothing has happened on this enquiry yet.",
+    "system": "System",
+    "open": "Open",
+    "noted": "Written down.",
+    "side": {
+      "in": "Received",
+      "out": "Sent",
+      "noted": "Noted",
+      "system": "System"
+    },
+    "what": {
+      "note": "Note",
+      "call": "Call",
+      "meeting": "Meeting",
+      "visit": "Site visit",
+      "messageArrived": "Message arrived",
+      "askedSuppliers": "Asked suppliers for prices",
+      "quoteReceived": "Supplier quote received",
+      "documentIssued": "Document issued",
+      "draftCreated": "Draft created",
+      "deal": {
+        "create": "Enquiry opened",
+        "update": "Enquiry updated",
+        "decide": "Decision recorded"
+      }
+    },
+    "writeItDown": "Write down what happened",
+    "onlyRecord": "the only record of a thing the system never saw",
+    "kind": "What was it",
+    "happenedOn": "When it happened",
+    "remindMe": "Remind me on",
+    "dueGoesToToday": "A date puts it on Today when it comes.",
+    "whatWasSaid": "What was said",
+    "verbatim": "Kept word for word. A tidied note is your later summary of what was said, not what was said.",
+    "reply": "Reply",
+    "replyLater": "Nothing in this system sends yet. Write the reply from your own mail.",
+    "attach": "Attach a file",
+    "filesLater": "File storage is not built yet.",
+    "save": "Save it",
+    "thisDeal": "This enquiry",
+    "client": "Client",
+    "reference": "Their reference",
+    "stage": "Stage",
+    "deadline": "Deadline",
+    "submission": "Submission",
+    "whoMovedLast": "Who moved last",
+    "lastMove": {
+      "in": "{n, plural, =0 {They wrote today — the ball is with you.} one {They wrote yesterday. The ball has been with you for # day.} other {They wrote # days ago. The ball has been with you that long.}}",
+      "out": "{n, plural, =0 {You wrote today — it is with them.} one {You wrote yesterday. It has been with them for # day.} other {You wrote # days ago. It has been with them that long.}}"
+    },
+    "whoMovedLastNote": "Notes and system events are skipped. A folder being created is not somebody's move, and neither is writing a note to yourself.",
+    "nobodyHasMoved": "Nothing has been sent or received on this enquiry yet.",
+    "whereItComesFrom": "Where these rows come from",
+    "noEventTable": "There is no event table. Every row but a note is read from the record that already holds it — the message, the quote, the document, the log. A second copy of each would be two versions of every fact, and no way to tell which one happened on the day they disagree.",
+    "error": {
+      "empty": "A note with no words records that you opened the box.",
+      "noSuchDeal": "That enquiry no longer exists."
+    }
   }
 }

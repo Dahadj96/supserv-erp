@@ -7,6 +7,7 @@ import * as delivery from "./schema/delivery";
 import * as document from "./schema/document";
 import * as iface from "./schema/interface";
 import * as item from "./schema/item";
+import * as note from "./schema/note";
 import * as party from "./schema/party";
 
 /**
@@ -32,6 +33,7 @@ export const schema = {
   ...document,
   ...iface,
   ...item,
+  ...note,
   ...party,
 };
 

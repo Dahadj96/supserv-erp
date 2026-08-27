@@ -175,10 +175,25 @@ export function today(items: Item[], now: Date): Today {
   const mine = items.filter((item) => !item.waitingOnThem);
 
   const kept = mine.filter((item) => {
-    if (BAND_OF[item.kind] !== "nowOrLost") return true;
-    // A deadline that has not arrived yet is not today's problem, and one that
-    // has passed is not a problem at all any more.
-    return expiringNow(item, now);
+    if (BAND_OF[item.kind] === "nowOrLost") {
+      // A deadline that has not arrived yet is not today's problem, and one
+      // that has passed is not a problem at all any more.
+      return expiringNow(item, now);
+    }
+
+    /**
+     * A note somebody dated behaves like neither.
+     *
+     * It is not today's work until its day arrives — a reminder set for next
+     * month on a page headed "today" is noise. But unlike a tender, it does NOT
+     * stop mattering when the day passes: a missed tender is gone, a missed
+     * reminder is simply late and still has to be done. So the future is
+     * filtered out and the past is kept, which is the opposite tail from
+     * `expiringNow`.
+     */
+    if (item.kind === "note" && item.expiresAt) return hoursLeft(item.expiresAt, now) <= 24;
+
+    return true;
   });
 
   const bands = BANDS.map((band) => {

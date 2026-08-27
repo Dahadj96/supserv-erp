@@ -11,6 +11,7 @@ import { balanceOf, daysLate } from "@/domain/money/ageing";
 import { paidStateOf } from "@/domain/money/invoices";
 import { dueNow } from "@/domain/money/relance";
 import { billed, owings, policy, relancesFor } from "@/domain/money/store";
+import { notesDue } from "@/domain/timeline/gather";
 import type { Item } from "./list";
 
 /**
@@ -258,6 +259,36 @@ async function quick(): Promise<Item[]> {
 }
 
 /**
+ * Notes somebody wrote down with a date on them.
+ *
+ * This is the one kind of item on Today that a PERSON created, and it is not a
+ * contradiction of the no-task-table rule — it is the point of it. A note is
+ * the only record of a thing the system never saw ("they confirmed the office
+ * accepts deposits from 08:00"), it is written in exactly one place, and Today
+ * reads it from there. What the rule forbids is a second copy of a fact that
+ * already exists, not a fact with only one home.
+ */
+async function noted(): Promise<Item[]> {
+  const rows = await notesDue();
+
+  return rows.map((row) => ({
+    id: `note:${row.id}`,
+    kind: "note" as const,
+    // The first line, which is what a person wrote first and therefore what
+    // they meant.
+    title: row.body.split("\n")[0]?.slice(0, 120) ?? "",
+    detail: "",
+    href: row.entity === "deal" ? `/deals/${row.entityId}/timeline` : "/today",
+    action: "open",
+    // A note's date is a date somebody chose, so it behaves like a deadline —
+    // it can arrive, and it can pass.
+    expiresAt: row.dueAt,
+    amount: "0",
+    waitingOnThem: false,
+  }));
+}
+
+/**
  * Everything Today might show, gathered from the screens that already know it.
  *
  * Gathered WIDE and filtered by `today()` rather than filtered here: the
@@ -266,8 +297,14 @@ async function quick(): Promise<Item[]> {
  * would be unavailable if this returned only what fits on the page.
  */
 export async function gather(now: Date): Promise<Item[]> {
-  const [a, b, c, d] = await Promise.all([deadlines(), money(now), unanswered(), quick()]);
-  return [...a, ...b, ...c, ...d];
+  const [a, b, c, d, e] = await Promise.all([
+    deadlines(),
+    money(now),
+    unanswered(),
+    quick(),
+    noted(),
+  ]);
+  return [...a, ...b, ...c, ...d, ...e];
 }
 
 export type Done = {
