@@ -1,17 +1,43 @@
 # RUNBOOK — the three things left, and how the mini PC becomes a server
 
 Written 23 Aug 2026, the day `erp.supserv-dz.com` went live.
+**Re-checked 27 Aug 2026 — the state below had changed. Read this box first.**
 
-The tunnel is up and the ERP answers on it. What follows is everything that is
-**not** done, in the order it matters.
+> ## THE TUNNEL IS DOWN
+>
+> As of 27 Aug: `cloudflared` is **not a service, not a scheduled task, and not a
+> running process**, and `https://erp.supserv-dz.com` answers **530** — Cloudflare
+> error 1033, origin tunnel not connected.
+>
+> This is not a fault. It is exactly what §3 warned about: the tunnel has only ever
+> been a foreground process in a terminal I opened, and it died when that session
+> ended. §3 is what fixes it, permanently.
+>
+> **The order in the table below has therefore changed.** Do §1 and §2 while the
+> site is down — it is a free window, because there is nothing behind the door to
+> protect. Then §3 brings it back up already locked.
 
-| § | What | Who | How long |
-|---|---|---|---|
-| 1 | **Cloudflare Access** — the lock on the front door | you | 5 min |
-| 2 | **Entra redirect URI** — so sign-in works on the new address | you | 2 min |
-| 3 | **Survive a reboot** — tunnel, database, app | one command + one decision | 10 min |
+| Order | § | What | Who | How long |
+|---|---|---|---|---|
+| 1st | 1 | **Cloudflare Access** — attach the policy to an application | you | 5 min |
+| 2nd | 2 | **Entra redirect URI** — so sign-in works on the new address | you | 2 min |
+| 3rd | 3 | **Survive a reboot** — and bring the tunnel back at all | one command + one decision | 10 min |
 
-Do §1 today. The hostname is public and has no lock on it yet.
+Also outstanding, and not in this file:
+
+- **`docs/DECISIONS/2026-08-26-who-sees-margin.md`** — does the Commercial keep
+  `offers.margin.view`? Screen 12 and `src/auth/can.ts` disagree, and I did not
+  pick one for you.
+- **When does the new desk PC arrive?** It is the single fact that decides §3's
+  Docker-at-boot question, and it has been asked three times now.
+
+### One correction to §1 below
+
+The Zero Trust dashboard has been redesigned since this was written. **Policies
+and Applications are now separate things**, and the policy `SUPSERV people` that
+already exists is a *reusable policy attached to nothing*. A policy on its own
+guards no hostname. In the new layout, create the application first, and on its
+Policies step choose **Select existing policies** and tick `SUPSERV people`.
 
 ---
 
