@@ -125,9 +125,11 @@ $assigned = @(Get-ManagementRoleAssignment -RoleAssigneeType ServicePrincipal -E
 
 if ($assigned.Count -gt 0) {
     Write-Host "    Already granted. What exists now:"
+    # Format-List, not Format-Table. The assignment name is 58 characters and
+    # the table put the last column header down the screen one letter per line.
     $assigned |
         Select-Object Name, Role, RoleAssigneeName, CustomResourceScope |
-        Format-Table -AutoSize |
+        Format-List |
         Out-String |
         Write-Host
 } else {
