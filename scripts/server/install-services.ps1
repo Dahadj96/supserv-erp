@@ -105,7 +105,13 @@ Set-Service cloudflared -StartupType Automatic
 # stop request - it sat in StopPending indefinitely once - so the process is
 # killed if it has not gone within fifteen seconds.
 Say "restarting the tunnel"
-Stop-Service cloudflared -ErrorAction SilentlyContinue
+
+# sc.exe, not Stop-Service. Stop-Service BLOCKS until the service stops, and
+# cloudflared does not always stop - it printed "Waiting for service to stop..."
+# forever, so the kill below was never reached and the script hung. sc.exe sends
+# the stop and returns immediately, which is what makes the timeout real.
+& sc.exe stop cloudflared | Out-Null
+
 $deadline = (Get-Date).AddSeconds(15)
 while ((Get-Service cloudflared).Status -ne "Stopped" -and (Get-Date) -lt $deadline) {
   Start-Sleep -Seconds 1
