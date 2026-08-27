@@ -43,17 +43,58 @@ decorative.
 
 ## What you need before you start
 
-- The **Exchange Administrator** role, or membership of **Organization
-  Management**.
-- The `ExchangeOnlineManagement` PowerShell module:
+### 1. The role — check before assigning
 
-  ```powershell
-  Install-Module ExchangeOnlineManagement -Scope CurrentUser
-  ```
+**Whoever bought the Microsoft 365 subscription is Global Administrator by
+default**, and Microsoft's own documentation says the Global Administrator and
+Exchange Administrator roles "provide the required permissions for any task in
+Exchange Online PowerShell". So this is usually a check, not a change.
 
-- The **Object ID of the enterprise application** — not the app registration.
-  Entra admin centre → **Enterprise applications** → the ERP app → **Object ID**.
-  The App registrations page shows a different Object ID and it is the wrong one.
+Check: [admin.microsoft.com](https://admin.microsoft.com) → **Users → Active
+users** → click yourself → look under **Roles**.
+
+- Says **Global Administrator** → nothing to do.
+- Says anything else → **Roles → Role assignments → Exchange** tab → **Exchange
+  Administrator** → **Assigned** → **Add users**. Allow a few minutes; role
+  changes are not instant.
+
+### 2. The Object ID of the enterprise application
+
+Not the App ID, and **not the Object ID on the App registrations page** — that
+one belongs to the *application object*, and Exchange will reject it. The one
+needed belongs to the *service principal*, which is the tenant-local half.
+
+The route that cannot pick the wrong one:
+
+1. [entra.microsoft.com](https://entra.microsoft.com) → **Applications → App
+   registrations → All applications → SUPSERV ERP**.
+2. On the Overview page, in **Essentials**, click the link labelled **"Managed
+   application in local directory"**.
+3. That lands on the **Enterprise application** page. Copy the **Object ID**
+   shown there.
+
+Or without the portal at all:
+
+```powershell
+Install-Module Microsoft.Graph -Scope CurrentUser
+Connect-MgGraph -Scopes "Application.Read.All"
+(Get-MgServicePrincipal -Filter "appId eq 'a6dcd142-9866-416f-ad89-c9f39e18d4c3'").Id
+```
+
+**Sanity check:** it must not equal `a6dcd142-9866-416f-ad89-c9f39e18d4c3` (that
+is the Application/Client ID) and must not equal the Object ID printed on the
+App registrations page. If it matches either, it is the wrong value.
+
+It is not a secret. Tenant ID, client ID and this Object ID are all identifiers,
+not credentials. `MS_CLIENT_SECRET` is the credential, and it never leaves
+`.env`.
+
+### 3. The module
+
+```powershell
+Install-Module ExchangeOnlineManagement -Scope CurrentUser
+Connect-ExchangeOnline -UserPrincipalName <your admin address>
+```
 
 ## The steps
 
