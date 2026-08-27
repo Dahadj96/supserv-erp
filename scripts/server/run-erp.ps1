@@ -21,6 +21,17 @@ Set-Location "C:\SUPSERV-ERP"
 
 $log = "C:\SUPSERV-ERP\.data\server.log"
 New-Item -ItemType Directory -Force -Path (Split-Path $log) | Out-Null
+
+# One boot per file, with the previous boot kept beside it.
+#
+# This log was appended to forever, which is how it ended up half UTF-16 and
+# half UTF-8: unreadable from the moment two writers with different encodings
+# had both touched it, and unreadable for the whole file, because a reader
+# decides the encoding from the BOM at the start. Rotating means a bad line can
+# never poison the run after it - and the first line of this file is always the
+# start of the run somebody is actually asking about.
+if (Test-Path $log) { Move-Item -Path $log -Destination "${log}.1" -Force -ErrorAction SilentlyContinue }
+
 # PowerShell 5.1's Tee-Object takes no -Encoding and writes UTF-16, so the log
 # came back out of every other tool as g i b b e r i s h  s p a c e d  l i k e
 # t h i s - and half the file was ASCII, because two different writers were
