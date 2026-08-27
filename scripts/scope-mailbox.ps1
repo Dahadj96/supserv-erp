@@ -10,12 +10,12 @@
 
     Nothing here is destructive. It creates a scope, a pointer and a role
     assignment, and then tests them. Removing the old Entra consent is step 5
-    and is done by hand in the portal, on purpose — see the end of this file.
+    and is done by hand in the portal, on purpose - see the end of this file.
 #>
 
 [CmdletBinding()]
 param(
-    # From .env — MS_CLIENT_ID. Not a secret.
+    # From .env - MS_CLIENT_ID. Not a secret.
     [string] $AppId = 'a6dcd142-9866-416f-ad89-c9f39e18d4c3',
 
     # The mailbox the ERP is allowed to read.
@@ -42,7 +42,7 @@ Connect-ExchangeOnline -ShowBanner:$false
 
 Write-Host "`n=== 1. A scope holding exactly one mailbox ===" -ForegroundColor Cyan
 if (Get-ManagementScope -Identity $ScopeName -ErrorAction SilentlyContinue) {
-    Write-Host "    '$ScopeName' already exists — leaving it alone."
+    Write-Host "    '$ScopeName' already exists - leaving it alone."
 } else {
     New-ManagementScope -Name $ScopeName `
         -RecipientRestrictionFilter "PrimarySmtpAddress -eq '$Mailbox'" | Out-Null
@@ -74,11 +74,11 @@ Write-Host "    Application Mail.Read -> $ScopeName"
 
 Write-Host "`n=== 4. Proving the fence, in both directions ===" -ForegroundColor Cyan
 
-Write-Host "`n    Should be allowed — $Mailbox" -ForegroundColor Green
+Write-Host "`n    Should be allowed - $Mailbox" -ForegroundColor Green
 $allowed = Test-ServicePrincipalAuthorization -Identity $AppId -Resource $Mailbox
 $allowed | Format-Table RoleName, GrantedPermissions, AllowedResourceScope, InScope
 
-Write-Host "    Should be DENIED — $MailboxThatMustBeDenied" -ForegroundColor Yellow
+Write-Host "    Should be DENIED - $MailboxThatMustBeDenied" -ForegroundColor Yellow
 $denied = Test-ServicePrincipalAuthorization -Identity $AppId -Resource $MailboxThatMustBeDenied
 $denied | Format-Table RoleName, GrantedPermissions, AllowedResourceScope, InScope
 
@@ -87,18 +87,18 @@ $leak = ($denied | Where-Object { $_.InScope -eq $true }).Count -gt 0
 
 Write-Host ""
 if ($ok -and -not $leak) {
-    Write-Host "PASS — the app reaches $Mailbox and not $MailboxThatMustBeDenied." -ForegroundColor Green
+    Write-Host "PASS - the app reaches $Mailbox and not $MailboxThatMustBeDenied." -ForegroundColor Green
 } elseif ($leak) {
-    Write-Host "FAIL — the app can still reach $MailboxThatMustBeDenied. Do NOT continue." -ForegroundColor Red
+    Write-Host "FAIL - the app can still reach $MailboxThatMustBeDenied. Do NOT continue." -ForegroundColor Red
     exit 1
 } else {
-    Write-Host "FAIL — the app cannot reach $Mailbox either. Check step 3." -ForegroundColor Red
+    Write-Host "FAIL - the app cannot reach $Mailbox either. Check step 3." -ForegroundColor Red
     exit 1
 }
 
 Write-Host @"
 
-=== 5. NOW REMOVE THE OLD CONSENT — this script cannot do it for you ===
+=== 5. NOW REMOVE THE OLD CONSENT - this script cannot do it for you ===
 
 Entra admin centre -> App registrations -> SUPSERV ERP -> API permissions
   - remove Mail.Read and Mail.ReadWrite from APPLICATION permissions

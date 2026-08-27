@@ -1,6 +1,6 @@
 # What the scheduled task runs at boot.
 #
-# Waits for the database, then serves the PRODUCTION build on port 3000 —
+# Waits for the database, then serves the PRODUCTION build on port 3000 -
 # the port the tunnel already points at.
 
 $ErrorActionPreference = "Continue"
@@ -14,7 +14,7 @@ Log "starting"
 
 # Docker Desktop takes a while after a reboot, and Postgres a little longer.
 # Failing fast here would mean the ERP is down until somebody notices, so it
-# waits — up to five minutes — and says so in the log either way.
+# waits - up to five minutes - and says so in the log either way.
 $deadline = (Get-Date).AddMinutes(5)
 while ((Get-Date) -lt $deadline) {
   docker exec supserv-db pg_isready -U supserv 2>$null | Out-Null
@@ -23,13 +23,13 @@ while ((Get-Date) -lt $deadline) {
 }
 
 if ($LASTEXITCODE -ne 0) {
-  Log "GIVING UP WAITING FOR THE DATABASE — is Docker Desktop running? Is anybody logged in?"
+  Log "GIVING UP WAITING FOR THE DATABASE - is Docker Desktop running? Is anybody logged in?"
 }
 
 # `pnpm start` serves .next from the last `pnpm build`. If nobody has built,
 # build now rather than serve nothing.
 if (-not (Test-Path "C:\SUPSERV-ERP\.next\BUILD_ID")) {
-  Log "no build found — building"
+  Log "no build found - building"
   pnpm build 2>&1 | Tee-Object -FilePath $log -Append
 }
 

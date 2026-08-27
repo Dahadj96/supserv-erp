@@ -5,7 +5,7 @@
 #     powershell -ExecutionPolicy Bypass -File scripts\server\install-services.ps1
 #
 # After this, a reboot brings back: the tunnel, the database, and the ERP.
-# What it does NOT fix on its own is in docs/RUNBOOK.md §3 — Docker Desktop on
+# What it does NOT fix on its own is in docs/RUNBOOK.md section 3 - Docker Desktop on
 # Windows needs somebody logged in, and that is a decision, not a script.
 
 #Requires -RunAsAdministrator
@@ -22,7 +22,7 @@ Say "cloudflared as a Windows service"
 if (-not (Test-Path $cloudflared)) { throw "cloudflared not found at $cloudflared" }
 
 if (Get-Service cloudflared -ErrorAction SilentlyContinue) {
-  Write-Host "already installed — leaving it alone"
+  Write-Host "already installed - leaving it alone"
 } else {
   # Reads C:\Users\<you>\.cloudflared\config.yml, which already names the tunnel
   # and points erp.supserv-dz.com at localhost:3000.
@@ -64,7 +64,7 @@ if (Test-Path $docker) {
     -Name "Docker Desktop" -Value "`"$docker`" -Autostart" -PropertyType String -Force | Out-Null
   Write-Host "Docker Desktop will start when this user logs in"
 } else {
-  Write-Warning "Docker Desktop not found at $docker — start it by hand or install it"
+  Write-Warning "Docker Desktop not found at $docker - start it by hand or install it"
 }
 
 # The database container already restarts by itself once the engine is up.
@@ -92,8 +92,8 @@ Three ways out, in docs/RUNBOOK.md section 3. Pick one deliberately:
 Until one of those is done, 'it comes back by itself' is not true.
 "@
 } else {
-  Write-Host "automatic login is on — Docker Desktop will come back after a reboot"
+  Write-Host "automatic login is on - Docker Desktop will come back after a reboot"
 }
 
 Say "Done"
-Write-Host "Check it with:  scripts\server\status.ps1"
+Write-Host "Check it with:  scripts\server\mode.ps1 status"

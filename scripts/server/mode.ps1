@@ -23,7 +23,7 @@ function Stop-Erp {
 switch ($Mode) {
   "dev" {
     Stop-Erp
-    Write-Host "dev server on http://localhost:3000 — reachable at https://erp.supserv-dz.com" -ForegroundColor Cyan
+    Write-Host "dev server on http://localhost:3000 - reachable at https://erp.supserv-dz.com" -ForegroundColor Cyan
     Write-Warning "A dev server ships unminified source and readable stack traces. Fine while the database holds test rows; switch back before real client data."
     pnpm dev
   }
