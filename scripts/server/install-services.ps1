@@ -16,17 +16,54 @@ $cloudflared = "C:\Program Files (x86)\cloudflared\cloudflared.exe"
 
 function Say($text) { Write-Host "`n=== $text" -ForegroundColor Cyan }
 
+# WHOSE ACCOUNT IS THIS? Right-click "Run as administrator" does not always
+# elevate to the account you are logged in as. On this machine it elevates to a
+# separate local admin, so $env:USERPROFILE here is NOT the profile holding the
+# tunnel config or the Docker autostart entry. That cost one failed run; the
+# script now prints it, and never reads $env:USERPROFILE again.
+Write-Host ("running as: " + $env:USERNAME + "   (profile: " + $env:USERPROFILE + ")")
+
 # ---------------------------------------------------------------- 1. tunnel
 Say "cloudflared as a Windows service"
 
 if (-not (Test-Path $cloudflared)) { throw "cloudflared not found at $cloudflared" }
 
+# Found by looking, not by assuming. Exactly one config must exist across all
+# profiles - two would mean two tunnels and a coin toss over which one starts.
+$configs = @(Get-ChildItem "C:\Users" -Directory -ErrorAction SilentlyContinue |
+  ForEach-Object { Join-Path $_.FullName ".cloudflared\config.yml" } |
+  Where-Object { Test-Path $_ })
+
+if ($configs.Count -eq 0) {
+  throw "No .cloudflared\config.yml found under any profile in C:\Users. The tunnel has never been set up on this machine."
+}
+if ($configs.Count -gt 1) {
+  throw ("More than one tunnel config found, so this script will not guess:`n  " + ($configs -join "`n  "))
+}
+
+$tunnelConfig = $configs[0]
+Write-Host "tunnel config: $tunnelConfig"
+
+# The service runs as LocalSystem and reads the credentials file named INSIDE
+# that config. If it is missing, the service installs happily and then fails to
+# connect every time, which is a much harder thing to diagnose later.
+$credLine = (Select-String -Path $tunnelConfig -Pattern '^\s*credentials-file:\s*(.+)$' -ErrorAction SilentlyContinue |
+  Select-Object -First 1)
+if ($credLine) {
+  $credPath = $credLine.Matches[0].Groups[1].Value.Trim()
+  if (-not (Test-Path $credPath)) {
+    throw "The config names a credentials file that does not exist: $credPath"
+  }
+  Write-Host "credentials:   present"
+}
+
 if (Get-Service cloudflared -ErrorAction SilentlyContinue) {
   Write-Host "already installed - leaving it alone"
 } else {
-  # Reads C:\Users\<you>\.cloudflared\config.yml, which already names the tunnel
-  # and points erp.supserv-dz.com at localhost:3000.
-  & $cloudflared --config "$env:USERPROFILE\.cloudflared\config.yml" service install
+  & $cloudflared --config $tunnelConfig service install
+  if ($LASTEXITCODE -ne 0) {
+    throw "cloudflared service install failed with exit code $LASTEXITCODE"
+  }
 }
 
 Set-Service cloudflared -StartupType Automatic
@@ -60,9 +97,19 @@ Say "Docker Desktop on login"
 
 $docker = "C:\Program Files\Docker\Docker\Docker Desktop.exe"
 if (Test-Path $docker) {
-  New-ItemProperty -Path "HKCU:\Software\Microsoft\Windows\CurrentVersion\Run" `
+  # HKLM, not HKCU, and for the same reason as the tunnel config above: this
+  # script is elevated, and on this machine that means a DIFFERENT account from
+  # the one that actually logs in. An entry written to HKCU here would sit in
+  # the admin account's hive, Docker would never start for the real user, and
+  # nothing would say so - the ERP would just come up with no database after
+  # every reboot. HKLM runs it for whoever logs in, which is what is wanted.
+  New-ItemProperty -Path "HKLM:\Software\Microsoft\Windows\CurrentVersion\Run" `
     -Name "Docker Desktop" -Value "`"$docker`" -Autostart" -PropertyType String -Force | Out-Null
-  Write-Host "Docker Desktop will start when this user logs in"
+  Write-Host "Docker Desktop will start when anybody logs in (HKLM)"
+
+  # Clean up the wrong one if a previous run of this script left it behind.
+  Remove-ItemProperty -Path "HKCU:\Software\Microsoft\Windows\CurrentVersion\Run" `
+    -Name "Docker Desktop" -ErrorAction SilentlyContinue
 } else {
   Write-Warning "Docker Desktop not found at $docker - start it by hand or install it"
 }
