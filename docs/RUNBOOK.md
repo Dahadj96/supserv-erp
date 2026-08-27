@@ -274,13 +274,44 @@ facing the internet.
 | From the mini PC | `http://localhost:3000` — bypasses Cloudflare entirely |
 | From the office LAN | `http://192.168.1.2:3000` |
 | Tunnel name / id | `supservpc01` / `cd39496e-95da-4913-a07c-f53c31c8cb4e` |
-| Tunnel config | `C:\Users\Abderrahmane\.cloudflared\config.yml` |
+| Tunnel config | `C:\Users\Abderrahmane\.cloudflared\config.yml` — named in the service's `ImagePath` |
+| Tunnel log | `C:\SUPSERV-ERP\.data\cloudflared.log` |
 | App log (service mode) | `C:\SUPSERV-ERP\.data\server.log` |
 | Database | Docker container `supserv-db`, bound to `127.0.0.1:5432` only |
 
 **The way back in, always:** AnyDesk to the mini PC, open `http://localhost:3000`.
 That path touches neither Cloudflare nor the tunnel, so it keeps working no
 matter what is misconfigured above.
+
+### How to tell whether the tunnel is actually up — and how NOT to
+
+**Loading `https://erp.supserv-dz.com` and getting the Access login page proves
+nothing.** Cloudflare Access answers unauthenticated requests *at the edge*.
+That request never reaches this machine, so a healthy-looking redirect is
+exactly what a completely dead tunnel produces too.
+
+That cost an evening on 27 August: the service said `Running`, the URL returned
+a clean 302, and the tunnel had **zero connections** the whole time. The only
+requests that revealed it were the ones that had already passed Access — which
+is why the failure showed up as error 1033 on the Microsoft sign-in callback and
+nowhere else.
+
+Three checks that mean something, in order of how much they prove:
+
+```powershell
+# 1. Ask Cloudflare, not Windows. This is the one that counts.
+& "C:\Program Files (x86)\cloudflared\cloudflared.exe" `
+  --origincert C:\Users\Abderrahmane\.cloudflared\cert.pem `
+  tunnel info supservpc01
+
+# 2. Read the connector's own log.
+Get-Content C:\SUPSERV-ERP\.data\cloudflared.log -Tail 30
+
+# 3. The dashboard: Zero Trust > Networks > Tunnels. Healthy / Degraded / Down.
+```
+
+`Get-Service cloudflared` returning `Running` is **not** on that list. It means a
+process exists. It does not mean the process is running your tunnel.
 
 ### If the tunnel is down and you need to actually sign in
 

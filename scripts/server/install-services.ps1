@@ -58,7 +58,7 @@ if ($credLine) {
 }
 
 if (Get-Service cloudflared -ErrorAction SilentlyContinue) {
-  Write-Host "already installed - leaving it alone"
+  Write-Host "service already exists - checking how it is wired"
 } else {
   & $cloudflared --config $tunnelConfig service install
   if ($LASTEXITCODE -ne 0) {
@@ -66,9 +66,87 @@ if (Get-Service cloudflared -ErrorAction SilentlyContinue) {
   }
 }
 
+# THE STEP THAT WAS MISSING, and it cost a whole evening.
+#
+# `cloudflared service install` does NOT record --config anywhere. The service
+# it creates has an ImagePath of just the exe. With no config named, cloudflared
+# looks in LocalSystem's own profile -
+# C:\Windows\System32\config\systemprofile\.cloudflared\config.yml - which does
+# not exist on this machine. So the service starts, finds no tunnel to run, does
+# nothing at all, and reports Running.
+#
+# It reported Running for hours while the tunnel had ZERO connections and the
+# dashboard said Down. Nothing surfaced it, because an unauthenticated request
+# to erp.supserv-dz.com is answered by Cloudflare Access at the edge and never
+# reaches the connector - so the public URL returns a healthy-looking 302 with
+# the tunnel dead. Only a request that got PAST Access hit the origin, and that
+# is the one that returned error 1033.
+#
+# Cloudflare's own Windows guide names the config in ImagePath. So do we.
+# The config is read where it already lives rather than copied into the system
+# profile: LocalSystem can read it there, and one file cannot drift out of sync
+# with a copy of itself.
+$svcKey  = "HKLM:\SYSTEM\CurrentControlSet\Services\cloudflared"
+$wanted  = '"' + $cloudflared + '" --config="' + $tunnelConfig + '" tunnel run'
+$current = (Get-ItemProperty $svcKey -ErrorAction SilentlyContinue).ImagePath
+
+if ($current -ne $wanted) {
+  Write-Host "service command line is wrong - fixing it"
+  Write-Host "  was:  $current"
+  Write-Host "  now:  $wanted"
+  Set-ItemProperty -Path $svcKey -Name ImagePath -Value $wanted
+} else {
+  Write-Host "service command line already names the config"
+}
+
 Set-Service cloudflared -StartupType Automatic
-Start-Service cloudflared -ErrorAction SilentlyContinue
+
+# Restart it so the change takes effect. cloudflared does not always honour a
+# stop request - it sat in StopPending indefinitely once - so the process is
+# killed if it has not gone within fifteen seconds.
+Say "restarting the tunnel"
+Stop-Service cloudflared -ErrorAction SilentlyContinue
+$deadline = (Get-Date).AddSeconds(15)
+while ((Get-Service cloudflared).Status -ne "Stopped" -and (Get-Date) -lt $deadline) {
+  Start-Sleep -Seconds 1
+}
+if ((Get-Service cloudflared).Status -ne "Stopped") {
+  Write-Host "it would not stop - killing it"
+  Get-Process cloudflared -ErrorAction SilentlyContinue | Stop-Process -Force
+  Start-Sleep -Seconds 5
+}
+Start-Service cloudflared
 Get-Service cloudflared | Format-Table Name, Status, StartType -AutoSize
+
+# VERIFY AGAINST CLOUDFLARE, NOT AGAINST WINDOWS.
+#
+# "Running" means a process exists. It says nothing about whether the tunnel has
+# a single connection, and believing it is precisely what went wrong. Ask
+# Cloudflare how many connectors it can see instead.
+Say "does Cloudflare actually see this tunnel?"
+
+$tunnelId = $null
+$idLine = (Select-String -Path $tunnelConfig -Pattern '^\s*tunnel:\s*(.+)$' -ErrorAction SilentlyContinue |
+  Select-Object -First 1)
+if ($idLine) { $tunnelId = $idLine.Matches[0].Groups[1].Value.Trim() }
+
+$cert = Join-Path (Split-Path $tunnelConfig) "cert.pem"
+
+if ($tunnelId -and (Test-Path $cert)) {
+  Write-Host "waiting 20s for the connector to register..."
+  Start-Sleep -Seconds 20
+  $info = (& $cloudflared --origincert $cert tunnel info $tunnelId 2>&1 | Out-String)
+  Write-Host $info
+  if ($info -match "does not have any active connection") {
+    Write-Warning "THE TUNNEL IS STILL DOWN. The service is running but is not connected."
+    Write-Warning "Read the log named by 'logfile:' in $tunnelConfig, or add one."
+  } else {
+    Write-Host "tunnel is connected" -ForegroundColor Green
+  }
+} else {
+  Write-Warning "Cannot verify: need both a 'tunnel:' line in the config and cert.pem beside it."
+  Write-Warning "Check by hand:  cloudflared tunnel info <name>"
+}
 
 # ------------------------------------------------------------- 2. the app
 Say "the ERP as a scheduled task that starts with Windows"
