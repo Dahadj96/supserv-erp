@@ -6,6 +6,24 @@
  * and data they may not see. Every server action calls it. No exceptions.
  */
 export const PERMISSIONS = [
+  /**
+   * Who may read the captured mailbox.
+   *
+   * Added 27 August 2026, the day the first real mail arrived. Until then the
+   * Inbox had no permission at all: `listInbox` takes no user, and nothing in
+   * this file mentioned it - so every signed-in account, `lecture` and
+   * `chantier` included, could read every message sent to contact@.
+   *
+   * That was survivable while contact@ was the only channel, because it is the
+   * address printed on the website. It stops being survivable the moment
+   * recrutement@ (CVs, salary expectations) or commercial@ (prices, margins)
+   * is connected - which is the plan. So the gate goes in first.
+   *
+   * Note what this is NOT: it is not "may read records". Records are curated
+   * and permissioned individually. This is raw correspondence, unfiltered, spam
+   * and CVs included, which is why `lecture` does not get it.
+   */
+  "inbox.view",
   "offers.margin.view",
   "offers.issue",
   "invoices.issue",
@@ -20,12 +38,28 @@ export const PERMISSIONS = [
 ] as const;
 export type Permission = (typeof PERMISSIONS)[number];
 
+/**
+ * `inbox.view` goes to the four roles whose work arrives by email: enquiries
+ * and tender invitations to commercial, supplier quotes to achats, invoices and
+ * payment advices to compta, all of it to the Gérant.
+ *
+ * Not `chantier` and not `lecture`. Site staff have no reason to read the
+ * company's correspondence, and read-only means read-only over RECORDS - a
+ * mailbox is not a record, it is everything anybody has ever sent us including
+ * the spam.
+ */
 export const ROLES = {
   gerant: [...PERMISSIONS],
-  commercial: ["offers.margin.view", "offers.issue", "merge.execute"],
-  achats: ["purchase.order.issue", "merge.execute"],
+  commercial: ["inbox.view", "offers.margin.view", "offers.issue", "merge.execute"],
+  achats: ["inbox.view", "purchase.order.issue", "merge.execute"],
   chantier: [],
-  compta: ["offers.margin.view", "invoices.issue", "payments.record", "people.salary.view"],
+  compta: [
+    "inbox.view",
+    "offers.margin.view",
+    "invoices.issue",
+    "payments.record",
+    "people.salary.view",
+  ],
   lecture: [],
 } as const satisfies Record<string, readonly Permission[]>;
 

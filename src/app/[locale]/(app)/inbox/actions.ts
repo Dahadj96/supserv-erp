@@ -1,6 +1,7 @@
 "use server";
 
 import { revalidatePath } from "next/cache";
+import { can } from "@/auth/can";
 import { getSession } from "@/auth/session";
 import { MailboxNotScoped } from "@/capture/mail/graph";
 import { commitCandidate, commitContact } from "@/domain/intake/commit";
@@ -10,14 +11,23 @@ import { ROUTED_TO, type RoutedTo } from "@/domain/intake/routing";
 import { redirect } from "@/i18n/navigation";
 
 /**
- * Screen 02. Triage needs no special permission — anybody who can see the inbox
- * can say what an email is. What it BECOMES is gated by the permission on that
- * record type, which is checked when the record is created, not here.
+ * Screen 02. Triage needs no permission beyond seeing the inbox at all —
+ * anybody who can read a message can say what it is. What it BECOMES is gated
+ * by the permission on that record type, checked where the record is created.
+ *
+ * But seeing the inbox is itself a permission now, and it is checked HERE and
+ * not only on the page. A server action is a public HTTP endpoint: gating the
+ * page without gating the action means the buttons are hidden and the endpoint
+ * they posted to still answers.
  */
-async function requireUser(locale: string) {
+async function requireInbox(locale: string) {
   const session = await getSession();
   if (!session) {
     redirect({ href: "/sign-in", locale });
+    throw new Error("unreachable");
+  }
+  if (!session.role || !can(session.role, "inbox.view")) {
+    redirect({ href: "/today?denied=inbox", locale });
     throw new Error("unreachable");
   }
   return session;
@@ -25,7 +35,7 @@ async function requireUser(locale: string) {
 
 /** "Sync now". The only button on the screen that reaches outside the building. */
 export async function syncMailbox(locale: string) {
-  await requireUser(locale);
+  await requireInbox(locale);
   try {
     const result = await pollMailbox("mailbox-poll");
     revalidatePath(`/${locale}/inbox`);
@@ -42,19 +52,19 @@ export async function syncMailbox(locale: string) {
 }
 
 export async function dismissMessage(locale: string, id: string, formData: FormData) {
-  const session = await requireUser(locale);
+  const session = await requireInbox(locale);
   await dismiss(id, session.userId, String(formData.get("reason") ?? "") || undefined);
   revalidatePath(`/${locale}/inbox`);
 }
 
 export async function openMessage(locale: string, id: string) {
-  await requireUser(locale);
+  await requireInbox(locale);
   await markRead(id);
   revalidatePath(`/${locale}/inbox`);
 }
 
 export async function setClassification(locale: string, id: string, formData: FormData) {
-  const session = await requireUser(locale);
+  const session = await requireInbox(locale);
   const to = String(formData.get("to") ?? "");
   if (!ROUTED_TO.includes(to as RoutedTo)) throw new Error("unknownClassification");
   await reclassify(id, to as RoutedTo, session.userId);
@@ -62,7 +72,7 @@ export async function setClassification(locale: string, id: string, formData: Fo
 }
 
 export async function createCandidateFrom(locale: string, id: string, formData: FormData) {
-  const session = await requireUser(locale);
+  const session = await requireInbox(locale);
   const trade = String(formData.get("trade") ?? "").trim();
   if (!trade) {
     // Screen 51 makes trade required because it is what people search by. A
@@ -76,7 +86,7 @@ export async function createCandidateFrom(locale: string, id: string, formData: 
 }
 
 export async function createContactFrom(locale: string, id: string, formData: FormData) {
-  const session = await requireUser(locale);
+  const session = await requireInbox(locale);
   await commitContact({
     messageId: id,
     actorId: session.userId,

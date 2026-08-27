@@ -1,5 +1,7 @@
 import { CircleAlert, CircleHelp } from "lucide-react";
 import { getFormatter, getTranslations, setRequestLocale } from "next-intl/server";
+import { can } from "@/auth/can";
+import { getSession } from "@/auth/session";
 import { Button } from "@/components/ui/button";
 import {
   expiringSoon,
@@ -35,6 +37,26 @@ export default async function InboxPage({
   setRequestLocale(locale);
   const t = await getTranslations();
   const format = await getFormatter();
+
+  // Checked before anything is read, not after. The queries below fetch every
+  // message in the mailbox; running them and then hiding the result is not a
+  // permission check, it is a rendering decision.
+  const session = await getSession();
+  if (!session?.role || !can(session.role, "inbox.view")) {
+    return (
+      <main className="min-h-0 flex-1 overflow-auto">
+        <div className="border-b border-line-subtle bg-surface px-7 py-5">
+          <h1 className="text-[19px] font-semibold text-ink">{t("nav.inbox")}</h1>
+        </div>
+        <div className="mx-7 mt-5 flex max-w-[720px] items-start gap-3 rounded-[var(--radius-control)] border border-line bg-surface px-4 py-3">
+          <CircleHelp className="mt-px size-4 shrink-0 text-muted" aria-hidden />
+          {/* Says which role would have it, because "no" without "who" sends
+              somebody to ask the Gérant a question he cannot answer either. */}
+          <p className="text-tiny leading-relaxed text-secondary">{t("inbox.notPermitted")}</p>
+        </div>
+      </main>
+    );
+  }
 
   const facet = isInboxFacet(raw) ? raw : "all";
   const unreadOnly = unread === "1";

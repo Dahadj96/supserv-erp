@@ -641,7 +641,8 @@
     "noRuleMatched": "no rule matched it",
     "confirmAs": "It is a {what}",
     "addContactUnder": "Add contact under {company}",
-    "itIsNoise": "It is noise"
+    "itIsNoise": "It is noise",
+    "notPermitted": "Your role cannot open the Inbox. It holds everything sent to the company mailbox before anybody has sorted it — enquiries, CVs, invoices and spam alike — so it is limited to the Gérant, commercial, purchasing and accounts. The records made from it are on the screens you already have."
   },
   "moveIn": {
     "title": "Move in",

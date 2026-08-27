@@ -641,7 +641,8 @@
     "noRuleMatched": "aucune règle ne correspond",
     "confirmAs": "C'est bien « {what} »",
     "addContactUnder": "Ajouter le contact chez {company}",
-    "itIsNoise": "C'est du bruit"
+    "itIsNoise": "C'est du bruit",
+    "notPermitted": "Votre rôle ne permet pas d'ouvrir la boîte de réception. Elle contient tout ce qui arrive dans la boîte de la société avant le moindre tri — demandes, CV, factures et courriers indésirables — elle est donc réservée au Gérant, au commercial, aux achats et à la comptabilité. Les enregistrements qui en découlent sont sur les écrans que vous avez déjà."
   },
   "moveIn": {
     "title": "Reprise",
