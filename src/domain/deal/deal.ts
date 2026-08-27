@@ -6,7 +6,15 @@ import { deal, dealLine } from "@/db/schema/deal";
 import { document } from "@/db/schema/document";
 import { party } from "@/db/schema/party";
 import { sourcingRequest, sourcingResponse } from "@/db/schema/sourcing";
-import { badgeOf, type DealFacts, deadlineDisplay, isOpen, type Stage, stageOf } from "./stage";
+import {
+  badgeOf,
+  type DealFacts,
+  deadlineDisplay,
+  isOpen,
+  type Outcome,
+  type Stage,
+  stageOf,
+} from "./stage";
 
 /**
  * Screens 05 and 06 — the enquiry, from the outside.
@@ -224,7 +232,10 @@ export type DealRow = {
   ownerId: string | null;
   facts: DealFacts;
   stage: Stage;
-  badge: string;
+  // Not `string`. It was, and that let the screens build a message key out of
+  // it by hand for values that have no key under that prefix - a 500 on the
+  // deal page for every won, lost or no-bid enquiry. Use badgeMessageKey.
+  badge: Stage | Outcome;
   open: boolean;
   deadline: ReturnType<typeof deadlineDisplay>;
 };

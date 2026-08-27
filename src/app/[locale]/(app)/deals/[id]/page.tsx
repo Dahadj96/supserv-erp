@@ -10,7 +10,7 @@ import { db } from "@/db";
 import { party, partyRole } from "@/db/schema/party";
 import { getDeal, NO_BID_REASONS } from "@/domain/deal/deal";
 import { requestsForDeal } from "@/domain/deal/sourcing-store";
-import { DEADLINE_WARNING_HOURS } from "@/domain/deal/stage";
+import { badgeMessageKey, DEADLINE_WARNING_HOURS } from "@/domain/deal/stage";
 import { formatMoney } from "@/domain/money";
 import { offersForDeal } from "@/domain/offer/store";
 import { Link } from "@/i18n/navigation";
@@ -97,7 +97,7 @@ export default async function EnquiryPage({
             <span>
               · {t("enquiry.received")} {when.format(row.receivedAt)}
             </span>
-            <Badge tone={TONE[badge] ?? "neutral"}>{t(`deals.filters.${badge}`)}</Badge>
+            <Badge tone={TONE[badge] ?? "neutral"}>{t(badgeMessageKey(badge))}</Badge>
           </p>
         </div>
         <div className="ms-auto flex flex-wrap items-center gap-2">
@@ -273,7 +273,7 @@ export default async function EnquiryPage({
               </form>
             ) : (
               <div className="mt-3 flex flex-wrap items-center gap-3">
-                <Badge tone={TONE[badge] ?? "neutral"}>{t(`deals.filters.${badge}`)}</Badge>
+                <Badge tone={TONE[badge] ?? "neutral"}>{t(badgeMessageKey(badge))}</Badge>
                 <p className="text-tiny text-secondary">
                   {row.lostReason ?? row.decisionReason ?? "—"}
                 </p>

@@ -4,7 +4,7 @@ import { getTranslations, setRequestLocale } from "next-intl/server";
 import { getSession } from "@/auth/session";
 import { Button } from "@/components/ui/button";
 import { listDeals } from "@/domain/deal/deal";
-import { DEADLINE_WARNING_HOURS, isStage } from "@/domain/deal/stage";
+import { badgeMessageKey, DEADLINE_WARNING_HOURS, isStage, STAGES } from "@/domain/deal/stage";
 import { formatMoney } from "@/domain/money";
 import { Link } from "@/i18n/navigation";
 import { type DealRow, DealsList } from "./deals-list";
@@ -62,15 +62,27 @@ export default async function DealsPage({
       row.deadline.kind === "at" &&
       row.deadline.hoursLeft !== null &&
       row.deadline.hoursLeft < DEADLINE_WARNING_HOURS,
-    stage: t(`deals.filters.${row.badge}`),
+    stage: t(badgeMessageKey(row.badge)),
     stageKey: row.badge,
     owner: row.ownerId ? row.ownerId.slice(0, 2).toUpperCase() : null,
   }));
 
-  const chips: { key: string; href: string; count: number; active: boolean }[] = [
-    { key: "all", href: "/deals", count: counts.all ?? 0, active: !stage },
-    ...(["new", "qualifying", "sourcing", "offerOut", "ordered", "invoiced"] as const).map((s) => ({
+  // Each chip carries its own message key rather than having one built from
+  // `key`. "All" is not a stage, so its label does not live under
+  // `deals.filters` - and building `deals.filters.all` is exactly what made
+  // this page a 500 for everybody. STAGES rather than a second hand-written
+  // list, so a seventh stage cannot appear in one place and not the other.
+  const chips: {
+    key: string;
+    labelKey: string;
+    href: string;
+    count: number;
+    active: boolean;
+  }[] = [
+    { key: "all", labelKey: "deals.all", href: "/deals", count: counts.all ?? 0, active: !stage },
+    ...STAGES.map((s) => ({
       key: s,
+      labelKey: badgeMessageKey(s),
       href: `/deals?stage=${s}`,
       count: counts[s] ?? 0,
       active: stage === s,
@@ -111,7 +123,7 @@ export default async function DealsPage({
                 : "border-line bg-surface text-secondary hover:border-line-strong"
             }`}
           >
-            {t(`deals.filters.${chip.key}`)}
+            {t(chip.labelKey)}
             <span className={chip.active ? "text-surface/70" : "text-muted"}>{chip.count}</span>
           </Link>
         ))}

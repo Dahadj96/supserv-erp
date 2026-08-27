@@ -97,6 +97,28 @@ export function badgeOf(facts: DealFacts): Stage | Outcome {
 }
 
 /**
+ * Which message key prints a badge. Here, next to the values themselves,
+ * because the alternative was what the screens actually did.
+ *
+ * They built the key by hand - `deals.filters.${badge}` - and that is wrong for
+ * three of the nine values this function can be given. The six STAGES live
+ * under `deals.filters` because they are also the chip row's labels; the three
+ * OUTCOMES live at `deals.won` / `deals.lost` / `deals.noBid`, because they are
+ * not chips. So a deal that was won crashed its own page with MISSING_MESSAGE,
+ * and /deals crashed for everybody because the "All" chip built
+ * `deals.filters.all`, which has never existed either.
+ *
+ * next-intl throws on a missing key rather than printing it, which is the right
+ * behaviour and is why this was a 500 and not a cosmetic bug. A template
+ * literal is not a lookup you can typecheck - so the lookup lives in one
+ * function, and tests/unit/messages.test.ts asserts every value it can return
+ * against both message files.
+ */
+export function badgeMessageKey(badge: Stage | Outcome): string {
+  return STAGES.includes(badge as Stage) ? `deals.filters.${badge}` : `deals.${badge}`;
+}
+
+/**
  * Is this enquiry still live?
  *
  * Screen 05's header counts "23 open" and its deadline column prints `closed`

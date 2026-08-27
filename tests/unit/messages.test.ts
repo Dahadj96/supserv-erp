@@ -1,6 +1,7 @@
 import { globSync, readFileSync } from "node:fs";
 import { resolve } from "node:path";
 import { describe, expect, it } from "vitest";
+import { badgeMessageKey, OUTCOMES, STAGES } from "@/domain/deal/stage";
 
 /**
  * `t()` throws MISSING_MESSAGE at render time, which means a typo in a message
@@ -109,5 +110,47 @@ describe("messages", () => {
       return parent.length > 0 && typeof get(en, parent) === "string";
     });
     expect(clashes).toEqual([]);
+  });
+});
+
+/**
+ * The gap the block above admits to: "only literal keys can be checked here".
+ *
+ * That gap shipped a 500. Screen 05 built `deals.filters.${badge}` by hand for
+ * a badge that can be any of nine values - and three of them (won, lost,
+ * noBid) do not live under `deals.filters`, while the "All" chip built
+ * `deals.filters.all`, which has never existed in either language. So /deals
+ * threw MISSING_MESSAGE on every render, in both locales, and the deal page
+ * threw for every enquiry that had been won.
+ *
+ * The lookup now lives in `badgeMessageKey`, so it can be tested exhaustively -
+ * which is the only reason moving it there was worth doing.
+ */
+describe("every badge a deal can carry has a label", () => {
+  const ALL_BADGES = [...STAGES, ...OUTCOMES];
+
+  it("covers all nine values, in both languages", () => {
+    for (const badge of ALL_BADGES) {
+      const key = badgeMessageKey(badge);
+      expect(get(en, key), `${badge} -> ${key} (English)`).toBeTypeOf("string");
+      expect(get(fr, key), `${badge} -> ${key} (French)`).toBeTypeOf("string");
+    }
+  });
+
+  it("labels the All chip, which is not a stage and never had a key", () => {
+    expect(get(en, "deals.all")).toBeTypeOf("string");
+    expect(get(fr, "deals.all")).toBeTypeOf("string");
+  });
+
+  it("leaves no screen building a deals.filters key by hand", () => {
+    // The pattern itself, banned. A template literal cannot be typechecked, so
+    // the only durable fix is that nobody writes one for these labels again.
+    const offenders = globSync(`${root}/src/**/*.{ts,tsx}`)
+      .filter((file) => readFileSync(file, "utf8").includes("deals.filters.${"))
+      .map((file) => file.slice(root.length + 1).replaceAll("\\", "/"))
+      // The one place allowed to build it: the function everything else calls.
+      .filter((file) => file !== "src/domain/deal/stage.ts");
+
+    expect(offenders, "use badgeMessageKey instead").toEqual([]);
   });
 });

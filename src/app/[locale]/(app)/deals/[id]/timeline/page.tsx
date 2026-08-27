@@ -10,7 +10,7 @@ import { db } from "@/db";
 import { deal } from "@/db/schema/deal";
 import { party } from "@/db/schema/party";
 import { factsFor } from "@/domain/deal/deal";
-import { stageOf } from "@/domain/deal/stage";
+import { badgeMessageKey, stageOf } from "@/domain/deal/stage";
 import { byDay, countSides, type EventSide, lastMove } from "@/domain/timeline/events";
 import { timelineFor } from "@/domain/timeline/gather";
 import { Link } from "@/i18n/navigation";
@@ -306,13 +306,14 @@ export default async function TimelinePage({
               </Row>
               <Row label={t("timeline.stage")}>
                 {/*
-                  Derived from the facts, never stored. The labels live under
-                  `deals.filters` because that is where screen 05 named them,
-                  and one stage should not have two names.
+                  Derived from the facts, never stored. `badgeMessageKey` knows
+                  which prefix each value lives under - the six stages are named
+                  where screen 05 named them, the three outcomes are not - and
+                  one stage should not have two names. The `t.has` guard this
+                  replaced was correct here and absent everywhere else, which is
+                  how three screens shipped a 500.
                 */}
-                <Badge tone="accent">
-                  {t.has(`deals.filters.${stage}`) ? t(`deals.filters.${stage}`) : stage}
-                </Badge>
+                <Badge tone="accent">{t(badgeMessageKey(stage))}</Badge>
               </Row>
               <Row label={t("timeline.deadline")}>
                 {row.deadlineAt ? (
