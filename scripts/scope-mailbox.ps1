@@ -114,14 +114,22 @@ if (Get-ServicePrincipal -Identity $AppId -ErrorAction SilentlyContinue) {
 Write-Host "`n=== 3. Granting Mail.Read, scoped ===" -ForegroundColor Cyan
 # Read only. The ERP does not send, reply, or modify anything in the mailbox.
 # Add 'Application Mail.ReadWrite' the day it starts marking messages as read.
-$assigned = @(Get-ManagementRoleAssignment -App $EnterpriseAppObjectId -ErrorAction SilentlyContinue |
-    Where-Object { $_.Role -eq 'Application Mail.Read' -and $_.CustomResourceScope -eq $ScopeName })
+# Idempotent, because this script gets re-run and an unconditional
+# New-ManagementRoleAssignment adds a second identical grant each time.
+#
+# -RoleAssigneeType, not -App. `New-ManagementRoleAssignment` takes -App;
+# `Get-ManagementRoleAssignment` does not have that parameter at all, and
+# assuming the pair matched cost a run. The two cmdlets are not symmetrical.
+$assigned = @(Get-ManagementRoleAssignment -RoleAssigneeType ServicePrincipal -ErrorAction SilentlyContinue |
+    Where-Object { $_.Role -like '*Mail.Read*' })
 
 if ($assigned.Count -gt 0) {
-    # Idempotent on purpose. This script gets re-run - the first run failed at
-    # the recipient check, the second on a bad verdict - and an unconditional
-    # New-ManagementRoleAssignment quietly adds a duplicate grant every time.
-    Write-Host "    Already granted - leaving it alone."
+    Write-Host "    Already granted. What exists now:"
+    $assigned |
+        Select-Object Name, Role, RoleAssigneeName, CustomResourceScope |
+        Format-Table -AutoSize |
+        Out-String |
+        Write-Host
 } else {
     New-ManagementRoleAssignment -App $EnterpriseAppObjectId `
         -Role 'Application Mail.Read' -CustomResourceScope $ScopeName | Out-Null
