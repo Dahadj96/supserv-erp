@@ -3112,5 +3112,21 @@
       "empty": "Une note sans mots n'enregistre que le fait d'avoir ouvert la boîte.",
       "noSuchDeal": "Cette affaire n'existe plus."
     }
+  },
+  "message": {
+    "previous": "Plus récent",
+    "next": "Plus ancien",
+    "noBody": "Ce message est arrivé sans texte — un objet seul, ou seulement des pièces jointes.",
+    "attachments": "{n, plural, one {# pièce jointe} other {# pièces jointes}}",
+    "stored": "enregistrée ici",
+    "inOutlookOnly": "dans Outlook uniquement",
+    "whatItIs": "Ce que c'est",
+    "whatNext": "Et ensuite",
+    "confidence": "{pc}% de certitude",
+    "downgraded": "La règle correspond, mais pas assez sûrement pour agir seule. Elle attend votre décision.",
+    "reclassify": "Changer la nature",
+    "apply": "Appliquer",
+    "deadline": "Échéance",
+    "openInOutlook": "Ouvrir l'original dans Outlook"
   }
 }

@@ -3112,5 +3112,21 @@
       "empty": "A note with no words records that you opened the box.",
       "noSuchDeal": "That enquiry no longer exists."
     }
+  },
+  "message": {
+    "previous": "Newer",
+    "next": "Older",
+    "noBody": "This message arrived with no text — only a subject, or only attachments.",
+    "attachments": "{n, plural, one {# attachment} other {# attachments}}",
+    "stored": "saved here",
+    "inOutlookOnly": "in Outlook only",
+    "whatItIs": "What it is",
+    "whatNext": "What next",
+    "confidence": "{pc}% sure",
+    "downgraded": "The rule matched, but not confidently enough to act on its own. It is waiting for you to say.",
+    "reclassify": "Change what it is",
+    "apply": "Apply",
+    "deadline": "Deadline",
+    "openInOutlook": "Open the original in Outlook"
   }
 }

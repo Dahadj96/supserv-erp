@@ -138,6 +138,25 @@ async function get<T>(path: string): Promise<T> {
 }
 
 /**
+ * The Inbox folder, and only the Inbox folder.
+ *
+ * `/users/{address}/messages` — which is what this used to call — is every
+ * folder in the mailbox: Archive, Sent Items, Deleted Items, Junk, and whatever
+ * anybody has filed by hand. That is not "what arrived". It is everything that
+ * has ever been in the mailbox, and on this mailbox that is a very different
+ * number: contact@ is the company's oldest address and holds, by the Gérant's
+ * estimate, over thirty thousand CVs in a folder, plus years of spam.
+ *
+ * Nothing had gone wrong yet only because the first run reached back thirty
+ * days and every run since follows a watermark. The bill would have arrived the
+ * first time somebody filed old mail, or asked for a longer history.
+ *
+ * It also explains a smaller oddity that WAS already visible: messages from
+ * SUPSERV's own people appearing in the inbox list. Those were Sent Items.
+ */
+const INBOX_FOLDER = "Inbox";
+
+/**
  * Messages received since a moment, oldest first.
  *
  * Oldest first matters: if the poll dies halfway, the watermark has advanced
@@ -151,7 +170,7 @@ export async function fetchMessagesSince(since: Date, top = 50): Promise<GraphMe
     "id,receivedDateTime,subject,bodyPreview,body,from,hasAttachments,internetMessageId,webLink";
 
   const data = await get<{ value: GraphMessage[] }>(
-    `/users/${encodeURIComponent(address)}/messages` +
+    `/users/${encodeURIComponent(address)}/mailFolders/${INBOX_FOLDER}/messages` +
       `?$filter=${encodeURIComponent(filter)}` +
       `&$select=${select}&$top=${top}&$orderby=receivedDateTime asc`,
   );
@@ -177,7 +196,12 @@ export async function fetchAttachments(messageId: string): Promise<GraphAttachme
 export async function mailboxReachable(): Promise<{ ok: boolean; reason: string | null }> {
   try {
     const address = assertScoped();
-    await get<unknown>(`/users/${encodeURIComponent(address)}/messages?$top=1&$select=id`);
+    // The same folder the poll reads, so "Live" means the poll can work rather
+    // than that the mailbox exists.
+    await get<unknown>(
+      `/users/${encodeURIComponent(address)}/mailFolders/${INBOX_FOLDER}/messages` +
+        `?$top=1&$select=id`,
+    );
     return { ok: true, reason: null };
   } catch (error) {
     if (error instanceof MailboxNotScoped) return { ok: false, reason: error.detail };

@@ -3,6 +3,7 @@ import { Badge, type BadgeTone } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { commitAvailability } from "@/domain/intake/commit";
 import { DEADLINE_WARNING_HOURS, type InboxRow } from "@/domain/intake/inbox";
+import { Link } from "@/i18n/navigation";
 import { createCandidateFrom, dismissMessage } from "./actions";
 
 /** Screen 02 draws each type in its own colour. Needs review is the loud one. */
@@ -36,10 +37,21 @@ export async function InboxRowView({
         </span>
       </td>
 
+      {/*
+        The subject is the way in. It was plain text until 27 August, which
+        meant a row could be classified and dismissed but never READ - and 31
+        of the first 39 real messages were `needsReview`, a verdict that asks a
+        person to read something.
+      */}
       <td className="max-w-[380px] px-4 py-2.5">
-        <span className={`block truncate text-tiny ${row.read ? "text-secondary" : "text-ink"}`}>
+        <Link
+          href={`/inbox/${row.id}`}
+          className={`block truncate text-tiny hover:underline ${
+            row.read ? "text-secondary" : "font-medium text-ink"
+          }`}
+        >
           {row.subject || t("inbox.noSubject")}
-        </span>
+        </Link>
       </td>
 
       <td className="px-4 py-2.5">
