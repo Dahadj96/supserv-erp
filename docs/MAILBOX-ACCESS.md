@@ -1,6 +1,31 @@
 # Letting the ERP read one mailbox — and only one
 
-**Status: not done yet. The ERP refuses to call Graph until it is.**
+**Status: done, 27 August 2026.** `MS_MAILBOX_SCOPE_CONFIRMED=true`.
+
+The Exchange half is proven, and the proof is reproducible — re-run
+`scripts/scope-mailbox.ps1` any time:
+
+```
+contact@supserv-dz.com          InScope: True
+abderrahmane.dahadj@supserv.dz  InScope: False
+```
+
+The Entra half — removing the org-wide `Mail.Read` / `Mail.ReadWrite` from
+Application permissions — was done by hand in the portal by the Gérant and
+**attested rather than measured**. Nothing in this repository can see an Entra
+consent, so `MS_MAILBOX_SCOPE_CONFIRMED=true` is a person's word that step 5
+happened, which is exactly what it was designed to be.
+
+To check it later, from any machine with the Graph module:
+
+```powershell
+Connect-MgGraph -Scopes "Application.Read.All"
+$graph = Get-MgServicePrincipal -Filter "appId eq '00000003-0000-0000-c000-000000000000'"
+Get-MgServicePrincipalAppRoleAssignment -ServicePrincipalId 435f095d-ef2d-4fe5-a1e4-b7d1fb3208ff |
+  ForEach-Object { ($graph.AppRoles | Where-Object Id -eq $_.AppRoleId).Value }
+```
+
+No `Mail.Read` or `Mail.ReadWrite` in that list is the answer you want.
 
 ## The problem, stated plainly
 
