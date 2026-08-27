@@ -53,9 +53,25 @@ if (-not (Test-Path $next)) { Log "FATAL: next not found at $next - has pnpm ins
 
 # Docker Desktop takes a while after a reboot, and Postgres a little longer.
 # Failing fast here would mean the ERP is down until somebody notices, so it
-# waits - up to five minutes - and says so in the log either way.
+# waits - up to ten minutes - and says so in the log either way.
+#
+# Ten, not five. The database now depends on an automatic Windows login (see
+# docs/DECISIONS/2026-08-27-docker-at-boot.md), so the chain at boot is: SYSTEM
+# starts this script immediately, Windows signs itself in some seconds later,
+# Docker Desktop starts, and only then does Postgres exist. Five minutes was a
+# guess made before any of that was true, and a cold boot on this machine has
+# still never been timed.
+#
+# docker.exe IS on the machine PATH (C:\Program Files\Docker\Docker\resources\
+# bin), checked, not assumed - that assumption about pnpm is what broke this
+# script the first time. If a Docker update ever moves it, the loop below would
+# silently never succeed, so say so instead.
+if (-not (Get-Command docker -ErrorAction SilentlyContinue)) {
+  Log "WARNING: docker is not on this account's PATH - the database check cannot succeed"
+}
+
 $dbUp = $false
-$deadline = (Get-Date).AddMinutes(5)
+$deadline = (Get-Date).AddMinutes(10)
 while ((Get-Date) -lt $deadline) {
   docker exec supserv-db pg_isready -U supserv 2>$null | Out-Null
   if ($LASTEXITCODE -eq 0) { $dbUp = $true; Log "database is up"; break }

@@ -169,36 +169,72 @@ That does four things:
 powershell -ExecutionPolicy Bypass -File scripts\server\mode.ps1 status
 ```
 
-### The honest gap: Docker Desktop needs somebody logged in
+### The database needs somebody logged in — so Windows logs itself in
 
 **Docker Desktop on Windows runs inside a user session. There is no supported
 way to run it as a service.** So after a power cut this machine boots, starts
 cloudflared, starts the ERP — and the ERP has no database, because nobody logged
-in. `run-erp.ps1` waits five minutes for Postgres and then writes a very clear
+in. `run-erp.ps1` waits ten minutes for Postgres and then writes a very clear
 line in `.data\server.log` saying exactly that.
 
-This is not a thing a script can fix. Three ways out, and they are a real choice:
+**Decided 27 August 2026: automatic login, with the screen locked straight
+after.** Docker stays. The reasoning, and what it costs, is in
+`docs/DECISIONS/2026-08-27-docker-at-boot.md` — read that before changing any of
+this, because the second step below is a condition of the decision, not a
+nicety.
 
-**a) Turn on automatic login.** Fastest — Windows logs the user in at boot,
-Docker Desktop starts, everything comes back. The cost is real: anybody who
-walks up to the machine gets a logged-in desktop, and the password is stored in
-the registry. In a locked office, on a machine that is going to be replaced by
-Ubuntu anyway, that is a defensible trade — but it is yours to make, and I am
-not going to set it up for you, because it means putting a password somewhere.
+#### Step 1 — automatic login
 
-**b) Install PostgreSQL natively as a Windows service.** Removes Docker from the
-critical path entirely. Postgres then starts like any other service, with no
-session and no login. It costs one database migration — dump, install, restore —
-and after it the only Docker left is the OCR container, which nothing depends on
-at boot. **This is the one I would pick if the Ubuntu move is more than a month
-away.**
+Windows key + R, type `netplwiz`, Enter.
 
-**c) Do the Ubuntu migration.** `docs/SERVER.md` §3 already plans it, and it
-solves this along with the fact that **Windows 10 stopped receiving security
-updates in October 2025** and this machine cannot run Windows 11. On Ubuntu,
-Docker is a real service, `restart: unless-stopped` means what it says, and
-there is no session to log into. This is the destination; the question is only
-what you do in the meantime.
+Untick **"Users must enter a user name and password to use this computer"**,
+click OK, and type the password twice when asked.
+
+That stores it as an **LSA secret** — encrypted, not readable by an ordinary
+process. Sysinternals **Autologon** does the same thing and is fine too.
+
+**Do not use the registry method.** Every "enable autologon" page on the web
+tells you to write `DefaultUserName` / `DefaultPassword` / `AutoAdminLogon` into
+`HKLM\SOFTWARE\Microsoft\Windows NT\CurrentVersion\Winlogon`. `DefaultPassword`
+there is **plain text**, readable by anything running on the machine. There is
+no reason to accept that when `netplwiz` exists.
+
+If the tickbox is not there, it is hidden by the passwordless-sign-in setting:
+Settings → Accounts → Sign-in options → turn off **"Require Windows Hello
+sign-in for Microsoft accounts"**, then reopen `netplwiz`.
+
+#### Step 2 — lock the screen immediately after
+
+Automatic login without this leaves an open, signed-in desktop for anyone who
+walks up to the machine. In an Administrator PowerShell, once:
+
+```powershell
+$action  = New-ScheduledTaskAction -Execute "rundll32.exe" -Argument "user32.dll,LockWorkStation"
+$trigger = New-ScheduledTaskTrigger -AtLogOn
+Register-ScheduledTask -TaskName "Lock after autologon" -Action $action -Trigger $trigger -RunLevel Limited -Force
+```
+
+Windows signs in, Docker Desktop starts, the screen locks. The database comes up
+with nobody looking at a desktop.
+
+#### Step 3 — check it, by actually pulling the plug
+
+Shut down, wait, power on, and **do not touch the machine**. After about five
+minutes `https://erp.supserv-dz.com` should answer and `.data\server.log` should
+say `database is up`. If it says it gave up waiting, the wait is too short for a
+cold boot on this hardware — raise it in `scripts\server\run-erp.ps1` rather
+than guessing at Docker.
+
+#### The two options not taken
+
+**Native PostgreSQL as a Windows service** removes Docker from the critical path
+entirely, at the cost of one dump-install-restore. It was my recommendation and
+it remains the fallback if automatic login turns out to be unreliable.
+
+**The Ubuntu migration** — `docs/SERVER.md` §3 — solves this along with the fact
+that **Windows 10 stopped receiving security updates in October 2025** and this
+machine cannot run Windows 11. That is still the destination. Everything above
+is a bridge to it.
 
 ### The BIOS setting, which no script can reach
 
