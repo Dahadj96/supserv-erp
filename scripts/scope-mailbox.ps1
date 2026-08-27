@@ -114,9 +114,19 @@ if (Get-ServicePrincipal -Identity $AppId -ErrorAction SilentlyContinue) {
 Write-Host "`n=== 3. Granting Mail.Read, scoped ===" -ForegroundColor Cyan
 # Read only. The ERP does not send, reply, or modify anything in the mailbox.
 # Add 'Application Mail.ReadWrite' the day it starts marking messages as read.
-New-ManagementRoleAssignment -App $EnterpriseAppObjectId `
-    -Role 'Application Mail.Read' -CustomResourceScope $ScopeName | Out-Null
-Write-Host "    Application Mail.Read -> $ScopeName"
+$assigned = @(Get-ManagementRoleAssignment -App $EnterpriseAppObjectId -ErrorAction SilentlyContinue |
+    Where-Object { $_.Role -eq 'Application Mail.Read' -and $_.CustomResourceScope -eq $ScopeName })
+
+if ($assigned.Count -gt 0) {
+    # Idempotent on purpose. This script gets re-run - the first run failed at
+    # the recipient check, the second on a bad verdict - and an unconditional
+    # New-ManagementRoleAssignment quietly adds a duplicate grant every time.
+    Write-Host "    Already granted - leaving it alone."
+} else {
+    New-ManagementRoleAssignment -App $EnterpriseAppObjectId `
+        -Role 'Application Mail.Read' -CustomResourceScope $ScopeName | Out-Null
+    Write-Host "    Application Mail.Read -> $ScopeName"
+}
 
 Write-Host "`n=== 4. Proving the fence, in both directions ===" -ForegroundColor Cyan
 
@@ -128,8 +138,20 @@ Write-Host "    Should be DENIED - $MailboxThatMustBeDenied" -ForegroundColor Ye
 $denied = Test-ServicePrincipalAuthorization -Identity $AppId -Resource $MailboxThatMustBeDenied
 $denied | Format-Table RoleName, GrantedPermissions, AllowedResourceScope, InScope
 
-$ok = ($allowed | Where-Object { $_.InScope -eq $true }).Count -gt 0
-$leak = ($denied | Where-Object { $_.InScope -eq $true }).Count -gt 0
+# Compared as text, and wrapped in @().
+#
+# The first version read `$_.InScope -eq $true` and called a correct result a
+# FAIL: the tables above printed True and False exactly as they should, and the
+# verdict line still said the app could not reach its own mailbox. Whatever
+# Test-ServicePrincipalAuthorization puts in that property, it does not compare
+# equal to $true. Its printed form is the thing being asserted about, so that is
+# what gets compared - and @() keeps .Count meaningful when one row comes back
+# instead of several.
+#
+# Worth stating plainly: a verifier that cries wolf is worse than no verifier.
+# This one was about to send somebody to re-check a step that was already right.
+$ok = @($allowed | Where-Object { "$($_.InScope)" -eq 'True' }).Count -gt 0
+$leak = @($denied | Where-Object { "$($_.InScope)" -eq 'True' }).Count -gt 0
 
 Write-Host ""
 if ($ok -and -not $leak) {
