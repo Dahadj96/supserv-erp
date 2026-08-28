@@ -1265,8 +1265,8 @@
         "unbuilt": "Demande Graph Files.ReadWrite restreint à un seul site SharePoint — la même conversation que la boîte partagée, et elle n'a pas eu lieu. Les documents vont sur le volume de travail en attendant."
       },
       "compliance": {
-        "name": "Règles de conformité",
-        "what": "Confirmez une règle et elle se met à refuser.",
+        "name": "Profil de conformité",
+        "what": "Les règles qui bloquent, chacune avec son autorité et la personne qui l'a confirmée",
         "unbuilt": "Écran 69. Les quatre règles non confirmées figurent sur la checklist du premier jour et avertissent sur chaque document ; les confirmer demande cet écran, qui n'est pas construit."
       },
       "bin": {
@@ -1274,8 +1274,8 @@
         "what": "La corbeille à 30 jours. Rien n'est retiré avant l'échéance."
       },
       "audit": {
-        "name": "Journal",
-        "what": "Qui a fait quoi, et quand.",
+        "name": "Journal d'audit",
+        "what": "Qui a changé quoi, quand, et depuis quel écran",
         "unbuilt": "Chaque action écrit déjà une entrée — les écrans 18, 30, 62 et 70 le font tous. La page qui les relit n'est pas construite."
       },
       "documentTypes": {
@@ -3356,6 +3356,98 @@
       "bankDetails": "Avec une facture ou une proforma",
       "deliveryTerms": "Dans une offre",
       "validityTerms": "Dans une offre"
+    }
+  },
+  "audit": {
+    "title": "Journal d'audit",
+    "subtitle": "{total} entrées, depuis le {since}.",
+    "nothingYet": "Aucune entrée pour l'instant.",
+    "banner": "Une entrée d'audit survit à l'enregistrement qu'elle décrit : une société part à la corbeille, la ligne peut disparaître au bout de trente jours, l'entrée qui dit qu'elle a existé et pourquoi elle est partie reste. Ce journal enregistre les changements, et les lectures qui sont elles-mêmes un acte — la relève de la boîte mail. Ouvrir un écran n'est pas enregistré.",
+    "empty": "Rien n'a encore été enregistré. La table se remplit toute seule : chaque création, modification, émission et suppression y écrit une ligne.",
+    "notPermitted": "Ce journal contient tout — les salaires, les marges, qui a supprimé quoi. Il faut le droit sur les paramètres de l'entreprise.",
+    "everything": "Tout",
+    "noActor": "Sans auteur enregistré",
+    "nothing": "rien",
+    "noSnapshot": "Pas d'avant/après enregistré",
+    "recordedNoChange": "Enregistré, rien ne différait",
+    "andMore": "et {count} champ(s) de plus",
+    "showing": "Lignes {from} à {to}",
+    "newer": "Plus récent",
+    "older": "Plus ancien",
+    "column": {
+      "when": "Quand",
+      "who": "Qui",
+      "what": "Quoi",
+      "changed": "Ce qui a changé",
+      "from": "Écran"
+    },
+    "actorKind": {
+      "user": "Une personne",
+      "assistant": "L'assistant",
+      "system": "Le système"
+    },
+    "entity": {
+      "approval_request": "Demande d'approbation",
+      "bank_account": "Compte bancaire",
+      "blocking_rule": "Règle bloquante",
+      "company_identity": "Identité de l'entreprise",
+      "deal": "Affaire",
+      "delivery_detail": "Livraison",
+      "document": "Document",
+      "document_template": "Modèle de document",
+      "document_type": "Type de document",
+      "email_template": "Modèle d'e-mail",
+      "extraction_field": "Champ extrait",
+      "import_batch": "Reprise",
+      "intake_channel": "Canal d'entrée",
+      "intake_dossier": "Dossier lu",
+      "intake_message": "Message reçu",
+      "item_coverage": "Couverture technique",
+      "note": "Note",
+      "numbering_series": "Série de numérotation",
+      "party": "Société",
+      "payment": "Paiement",
+      "person": "Personne",
+      "price_quote": "Prix relevé",
+      "relance": "Relance",
+      "sourcing_request": "Consultation fournisseur",
+      "sourcing_response": "Réponse fournisseur",
+      "user_role": "Rôle",
+      "vat_rate": "Taux de TVA"
+    },
+    "action": {
+      "alias": {
+        "add": "Alias ajouté"
+      },
+      "archive": "Archivé",
+      "attach": "Rattaché",
+      "bounce": "Renvoyé",
+      "capture": "Capturé",
+      "chase": "Relancé",
+      "configure": "Configuré",
+      "confirm": "Confirmé",
+      "create": "Créé",
+      "discard": "Mis à la corbeille",
+      "dismiss": "Écarté",
+      "edit": "Modifié",
+      "fill": "Renseigné",
+      "import": "Importé",
+      "invoice": "Facturé",
+      "issue": "Émis",
+      "merge": "Fusionné",
+      "open": "Ouvert",
+      "read": "Lu",
+      "reclassify": "Reclassé",
+      "reject": "Refusé",
+      "reply": "Répondu",
+      "restore": "Restauré",
+      "revise": "Révisé",
+      "unconfirm": "Confirmation retirée",
+      "undismiss": "Remis en question",
+      "undo": "Annulé",
+      "unreadable": "Illisible",
+      "update": "Mis à jour",
+      "verify": "Vérifié"
     }
   }
 }

@@ -6,6 +6,7 @@ import { Button } from "@/components/ui/button";
 import { db } from "@/db";
 import { userRole } from "@/db/schema/auth";
 import { bankAccount, vatRate } from "@/db/schema/company";
+import { auditEntry } from "@/db/schema/control";
 import { numberingSeries } from "@/db/schema/document";
 import { documentTemplate } from "@/db/schema/document-template";
 import { documentType } from "@/db/schema/document-type";
@@ -45,31 +46,41 @@ export default async function SettingsPage({ params }: { params: Promise<{ local
 
   const state = await setupState();
 
-  const [[banks], [rates], [series], [roles], [channels], [types], [templates], [emailTemplates]] =
-    await Promise.all([
-      db
-        .select({ n: sql<number>`count(*)::int` })
-        .from(bankAccount)
-        .where(isNull(bankAccount.archivedAt)),
-      db.select({ n: sql<number>`count(*)::int` }).from(vatRate),
-      db.select({ n: sql<number>`count(*)::int` }).from(numberingSeries),
-      db.select({ n: sql<number>`count(*)::int` }).from(userRole),
-      db
-        .select({ n: sql<number>`count(*) filter (where ${intakeChannel.status} = 'live')::int` })
-        .from(intakeChannel),
-      db.select({ n: sql<number>`count(*)::int` }).from(documentType),
-      db
-        .select({ n: sql<number>`count(*)::int` })
-        .from(documentTemplate)
-        .where(eq(documentTemplate.active, true)),
-      // Written, not merely seeded. A blank row is a to-do, and a chip counting
-      // to-dos as if they were settings would read "30" on a system where nobody
-      // has typed a single email.
-      db
-        .select({ n: sql<number>`count(*)::int` })
-        .from(emailTemplate)
-        .where(and(eq(emailTemplate.active, true), ne(emailTemplate.body, ""))),
-    ]);
+  const [
+    [banks],
+    [rates],
+    [series],
+    [roles],
+    [channels],
+    [types],
+    [templates],
+    [emailTemplates],
+    [audited],
+  ] = await Promise.all([
+    db
+      .select({ n: sql<number>`count(*)::int` })
+      .from(bankAccount)
+      .where(isNull(bankAccount.archivedAt)),
+    db.select({ n: sql<number>`count(*)::int` }).from(vatRate),
+    db.select({ n: sql<number>`count(*)::int` }).from(numberingSeries),
+    db.select({ n: sql<number>`count(*)::int` }).from(userRole),
+    db
+      .select({ n: sql<number>`count(*) filter (where ${intakeChannel.status} = 'live')::int` })
+      .from(intakeChannel),
+    db.select({ n: sql<number>`count(*)::int` }).from(documentType),
+    db
+      .select({ n: sql<number>`count(*)::int` })
+      .from(documentTemplate)
+      .where(eq(documentTemplate.active, true)),
+    // Written, not merely seeded. A blank row is a to-do, and a chip counting
+    // to-dos as if they were settings would read "30" on a system where nobody
+    // has typed a single email.
+    db
+      .select({ n: sql<number>`count(*)::int` })
+      .from(emailTemplate)
+      .where(and(eq(emailTemplate.active, true), ne(emailTemplate.body, ""))),
+    db.select({ n: sql<number>`count(*)::int` }).from(auditEntry),
+  ]);
 
   const done = (label?: string) => ({
     tone: "good" as BadgeTone,
@@ -121,9 +132,11 @@ export default async function SettingsPage({ params }: { params: Promise<{ local
     {
       key: "control",
       entries: [
-        { key: "compliance", href: null, state: missing, unbuilt: true },
+        { key: "compliance", href: "/settings/compliance", state: null },
         { key: "bin", href: "/settings/bin", state: null },
-        { key: "audit", href: null, state: null, unbuilt: true },
+        // The count is entries, and it is never a to-do: an empty audit log on
+        // a system that has issued documents would be the alarming reading.
+        { key: "audit", href: "/settings/audit", state: some(audited?.n ?? 0) },
       ],
     },
   ];

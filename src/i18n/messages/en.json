@@ -1265,8 +1265,8 @@
         "unbuilt": "Needs Graph Files.ReadWrite scoped to one SharePoint site — the same conversation as the mailbox, and it has not been had. Documents go to the working volume until then."
       },
       "compliance": {
-        "name": "Compliance rules",
-        "what": "Confirm a rule and it starts refusing.",
+        "name": "Compliance profile",
+        "what": "The rules that block, each with its authority and the person who confirmed it",
         "unbuilt": "Screen 69. The four unconfirmed rules are listed on the day-one checklist and warn on every document; confirming one needs this screen, which is not built."
       },
       "bin": {
@@ -1275,7 +1275,7 @@
       },
       "audit": {
         "name": "Audit log",
-        "what": "Who did what, and when.",
+        "what": "Who changed what, when, and from which screen",
         "unbuilt": "Every action already writes an entry — screens 18, 30, 62 and 70 all do. The page that reads them back is not built."
       },
       "documentTypes": {
@@ -3356,6 +3356,98 @@
       "bankDetails": "With an invoice or a proforma",
       "deliveryTerms": "In an offer",
       "validityTerms": "In an offer"
+    }
+  },
+  "audit": {
+    "title": "Audit log",
+    "subtitle": "{total} entries, reaching back to {since}.",
+    "nothingYet": "No entries yet.",
+    "banner": "An audit entry outlives the record it describes: a company goes to the bin, the row may go after thirty days, and the entry saying it existed and why it went stays. This log records changes, and the reads that are themselves an act — fetching the mailbox. Opening a screen is not recorded.",
+    "empty": "Nothing has been recorded yet. The table fills itself: every creation, edit, issue and deletion writes a line here.",
+    "notPermitted": "This log holds everything — salaries, margins, who deleted what. It needs the company settings permission.",
+    "everything": "Everything",
+    "noActor": "No actor recorded",
+    "nothing": "nothing",
+    "noSnapshot": "No before/after recorded",
+    "recordedNoChange": "Recorded, nothing differed",
+    "andMore": "and {count} more field(s)",
+    "showing": "Rows {from} to {to}",
+    "newer": "Newer",
+    "older": "Older",
+    "column": {
+      "when": "When",
+      "who": "Who",
+      "what": "What",
+      "changed": "What changed",
+      "from": "Screen"
+    },
+    "actorKind": {
+      "user": "A person",
+      "assistant": "The assistant",
+      "system": "The system"
+    },
+    "entity": {
+      "approval_request": "Approval request",
+      "bank_account": "Bank account",
+      "blocking_rule": "Blocking rule",
+      "company_identity": "Company identity",
+      "deal": "Deal",
+      "delivery_detail": "Delivery",
+      "document": "Document",
+      "document_template": "Document template",
+      "document_type": "Document type",
+      "email_template": "Email template",
+      "extraction_field": "Extracted field",
+      "import_batch": "Import",
+      "intake_channel": "Intake channel",
+      "intake_dossier": "Read dossier",
+      "intake_message": "Received message",
+      "item_coverage": "Technical coverage",
+      "note": "Note",
+      "numbering_series": "Numbering series",
+      "party": "Company",
+      "payment": "Payment",
+      "person": "Person",
+      "price_quote": "Captured price",
+      "relance": "Reminder",
+      "sourcing_request": "Sourcing request",
+      "sourcing_response": "Supplier response",
+      "user_role": "Role",
+      "vat_rate": "VAT rate"
+    },
+    "action": {
+      "alias": {
+        "add": "Alias added"
+      },
+      "archive": "Archived",
+      "attach": "Attached",
+      "bounce": "Bounced back",
+      "capture": "Captured",
+      "chase": "Chased",
+      "configure": "Configured",
+      "confirm": "Confirmed",
+      "create": "Created",
+      "discard": "Discarded",
+      "dismiss": "Dismissed",
+      "edit": "Edited",
+      "fill": "Filled in",
+      "import": "Imported",
+      "invoice": "Invoiced",
+      "issue": "Issued",
+      "merge": "Merged",
+      "open": "Opened",
+      "read": "Read",
+      "reclassify": "Reclassified",
+      "reject": "Rejected",
+      "reply": "Replied",
+      "restore": "Restored",
+      "revise": "Revised",
+      "unconfirm": "Confirmation withdrawn",
+      "undismiss": "Un-dismissed",
+      "undo": "Undone",
+      "unreadable": "Unreadable",
+      "update": "Updated",
+      "verify": "Verified"
     }
   }
 }
