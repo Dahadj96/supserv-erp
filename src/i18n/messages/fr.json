@@ -3135,5 +3135,35 @@
     "apply": "Appliquer",
     "deadline": "Échéance",
     "openInOutlook": "Ouvrir l'original dans Outlook"
+  },
+  "conversations": {
+    "subtitle": "Tout ce qu'un client ou un fournisseur a dit, au même endroit · {needReply, plural, =0 {rien n'attend de réponse} one {# attend une réponse} other {# attendent une réponse}}",
+    "none": "Rien pour l'instant. Les conversations apparaissent à mesure que le courrier arrive.",
+    "pickOne": "Choisissez une conversation à gauche.",
+    "unknownSender": "Expéditeur inconnu",
+    "messageCount": "{n, plural, one {# message} other {# messages}}",
+    "received": "Reçu",
+    "becameRecord": "Devenu un enregistrement",
+    "dismissed": "Écarté",
+    "openMessage": "Ouvrir ce message",
+    "openCompany": "Ouvrir la société",
+    "replyInOutlook": "Répondre dans Outlook",
+    "cannotSend": "Les réponses partent d'Outlook, pas d'ici. L'ERP a le droit de LIRE une seule boîte et rien de plus — il ne peut pas envoyer de courrier en votre nom, et c'est délibéré. Ce qu'il fait à la place : veiller à ce que rien ici ne s'éteigne sans qu'on le voie.",
+    "facet": {
+      "all": "Tout",
+      "needsReply": "Attend une réponse",
+      "client": "Clients",
+      "supplier": "Fournisseurs",
+      "authority": "Administrations",
+      "unmatched": "Expéditeurs inconnus"
+    },
+    "state": {
+      "needsReply": "Attend une réponse",
+      "closed": "Traité"
+    },
+    "locale": {
+      "fr": "Français",
+      "en": "English"
+    }
   }
 }

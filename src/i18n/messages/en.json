@@ -3135,5 +3135,35 @@
     "apply": "Apply",
     "deadline": "Deadline",
     "openInOutlook": "Open the original in Outlook"
+  },
+  "conversations": {
+    "subtitle": "Everything a client or a supplier has said, in one place · {needReply, plural, =0 {nothing needs a reply} one {# needs a reply} other {# need a reply}}",
+    "none": "Nothing here yet. Conversations appear as mail arrives.",
+    "pickOne": "Pick a conversation on the left.",
+    "unknownSender": "Unknown sender",
+    "messageCount": "{n, plural, one {# message} other {# messages}}",
+    "received": "Received",
+    "becameRecord": "Became a record",
+    "dismissed": "Dismissed",
+    "openMessage": "Open this message",
+    "openCompany": "Open the company",
+    "replyInOutlook": "Reply in Outlook",
+    "cannotSend": "Replies are sent from Outlook, not from here. The ERP is allowed to READ one mailbox and nothing more — it cannot send mail on your behalf, by design. What it does instead is make sure nothing here goes quiet unnoticed.",
+    "facet": {
+      "all": "All",
+      "needsReply": "Needs a reply",
+      "client": "Clients",
+      "supplier": "Suppliers",
+      "authority": "Authorities",
+      "unmatched": "Unknown senders"
+    },
+    "state": {
+      "needsReply": "Needs a reply",
+      "closed": "Dealt with"
+    },
+    "locale": {
+      "fr": "Français",
+      "en": "English"
+    }
   }
 }
