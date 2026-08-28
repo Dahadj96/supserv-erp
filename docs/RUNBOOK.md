@@ -247,7 +247,29 @@ for the RAM.
 
 ---
 
-## 4 · Two modes, one port
+## 4 · Restarting it
+
+**Double-click `restart-erp.cmd`** in `C:\SUPSERV-ERP`. Say yes to Windows.
+
+That is the whole procedure. It stops the task, kills whatever is still holding
+port 3000, starts the task again, and then **waits until the port is actually
+listening** before telling you it worked.
+
+### Why it needs to ask permission
+
+The scheduled task runs as **SYSTEM**, so stopping it requires Administrator.
+An ordinary PowerShell window produces three separate `Access is denied`
+messages — one each for `Stop-ScheduledTask`, `Stop-Process` and
+`Start-ScheduledTask` — and not one of them says *this window is not elevated*,
+which is the only thing wrong. That was diagnosed by hand eight times in one
+evening before this script existed.
+
+It kills **by port, not by name**. `node` also runs this repository's tooling,
+and `Stop-Process -Name node` would take a running build with it.
+
+---
+
+## 5 · Two modes, one port
 
 While we are building together, the dev server is what you want — you see
 changes as they are made. For a machine acting as a server, the production build
@@ -266,7 +288,7 @@ facing the internet.
 
 ---
 
-## 5 · Where things are
+## 6 · Where things are
 
 | | |
 |---|---|
@@ -343,7 +365,7 @@ cannot complete a sign-in — the same failure, pointed the other way.
 
 ---
 
-## 6 · What is secure, and what is not
+## 7 · What is secure, and what is not
 
 **Verified, not assumed:**
 
