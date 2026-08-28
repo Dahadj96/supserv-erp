@@ -156,7 +156,7 @@ Work top to bottom. Do not start a phase before the one above it passes its test
 | ✅ | **3 · Document engine** | 70 71 50 47 18 | One offer renders in French for a client and English for a supplier, from one template family |
 | ✅ | **4 · Sell side** | 05 06 09 10 11 12 67 74 77 78 | Items pasted from an email body reach a sent offer with a complete annexe technique |
 | ✅ | **5 · Money** | 17 72 48 19 20 49 14 | Proforma → invoice → payment → statement, no spreadsheet, and overdue is computed |
-| ▶ | **6 · Organisation** | ~~55~~ ~~56~~ ~~57~~ ~~58~~ ~~63~~ ~~65~~ 33 59 60 66 ~~83~~ | Two people run the company for a week without opening OneDrive |
+| ▶ | **6 · Organisation** | ~~55~~ ~~56~~ ~~57~~ ~~58~~ ~~63~~ ~~65~~ ~~33~~ 59 60 66 ~~83~~ | Two people run the company for a week without opening OneDrive |
 | | **7 · Control + assistant** | 27 32 69 45 43 44 28 64 | The assistant answers "what is late and why" with citations, and can change nothing without approval |
 
 **Phase 5 closed 26 August 2026.** Everything that could have been a status
@@ -173,7 +173,7 @@ beside a total rather than folded into it).
 
 **Phase 6 in progress.** Struck through above is done: 55 Today, 56 Deal
 timeline, 57 Conversations, 58 Waiting on, 63 Week ahead, 65 Approvals — and 83
-was already built in phase 1. Left: 33 Notifications, 59 Email templates, and
+was already built in phase 1. Left: 59 Email templates and
 60/66 Files and storage, which wait on real file storage.
 
 Screen 57 shipped without its composer and with two of its four states, because

@@ -3165,5 +3165,44 @@
       "fr": "Français",
       "en": "English"
     }
+  },
+  "notify": {
+    "subtitle": "{unread, plural, =0 {Rien de non lu} one {# non lu} other {# non lus}} · regroupés par ce qu'ils bloquent",
+    "markAllRead": "Tout marquer comme lu",
+    "nothingUnread": "Il n'y a rien de non lu à marquer.",
+    "none": "Rien ne demande votre attention.",
+    "itemCount": "{n, plural, one {# élément} other {# éléments}}",
+    "markRead": "Marquer comme lu",
+    "open": "Ouvrir",
+    "waitingOnThem": "En attente chez eux",
+    "preferences": "Ce qui apparaît ici",
+    "preferencesHelp": "Désactiver un type le masque sur cette page uniquement. La facture reste impayée, et elle apparaît toujours dans Aujourd'hui, sur l'affaire et sur la facture elle-même — un interrupteur ne doit jamais être un moyen de perdre de l'argent.",
+    "apply": "Enregistrer",
+    "whereTheyGo": "Où elles arrivent",
+    "inAppOnly": "Dans l'application uniquement. L'ERP lit une seule boîte et ne peut pas envoyer : il n'y a donc ni résumé par e-mail ni heures silencieuses — il n'y a rien à faire taire. Si cela change, ce sera écrit ici.",
+    "group": {
+      "blocking": "Bloque maintenant",
+      "money": "Argent",
+      "work": "Travail"
+    },
+    "facet": {
+      "all": "Tout",
+      "unread": "Non lus",
+      "deadlines": "Échéances",
+      "money": "Argent",
+      "compliance": "Conformité",
+      "work": "Travail"
+    },
+    "kind": {
+      "tenderDeadline": "Une échéance approche",
+      "complianceExpiry": "Un certificat expire",
+      "unpaidChase": "Une facture est en retard",
+      "uninvoiced": "Livré mais non facturé",
+      "unsignedDelivery": "Un bon de livraison n'est pas signé",
+      "awaitingReply": "Personne n'a répondu",
+      "missingIdentifier": "Un identifiant manque",
+      "approval": "Quelque chose attend une validation",
+      "note": "Une note arrive à échéance"
+    }
   }
 }

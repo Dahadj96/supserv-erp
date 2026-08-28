@@ -3165,5 +3165,44 @@
       "fr": "Français",
       "en": "English"
     }
+  },
+  "notify": {
+    "subtitle": "{unread, plural, =0 {Nothing unread} one {# unread} other {# unread}} · grouped by what they block",
+    "markAllRead": "Mark all read",
+    "nothingUnread": "There is nothing unread to mark.",
+    "none": "Nothing needs your attention.",
+    "itemCount": "{n, plural, one {# item} other {# items}}",
+    "markRead": "Mark read",
+    "open": "Open",
+    "waitingOnThem": "Waiting on them",
+    "preferences": "What appears here",
+    "preferencesHelp": "Switching a kind off hides it from this page only. The invoice is still overdue, and it still appears on Today, on the deal and on the invoice itself — a toggle should never be a way to lose money.",
+    "apply": "Save",
+    "whereTheyGo": "Where they go",
+    "inAppOnly": "In-app only. The ERP reads one mailbox and cannot send, so there is no email digest and no quiet hours — there is nothing to be quiet about. If that changes, this is where it will say so.",
+    "group": {
+      "blocking": "Blocking now",
+      "money": "Money",
+      "work": "Work"
+    },
+    "facet": {
+      "all": "All",
+      "unread": "Unread",
+      "deadlines": "Deadlines",
+      "money": "Money",
+      "compliance": "Compliance",
+      "work": "Work"
+    },
+    "kind": {
+      "tenderDeadline": "A deadline is close",
+      "complianceExpiry": "A certificate is expiring",
+      "unpaidChase": "An invoice is overdue",
+      "uninvoiced": "Delivered but not invoiced",
+      "unsignedDelivery": "A delivery note is unsigned",
+      "awaitingReply": "Nobody has replied",
+      "missingIdentifier": "An identifier is missing",
+      "approval": "Something is waiting for approval",
+      "note": "A note is due"
+    }
   }
 }

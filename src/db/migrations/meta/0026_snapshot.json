@@ -1,6 +1,6 @@
 {
-  "id": "ef68d3d7-e943-4338-8930-23f10d003036",
-  "prevId": "cd879aaa-4025-4966-a4e3-98a4f4ebd25a",
+  "id": "fbc760ef-8aca-4880-84fb-62976e2812f5",
+  "prevId": "ef68d3d7-e943-4338-8930-23f10d003036",
   "version": "7",
   "dialect": "postgresql",
   "tables": {
@@ -4078,6 +4078,43 @@
       },
       "foreignKeys": {},
       "compositePrimaryKeys": {},
+      "uniqueConstraints": {},
+      "policies": {},
+      "checkConstraints": {},
+      "isRLSEnabled": false
+    },
+    "public.notification_read": {
+      "name": "notification_read",
+      "schema": "",
+      "columns": {
+        "user_id": {
+          "name": "user_id",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "notification_key": {
+          "name": "notification_key",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "read_at": {
+          "name": "read_at",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
+        }
+      },
+      "indexes": {},
+      "foreignKeys": {},
+      "compositePrimaryKeys": {
+        "notification_read_user_id_notification_key_pk": {
+          "name": "notification_read_user_id_notification_key_pk",
+          "columns": ["user_id", "notification_key"]
+        }
+      },
       "uniqueConstraints": {},
       "policies": {},
       "checkConstraints": {},
