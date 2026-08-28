@@ -1260,8 +1260,8 @@
         "what": "Lire un fichier, le prévisualiser, l'importer, annuler sous 7 jours."
       },
       "storage": {
-        "name": "Stockage",
-        "what": "Où les documents sont classés.",
+        "name": "Stockage et fichiers",
+        "what": "Où vivent les octets, et ce que la base et le disque se disent l'un de l'autre",
         "unbuilt": "Demande Graph Files.ReadWrite restreint à un seul site SharePoint — la même conversation que la boîte partagée, et elle n'a pas eu lieu. Les documents vont sur le volume de travail en attendant."
       },
       "compliance": {
@@ -1285,6 +1285,10 @@
       "templates": {
         "name": "Modèles de documents",
         "what": "Formulations et mentions de bas de page. Tout le reste d'un document vient du référentiel."
+      },
+      "emailTemplates": {
+        "name": "Modèles d'e-mail",
+        "what": "Les e-mails que cette entreprise écrit deux fois"
       }
     }
   },
@@ -3203,6 +3207,155 @@
       "missingIdentifier": "Un identifiant manque",
       "approval": "Quelque chose attend une validation",
       "note": "Une note arrive à échéance"
+    }
+  },
+  "files": {
+    "subtitle": "Tout ce dont le système détient les octets, à côté de ce avec quoi c'est arrivé. Les fichiers entrent par l'écran qui sait ce qu'ils sont — la boîte mail, le scanner, la reprise Excel — et se retrouvent ici.",
+    "whereTheyLive": "Où vivent les octets",
+    "none": "Rien pour l'instant. Aucune pièce jointe récupérée, aucun dossier lu, aucun classeur importé.",
+    "open": "Ouvrir",
+    "inOutlookOnly": "Dans Outlook seulement",
+    "notStored": "Pas stocké",
+    "absentCount": "{count} sans octets ici",
+    "bytes": "{n} o",
+    "kb": "{n} ko",
+    "mb": "{n} Mo",
+    "kind": {
+      "all": "Tout",
+      "attachment": "Pièces jointes",
+      "dossier": "Dossiers lus",
+      "import": "Reprises"
+    },
+    "from": {
+      "message": "Un message",
+      "dossier": "Un dossier",
+      "import": "Une reprise"
+    },
+    "column": {
+      "name": "Fichier",
+      "arrivedWith": "Arrivé avec",
+      "size": "Taille",
+      "when": "Le",
+      "bytes": "Octets"
+    }
+  },
+  "storage": {
+    "title": "Stockage et fichiers",
+    "subtitle": "Deux endroits, et l'état réel de chacun — lu sur le disque, pas sur un compteur.",
+    "banner": "Les fichiers de travail vivent sur cette machine. Les documents finis sont destinés à SharePoint, où ils resteraient ouvrables dans l'Explorateur dans trois ans sans cette application. Le second n'est pas encore branché, et cette page le dit plutôt que de l'arrondir.",
+    "notPermitted": "Le chemin de stockage et la liste des fichiers orphelins relèvent de l'infrastructure. Il faut le droit sur les paramètres de l'entreprise.",
+    "browseFiles": "Voir les fichiers",
+    "state": {
+      "ready": "Écrit",
+      "unwritable": "Non inscriptible",
+      "notConnected": "Non connecté"
+    },
+    "working": {
+      "title": "Fichiers de travail — disque local",
+      "what": "Pièces jointes récupérées, dossiers scannés, classeurs en attente de reprise. Ce sont des entrées : nombreuses, volumineuses, et personne ne voudra en ouvrir une depuis l'Explorateur dans trois ans.",
+      "root": "Dossier racine",
+      "configured": "Origine du chemin",
+      "fromEnv": "STORAGE_LOCAL_PATH",
+      "fallback": "Repli dans le projet",
+      "files": "Fichiers",
+      "size": "Taille totale",
+      "unwritableWhy": "Un fichier écrit maintenant n'arriverait pas. Le dossier existe peut-être, mais le système n'a pas le droit d'y écrire — et le découvrir au moment d'un envoi, c'est le découvrir trop tard."
+    },
+    "drift": {
+      "title": "Ce que la base croit, et ce que le disque contient",
+      "how": "Lu à chaque affichage",
+      "agree": "Les deux sont d'accord. {files} fichiers annoncés, {files} présents.",
+      "missing": "{count} fichier(s) dont une ligne connaît le chemin, sans octets derrière. Quelque chose a été supprimé sous le système, ou une écriture a échoué en silence.",
+      "orphaned": "{count} fichier(s) sur le disque ({size}) qu'aucune ligne ne réclame. Sans danger — mais c'est par là que le disque se remplit.",
+      "andMore": "et {count} de plus, non affichés.",
+      "nothingIsDeleted": "Cette page ne supprime rien. Elle constate. Le même choix que l'écran 83 fait pour les enregistrements : supprimer est un acte, pas un effet de bord d'un écran de réglages."
+    },
+    "final": {
+      "title": "Documents finis — SharePoint",
+      "what": "Les offres, factures et bons de livraison émis, classés là où ils sont déjà payés, déjà sauvegardés, et ouvrables sans cette application.",
+      "needs": "Il faut la permission Graph {permission}, limitée à un seul site — la même conversation que pour la boîte mail, et elle n'a pas encore eu lieu.",
+      "meanwhile": "En attendant, un PDF est rendu à la demande à partir du document et de son modèle. Rien n'est perdu ; rien n'est classé non plus."
+    },
+    "bin": {
+      "title": "Corbeille des octets",
+      "files": "Fichiers",
+      "size": "Taille",
+      "why": "Retirer un fichier le déplace ici plutôt que de le supprimer. Même règle que l'écran 83, appliquée aux octets au lieu des lignes.",
+      "records": "La corbeille des enregistrements"
+    },
+    "backup": {
+      "title": "Sauvegarde",
+      "none": "Aucune sauvegarde n'a jamais été prise, ni de ce disque ni de la base. Le courrier réel, les classements et l'état de lecture n'existent qu'ici, sur cette machine. C'est aujourd'hui le plus gros risque de l'installation."
+    }
+  },
+  "emailTemplates": {
+    "title": "Modèles d'e-mail et paragraphes",
+    "subtitle": "{total} modèles, dont {blank} encore vides.",
+    "noneYet": "Rien n'est encore listé.",
+    "doesNotSend": "L'ERP n'envoie pas. Il détient Mail.Read et rien de plus : un modèle produit un texte que vous copiez dans Outlook et envoyez sous votre nom. C'est aussi ce que veut la loi 6 — l'assistant propose, il n'exécute pas.",
+    "written": "{count} modèle(s) listés, tous vides.",
+    "saved": "Enregistré.",
+    "empty": "Les modèles ne sont pas encore listés. Les lister n'écrit aucune formulation : chaque ligne arrive vide, avec le moment où elle sert. Rien n'est inventé — une lettre d'accompagnement plausible écrite par une machine finit envoyée à un client par quelqu'un qui a supposé qu'un humain l'avait écrite.",
+    "listThem": "Lister les moments",
+    "blank": "Vide",
+    "hasUnknown": "{count} inconnu(s)",
+    "edit": "Modifier",
+    "writeIt": "L'écrire",
+    "save": "Enregistrer",
+    "subjectLabel": "Objet",
+    "bodyLabel": "Corps",
+    "unknownRefused": "Un champ hors vocabulaire est refusé à l'enregistrement.",
+    "stillPlaceholders": "Restent à la lecture : {names}",
+    "placeholders": "Vocabulaire",
+    "fromMasterData": "Données de l'entreprise",
+    "fromTheRecord": "Du dossier concerné",
+    "vocabularyClosed": "La liste est fermée. Pas de condition, pas de boucle, pas d'appel de fonction : un texte modifié depuis un écran de réglages ne doit jamais pouvoir devenir du code.",
+    "byLanguage": "Écrits, par langue",
+    "languageIsTheirs": "La langue est celle du destinataire, pas la vôtre. Loi 4 : l'interface suit la personne, les documents suivent le tiers.",
+    "group": {
+      "templates": "Modèles",
+      "templatesWhat": "Un e-mail entier, objet compris",
+      "snippets": "Paragraphes",
+      "snippetsWhat": "À coller dans un e-mail"
+    },
+    "error": {
+      "notAllowed": "Il faut le droit sur les paramètres de l'entreprise.",
+      "noSuchTemplate": "Ce modèle n'existe plus.",
+      "unknownPlaceholder": "Un champ entre accolades ne fait pas partie du vocabulaire. Vérifiez l'orthographe — sinon il partirait tel quel dans l'e-mail."
+    },
+    "name": {
+      "enquiryAck": "Accuser réception d'une demande",
+      "askForClarification": "Demander une précision",
+      "supplierRfq": "Consulter un fournisseur",
+      "supplierChase": "Relancer un fournisseur",
+      "offerCovering": "Accompagner une offre",
+      "offerFollowUp": "Relancer une offre",
+      "deliveryAdvice": "Annoncer une livraison",
+      "invoiceCovering": "Envoyer une facture",
+      "relance1": "Première relance de paiement",
+      "relance2": "Deuxième relance de paiement",
+      "relance3": "Troisième relance de paiement",
+      "signature": "Signature",
+      "bankDetails": "Coordonnées bancaires",
+      "deliveryTerms": "Conditions de livraison",
+      "validityTerms": "Validité de l'offre"
+    },
+    "when": {
+      "enquiryAck": "À la réception d'une consultation",
+      "askForClarification": "Quand la demande est incomplète",
+      "supplierRfq": "En demandant un prix",
+      "supplierChase": "Quand le fournisseur ne répond pas",
+      "offerCovering": "En envoyant l'offre",
+      "offerFollowUp": "Quand l'offre reste sans réponse",
+      "deliveryAdvice": "Avant la livraison",
+      "invoiceCovering": "En envoyant la facture",
+      "relance1": "À l'échéance",
+      "relance2": "Quinze jours après",
+      "relance3": "Avant mise en demeure",
+      "signature": "En bas de chaque e-mail",
+      "bankDetails": "Avec une facture ou une proforma",
+      "deliveryTerms": "Dans une offre",
+      "validityTerms": "Dans une offre"
     }
   }
 }

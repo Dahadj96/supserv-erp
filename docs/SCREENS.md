@@ -72,7 +72,7 @@ you are about to build, stop and ask — do not invent an interface.
 | 60 | Files | `/files` | **6** |
 | 61 | Quick capture | `/capture` | **2** |
 | 62 | Move in from Excel and OneDrive | `/settings/import` | **2** |
-| 63 | Week ahead | `/today/week` | **6** |
+| 63 | Week ahead | `/week` | **6** |
 | 64 | State machines | `(reference)` | **7** |
 | 65 | Approvals | `/approvals` | **6** |
 | 66 | Storage and files | `/settings/storage` | **6** |
@@ -92,7 +92,7 @@ you are about to build, stop and ask — do not invent an interface.
 | 80 | Menus, pickers and shortcuts | `(pattern)` | **0** |
 | 81 | My profile and preferences | `/me` | **0** |
 | 82 | Search | `/search` | **1** |
-| 83 | Deleted and restore | `/settings/deleted` | **6** |
+| 83 | Deleted and restore | `/settings/bin` | **6** |
 | 84 | Merge duplicates | `/companies/merge` | **1** |
 | 85 | Day one | `/setup` | **0** |
 | 86 | On the phone | `(responsive)` | **2** |

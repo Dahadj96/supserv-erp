@@ -1260,8 +1260,8 @@
         "what": "Read a file, preview it, import it, undo within 7 days."
       },
       "storage": {
-        "name": "Storage",
-        "what": "Where documents are filed.",
+        "name": "Storage and files",
+        "what": "Where the bytes live, and what the database and the disk say about each other",
         "unbuilt": "Needs Graph Files.ReadWrite scoped to one SharePoint site — the same conversation as the mailbox, and it has not been had. Documents go to the working volume until then."
       },
       "compliance": {
@@ -1285,6 +1285,10 @@
       "templates": {
         "name": "Document templates",
         "what": "Wording and footer mentions. Everything else on a document comes from master data."
+      },
+      "emailTemplates": {
+        "name": "Email templates",
+        "what": "The emails this company writes twice"
       }
     }
   },
@@ -3203,6 +3207,155 @@
       "missingIdentifier": "An identifier is missing",
       "approval": "Something is waiting for approval",
       "note": "A note is due"
+    }
+  },
+  "files": {
+    "subtitle": "Everything the system holds bytes for, next to the thing it arrived with. Files enter through the screen that knows what they are — the mailbox, the scanner, the importer — and are found again here.",
+    "whereTheyLive": "Where the bytes live",
+    "none": "Nothing yet. No attachment fetched, no dossier read, no workbook imported.",
+    "open": "Open",
+    "inOutlookOnly": "In Outlook only",
+    "notStored": "Not stored",
+    "absentCount": "{count} with no bytes here",
+    "bytes": "{n} B",
+    "kb": "{n} kB",
+    "mb": "{n} MB",
+    "kind": {
+      "all": "All",
+      "attachment": "Attachments",
+      "dossier": "Read dossiers",
+      "import": "Imports"
+    },
+    "from": {
+      "message": "A message",
+      "dossier": "A dossier",
+      "import": "An import"
+    },
+    "column": {
+      "name": "File",
+      "arrivedWith": "Arrived with",
+      "size": "Size",
+      "when": "When",
+      "bytes": "Bytes"
+    }
+  },
+  "storage": {
+    "title": "Storage and files",
+    "subtitle": "Two places, and the real state of each — read off the disk, not off a counter.",
+    "banner": "Working files live on this machine. Finished documents are meant for SharePoint, where they would still open in File Explorer in three years without this application running. The second one is not wired up yet, and this page says so rather than rounding it off.",
+    "notPermitted": "The storage root and the list of orphaned files are infrastructure. This needs the company settings permission.",
+    "browseFiles": "Browse files",
+    "state": {
+      "ready": "Writing",
+      "unwritable": "Not writable",
+      "notConnected": "Not connected"
+    },
+    "working": {
+      "title": "Working files — local disk",
+      "what": "Fetched attachments, scanned dossiers, workbooks waiting to be imported. These are inputs: numerous, large, and nobody will ever want to open one from File Explorer in three years.",
+      "root": "Root folder",
+      "configured": "Where the path comes from",
+      "fromEnv": "STORAGE_LOCAL_PATH",
+      "fallback": "Fallback inside the project",
+      "files": "Files",
+      "size": "Total size",
+      "unwritableWhy": "A file written now would not land. The folder may exist, but the system has no right to write in it — and finding that out at upload time is finding out too late."
+    },
+    "drift": {
+      "title": "What the database believes, and what the disk holds",
+      "how": "Read on every view",
+      "agree": "The two agree. {files} files claimed, {files} present.",
+      "missing": "{count} file(s) a row knows the path of, with no bytes behind it. Something was deleted underneath the system, or a write failed silently.",
+      "orphaned": "{count} file(s) on the disk ({size}) that no row claims. Harmless — but this is where the disk fills up from.",
+      "andMore": "and {count} more, not listed.",
+      "nothingIsDeleted": "This page deletes nothing. It reports. The same choice screen 83 makes for records: deleting is an act, not a side effect of a settings screen."
+    },
+    "final": {
+      "title": "Finished documents — SharePoint",
+      "what": "Issued offers, invoices and delivery notes, filed where they are already paid for, already backed up, and openable without this application.",
+      "needs": "It needs the Graph permission {permission}, scoped to one site — the same conversation as the mailbox, and not yet had.",
+      "meanwhile": "Meanwhile a PDF is rendered on demand from the document and its template. Nothing is lost; nothing is filed either."
+    },
+    "bin": {
+      "title": "Byte bin",
+      "files": "Files",
+      "size": "Size",
+      "why": "Removing a file moves it here rather than unlinking it. The same rule as screen 83, applied to bytes instead of rows.",
+      "records": "The record bin"
+    },
+    "backup": {
+      "title": "Backup",
+      "none": "No backup has ever been taken, of this disk or of the database. Real mail, classifications and read state exist only here, on this machine. It is the largest single risk in the installation today."
+    }
+  },
+  "emailTemplates": {
+    "title": "Email templates and snippets",
+    "subtitle": "{total} templates, {blank} of them still blank.",
+    "noneYet": "Nothing is listed yet.",
+    "doesNotSend": "The ERP does not send. It holds Mail.Read and nothing more: a template produces text you copy into Outlook and send under your own name. That is also what Law 6 wants — the assistant proposes, it never executes.",
+    "written": "{count} template(s) listed, all blank.",
+    "saved": "Saved.",
+    "empty": "The templates are not listed yet. Listing them writes no wording: each row arrives blank, with the moment it is for. Nothing is invented — a plausible covering note written by a machine ends up sent to a client by somebody who assumed a human wrote it.",
+    "listThem": "List the moments",
+    "blank": "Blank",
+    "hasUnknown": "{count} unknown",
+    "edit": "Edit",
+    "writeIt": "Write it",
+    "save": "Save",
+    "subjectLabel": "Subject",
+    "bodyLabel": "Body",
+    "unknownRefused": "A field outside the vocabulary is refused on save.",
+    "stillPlaceholders": "Still placeholders here: {names}",
+    "placeholders": "Vocabulary",
+    "fromMasterData": "Company master data",
+    "fromTheRecord": "From the record",
+    "vocabularyClosed": "The list is closed. No condition, no loop, no function call: text edited from a settings screen must never be able to become code.",
+    "byLanguage": "Written, by language",
+    "languageIsTheirs": "The language is the recipient's, not yours. Law 4: the interface follows the person, documents follow the counterparty.",
+    "group": {
+      "templates": "Templates",
+      "templatesWhat": "A whole email, subject included",
+      "snippets": "Snippets",
+      "snippetsWhat": "To paste into an email"
+    },
+    "error": {
+      "notAllowed": "This needs the company settings permission.",
+      "noSuchTemplate": "That template no longer exists.",
+      "unknownPlaceholder": "A field in braces is not part of the vocabulary. Check the spelling — otherwise it would go out in the email exactly as typed."
+    },
+    "name": {
+      "enquiryAck": "Acknowledge an enquiry",
+      "askForClarification": "Ask for a clarification",
+      "supplierRfq": "Ask a supplier for a price",
+      "supplierChase": "Chase a supplier",
+      "offerCovering": "Cover an offer",
+      "offerFollowUp": "Follow up an offer",
+      "deliveryAdvice": "Announce a delivery",
+      "invoiceCovering": "Send an invoice",
+      "relance1": "First payment reminder",
+      "relance2": "Second payment reminder",
+      "relance3": "Third payment reminder",
+      "signature": "Signature",
+      "bankDetails": "Bank details",
+      "deliveryTerms": "Delivery terms",
+      "validityTerms": "Offer validity"
+    },
+    "when": {
+      "enquiryAck": "When a consultation arrives",
+      "askForClarification": "When the request is incomplete",
+      "supplierRfq": "When asking for a price",
+      "supplierChase": "When the supplier goes quiet",
+      "offerCovering": "When sending the offer",
+      "offerFollowUp": "When the offer goes unanswered",
+      "deliveryAdvice": "Before the delivery",
+      "invoiceCovering": "When sending the invoice",
+      "relance1": "On the due date",
+      "relance2": "A fortnight later",
+      "relance3": "Before formal notice",
+      "signature": "At the foot of every email",
+      "bankDetails": "With an invoice or a proforma",
+      "deliveryTerms": "In an offer",
+      "validityTerms": "In an offer"
     }
   }
 }

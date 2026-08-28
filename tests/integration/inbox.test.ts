@@ -214,10 +214,24 @@ describe("screen 02 — nothing expires unread", () => {
     expect(created?.verifiedAt).not.toBeNull();
   });
 
-  it("says which actions have somewhere to write, and which phase brings the rest", () => {
+  it("says which actions have somewhere to write, and what the rest are missing", () => {
+    // This test used to assert `{ available: false, phase: 4 }` for an enquiry,
+    // and it went on asserting it for a fortnight after phase 4 shipped —
+    // which is exactly the rot that replaced `COMMIT_PHASE` with
+    // `COMMIT_BLOCKER`. A phase number is a promise nobody owns; a blocker
+    // names the missing thing, and the person who supplies it deletes the line.
     expect(commitAvailability("candidate").available).toBe(true);
-    expect(commitAvailability("enquiry")).toEqual({ available: false, phase: 4 });
-    expect(commitAvailability("payment")).toEqual({ available: false, phase: 5 });
+    expect(commitAvailability("enquiry").available).toBe(true);
+
+    // Both destinations exist. What is missing is a person saying WHICH.
+    expect(commitAvailability("supplierQuote")).toEqual({
+      available: false,
+      blocker: "inbox.blocked.needsSourcingPicker",
+    });
+    expect(commitAvailability("payment")).toEqual({
+      available: false,
+      blocker: "inbox.blocked.needsInvoicePicker",
+    });
   });
 
   it("knows the mailbox channel exists", async () => {

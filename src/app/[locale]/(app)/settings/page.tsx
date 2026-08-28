@@ -1,4 +1,4 @@
-import { eq, isNull, sql } from "drizzle-orm";
+import { and, eq, isNull, ne, sql } from "drizzle-orm";
 import { CircleAlert } from "lucide-react";
 import { getTranslations, setRequestLocale } from "next-intl/server";
 import { Badge, type BadgeTone } from "@/components/ui/badge";
@@ -9,6 +9,7 @@ import { bankAccount, vatRate } from "@/db/schema/company";
 import { numberingSeries } from "@/db/schema/document";
 import { documentTemplate } from "@/db/schema/document-template";
 import { documentType } from "@/db/schema/document-type";
+import { emailTemplate } from "@/db/schema/email-template";
 import { intakeChannel } from "@/db/schema/intake";
 import { setupState } from "@/domain/setup";
 import { Link } from "@/i18n/navigation";
@@ -44,8 +45,8 @@ export default async function SettingsPage({ params }: { params: Promise<{ local
 
   const state = await setupState();
 
-  const [[banks], [rates], [series], [roles], [channels], [types], [templates]] = await Promise.all(
-    [
+  const [[banks], [rates], [series], [roles], [channels], [types], [templates], [emailTemplates]] =
+    await Promise.all([
       db
         .select({ n: sql<number>`count(*)::int` })
         .from(bankAccount)
@@ -61,8 +62,14 @@ export default async function SettingsPage({ params }: { params: Promise<{ local
         .select({ n: sql<number>`count(*)::int` })
         .from(documentTemplate)
         .where(eq(documentTemplate.active, true)),
-    ],
-  );
+      // Written, not merely seeded. A blank row is a to-do, and a chip counting
+      // to-dos as if they were settings would read "30" on a system where nobody
+      // has typed a single email.
+      db
+        .select({ n: sql<number>`count(*)::int` })
+        .from(emailTemplate)
+        .where(and(eq(emailTemplate.active, true), ne(emailTemplate.body, ""))),
+    ]);
 
   const done = (label?: string) => ({
     tone: "good" as BadgeTone,
@@ -88,6 +95,11 @@ export default async function SettingsPage({ params }: { params: Promise<{ local
         { key: "numbering", href: "/setup/numbering", state: some(series?.n ?? 0) },
         { key: "documentTypes", href: "/settings/document-types", state: some(types?.n ?? 0) },
         { key: "templates", href: "/settings/templates", state: some(templates?.n ?? 0) },
+        {
+          key: "emailTemplates",
+          href: "/settings/email-templates",
+          state: some(emailTemplates?.n ?? 0),
+        },
       ],
     },
     {
@@ -103,7 +115,7 @@ export default async function SettingsPage({ params }: { params: Promise<{ local
       entries: [
         { key: "channels", href: "/settings/channels", state: some(channels?.n ?? 0) },
         { key: "import", href: "/settings/import", state: null },
-        { key: "storage", href: null, state: missing, unbuilt: true },
+        { key: "storage", href: "/settings/storage", state: null },
       ],
     },
     {
