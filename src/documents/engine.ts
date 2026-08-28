@@ -4,6 +4,7 @@ import { bankAccount, COMPANY_ID, companyIdentity } from "@/db/schema/company";
 import { auditEntry } from "@/db/schema/control";
 import { document, documentLine } from "@/db/schema/document";
 import { party } from "@/db/schema/party";
+import { assertTransition, IllegalTransition } from "@/domain/control/transitions";
 import { issuingRules } from "@/domain/document-types";
 import type { Totals } from "@/domain/money";
 import { assertCanIssue } from "@/domain/setup";
@@ -129,8 +130,30 @@ export async function render(request: RenderRequest): Promise<RenderedDocument> 
     .limit(1);
   if (!record) throw new NotRenderable("noSuchDocument");
 
-  // LAW 5 — an issued document is immutable, and that includes re-issuing it.
-  if (purpose === "issue" && record.number) throw new NotRenderable("alreadyIssued");
+  /**
+   * LAW 5 — an issued document is immutable, and that includes re-issuing it.
+   *
+   * This used to read `if (purpose === "issue" && record.number)`, which asks
+   * the wrong question. A document kind whose `numbering` is `clientReference`
+   * — `client_order`, which carries the CLIENT's number rather than one of ours
+   * — never gets a `number`, so that check saw null and let it through. A
+   * client order could be issued as many times as somebody pressed the button,
+   * and every press rewrote `lockedAt` and `renderSnapshot`: the row would
+   * re-freeze against whatever the master data said today, silently, on a
+   * commitment document the client already holds a copy of.
+   *
+   * The state, not a side effect of the state, is what says whether it has been
+   * issued. `assertTransition` reads `MACHINES.document`, where `issued` has no
+   * edge back to `draft` and never will.
+   */
+  if (purpose === "issue") {
+    try {
+      assertTransition("document", record.status, "issued");
+    } catch (error) {
+      if (error instanceof IllegalTransition) throw new NotRenderable("alreadyIssued");
+      throw error;
+    }
+  }
 
   const [counterparty] = await db.select().from(party).where(eq(party.id, record.partyId)).limit(1);
   if (!counterparty) throw new NotRenderable("noCounterparty");
