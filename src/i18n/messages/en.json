@@ -3237,6 +3237,17 @@
       "size": "Size",
       "when": "When",
       "bytes": "Bytes"
+    },
+    "dossierStatus": {
+      "reading": "Being read",
+      "review": "To check",
+      "confirmed": "Confirmed",
+      "failed": "Could not be read"
+    },
+    "importBecomes": {
+      "party": "Companies import",
+      "contact": "Contacts import",
+      "person": "People import"
     }
   },
   "storage": {

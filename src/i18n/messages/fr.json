@@ -3237,6 +3237,17 @@
       "size": "Taille",
       "when": "Le",
       "bytes": "Octets"
+    },
+    "dossierStatus": {
+      "reading": "En cours de lecture",
+      "review": "À vérifier",
+      "confirmed": "Confirmé",
+      "failed": "Lecture échouée"
+    },
+    "importBecomes": {
+      "party": "Reprise de sociétés",
+      "contact": "Reprise de contacts",
+      "person": "Reprise de personnes"
     }
   },
   "storage": {

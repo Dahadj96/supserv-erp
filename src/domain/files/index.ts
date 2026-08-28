@@ -42,8 +42,21 @@ export type FileRow = {
   storagePath: string | null;
   state: BytesState;
   at: Date;
-  /** What it arrived with. `href` is null when the owner has no screen yet. */
-  belongsTo: { labelKey: string; label: string; href: string | null };
+  /**
+   * What it arrived with.
+   *
+   * `label` is free text a person wrote — an email subject. `labelKey` is a
+   * message key, for the rows whose only description is an enumerated column:
+   * a dossier's `status`, an import's `becomes`. Printing those raw put
+   * "failed" and "party" in a French table, which is the system leaking its own
+   * schema at somebody. `href` is null when the owner has no screen yet.
+   */
+  belongsTo: {
+    fallbackKey: string;
+    label: string | null;
+    labelKey: string | null;
+    href: string | null;
+  };
 };
 
 /** `attachment:9f0c…` — carried in URLs, so it must not contain a slash. */
@@ -102,8 +115,9 @@ async function attachmentFiles(): Promise<FileRow[]> {
       state: (storagePath ? "stored" : "absent") as BytesState,
       at: r.at,
       belongsTo: {
-        labelKey: "message",
-        label: r.subject?.trim() || r.fromName?.trim() || r.fromAddress?.trim() || "",
+        fallbackKey: "message",
+        label: r.subject?.trim() || r.fromName?.trim() || r.fromAddress?.trim() || null,
+        labelKey: null,
         href: `/inbox/${r.messageId}`,
       },
     };
@@ -136,8 +150,9 @@ async function dossierFiles(): Promise<FileRow[]> {
       state: (storagePath ? "stored" : "absent") as BytesState,
       at: r.at,
       belongsTo: {
-        labelKey: "dossier",
-        label: r.status,
+        fallbackKey: "dossier",
+        label: null,
+        labelKey: `files.dossierStatus.${r.status}`,
         href: `/inbox/dossier/${r.id}/review`,
       },
     };
@@ -168,7 +183,12 @@ async function importFiles(): Promise<FileRow[]> {
     storagePath: null,
     state: "stored" as BytesState,
     at: r.at,
-    belongsTo: { labelKey: "import", label: r.becomes, href: "/settings/import" },
+    belongsTo: {
+      fallbackKey: "import",
+      label: null,
+      labelKey: `files.importBecomes.${r.becomes}`,
+      href: "/settings/import",
+    },
   }));
 }
 

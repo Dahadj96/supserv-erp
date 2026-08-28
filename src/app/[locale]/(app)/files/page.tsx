@@ -73,6 +73,18 @@ export default async function FilesPage({
     return t("files.mb", { n: Math.round((bytes / (1024 * 1024)) * 10) / 10 });
   };
 
+  /**
+   * A subject if somebody wrote one, a translated enum if that is all there is,
+   * and the kind as a last resort. Never a raw column value: `failed` and
+   * `party` in a French table read as the system leaking its schema.
+   */
+  const arrivedWith = (row: (typeof rows)[number]) => {
+    const { label, labelKey, fallbackKey } = row.belongsTo;
+    if (label) return label;
+    if (labelKey && t.has(labelKey)) return t(labelKey);
+    return t(`files.from.${fallbackKey}`);
+  };
+
   const facets: { key: string; href: string; count: number; active: boolean }[] = [
     { key: "all", href: "/files", count: counts.all, active: !kind },
     ...FILE_KINDS.map((k) => ({
@@ -166,10 +178,10 @@ export default async function FilesPage({
                           href={row.belongsTo.href}
                           className="text-secondary hover:text-ink hover:underline"
                         >
-                          {row.belongsTo.label || t(`files.from.${row.belongsTo.labelKey}`)}
+                          {arrivedWith(row)}
                         </Link>
                       ) : (
-                        <span className="text-secondary">{row.belongsTo.label}</span>
+                        <span className="text-secondary">{arrivedWith(row)}</span>
                       )}
                     </td>
                     <td className="px-4 py-2.5 text-end tabular-nums text-secondary">
