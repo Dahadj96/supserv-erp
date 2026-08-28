@@ -590,7 +590,9 @@
     "seeChannels": "See the channels screen.",
     "error": {
       "mailboxNotScoped": "The mailbox was not read, because the application is not yet restricted to it. Application Mail.Read reaches every mailbox in the tenant until an Application Access Policy says otherwise.",
-      "tradeRequired": "A candidate needs a trade — it is what you will search by."
+      "tradeRequired": "A candidate needs a trade — it is what you will search by.",
+      "companyRequired": "That sender is not linked to a company, so there is no client to open an enquiry for. Add them as a contact first.",
+      "subjectRequired": "That message has no subject, so the enquiry would have no name. Type one."
     },
     "expiringBanner": "{count, plural, =1 {1 item expires} other {# items expire}} within 48 hours —",
     "expiringItem": "{what} ({hours}h left)",
@@ -642,7 +644,12 @@
     "confirmAs": "It is a {what}",
     "addContactUnder": "Add contact under {company}",
     "itIsNoise": "It is noise",
-    "notPermitted": "Your role cannot open the Inbox. It holds everything sent to the company mailbox before anybody has sorted it — enquiries, CVs, invoices and spam alike — so it is limited to the Gérant, commercial, purchasing and accounts. The records made from it are on the screens you already have."
+    "notPermitted": "Your role cannot open the Inbox. It holds everything sent to the company mailbox before anybody has sorted it — enquiries, CVs, invoices and spam alike — so it is limited to the Gérant, commercial, purchasing and accounts. The records made from it are on the screens you already have.",
+    "blocked": {
+      "needsSourcingPicker": "Sourcing requests exist, but this screen cannot yet say which one the quote answers — and attaching it to the wrong request would price an offer from the wrong quote.",
+      "needsInvoicePicker": "Invoices and payments exist, but which invoice this pays has to be chosen, not guessed from an amount in a subject line.",
+      "senderHasNoCompany": "An enquiry needs a client, and this sender is not linked to a company yet. Add them as a contact under the right company first, then this works."
+    }
   },
   "moveIn": {
     "title": "Move in",

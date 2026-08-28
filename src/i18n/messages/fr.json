@@ -590,7 +590,9 @@
     "seeChannels": "Voir l'écran des canaux.",
     "error": {
       "mailboxNotScoped": "La boîte aux lettres n'a pas été lue : l'application n'y est pas encore restreinte. Une permission d'application Mail.Read atteint toutes les boîtes du locataire tant qu'une Application Access Policy ne l'en empêche pas.",
-      "tradeRequired": "Un candidat a besoin d'un métier — c'est ainsi que vous le retrouverez."
+      "tradeRequired": "Un candidat a besoin d'un métier — c'est ainsi que vous le retrouverez.",
+      "companyRequired": "Cet expéditeur n'est rattaché à aucune société : il n'y a donc pas de client pour ouvrir une demande. Ajoutez-le d'abord comme contact.",
+      "subjectRequired": "Ce message n'a pas d'objet : la demande n'aurait pas de nom. Saisissez-en un."
     },
     "expiringBanner": "{count, plural, =1 {1 élément expire} other {# éléments expirent}} dans moins de 48 heures —",
     "expiringItem": "{what} ({hours} h restantes)",
@@ -642,7 +644,12 @@
     "confirmAs": "C'est bien « {what} »",
     "addContactUnder": "Ajouter le contact chez {company}",
     "itIsNoise": "C'est du bruit",
-    "notPermitted": "Votre rôle ne permet pas d'ouvrir la boîte de réception. Elle contient tout ce qui arrive dans la boîte de la société avant le moindre tri — demandes, CV, factures et courriers indésirables — elle est donc réservée au Gérant, au commercial, aux achats et à la comptabilité. Les enregistrements qui en découlent sont sur les écrans que vous avez déjà."
+    "notPermitted": "Votre rôle ne permet pas d'ouvrir la boîte de réception. Elle contient tout ce qui arrive dans la boîte de la société avant le moindre tri — demandes, CV, factures et courriers indésirables — elle est donc réservée au Gérant, au commercial, aux achats et à la comptabilité. Les enregistrements qui en découlent sont sur les écrans que vous avez déjà.",
+    "blocked": {
+      "needsSourcingPicker": "Les demandes de prix existent, mais cet écran ne peut pas encore dire à laquelle ce devis répond — et le rattacher à la mauvaise demande ferait chiffrer une offre sur le mauvais devis.",
+      "needsInvoicePicker": "Les factures et les règlements existent, mais la facture réglée doit être choisie, pas devinée d'après un montant dans un objet de message.",
+      "senderHasNoCompany": "Une demande a besoin d'un client, et cet expéditeur n'est rattaché à aucune société. Ajoutez-le d'abord comme contact sous la bonne société, et ceci fonctionnera."
+    }
   },
   "moveIn": {
     "title": "Reprise",

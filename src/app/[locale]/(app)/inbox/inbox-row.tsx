@@ -26,7 +26,8 @@ export async function InboxRowView({
   formatDate: (d: Date) => string;
 }) {
   const t = await getTranslations();
-  const { available, phase } = commitAvailability(row.classifiedAs);
+  const { available, blocker } = commitAvailability(row.classifiedAs);
+  const isDeal = row.classifiedAs === "enquiry" || row.classifiedAs === "tender";
   const urgent = row.hoursLeft !== null && row.hoursLeft <= DEADLINE_WARNING_HOURS;
 
   return (
@@ -101,13 +102,24 @@ export async function InboxRowView({
                 {t("inbox.action.candidate")}
               </Button>
             </form>
+          ) : isDeal && available ? (
+            /*
+              Deliberately a link to the message, not a one-click create.
+              Opening a deal commits a reference number, an owner and a
+              deadline; doing that from a list, having read only the subject
+              line, is how a spam RFQ becomes ENQ-2026-0142. The button on the
+              message itself creates it, once somebody has read the thing.
+            */
+            <Link href={`/inbox/${row.id}`}>
+              <Button variant="primary" size="small">
+                {t(`inbox.action.${row.classifiedAs}`)}
+              </Button>
+            </Link>
           ) : (
             <Button
               variant="primary"
               size="small"
-              disabledReason={
-                phase === null ? t("inbox.nothingToCreate") : t("rules.comingInPhase", { phase })
-              }
+              disabledReason={blocker ? t(blocker) : t("inbox.nothingToCreate")}
             >
               {t(`inbox.action.${row.classifiedAs ?? "needsReview"}`)}
             </Button>

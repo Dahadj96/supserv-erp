@@ -10,7 +10,7 @@ import { markRead } from "@/domain/intake/inbox";
 import { messageDetail, neighbours } from "@/domain/intake/message";
 import { ROUTED_TO } from "@/domain/intake/routing";
 import { Link } from "@/i18n/navigation";
-import { dismissMessage, setClassification } from "../actions";
+import { createEnquiryFrom, dismissMessage, setClassification } from "../actions";
 
 /** Same colours as the list, so a message does not change identity when opened. */
 const TYPE_TONE: Record<string, BadgeTone> = {
@@ -63,7 +63,17 @@ export default async function MessagePage({
 
   const { previous, next } = await neighbours(id);
   const format = await getFormatter({ locale });
-  const { available, phase } = commitAvailability(message.classifiedAs);
+  const { available, blocker } = commitAvailability(message.classifiedAs);
+
+  /**
+   * The two kinds that become a deal, and therefore need a client first.
+   * Held as the narrowed value rather than a boolean so the compiler still
+   * knows which one it is when the action is bound.
+   */
+  const dealKind =
+    message.classifiedAs === "enquiry" || message.classifiedAs === "tender"
+      ? message.classifiedAs
+      : null;
 
   const when = format.dateTime(message.receivedAt, {
     day: "2-digit",
@@ -236,19 +246,37 @@ export default async function MessagePage({
             </h2>
 
             <div className="mt-2.5 flex flex-col items-start gap-2">
-              <Button
-                variant="primary"
-                size="small"
-                disabledReason={
-                  available
-                    ? undefined
-                    : phase === null
-                      ? t("inbox.nothingToCreate")
-                      : t("rules.comingInPhase", { phase })
-                }
-              >
-                {t(`inbox.action.${message.classifiedAs ?? "needsReview"}`)}
-              </Button>
+              {dealKind && available && message.partyId ? (
+                <form action={createEnquiryFrom.bind(null, locale, id, dealKind)}>
+                  {/* The subject is the enquiry's name, and an email subject is
+                      often a poor one. Editable here, before the deal exists,
+                      rather than renamed afterwards. */}
+                  <input
+                    name="subject"
+                    defaultValue={message.subject ?? ""}
+                    className="mb-2 h-[28px] w-full rounded-[var(--radius-control)] border border-line bg-surface px-2 text-micro outline-none focus:border-ink"
+                  />
+                  <Button type="submit" variant="primary" size="small">
+                    {t(`inbox.action.${message.classifiedAs}`)}
+                  </Button>
+                </form>
+              ) : (
+                <Button
+                  variant="primary"
+                  size="small"
+                  disabledReason={
+                    // A deal needs a client, and this sender is attached to no
+                    // company. The fix is one step earlier, so say which step.
+                    dealKind && available
+                      ? t("inbox.blocked.senderHasNoCompany")
+                      : blocker
+                        ? t(blocker)
+                        : t("inbox.nothingToCreate")
+                  }
+                >
+                  {t(`inbox.action.${message.classifiedAs ?? "needsReview"}`)}
+                </Button>
+              )}
 
               <form action={dismissMessage.bind(null, locale, id)}>
                 <Button type="submit" variant="ghost" size="small">

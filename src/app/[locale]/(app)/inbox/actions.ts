@@ -4,7 +4,7 @@ import { revalidatePath } from "next/cache";
 import { can } from "@/auth/can";
 import { getSession } from "@/auth/session";
 import { MailboxNotScoped } from "@/capture/mail/graph";
-import { commitCandidate, commitContact } from "@/domain/intake/commit";
+import { commitCandidate, commitContact, commitEnquiry } from "@/domain/intake/commit";
 import { dismiss, markRead, reclassify } from "@/domain/intake/inbox";
 import { pollMailbox } from "@/domain/intake/mailbox";
 import { ROUTED_TO, type RoutedTo } from "@/domain/intake/routing";
@@ -83,6 +83,41 @@ export async function createCandidateFrom(locale: string, id: string, formData: 
   const personId = await commitCandidate({ messageId: id, actorId: session.userId, trade });
   revalidatePath(`/${locale}/inbox`);
   redirect({ href: `/people?created=${personId}`, locale });
+}
+
+/**
+ * An enquiry or a tender invitation becomes a deal.
+ *
+ * The one failure worth handling by name is `companyRequired`: the sender was
+ * never matched to a party, and a deal has no meaning without a client. The
+ * screen answers that one step earlier — link the sender as a contact under a
+ * company first — so the message says that rather than "something went wrong".
+ */
+export async function createEnquiryFrom(
+  locale: string,
+  id: string,
+  kind: "enquiry" | "tender",
+  formData: FormData,
+) {
+  const session = await requireInbox(locale);
+  let dealId: string;
+  try {
+    dealId = await commitEnquiry({
+      messageId: id,
+      actorId: session.userId,
+      kind,
+      subject: String(formData.get("subject") ?? "").trim() || undefined,
+    });
+  } catch (error) {
+    const reason = error instanceof Error ? error.message : "";
+    if (reason === "companyRequired" || reason === "subjectRequired") {
+      redirect({ href: `/inbox/${id}?error=${reason}`, locale });
+      return;
+    }
+    throw error;
+  }
+  revalidatePath(`/${locale}/inbox`);
+  redirect({ href: `/deals/${dealId}`, locale });
 }
 
 export async function createContactFrom(locale: string, id: string, formData: FormData) {

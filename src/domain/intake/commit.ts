@@ -3,6 +3,7 @@ import { db } from "@/db";
 import { auditEntry } from "@/db/schema/control";
 import { intakeMessage } from "@/db/schema/intake";
 import { person } from "@/db/schema/party";
+import { createDeal } from "../deal/deal";
 import { nameFromEmail } from "../merge";
 import type { RoutedTo } from "./routing";
 
@@ -28,13 +29,31 @@ export class CannotCommitYet extends Error {
   }
 }
 
-/** Which actions have somewhere to write, and which phase brings the rest. */
-export const COMMIT_PHASE: Record<RoutedTo, number | null> = {
-  candidate: null, // person exists — phase 1
-  enquiry: 4,
-  tender: 4,
-  supplierQuote: 4,
-  payment: 5,
+/**
+ * What stops each action, or null when nothing does.
+ *
+ * This used to be a phase number, and the number was a lie for a fortnight.
+ * The table was written in phase 2 saying "enquiry: 4, payment: 5"; phases 4
+ * and 5 both closed, deals and invoices exist, and the buttons went on telling
+ * people to wait for something that had already shipped.
+ *
+ * A phase number is a promise about the future and nobody owns it. A message
+ * key naming what is actually missing cannot rot in the same way — when the
+ * missing thing arrives, the person building it deletes the line, because the
+ * line describes their work rather than a date.
+ */
+export const COMMIT_BLOCKER: Record<RoutedTo, string | null> = {
+  candidate: null, // a person — phase 1
+  enquiry: null, // a deal — phase 4
+  tender: null, // a deal carrying a tender's submission rules — phase 4
+  // Sourcing requests exist. Attaching a supplier's emailed quote to the right
+  // one needs a picker on this screen, and picking the wrong request silently
+  // prices an offer from the wrong quote.
+  supplierQuote: "inbox.blocked.needsSourcingPicker",
+  // Invoices and payment allocation exist. Which invoice this advice pays is
+  // the question, and guessing it from an amount in a subject line is how
+  // money gets allocated to the wrong client.
+  payment: "inbox.blocked.needsInvoicePicker",
   needsReview: null, // reclassify, not commit
 };
 
@@ -172,9 +191,89 @@ export async function commitContact(opts: {
   return id;
 }
 
-/** What the button on a row should do, and whether it can do it yet. */
-export function commitAvailability(what: RoutedTo | null) {
-  if (!what) return { available: false, phase: null as number | null };
-  const phase = COMMIT_PHASE[what];
-  return { available: phase === null, phase };
+/**
+ * What the button should do, and — when it cannot — what to say instead.
+ *
+ * `blocker` is a message key, never a sentence: phase 0's acceptance test was
+ * "be told why a disabled button is disabled", and a disabled button that
+ * explains itself in English only would fail it in French.
+ */
+export function commitAvailability(what: RoutedTo | null): {
+  available: boolean;
+  blocker: string | null;
+} {
+  if (!what) return { available: false, blocker: null };
+  const blocker = COMMIT_BLOCKER[what];
+  return { available: blocker === null, blocker };
+}
+
+/**
+ * An enquiry becomes a deal — but only when we know whose enquiry it is.
+ *
+ * `deal.partyId` is required and always will be: an enquiry with no client is
+ * not an enquiry, it is a note. So this refuses rather than inventing a
+ * company from an email domain, which is how "SARL Gmail" ends up in a CRM.
+ *
+ * When the sender is not matched, screen 02 already has the answer one step
+ * earlier — link them to a company as a contact first, and then this works.
+ *
+ * What is deliberately NOT guessed here:
+ *   - the deadline is carried across but stays UNCONFIRMED (LAW 2). It was
+ *     read out of an email by a parser; a person has to agree with it before
+ *     anything depends on it.
+ *   - the lines are not parsed from the body. Screen 61 does that with a
+ *     person watching, and a badly-read line becomes a price.
+ *   - `submissionMethod` stays `unknown`. TouatGaz refusing email submissions
+ *     is exactly the kind of fact that must be recorded, never assumed.
+ */
+export async function commitEnquiry(opts: {
+  messageId: string;
+  actorId: string;
+  kind?: "enquiry" | "tender";
+  partyId?: string;
+  subject?: string;
+}): Promise<string> {
+  const [message] = await db
+    .select()
+    .from(intakeMessage)
+    .where(eq(intakeMessage.id, opts.messageId))
+    .limit(1);
+  if (!message) throw new Error("noSuchMessage");
+
+  const partyId = opts.partyId ?? message.partyId;
+  if (!partyId) throw new Error("companyRequired");
+
+  const subject = (opts.subject ?? message.subject ?? "").trim();
+  if (!subject) throw new Error("subjectRequired");
+
+  const dealId = await createDeal(
+    {
+      partyId,
+      subject,
+      contactPersonId: message.personId,
+      clientReference: null,
+      // When it ARRIVED, not when somebody got round to opening it. The clock
+      // on a client's enquiry started at their end.
+      receivedAt: message.receivedAt,
+      deadlineAt: message.deadlineAt,
+      submissionMethod: "unknown",
+      currency: "DZD",
+      ownerId: opts.actorId,
+      source: opts.kind === "tender" ? "tender" : "mailbox",
+      intakeMessageId: message.id,
+      expectedValue: null,
+      clientInstructions: null,
+    },
+    opts.actorId,
+  );
+
+  await recordCommit({
+    messageId: opts.messageId,
+    entity: "deal",
+    entityId: dealId,
+    actorId: opts.actorId,
+    after: { partyId, subject, deadlineAt: message.deadlineAt, source: opts.kind ?? "enquiry" },
+  });
+
+  return dealId;
 }
