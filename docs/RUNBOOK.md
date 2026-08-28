@@ -1,47 +1,48 @@
 # RUNBOOK — the three things left, and how the mini PC becomes a server
 
 Written 23 Aug 2026, the day `erp.supserv-dz.com` went live.
-**Re-checked 27 Aug 2026 — the state below had changed. Read this box first.**
+**Re-checked 28 Aug 2026. Read this box first.**
 
-> ## THE TUNNEL IS DOWN
+> ## WHERE THINGS STAND
 >
-> As of 27 Aug: `cloudflared` is **not a service, not a scheduled task, and not a
-> running process**, and `https://erp.supserv-dz.com` answers **530** — Cloudflare
-> error 1033, origin tunnel not connected.
+> The site is **up**. `cloudflared` runs as a Windows service with its
+> `--config` recorded in the registry — that missing flag was why the tunnel
+> died at every reboot and answered **530** / error 1033 on 27 Aug. Fixed by
+> `scripts\server\install-services.ps1`, and confirmed by a real reboot.
 >
-> This is not a fault. It is exactly what §3 warned about: the tunnel has only ever
-> been a foreground process in a terminal I opened, and it died when that session
-> ended. §3 is what fixes it, permanently.
->
-> **The order in the table below has therefore changed.** Do §1 and §2 while the
-> site is down — it is a free window, because there is nothing behind the door to
-> protect. Then §3 brings it back up already locked.
+> Cloudflare Access guards the hostname, and since 28 Aug it authenticates
+> against **Microsoft Entra ID** — the same directory as the mailboxes.
 
-| Order | § | What | Who | How long |
-|---|---|---|---|---|
-| 1st | 1 | **Cloudflare Access** — attach the policy to an application | you | 5 min |
-| 2nd | 2 | **Entra redirect URI** — so sign-in works on the new address | you | 2 min |
-| 3rd | 3 | **Survive a reboot** — and bring the tunnel back at all | one command + one decision | 10 min |
+| § | What | State |
+|---|---|---|
+| 1 | **Cloudflare Access** — application, policy, Entra as identity provider | **done** 28 Aug |
+| 2 | **Entra redirect URI** — so sign-in works on the new address | **done** |
+| 3 | **Survive a reboot** — services installed, reboot tested | **done**, except auto-login + BIOS below |
 
-Also outstanding, and not in this file:
+Still to do, and only you can do them:
 
+- **Windows auto-login** (`netplwiz`) plus the lock-screen scheduled task —
+  §3. Docker Desktop needs a logged-in session, so the database does not come
+  back on its own without this.
+- **The BIOS setting**: ThinkCentre → **F1** → Power → *After Power Loss* →
+  **Power On**. No script can reach it. §3.
+- **Take a backup.** There has never been one. Real mail, classifications and
+  read state now live only in the Postgres container on that one machine.
+  This is the largest single risk in the whole setup.
 - **`docs/DECISIONS/2026-08-26-who-sees-margin.md`** — does the Commercial keep
   `offers.margin.view`? Screen 12 and `src/auth/can.ts` disagree, and I did not
   pick one for you.
-- **When does the new desk PC arrive?** It is the single fact that decides §3's
-  Docker-at-boot question, and it has been asked three times now.
 
-### One correction to §1 below
+### Finding things in the Zero Trust dashboard
 
-The Zero Trust dashboard has been redesigned since this was written. **Policies
-and Applications are now separate things**, and the policy `SUPSERV people` that
-already exists is a *reusable policy attached to nothing*. A policy on its own
-guards no hostname. In the new layout, create the application first, and on its
-Policies step choose **Select existing policies** and tick `SUPSERV people`.
+It gets redesigned; **URLs rot, menu names survive**. Navigate by name:
+**Access controls → Applications**, **Access controls → Policies**,
+**Integrations → Identity providers**. Applications and policies are separate
+objects — a reusable policy attached to no application guards no hostname.
 
 ---
 
-## 1 · Cloudflare Access — do this first
+## 1 · Cloudflare Access — done
 
 ### Why it is not optional
 
@@ -60,43 +61,59 @@ Two doors, neither depending on the other. If Access were removed tomorrow,
 Entra still decides who gets in — the app reads no network header for identity,
 not Tailscale's and not `Cf-Access-Authenticated-User-Email`.
 
-### The clicks
+### What is actually configured (done — 2026-08-28)
 
-1. **dash.cloudflare.com** → **Zero Trust** (left sidebar)
-2. **Access** → **Applications** → **Add an application**
-3. Choose **Self-hosted**
+The Zero Trust dashboard gets redesigned; URLs rot, menu names survive.
+Navigate by name: **Access controls → Applications**, **Access controls →
+Policies**, **Integrations → Identity providers**.
 
-| Field | Value |
-|---|---|
-| Application name | `SUPSERV ERP` |
-| Session duration | `24 hours` |
-| Subdomain | `erp` |
-| Domain | `supserv-dz.com` |
-| Path | *(leave empty)* |
+**Application** `SUPSERV ERP` — self-hosted, destination `erp.supserv-dz.com`,
+session duration 24 hours.
 
-4. **Next**, then add a policy:
+**Policy** `SUPSERV people` — Allow, with two OR'd includes:
 
-| Field | Value |
-|---|---|
-| Policy name | `SUPSERV people` |
-| Action | **Allow** |
-| Include → selector | **Emails ending in** |
-| Value | `@supserv.dz` |
+| Type | Selector | Value |
+|---|---|---|
+| Include | Emails | `dahadjabderrahman@gmail.com` |
+| Include | Emails ending in | `@supserv.dz` |
 
-If the Microsoft accounts are not all on `@supserv.dz`, use the **Emails**
-selector and list them one at a time. Start narrow — widening it later takes ten
-seconds, and a policy that is too generous is not visible until it matters.
+**Login methods** — *Accept all available identity providers* is **on**, so the
+sign-in page offers both:
 
-5. Leave the login method as the **One-time PIN**. Cloudflare emails a code.
-   Wiring Access to Entra as an identity provider is tidier and can wait.
-6. **Save**.
+- **Microsoft Entra ID** — the normal way in. Same directory as the mailboxes.
+  Carries MFA through (`amr: [pwd, mfa]`) and passes Entra group membership.
+- **Cloudflare one-time PIN** — the way back in if Entra breaks. Emails a code.
+
+Both the Gmail address and the PIN method are deliberate fallbacks, not
+leftovers. See `docs/DECISIONS/2026-08-28-entra-is-the-way-in.md` for why they
+stay, and why the policy had to be widened *before* Entra was switched on.
+
+### Why the order matters
+
+Access evaluates the policy **after** the identity provider has authenticated
+somebody. Entra can only ever return an `@supserv.dz` address — never a Gmail
+one. Turning Entra on while the policy still listed only the Gmail address would
+have authenticated correctly and then denied, locking the only administrator out
+of the ERP with the Cloudflare dashboard as the sole way back.
+
+Widen, verify, then narrow. Never the other way round.
 
 ### Check it worked
 
 Open `https://erp.supserv-dz.com` **in a private window**. You should get
-Cloudflare's own page asking for an email, *before* anything from the ERP. If
-you land straight on the SUPSERV sign-in page, the policy is not attached to the
-right hostname.
+Cloudflare's own page, *before* anything from the ERP, now offering **Microsoft
+Entra ID** as well as the email-code option. Sign in with
+`abderrahmane.dahadj@supserv.dz`. If you land straight on the SUPSERV sign-in
+page, the policy is not attached to the right hostname.
+
+### The thing that will bite
+
+**The Entra client secret expires.** When it does nobody can sign in, and the
+error will not say why. It lives on the `Cloudflare Access` app registration
+(client ID `00f3da7b-8d80-4f93-b3c0-9a248c136e0a`) under **Certificates &
+secrets**. Note its expiry date here and set a reminder a month before:
+
+    Client secret expires: ____________________
 
 ---
 
