@@ -29,6 +29,12 @@ Still to do, and only you can do them:
 - **Take a backup.** There has never been one. Real mail, classifications and
   read state now live only in the Postgres container on that one machine.
   This is the largest single risk in the whole setup.
+- **Optional, whenever you like:** `node scripts\clean-test-litter.mjs` reports
+  the 276 audit rows and 131 files the test suite left in the application
+  database and file store before it was given its own (see
+  `docs/DECISIONS/2026-08-28-the-tests-had-their-own-database-taken-away.md`).
+  It removes nothing without `--yes`. Deleting audit rows is a deliberate act,
+  so it is yours to make.
 - **`docs/DECISIONS/2026-08-26-who-sees-margin.md`** — does the Commercial keep
   `offers.margin.view`? Screen 12 and `src/auth/can.ts` disagree, and I did not
   pick one for you.
@@ -317,6 +323,7 @@ facing the internet.
 | Tunnel log | `C:\SUPSERV-ERP\.data\cloudflared.log` |
 | App log (service mode) | `C:\SUPSERV-ERP\.data\server.log` |
 | Database | Docker container `supserv-db`, bound to `127.0.0.1:5432` only |
+| Test database | `supserv_test`, same container. `pnpm test` uses it and refuses to use `supserv` |
 
 **The way back in, always:** AnyDesk to the mini PC, open `http://localhost:3000`.
 That path touches neither Cloudflare nor the tunnel, so it keeps working no

@@ -41,14 +41,25 @@ const GOOD = {
   website: "",
 };
 
-let hadIdentity = false;
+/**
+ * The whole row, not a boolean.
+ *
+ * One of the tests below sets `ai` to null to prove the day-one gate notices a
+ * missing article d'imposition. With only a boolean recorded, teardown put
+ * nothing back — so on a database where the company details existed, this test
+ * blanked a field that goes on every invoice and left it blank.
+ *
+ * The suite runs against `<database>_test` now and cannot reach the real row,
+ * but the snapshot is the actual fix: a test may borrow state, and then it has
+ * to give it back.
+ */
+let previousIdentity: typeof companyIdentity.$inferSelect | undefined;
 
 beforeAll(async () => {
-  const [existing] = await db
+  [previousIdentity] = await db
     .select()
     .from(companyIdentity)
     .where(eq(companyIdentity.id, COMPANY_ID));
-  hadIdentity = Boolean(existing);
 });
 
 afterAll(async () => {
@@ -56,7 +67,15 @@ afterAll(async () => {
   await db.delete(numberingSeries).where(inArray(numberingSeries.kind, KINDS));
   await db.delete(vatRate).where(like(vatRate.authority, "TEST %"));
   await db.delete(bankAccount).where(like(bankAccount.bankName, "TEST %"));
-  if (!hadIdentity) await db.delete(companyIdentity).where(eq(companyIdentity.id, COMPANY_ID));
+
+  if (previousIdentity) {
+    await db
+      .update(companyIdentity)
+      .set(previousIdentity)
+      .where(eq(companyIdentity.id, COMPANY_ID));
+  } else {
+    await db.delete(companyIdentity).where(eq(companyIdentity.id, COMPANY_ID));
+  }
 });
 
 describe("screen 85 — until the first four are done, nothing can be issued", () => {

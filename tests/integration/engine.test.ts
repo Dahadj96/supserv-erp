@@ -47,8 +47,23 @@ async function pdfText(bytes: Buffer): Promise<string> {
  */
 const KIND = "invoice";
 
-let hadIdentity = false;
+/**
+ * The whole row, not a boolean.
+ *
+ * This used to be `hadIdentity = Boolean(existing)`, and `saveIdentity` below
+ * overwrites the row with "SARL SUPSERV (TEST ENGINE)" and an invented RC, NIF,
+ * NIS and AI. When identity existed, teardown skipped the delete and put
+ * nothing back — so the fake identifiers stayed, on the row every invoice reads
+ * its legal identity from. It never fired only because the tests were running
+ * against a database where day one had never been done.
+ *
+ * They run against `<database>_test` now, so this can no longer reach anything
+ * real. It is still a snapshot, because a test that cannot say what it found is
+ * a test that cannot put it back.
+ */
+let previousIdentity: typeof companyIdentity.$inferSelect | undefined;
 let existingSeries: typeof numberingSeries.$inferSelect | undefined;
+let previousStampDuty: typeof blockingRule.$inferSelect | undefined;
 let clientId: string;
 let supplierId: string;
 const docIds: string[] = [];
@@ -101,11 +116,10 @@ async function makeDocument(partyId: string, locale: string, total = "84200.00")
 }
 
 beforeAll(async () => {
-  const [existing] = await db
+  [previousIdentity] = await db
     .select()
     .from(companyIdentity)
     .where(eq(companyIdentity.id, COMPANY_ID));
-  hadIdentity = Boolean(existing);
 
   await saveIdentity(IDENTITY, ACTOR);
   // The logo is one of the four blocking steps on screen 85, and leaving it out
@@ -116,6 +130,10 @@ beforeAll(async () => {
   // Whatever is configured is put back in afterAll, byte for byte. A test that
   // silently resets a numbering series is a test that loses somebody's numbers.
   [existingSeries] = await db.select().from(numberingSeries).where(eq(numberingSeries.kind, KIND));
+  [previousStampDuty] = await db
+    .select()
+    .from(blockingRule)
+    .where(eq(blockingRule.code, "invoice.stampDutyThreshold"));
 
   await db.delete(numberingSeries).where(eq(numberingSeries.kind, KIND));
   await db
@@ -175,9 +193,20 @@ afterAll(async () => {
   await db.delete(party).where(inArray(party.code, ["TEST-EN-CLIENT", "TEST-EN-SUPPLIER"]));
   await db
     .update(blockingRule)
-    .set({ confirmedBy: null, confirmedOn: null })
+    .set({
+      confirmedBy: previousStampDuty?.confirmedBy ?? null,
+      confirmedOn: previousStampDuty?.confirmedOn ?? null,
+    })
     .where(eq(blockingRule.code, "invoice.stampDutyThreshold"));
-  if (!hadIdentity) await db.delete(companyIdentity).where(eq(companyIdentity.id, COMPANY_ID));
+
+  if (previousIdentity) {
+    await db
+      .update(companyIdentity)
+      .set(previousIdentity)
+      .where(eq(companyIdentity.id, COMPANY_ID));
+  } else {
+    await db.delete(companyIdentity).where(eq(companyIdentity.id, COMPANY_ID));
+  }
 });
 
 describe("screen 70 — one engine", () => {
