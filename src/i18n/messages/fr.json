@@ -1289,6 +1289,10 @@
       "emailTemplates": {
         "name": "Modèles d'e-mail",
         "what": "Les e-mails que cette entreprise écrit deux fois"
+      },
+      "assistant": {
+        "name": "L'assistant",
+        "what": "Ce qu'il peut lire, ce qu'il peut proposer, et ce qu'il ne peut pas faire"
       }
     }
   },
@@ -3501,5 +3505,54 @@
       "title": "Garanties de construction",
       "what": "Vraies parce que le système est bâti ainsi, pas parce que quelqu'un les a confirmées. Il n'y a pas d'interrupteur."
     }
+  },
+  "assistantSafety": {
+    "title": "L'assistant — ce qu'il peut faire",
+    "subtitle": "{available} outils sur {total} vous sont accessibles.",
+    "law6": "Loi 6 : l'assistant propose, il n'exécute jamais. Cette page affiche le registre que le programme utilise réellement, pas une description de celui-ci — si un outil n'est pas listé ici, il n'existe pas.",
+    "reads": "Ce qu'il peut lire",
+    "readsWhat": "Ne change rien",
+    "proposes": "Ce qu'il peut proposer",
+    "proposesWhat": "Écrit une proposition, rien d'autre",
+    "never": {
+      "issueDocument": "Émettre un document",
+      "sendEmail": "Envoyer un e-mail",
+      "recordPayment": "Enregistrer un paiement",
+      "deleteAnything": "Supprimer quoi que ce soit",
+      "changePermissions": "Changer les permissions",
+      "confirmComplianceRule": "Confirmer une règle de conformité"
+    },
+    "neverWhat": "Nommé, et implémenté nulle part",
+    "neverWhy": "Émettre et envoyer sont absents parce qu'ils sont irréversibles hors de ce bâtiment : un numéro est consommé, ou un client lit quelque chose. Supprimer est absent deux fois — le droit est retiré à l'assistant avant même que le registre soit consulté.",
+    "needs": "Demande {permission}",
+    "anySignedIn": "Toute personne connectée",
+    "needsApproval": "Approbation requise",
+    "everyAnswerCited": "Chaque réponse renvoie à l'écran où la même ligne est visible. Une réponse invérifiable est une rumeur avec un lien en moins.",
+    "proposalIsARow": "Une proposition est une ligne qui dit « quelqu'un voudra peut-être faire ceci ». Rien ne change tant qu'une personne n'a pas appuyé sur approuver.",
+    "identity": "Qui est l'assistant",
+    "identityWhat": "Exactement vous. Il détient vos permissions — vous êtes {role} — moins le droit de supprimer. Il ne voit rien que vous ne verriez pas en ouvrant l'écran vous-même.",
+    "noServiceAccount": "Pas de compte de service, pas d'élévation. C'est pourquoi ce tableau change selon qui le regarde.",
+    "noRole": "sans rôle",
+    "byRole": "Outils par rôle",
+    "byRoleWhy": "Compté depuis le registre, pas écrit à la main. Un rôle sans permission n'a aucun outil, et c'est le bon résultat.",
+    "noModel": "Aucun modèle de langage",
+    "noModelWhat": "« Ce qui est en retard » est une question d'arithmétique sur une date et un solde. Aucun modèle n'est appelé, et le courrier de l'entreprise ne quitte pas cette machine. Voir docs/DECISIONS/2026-08-28-the-assistant-does-not-guess.md.",
+    "tool": {
+      "whatIsLate": "Ce qui est en retard",
+      "whyIsItLate": "Pourquoi c'est en retard",
+      "whatIsWaitingOnThem": "Ce qui attend chez les autres",
+      "whatWouldBeRefused": "Ce qui serait refusé à l'émission",
+      "whoOwesUs": "Qui nous doit de l'argent",
+      "draftRelance": "Rédiger une relance",
+      "draftEnquiryReply": "Rédiger une réponse à une demande"
+    },
+    "neverHeading": "Ce qu'il ne peut pas faire"
+  },
+  "assistantLate": {
+    "deadlinePassed": "Échéance dépassée depuis {hours} h",
+    "deadlineImminent": "Échéance dans {hours} h",
+    "pastDue": "Facture échue",
+    "notBilled": "Livré et non facturé",
+    "unanswered": "Sans réponse"
   }
 }

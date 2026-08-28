@@ -34,6 +34,59 @@ import type { Item } from "./list";
 
 const DAY = 86_400_000;
 
+/**
+ * Deals whose deadline has ALREADY PASSED.
+ *
+ * Not part of `gather()`, and not on Today. Screen 55 filters these out twice
+ * over — once in SQL below and once in `expiringNow` — because "a deadline that
+ * expired yesterday is not urgent, it is finished, and putting it at the top of
+ * the day with a black button is cruelty".
+ *
+ * The assistant wants exactly the set Today refuses to show. "What is late"
+ * that cannot see a missed tender is not answering the question, so this is a
+ * second query rather than a loosened first one: the two screens want
+ * overlapping but genuinely different sets, and making one serve both would
+ * mean weakening the rule Today is built on.
+ *
+ * The window is bounded. A tender missed in March is history, not lateness.
+ */
+export async function missedDeadlines(withinDays = 30): Promise<Item[]> {
+  const rows = await db
+    .select({
+      id: deal.id,
+      ref: deal.ref,
+      subject: deal.subject,
+      deadlineAt: deal.deadlineAt,
+      submissionMethod: deal.submissionMethod,
+      clientName: sql<
+        string | null
+      >`coalesce(nullif(trim(${party.tradeName}), ''), ${party.legalName})`,
+    })
+    .from(deal)
+    .leftJoin(party, eq(party.id, deal.partyId))
+    .where(
+      and(
+        sql`${deal.deadlineAt} is not null`,
+        isNull(deal.lostAt),
+        sql`(${deal.decision} is null or ${deal.decision} <> 'no_bid')`,
+        sql`${deal.deadlineAt} <= now()`,
+        sql`${deal.deadlineAt} > now() - make_interval(days => ${withinDays})`,
+      ),
+    );
+
+  return rows.map((row) => ({
+    id: `deal:${row.id}`,
+    kind: "tenderDeadline" as const,
+    title: row.subject || row.ref,
+    detail: [row.clientName, row.submissionMethod].filter(Boolean).join(" · "),
+    href: `/deals/${row.id}`,
+    action: "open",
+    expiresAt: row.deadlineAt,
+    amount: "0",
+    waitingOnThem: false,
+  }));
+}
+
 /** Deals whose deadline is near. Screen 55's "Now, or it is lost". */
 async function deadlines(): Promise<Item[]> {
   const rows = await db

@@ -137,6 +137,7 @@ export default async function SettingsPage({ params }: { params: Promise<{ local
         // The count is entries, and it is never a to-do: an empty audit log on
         // a system that has issued documents would be the alarming reading.
         { key: "audit", href: "/settings/audit", state: some(audited?.n ?? 0) },
+        { key: "assistant", href: "/settings/assistant", state: null },
       ],
     },
   ];

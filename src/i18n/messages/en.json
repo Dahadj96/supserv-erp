@@ -1289,6 +1289,10 @@
       "emailTemplates": {
         "name": "Email templates",
         "what": "The emails this company writes twice"
+      },
+      "assistant": {
+        "name": "The assistant",
+        "what": "What it can read, what it can propose, and what it cannot do"
       }
     }
   },
@@ -3501,5 +3505,54 @@
       "title": "Structural guarantees",
       "what": "True because of how the system is built, not because anybody confirmed them. There is no switch."
     }
+  },
+  "assistantSafety": {
+    "title": "The assistant — what it can do",
+    "subtitle": "{available} of {total} tools are available to you.",
+    "law6": "Law 6: the assistant proposes, it never executes. This page renders the registry the runtime actually uses, not a description of it — if a tool is not listed here, it does not exist.",
+    "reads": "What it can read",
+    "readsWhat": "Changes nothing",
+    "proposes": "What it can propose",
+    "proposesWhat": "Writes a proposal, nothing else",
+    "never": {
+      "issueDocument": "Issue a document",
+      "sendEmail": "Send an email",
+      "recordPayment": "Record a payment",
+      "deleteAnything": "Delete anything",
+      "changePermissions": "Change permissions",
+      "confirmComplianceRule": "Confirm a compliance rule"
+    },
+    "neverWhat": "Named, and implemented nowhere",
+    "neverWhy": "Issuing and sending are absent because they are irreversible outside this building: a number is consumed, or a client reads something. Deleting is absent twice over — the permission is stripped from the assistant before the registry is even consulted.",
+    "needs": "Needs {permission}",
+    "anySignedIn": "Anybody signed in",
+    "needsApproval": "Approval required",
+    "everyAnswerCited": "Every answer points at the screen where the same row is visible. An answer you cannot check is a rumour with a link missing.",
+    "proposalIsARow": "A proposal is a row saying somebody might want to do this. Nothing changes until a person presses approve.",
+    "identity": "Who the assistant is",
+    "identityWhat": "Exactly you. It holds your permissions — you are {role} — minus the right to delete. It can see nothing you could not see by opening the screen yourself.",
+    "noServiceAccount": "No service account, no elevation. That is why this table changes depending on who is looking.",
+    "noRole": "without a role",
+    "byRole": "Tools by role",
+    "byRoleWhy": "Counted from the registry, not written by hand. A role with no permissions gets no tools, and that is the right answer.",
+    "noModel": "No language model",
+    "noModelWhat": "What is late is arithmetic over a date and a balance. No model is called, and the company's correspondence does not leave this machine. See docs/DECISIONS/2026-08-28-the-assistant-does-not-guess.md.",
+    "tool": {
+      "whatIsLate": "What is late",
+      "whyIsItLate": "Why it is late",
+      "whatIsWaitingOnThem": "What is waiting on other people",
+      "whatWouldBeRefused": "What would be refused at issue",
+      "whoOwesUs": "Who owes us money",
+      "draftRelance": "Draft a payment reminder",
+      "draftEnquiryReply": "Draft a reply to an enquiry"
+    },
+    "neverHeading": "What it cannot do"
+  },
+  "assistantLate": {
+    "deadlinePassed": "Deadline passed {hours} h ago",
+    "deadlineImminent": "Deadline in {hours} h",
+    "pastDue": "Invoice past due",
+    "notBilled": "Delivered and not billed",
+    "unanswered": "Unanswered"
   }
 }
