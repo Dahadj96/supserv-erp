@@ -3460,5 +3460,46 @@
       "update": "Mis à jour",
       "verify": "Vérifié"
     }
+  },
+  "complianceNow": {
+    "title": "Conformité",
+    "subtitle": "{confirmed} règle(s) refusent, {unconfirmed} avertissent seulement parce que personne ne les a confirmées.",
+    "theProfile": "Le profil et ses règles",
+    "cannotIssue": "Rien ne peut être émis pour l'instant : il manque {missing}. Ce n'est pas une règle de conformité — c'est le jour un qui n'est pas terminé.",
+    "finishDayOne": "Terminer le jour un",
+    "noCounterparty": "Sans tiers",
+    "wouldBeRefused": "Serait refusé",
+    "wouldGoThrough": "Passerait quand même",
+    "nobodyConfirmed": "personne ne l'a confirmée",
+    "fix": "Corriger",
+    "confirmedBy": "Confirmée par {who}, le {on}",
+    "notConfirmed": "Confirmée par personne",
+    "confirmThem": "Confirmer une règle",
+    "notALawyer": "Ce logiciel applique des règles ; il n'affirme pas qu'elles sont la loi. Chaque règle nomme sa source et la personne qui l'a confirmée. Rien ici ne remplace votre comptable.",
+    "enforcement": {
+      "blocks": "Refuse",
+      "warns": "Avertit",
+      "always": "Toujours"
+    },
+    "drafts": {
+      "title": "Ce qui se passerait à l'émission",
+      "checked": "{count} brouillon(s) examinés",
+      "none": "Aucun brouillon à examiner.",
+      "allClear": "Les {count} brouillons passent toutes les règles évaluables.",
+      "cashCaveat": "Le droit de timbre dépend d'un règlement en espèces, et ce n'est pas une colonne du document : c'est une case cochée au moment de l'émission. Cette règle n'est donc pas évaluée ici, plutôt que déclarée conforme sans l'avoir vérifiée."
+    },
+    "nif": {
+      "title": "Clients sans NIF",
+      "why": "Refusé à l'émission",
+      "none": "Tous les clients ont un NIF.",
+      "alreadyIssued": "{count} document(s) déjà émis"
+    },
+    "rules": {
+      "title": "Les règles, et ce qu'elles font"
+    },
+    "structural": {
+      "title": "Garanties de construction",
+      "what": "Vraies parce que le système est bâti ainsi, pas parce que quelqu'un les a confirmées. Il n'y a pas d'interrupteur."
+    }
   }
 }

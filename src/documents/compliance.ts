@@ -63,8 +63,17 @@ const CHECKS: Record<string, (s: CheckSubject) => boolean> = {
   "proforma.validityPeriod": (s) => s.kind === "proforma",
 };
 
-export async function check(subject: CheckSubject): Promise<Finding[]> {
-  const rules = await db.select().from(blockingRule);
+/**
+ * `rules` is injectable so screen 27 can check every draft in the company
+ * without re-reading `blocking_rule` once per document. Left optional because
+ * every other caller checks exactly one document and should not have to think
+ * about it.
+ */
+export async function check(
+  subject: CheckSubject,
+  rules?: (typeof blockingRule.$inferSelect)[],
+): Promise<Finding[]> {
+  rules ??= await db.select().from(blockingRule);
   const findings: Finding[] = [];
 
   for (const rule of rules) {

@@ -3460,5 +3460,46 @@
       "update": "Updated",
       "verify": "Verified"
     }
+  },
+  "complianceNow": {
+    "title": "Compliance",
+    "subtitle": "{confirmed} rule(s) refuse; {unconfirmed} only warn, because nobody has confirmed them.",
+    "theProfile": "The profile and its rules",
+    "cannotIssue": "Nothing can be issued yet: {missing} is missing. That is not a compliance rule — it is day one, unfinished.",
+    "finishDayOne": "Finish day one",
+    "noCounterparty": "No counterparty",
+    "wouldBeRefused": "Would be refused",
+    "wouldGoThrough": "Would go through anyway",
+    "nobodyConfirmed": "nobody has confirmed it",
+    "fix": "Fix",
+    "confirmedBy": "Confirmed by {who}, {on}",
+    "notConfirmed": "Confirmed by nobody",
+    "confirmThem": "Confirm a rule",
+    "notALawyer": "This software enforces rules; it does not assert that they are the law. Each one names its source and the person who confirmed it. None of this replaces your accountant.",
+    "enforcement": {
+      "blocks": "Refuses",
+      "warns": "Warns",
+      "always": "Always"
+    },
+    "drafts": {
+      "title": "What would happen at issue",
+      "checked": "{count} draft(s) examined",
+      "none": "No drafts to examine.",
+      "allClear": "All {count} drafts pass every rule that can be evaluated.",
+      "cashCaveat": "Stamp duty depends on settlement in cash, and that is not a column on the document: it is a box ticked at the moment of issue. So the rule is not evaluated here, rather than reported as a pass it did not earn."
+    },
+    "nif": {
+      "title": "Clients with no NIF",
+      "why": "Refused at issue",
+      "none": "Every client has a NIF.",
+      "alreadyIssued": "{count} already issued"
+    },
+    "rules": {
+      "title": "The rules, and what they do"
+    },
+    "structural": {
+      "title": "Structural guarantees",
+      "what": "True because of how the system is built, not because anybody confirmed them. There is no switch."
+    }
   }
 }
