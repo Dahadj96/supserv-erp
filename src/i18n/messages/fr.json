@@ -3428,7 +3428,8 @@
       "sourcing_request": "Consultation fournisseur",
       "sourcing_response": "Réponse fournisseur",
       "user_role": "Rôle",
-      "vat_rate": "Taux de TVA"
+      "vat_rate": "Taux de TVA",
+      "assistant_proposal": "Proposition de l'assistant"
     },
     "action": {
       "alias": {
@@ -3554,5 +3555,48 @@
     "pastDue": "Facture échue",
     "notBilled": "Livré et non facturé",
     "unanswered": "Sans réponse"
+  },
+  "proposals": {
+    "title": "Propositions de l'assistant",
+    "subtitle": "{waiting} en attente d'une décision.",
+    "whatItCanDo": "Ce que l'assistant peut faire",
+    "twoGates": "Deux verrous, pas un. Approuver crée un enregistrement — jamais un envoi : l'ERP ne détient que Mail.Read, et c'est vous qui envoyez depuis Outlook. Rien ici ne part tout seul.",
+    "written": "Proposition écrite. Rien d'autre n'a changé.",
+    "decided": "Décision enregistrée.",
+    "decidedAndCreated": "Approuvé. Une relance a été créée en brouillon — elle n'est pas envoyée.",
+    "waiting": "En attente",
+    "noneWaiting": "Aucune proposition en attente. L'assistant n'en écrit que si on lui demande — rien ne tourne en arrière-plan.",
+    "checkIt": "Vérifier :",
+    "note": "Note (facultative)",
+    "approve": "Approuver",
+    "decline": "Refuser",
+    "approveCreates": "Crée un brouillon de relance, non envoyé.",
+    "cannotDecide": "Il faut le droit d'émettre des factures pour décider de celle-ci.",
+    "decidedTitle": "Déjà décidées",
+    "keptWhy": "Gardées, refus compris",
+    "created": "a créé : {what}",
+    "couldChase": "Factures échues sans proposition",
+    "nothingToChase": "Rien à relancer.",
+    "askForADraft": "Demander un brouillon",
+    "nothingRuns": "Cette liste est calculée, pas une file d'attente. Aucun travail de fond ne rédige de propositions que personne n'a demandées.",
+    "status": {
+      "waiting": "En attente",
+      "approved": "Approuvée",
+      "declined": "Refusée",
+      "withdrawn": "Retirée"
+    },
+    "error": {
+      "notOverdue": "Cette facture n'est pas échue.",
+      "noSuchInvoice": "Facture introuvable.",
+      "noTemplate": "Aucun modèle de relance dans la langue de ce client.",
+      "templateBlank": "Le modèle de relance est vide. L'assistant n'invente pas la formulation de SUPSERV — écrivez-la d'abord dans Paramètres → Modèles d'e-mail.",
+      "notPermitted": "Vous n'avez pas le droit nécessaire.",
+      "noCitations": "Une proposition invérifiable n'est pas une proposition.",
+      "emptyBody": "Rien à proposer.",
+      "alreadyDecided": "Cette proposition a déjà été décidée.",
+      "noSuchProposal": "Proposition introuvable.",
+      "unknownTool": "Outil inconnu.",
+      "missingSubject": "La proposition ne dit pas sur quoi elle porte."
+    }
   }
 }

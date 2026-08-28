@@ -3428,7 +3428,8 @@
       "sourcing_request": "Sourcing request",
       "sourcing_response": "Supplier response",
       "user_role": "Role",
-      "vat_rate": "VAT rate"
+      "vat_rate": "VAT rate",
+      "assistant_proposal": "Assistant proposal"
     },
     "action": {
       "alias": {
@@ -3554,5 +3555,48 @@
     "pastDue": "Invoice past due",
     "notBilled": "Delivered and not billed",
     "unanswered": "Unanswered"
+  },
+  "proposals": {
+    "title": "Assistant proposals",
+    "subtitle": "{waiting} waiting on a decision.",
+    "whatItCanDo": "What the assistant can do",
+    "twoGates": "Two gates, not one. Approving creates a record — never a send: the ERP holds only Mail.Read, and you send from Outlook. Nothing here goes out on its own.",
+    "written": "Proposal written. Nothing else changed.",
+    "decided": "Decision recorded.",
+    "decidedAndCreated": "Approved. A reminder was created as a draft — it has not been sent.",
+    "waiting": "Waiting",
+    "noneWaiting": "No proposals waiting. The assistant writes one only when asked — nothing runs in the background.",
+    "checkIt": "Check it:",
+    "note": "Note (optional)",
+    "approve": "Approve",
+    "decline": "Decline",
+    "approveCreates": "Creates a draft reminder, unsent.",
+    "cannotDecide": "Deciding this one needs the permission to issue invoices.",
+    "decidedTitle": "Already decided",
+    "keptWhy": "Kept, declines included",
+    "created": "created: {what}",
+    "couldChase": "Overdue invoices with no proposal",
+    "nothingToChase": "Nothing to chase.",
+    "askForADraft": "Ask for a draft",
+    "nothingRuns": "This list is computed, not a queue. No background job writes proposals nobody asked for.",
+    "status": {
+      "waiting": "Waiting",
+      "approved": "Approved",
+      "declined": "Declined",
+      "withdrawn": "Withdrawn"
+    },
+    "error": {
+      "notOverdue": "That invoice is not overdue.",
+      "noSuchInvoice": "No such invoice.",
+      "noTemplate": "There is no reminder template in this client's language.",
+      "templateBlank": "The reminder template is blank. The assistant does not invent SUPSERV's wording — write it first, in Settings → Email templates.",
+      "notPermitted": "You do not hold the permission that needs.",
+      "noCitations": "A proposal nobody can check is not a proposal.",
+      "emptyBody": "Nothing to propose.",
+      "alreadyDecided": "That proposal has already been decided.",
+      "noSuchProposal": "No such proposal.",
+      "unknownTool": "Unknown tool.",
+      "missingSubject": "The proposal does not say what it is about."
+    }
   }
 }

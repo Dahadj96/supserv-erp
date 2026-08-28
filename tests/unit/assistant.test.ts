@@ -34,32 +34,65 @@ function walk(dir: string): string[] {
 
 describe("nothing in src/assistant writes to a business table", () => {
   /**
-   * The load-bearing test. Every file under `src/assistant` is read and checked
-   * for the three Drizzle verbs that change data.
+   * The load-bearing test. Every file under `src/assistant` is read, every
+   * Drizzle write is found, and the table it targets has to be one of two.
    *
-   * A tool that inserted into `document` or updated `payment` would pass a type
-   * check, pass a permission check, and quietly break the only law that makes
-   * an assistant safe to point at a real company's data. It would not pass this.
+   * It started as a blanket ban on `db.insert`, which was right until the
+   * propose half needed somewhere to put a proposal. A blanket ban would have
+   * been satisfied by moving `proposals.ts` one directory sideways, which
+   * protects nothing — so the rule is now the one that was always meant:
+   * the assistant may record that it proposed something, and may touch no
+   * business table at all.
+   *
+   * `assistant_proposal` is not a business fact. It is a row saying somebody
+   * might want to do this, and `src/domain/assistant/apply.ts` — outside this
+   * folder, and only ever reached by a person pressing approve — is what turns
+   * one into a record.
    */
+  const ALLOWED = new Set(["assistantProposal", "auditEntry"]);
   const files = walk(join(root, "src/assistant"));
 
   it("has files to check", () => {
-    expect(files.length).toBeGreaterThan(1);
+    expect(files.length).toBeGreaterThan(2);
   });
 
   for (const file of files) {
     const rel = file.slice(root.length + 1).replaceAll("\\", "/");
 
-    it(`${rel} does not write`, () => {
+    it(`${rel} writes only where it may`, () => {
       const source = readFileSync(file, "utf8")
         .replace(/\/\*[\s\S]*?\*\//g, "")
         .replace(/^\s*\/\/.*$/gm, "");
 
-      for (const verb of ["db.insert(", "db.update(", "db.delete(", "tx.insert(", "tx.update("]) {
-        expect(source, `${rel} contains ${verb}`).not.toContain(verb);
+      // Any transaction at all would let a write hide behind a callback.
+      expect(source, `${rel} opens a transaction`).not.toContain("db.transaction(");
+
+      for (const match of source.matchAll(/\bdb\.(insert|update|delete)\(\s*([A-Za-z_$][\w$]*)/g)) {
+        const [, verb, table] = match;
+        expect(ALLOWED, `${rel} does db.${verb}(${table})`).toContain(table);
       }
     });
   }
+
+  it("never deletes, even what it may write", () => {
+    // A proposal is kept whatever was decided. "The assistant suggested
+    // chasing TOUATGAZ on the 3rd and I said no" is worth having in November.
+    for (const file of files) {
+      const source = readFileSync(file, "utf8");
+      expect(source, `${file} deletes`).not.toContain("db.delete(");
+    }
+  });
+});
+
+describe("approving lives outside the assistant", () => {
+  it("keeps the applier in src/domain, where writes are allowed", () => {
+    // The directory boundary IS the enforcement. If this file ever moved under
+    // `src/assistant`, the test above would start allowing business writes
+    // there — so its location is asserted rather than assumed.
+    const apply = join(root, "src/domain/assistant/apply.ts");
+    expect(() => readFileSync(apply, "utf8")).not.toThrow();
+    expect(readFileSync(apply, "utf8")).toContain("draftRelance(");
+  });
 });
 
 describe("the registry", () => {

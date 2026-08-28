@@ -175,9 +175,34 @@ export const MACHINES = {
     entity: "relance",
     initial: "draft",
     to: {
-      draft: ["sent"],
-      sent: ["replied"],
+      draft: ["sent", "failed"],
+      sent: ["delivered", "replied", "failed"],
+      delivered: ["replied"],
       replied: [],
+      // A bounce is not the end of chasing — the address gets corrected and it
+      // goes out again.
+      failed: ["draft"],
+    },
+    unwritten: ["delivered", "failed"],
+    legacy: [],
+  },
+
+  /**
+   * Screen 44 — LAW 6's loop.
+   *
+   * `waiting` is where a proposal sits doing nothing. The three ways out are
+   * all terminal, and none of them is "the assistant changed its mind": a
+   * proposal is withdrawn by the person who asked for it, not by the thing
+   * that made it.
+   */
+  assistant_proposal: {
+    entity: "assistant_proposal",
+    initial: "waiting",
+    to: {
+      waiting: ["approved", "declined", "withdrawn"],
+      approved: [],
+      declined: [],
+      withdrawn: [],
     },
     unwritten: [],
     legacy: [],
