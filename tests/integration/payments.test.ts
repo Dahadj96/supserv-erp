@@ -49,7 +49,7 @@ const TODAY = new Date(Date.UTC(2026, 7, 18));
 beforeAll(async () => {
   const [client] = await db
     .insert(party)
-    .values({ code: `CL-6${stamp}`, legalName: "TEST PAY URBACON", tradeName: "URBACON (UCC)" })
+    .values({ code: `CL-T6${stamp}`, legalName: "TEST PAY URBACON", tradeName: "URBACON (UCC)" })
     .returning({ id: party.id });
   clientId = client?.id as string;
   await db.insert(partyRole).values({ partyId: clientId, role: "client" });

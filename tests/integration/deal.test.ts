@@ -2,7 +2,7 @@ import { eq, inArray } from "drizzle-orm";
 import { afterAll, beforeAll, describe, expect, it } from "vitest";
 import { db } from "@/db";
 import { auditEntry } from "@/db/schema/control";
-import { deal, dealLine } from "@/db/schema/deal";
+import { deal, dealLine, priceQuote } from "@/db/schema/deal";
 import { document } from "@/db/schema/document";
 import { party, partyRole } from "@/db/schema/party";
 import { sourcingRequest, sourcingResponse } from "@/db/schema/sourcing";
@@ -16,6 +16,8 @@ import {
   recordLost,
   reopen,
 } from "@/domain/deal/deal";
+import { replaceLines } from "@/domain/deal/lines";
+import { addQuote, quotesFor } from "@/domain/deal/price-store";
 
 /**
  * Screens 05 and 06 — the enquiry, against a real database.
@@ -32,10 +34,15 @@ beforeAll(async () => {
   const [client] = await db
     .insert(party)
     .values({
-      // A code shaped like a real one. `nextCode` in the importer counts from
-      // these, and a test fixture that does not fit the shape used to break it
-      // — see "is not derailed by a company whose code we did not allocate".
-      code: `CL-9${Date.now().toString().slice(-5)}`,
+      // A code with a LETTER in it, so `nextCode` in the importer skips it.
+      //
+      // That guard exists because a code the system did not allocate must not
+      // be counted from — and a test fixture is exactly such a code. Fixtures
+      // here used to read `CL-9…`, which is numeric, so the importer counted
+      // from a six-digit number no company will ever have and screen 62's own
+      // test failed on the shape of the codes it had just allocated. See "is
+      // not derailed by a company whose code we did not allocate".
+      code: `CL-T9${Date.now().toString().slice(-5)}`,
       legalName: "GROUPEMENT TOUATGAZ",
       tradeName: "TOUATGAZ",
     })
@@ -319,5 +326,147 @@ describe("the reference allocator", () => {
     // is what stops two people opening two emails from both getting 0141.
     const ref = await nextDealRef(db, new Date());
     expect(ref).toMatch(/^ENQ-\d{4}-\d{4}$/);
+  });
+});
+
+describe("correcting the lines of an enquiry that already has prices on them", () => {
+  /**
+   * The paste was wrong, somebody has already been round the shops, and the
+   * line table is corrected.
+   *
+   * This is the ordinary Tuesday case and it used to be a 500. `price_quote`
+   * requires a subject — `item_id` or `deal_line_id` — and `deal_line_id` is
+   * `on delete set null`, so deleting a line that carried a SHOP-COUNTER price
+   * for an article nobody has matched to the catalogue made Postgres try to
+   * write a row with neither, and refuse. Screen 06's confirm button threw, and
+   * the message said nothing a person could act on.
+   *
+   * Screen 86 calls that price "the shop-counter case and it is normal, not an
+   * error", so the fix cannot be to refuse the price or to delete it.
+   */
+  it("keeps a shop-counter price when the line it was captured against is replaced", async () => {
+    const dealId = await createDeal(
+      {
+        partyId: clientId,
+        subject: "Correction du bordereau collé",
+        contactPersonId: null,
+        clientReference: null,
+        receivedAt: new Date(),
+        deadlineAt: null,
+        submissionMethod: "email",
+        currency: "DZD",
+        ownerId: null,
+        source: "manual",
+        intakeMessageId: null,
+        expectedValue: null,
+        clientInstructions: null,
+      },
+      ACTOR,
+    );
+    made.push(dealId);
+
+    await replaceLines({
+      dealId,
+      lines: [
+        {
+          position: 1,
+          reference: "VP-80",
+          designation: "Vanne papillon DN80",
+          qty: "12",
+          unit: "U",
+          readAs: "numbered",
+          qtyAssumed: false,
+        },
+        {
+          position: 2,
+          reference: null,
+          designation: "Raccord bride 2 pouces",
+          qty: "40",
+          unit: "U",
+          readAs: "numbered",
+          qtyAssumed: false,
+        },
+      ],
+      actorId: ACTOR,
+    });
+
+    const [first] = await db
+      .select({ id: dealLine.id, itemId: dealLine.itemId })
+      .from(dealLine)
+      .where(eq(dealLine.dealId, dealId))
+      .orderBy(dealLine.position);
+
+    // Unmatched, which is the normal state of a line somebody just pasted.
+    expect(first?.itemId).toBeNull();
+
+    const quoteId = await addQuote({
+      dealId,
+      dealLineId: first?.id as string,
+      source: "shop_visit",
+      supplierName: "Ets Chergui, Adrar",
+      price: "21400",
+      currency: "DZD",
+      isExclVat: true,
+      isVerbal: true,
+      validUntil: null,
+      capturedPlace: "Ets Chergui, Adrar",
+      capturedFrom: "le vendeur",
+      actorId: ACTOR,
+    });
+
+    // The correction: the client actually asked for DN100, and there is a
+    // third line nobody had noticed.
+    await replaceLines({
+      dealId,
+      lines: [
+        {
+          position: 1,
+          reference: "VP-100",
+          designation: "Vanne papillon DN100",
+          qty: "12",
+          unit: "U",
+          readAs: "numbered",
+          qtyAssumed: false,
+        },
+        {
+          position: 2,
+          reference: null,
+          designation: "Raccord bride 2 pouces",
+          qty: "40",
+          unit: "U",
+          readAs: "numbered",
+          qtyAssumed: false,
+        },
+        {
+          position: 3,
+          reference: null,
+          designation: "Mise à la terre",
+          qty: "8",
+          unit: "U",
+          readAs: "numbered",
+          qtyAssumed: false,
+        },
+      ],
+      actorId: ACTOR,
+    });
+
+    const lines = await db.select().from(dealLine).where(eq(dealLine.dealId, dealId));
+    expect(lines).toHaveLength(3);
+
+    // The price survives, and it still says what it was for. Without the
+    // designation on the row it would survive as 21 400 DZD for nothing.
+    const [quote] = await db.select().from(priceQuote).where(eq(priceQuote.id, quoteId));
+    expect(quote?.price).toBe("21400.0000");
+    expect(quote?.dealLineId).toBeNull();
+    expect(quote?.designation).toBe("Vanne papillon DN80");
+    expect(quote?.dealId).toBe(dealId);
+  });
+
+  it("still shows it on the enquiry, marked as no longer attached to a line", async () => {
+    const dealId = made[made.length - 1] as string;
+    const quotes = await quotesFor(dealId);
+    const orphan = quotes.find((q) => q.dealLineId === null);
+    expect(orphan?.designation).toBe("Vanne papillon DN80");
+    expect(orphan?.isVerbal).toBe(true);
   });
 });

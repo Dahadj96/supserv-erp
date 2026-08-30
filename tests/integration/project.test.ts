@@ -94,7 +94,7 @@ beforeAll(async () => {
   const [client] = await db
     .insert(party)
     .values({
-      code: `CL-7${Date.now().toString().slice(-5)}`,
+      code: `CL-T7${Date.now().toString().slice(-5)}`,
       legalName: "SADEG DD ADRAR (TEST PROJECT)",
       tradeName: "SADEG",
     })

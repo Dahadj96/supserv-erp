@@ -49,6 +49,15 @@ export type Quote = {
   id: string;
   dealLineId: string | null;
   itemId: string | null;
+  /**
+   * What the price was for, in words, as the line read when it was captured.
+   *
+   * The only thing left once somebody corrects a pasted line and the row it
+   * pointed at is gone. A quote with `dealLineId: null` and a designation is
+   * not an orphan — it is a price for an article on this enquiry that the line
+   * table no longer lists in those words.
+   */
+  designation: string | null;
   source: PriceSource;
   supplierName: string | null;
   price: string;

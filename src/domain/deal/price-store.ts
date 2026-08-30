@@ -36,6 +36,7 @@ export async function quotesFor(dealId: string): Promise<Quote[]> {
       id: priceQuote.id,
       dealLineId: priceQuote.dealLineId,
       itemId: priceQuote.itemId,
+      designation: priceQuote.designation,
       source: priceQuote.source,
       price: priceQuote.price,
       currency: priceQuote.currency,
@@ -55,6 +56,7 @@ export async function quotesFor(dealId: string): Promise<Quote[]> {
     id: row.id,
     dealLineId: row.dealLineId,
     itemId: row.itemId,
+    designation: row.designation,
     source: (isPriceSource(row.source) ? row.source : "supplier_email") as PriceSource,
     supplierName: row.supplierTrade?.trim() || row.supplierLegal || null,
     price: row.price,
@@ -170,7 +172,7 @@ export async function addQuote(input: NewQuote): Promise<string> {
   if (row.lostAt) throw new PriceRefused("closed");
 
   const [line] = await db
-    .select({ id: dealLine.id, itemId: dealLine.itemId })
+    .select({ id: dealLine.id, itemId: dealLine.itemId, designation: dealLine.designation })
     .from(dealLine)
     .where(and(eq(dealLine.id, input.dealLineId), eq(dealLine.dealId, input.dealId)))
     .limit(1);
@@ -192,6 +194,10 @@ export async function addQuote(input: NewQuote): Promise<string> {
       itemId: line.itemId,
       dealLineId: line.id,
       dealId: input.dealId,
+      // Copied now, while the line exists. It is what the row will have left
+      // to say for itself once somebody corrects the paste and the line is
+      // replaced — see the column's note in the schema.
+      designation: line.designation,
       source: input.source,
       partyId,
       price,

@@ -234,6 +234,21 @@ export const priceQuote = pgTable("price_quote", {
    *  price, which is exactly what it always was. */
   dealId: uuid("deal_id").references(() => deal.id, { onDelete: "set null" }),
 
+  /**
+   * WHAT THE PRICE WAS FOR, in words, copied from the line when it was captured.
+   *
+   * Redundant while the line exists and the only thing left when it does not.
+   * Screen 06 replaces an enquiry's lines whenever somebody corrects a paste,
+   * and `deal_line_id` is `on delete set null` — so a shop-counter price for
+   * an article nobody has matched to the catalogue lost its last subject and
+   * `price_quote_has_a_subject` refused the whole correction. Screen 86 calls
+   * that price normal, not an error, so the answer is not to refuse it or
+   * delete it: it is for the row to remember, on its own, what it was a price
+   * for. "21 400 DZD, vanne papillon DN80, Ets Chergui, 4 November" is
+   * evidence. "21 400 DZD" is not.
+   */
+  designation: text("designation"),
+
   /** supplier_email | supplier_proforma | shop_visit | phone | internal_costing */
   source: text("source").notNull(),
   /** Who quoted it. Null for internal_costing — that one is us. */

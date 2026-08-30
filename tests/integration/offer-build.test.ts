@@ -46,14 +46,14 @@ Cordialement`;
 beforeAll(async () => {
   const [client] = await db
     .insert(party)
-    .values({ code: `CL-7${stamp}`, legalName: "TEST OB CLIENT", nif: "000116001234567" })
+    .values({ code: `CL-T7${stamp}`, legalName: "TEST OB CLIENT", nif: "000116001234567" })
     .returning({ id: party.id });
   clientId = client?.id as string;
   await db.insert(partyRole).values({ partyId: clientId, role: "client" });
 
   const [supplier] = await db
     .insert(party)
-    .values({ code: `SU-7${stamp}`, legalName: "TEST OB HYDRO" })
+    .values({ code: `SU-T7${stamp}`, legalName: "TEST OB HYDRO" })
     .returning({ id: party.id });
   supplierId = supplier?.id as string;
   await db.insert(partyRole).values({ partyId: supplierId, role: "supplier" });

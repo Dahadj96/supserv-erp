@@ -37,7 +37,7 @@ const requests: string[] = [];
 beforeAll(async () => {
   const [client] = await db
     .insert(party)
-    .values({ code: `CL-8${stamp}`, legalName: "TEST SRC CLIENT" })
+    .values({ code: `CL-T8${stamp}`, legalName: "TEST SRC CLIENT" })
     .returning({ id: party.id });
   clientId = client?.id as string;
   await db.insert(partyRole).values({ partyId: clientId, role: "client" });
@@ -45,7 +45,7 @@ beforeAll(async () => {
   for (const [i, name] of ["HYDRO-EQUIP", "VANNE ALGERIE", "TECHNO FLUIDES"].entries()) {
     const [supplier] = await db
       .insert(party)
-      .values({ code: `SU-8${stamp}${i}`, legalName: `TEST SRC ${name}` })
+      .values({ code: `SU-T8${stamp}${i}`, legalName: `TEST SRC ${name}` })
       .returning({ id: party.id });
     supplierIds.push(supplier?.id as string);
     await db.insert(partyRole).values({ partyId: supplier?.id as string, role: "supplier" });

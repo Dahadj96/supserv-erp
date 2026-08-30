@@ -36,7 +36,7 @@ const notes: string[] = [];
 beforeAll(async () => {
   const [client] = await db
     .insert(party)
-    .values({ code: `CL-8${stamp}`, legalName: "TEST DEL BALADNA", tradeName: "BALADNA ALGERIA" })
+    .values({ code: `CL-T8${stamp}`, legalName: "TEST DEL BALADNA", tradeName: "BALADNA ALGERIA" })
     .returning({ id: party.id });
   clientId = client?.id as string;
   await db.insert(partyRole).values({ partyId: clientId, role: "client" });

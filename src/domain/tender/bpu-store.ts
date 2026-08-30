@@ -262,6 +262,7 @@ export async function applyLastPrices(opts: {
         itemId: idOf.get(row.position)?.itemId ?? null,
         dealLineId: idOf.get(row.position)?.id ?? null,
         dealId: opts.dealId,
+        designation: row.designation,
         source: "internal_costing",
         partyId: null,
         price: row.lastPaid as string,

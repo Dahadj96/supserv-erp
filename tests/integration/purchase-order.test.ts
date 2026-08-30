@@ -51,7 +51,7 @@ beforeAll(async () => {
   const [supplier] = await db
     .insert(party)
     .values({
-      code: `SU-9${Date.now().toString().slice(-5)}`,
+      code: `SU-T9${Date.now().toString().slice(-5)}`,
       legalName: "SARL HYDRO-EQUIP (TEST)",
       tradeName: "HYDRO-EQUIP",
       paymentTerms: "50% on order, 50% on delivery",
