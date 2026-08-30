@@ -142,6 +142,20 @@ what the supplier bills is compared with what they quoted:
 - `tests/integration/purchase-order.test.ts` :: "says the client can be invoiced for what arrived, and not in full"
 - `tests/integration/purchase-order.test.ts` :: "writes nothing"
 
+Screens 07 and 08 joined it the same day. `/tenders` had been a dead link in the
+sidebar since phase 0, and tenders are how this company gets most of its work:
+
+- `tests/unit/tender-dossier.test.ts` :: "EXPIRES BEFORE DEPOSIT — valid today, useless on the day it matters"
+- `tests/unit/tender-dossier.test.ts` :: "does not soften that into 'expiring soon' just because it is within thirty days"
+- `tests/unit/tender-dossier.test.ts` :: "does not round a folder that will be refused up to the next number"
+- `tests/unit/tender-dossier.test.ts` :: "does not carry a bid bond into a consultation"
+- `tests/integration/tender.test.ts` :: "marks the CASNOS attestation as expiring before the deposit"
+- `tests/integration/tender.test.ts` :: "leaves the CNAS attestation merely expiring, because it survives the day"
+- `tests/integration/tender.test.ts` :: "changes its mind when the paper is renewed, with nothing else touched"
+- `tests/integration/tender.test.ts` :: "holds the company's papers once, not once per tender"
+- `tests/integration/tender.test.ts` :: "refuses while a piece would have the bid thrown out"
+- `tests/integration/tender.test.ts` :: "allows it with a reason, and freezes what was blocking at the time"
+
 ---
 
 ## Phase 5 — Money

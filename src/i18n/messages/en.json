@@ -3470,7 +3470,9 @@
       "sourcing_response": "Supplier response",
       "user_role": "Role",
       "vat_rate": "VAT rate",
-      "assistant_proposal": "Assistant proposal"
+      "assistant_proposal": "Assistant proposal",
+      "tender": "Tender",
+      "company_credential": "Company paper"
     },
     "action": {
       "alias": {
@@ -3504,7 +3506,15 @@
       "undo": "Undone",
       "unreadable": "Unreadable",
       "update": "Updated",
-      "verify": "Verified"
+      "verify": "Verified",
+      "submit": "Deposited",
+      "deactivate": "Switched off",
+      "activate": "Switched on",
+      "approve": "Approved",
+      "decline": "Declined",
+      "propose": "Proposed",
+      "send": "Sent",
+      "settle": "Settled"
     }
   },
   "complianceNow": {
@@ -3903,5 +3913,96 @@
       "title": "Supplier invoices",
       "theirNumber": "Numbered by the supplier, never by us — the number on the paper is the one everybody quotes."
     }
+  },
+  "tenders": {
+    "summary": "{open, plural, one {# open} other {# open}} · {closing, plural, =0 {none closing within 48 hours} one {# closing within 48 hours} other {# closing within 48 hours}} · {incomplete, plural, =0 {every folder complete} one {# folder incomplete} other {# folders incomplete}}",
+    "none": "No tenders yet. A tender is an enquiry answering a formal procedure — open the enquiry and record the procedure, the place of deposit and the bid bond, and it appears here with its folder.",
+    "noDeadline": "no closing time recorded",
+    "submittedOn": "Submitted {on}",
+    "facet": {
+      "all": "All",
+      "open": "Open",
+      "submitted": "Submitted",
+      "awarded": "Awarded",
+      "lost": "Lost"
+    },
+    "procedure": {
+      "aonr": "AONR",
+      "aoo": "AOO",
+      "consultation": "Consultation",
+      "rfq": "RFQ",
+      "gre_a_gre": "Gré à gré"
+    },
+    "column": {
+      "ref": "Ref",
+      "authority": "Authority / client",
+      "object": "Object",
+      "procedure": "Type",
+      "submission": "Submission",
+      "caution": "Caution",
+      "dossier": "Dossier",
+      "closes": "Closes"
+    }
+  },
+  "tender": {
+    "closes": "closes {at}",
+    "banner": "Dossier {percent}% complete. {blocking, plural, one {# item will have the bid rejected} other {# items will have the bid rejected}} if it is deposited as it is.",
+    "section": {
+      "administratif": "Dossier administratif",
+      "technique": "Dossier technique",
+      "financier": "Dossier financier"
+    },
+    "readyOf": "{ready} of {total} ready",
+    "piece": {
+      "declaration_souscrire": "Déclaration à souscrire",
+      "declaration_probite": "Déclaration de probité",
+      "rc_copy": "Copy of the registre de commerce",
+      "cnas": "CNAS attestation, up to date",
+      "casnos": "CASNOS attestation, up to date",
+      "extrait_role": "Extrait de rôle apuré",
+      "casier_judiciaire": "Casier judiciaire of the gérant",
+      "statuts": "Statuts of the company",
+      "comptes_sociaux": "Attestation de dépôt des comptes sociaux",
+      "qualification": "Certificat de qualification et classification",
+      "references": "Références professionnelles",
+      "moyens_humains": "Moyens humains — list and qualifications",
+      "moyens_materiels": "Moyens matériels — equipment list",
+      "planning": "Planning d'exécution",
+      "lettre_soumission": "Lettre de soumission",
+      "bpu": "Bordereau des prix unitaires",
+      "dqe": "Détail quantitatif et estimatif",
+      "caution": "Caution de soumission"
+    },
+    "state": {
+      "ready": "Ready",
+      "expiring": "Expires soon",
+      "expiresBeforeDeposit": "Expires before deposit",
+      "expired": "Expired",
+      "missing": "Not on file"
+    },
+    "notOnFile": "not on file",
+    "onFile": "on file",
+    "expiresOn": "expires {on}",
+    "noPieces": "This tender's folder is empty. The pieces are whatever its cahier des charges asks for — nothing here asserts what the law requires.",
+    "days": "{n} days",
+    "readiness": "Readiness",
+    "noReceipt": "no receipt reference recorded",
+    "submittedOn": "Deposited {on}. Receipt: {receipt}.",
+    "submission": {
+      "title": "Submission",
+      "method": "Method",
+      "place": "Place",
+      "closes": "Closes",
+      "opens": "Opening session",
+      "caution": "Caution de soumission",
+      "validity": "Offer validity"
+    },
+    "blocking": {
+      "title": "Blocking now",
+      "count": "{n} items",
+      "why": "Missing, expired, or valid today and expired on the day of the deposit. The date that decides is not today."
+    },
+    "thisIsAnEnquiry": "This is an enquiry",
+    "thisIsAnEnquiryWhy": "A tender is a deal with a procedure. The client, the lines, the offer and the outcome all live on the enquiry, and every screen that reads them reads the same record."
   }
 }

@@ -3470,7 +3470,9 @@
       "sourcing_response": "Réponse fournisseur",
       "user_role": "Rôle",
       "vat_rate": "Taux de TVA",
-      "assistant_proposal": "Proposition de l'assistant"
+      "assistant_proposal": "Proposition de l'assistant",
+      "tender": "Appel d'offres",
+      "company_credential": "Pièce de la société"
     },
     "action": {
       "alias": {
@@ -3504,7 +3506,15 @@
       "undo": "Annulé",
       "unreadable": "Illisible",
       "update": "Mis à jour",
-      "verify": "Vérifié"
+      "verify": "Vérifié",
+      "submit": "Déposé",
+      "deactivate": "Désactivé",
+      "activate": "Activé",
+      "approve": "Approuvé",
+      "decline": "Refusé",
+      "propose": "Proposé",
+      "send": "Envoyé",
+      "settle": "Soldé"
     }
   },
   "complianceNow": {
@@ -3903,5 +3913,96 @@
       "title": "Factures fournisseur",
       "theirNumber": "Numérotées par le fournisseur, jamais par nous — le numéro sur le papier est celui que tout le monde cite."
     }
+  },
+  "tenders": {
+    "summary": "{open, plural, one {# en cours} other {# en cours}} · {closing, plural, =0 {aucun ne clôture sous 48 heures} one {# clôture sous 48 heures} other {# clôturent sous 48 heures}} · {incomplete, plural, =0 {tous les dossiers sont complets} one {# dossier incomplet} other {# dossiers incomplets}}",
+    "none": "Aucun appel d'offres pour l'instant. Un appel d'offres est une consultation répondant à une procédure formelle — ouvrez la consultation, enregistrez la procédure, le lieu de dépôt et la caution, et elle apparaît ici avec son dossier.",
+    "noDeadline": "aucune heure de clôture enregistrée",
+    "submittedOn": "Déposé le {on}",
+    "facet": {
+      "all": "Tous",
+      "open": "En cours",
+      "submitted": "Déposés",
+      "awarded": "Attribués",
+      "lost": "Perdus"
+    },
+    "procedure": {
+      "aonr": "AONR",
+      "aoo": "AOO",
+      "consultation": "Consultation",
+      "rfq": "RFQ",
+      "gre_a_gre": "Gré à gré"
+    },
+    "column": {
+      "ref": "Réf",
+      "authority": "Autorité / client",
+      "object": "Objet",
+      "procedure": "Type",
+      "submission": "Dépôt",
+      "caution": "Caution",
+      "dossier": "Dossier",
+      "closes": "Clôture"
+    }
+  },
+  "tender": {
+    "closes": "clôture {at}",
+    "banner": "Dossier complet à {percent}%. {blocking, plural, one {# élément fera rejeter l'offre} other {# éléments feront rejeter l'offre}} s'il est déposé en l'état.",
+    "section": {
+      "administratif": "Dossier administratif",
+      "technique": "Dossier technique",
+      "financier": "Dossier financier"
+    },
+    "readyOf": "{ready} sur {total} prêts",
+    "piece": {
+      "declaration_souscrire": "Déclaration à souscrire",
+      "declaration_probite": "Déclaration de probité",
+      "rc_copy": "Copie du registre de commerce",
+      "cnas": "Attestation de mise à jour CNAS",
+      "casnos": "Attestation de mise à jour CASNOS",
+      "extrait_role": "Extrait de rôle apuré",
+      "casier_judiciaire": "Casier judiciaire du gérant",
+      "statuts": "Statuts de la société",
+      "comptes_sociaux": "Attestation de dépôt des comptes sociaux",
+      "qualification": "Certificat de qualification et classification",
+      "references": "Références professionnelles",
+      "moyens_humains": "Moyens humains — liste et qualifications",
+      "moyens_materiels": "Moyens matériels — liste du matériel",
+      "planning": "Planning d'exécution",
+      "lettre_soumission": "Lettre de soumission",
+      "bpu": "Bordereau des prix unitaires",
+      "dqe": "Détail quantitatif et estimatif",
+      "caution": "Caution de soumission"
+    },
+    "state": {
+      "ready": "Prêt",
+      "expiring": "Expire bientôt",
+      "expiresBeforeDeposit": "Expire avant le dépôt",
+      "expired": "Expiré",
+      "missing": "Non fourni"
+    },
+    "notOnFile": "non fourni",
+    "onFile": "au dossier",
+    "expiresOn": "expire le {on}",
+    "noPieces": "Le dossier de cet appel d'offres est vide. Les pièces sont celles que son cahier des charges demande — rien ici n'affirme ce que la loi exige.",
+    "days": "{n} jours",
+    "readiness": "Avancement",
+    "noReceipt": "aucun accusé de dépôt enregistré",
+    "submittedOn": "Déposé le {on}. Accusé : {receipt}.",
+    "submission": {
+      "title": "Dépôt",
+      "method": "Mode",
+      "place": "Lieu",
+      "closes": "Clôture",
+      "opens": "Séance d'ouverture",
+      "caution": "Caution de soumission",
+      "validity": "Validité de l'offre"
+    },
+    "blocking": {
+      "title": "Bloquant maintenant",
+      "count": "{n} éléments",
+      "why": "Manquant, expiré, ou valable aujourd'hui et expiré le jour du dépôt. La date qui décide n'est pas celle d'aujourd'hui."
+    },
+    "thisIsAnEnquiry": "C'est une consultation",
+    "thisIsAnEnquiryWhy": "Un appel d'offres est une consultation avec une procédure. Le client, les lignes, l'offre et l'issue vivent sur la consultation, et tous les écrans qui les lisent lisent le même enregistrement."
   }
 }

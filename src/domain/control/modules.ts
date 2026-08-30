@@ -46,9 +46,13 @@ export const MODULES: Module[] = [
   { key: "control", state: "built", href: "/compliance", phase: "7" },
   { key: "assistant", state: "built", href: "/assistant", phase: "7" },
 
+  // Built 30 Aug. Screens 07 and 08 - the tender list and the dossier that says
+  // whether a folder will be accepted at the desk. Screen 42, the BPU import,
+  // is the part of this module still parked.
+  { key: "tenders", state: "built", href: "/tenders", phase: "4" },
+
   // PLAN §7, "Later, deliberately parked". Named here so that "the system does
   // not do this" is visible rather than discovered.
-  { key: "tenders", state: "parked", href: null, phase: "later" },
   { key: "projects", state: "parked", href: null, phase: "later" },
   { key: "recruitment", state: "parked", href: null, phase: "later" },
   { key: "supplierScorecard", state: "parked", href: null, phase: "later" },
