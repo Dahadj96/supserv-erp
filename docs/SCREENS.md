@@ -52,7 +52,7 @@ you are about to build, stop and ask — do not invent an interface.
 | 40 | Extraction review | `/inbox/dossier/[id]/review` | **2** |
 | 41 | Scan station | `/inbox/scan` | **2** |
 | 42 | BPU import and pricing | `/tenders/[id]/bpu` | later |
-| 43 | Assistant in context | `(overlay)` | **7** |
+| 43 | Assistant in context | `/assistant` | **7** |
 | 44 | Assistant proposals | `/assistant/proposals` | **7** |
 | 45 | Assistant permissions and safety | `/settings/assistant` | **7** |
 | 46 | Website intake forms | `/settings/forms` | **2** |
@@ -96,6 +96,30 @@ you are about to build, stop and ask — do not invent an interface.
 | 84 | Merge duplicates | `/companies/merge` | **1** |
 | 85 | Day one | `/setup` | **0** |
 | 86 | On the phone | `(responsive)` | **2** |
+
+## Supporting routes
+
+Routes that exist on disk and are not screens in the Figma file. Every one of
+them serves a screen that is — a creation form the list screen links to, a step
+of a wizard, a detail view of a row. They are listed because the coverage check
+runs in both directions: a route nobody wrote down here fails the test, so
+nothing gets built into this ERP without a line saying what it is for.
+
+| Route | Serves |
+|---|---|
+| `/companies/new` | 21 Companies — the create form |
+| `/companies/[id]/edit` | 22 Company detail — the edit form |
+| `/companies/duplicates` | 84 Merge duplicates — the finder that feeds it |
+| `/contacts/new` | 76 Contacts — the create form |
+| `/deals/new` | 05 Deals — the create form |
+| `/deliveries/new` | 14 Deliveries — the create form |
+| `/documents/new` | 47 Document builder — picking a kind before there is a draft |
+| `/inbox/[id]` | 02 Inbox — one item, opened |
+| `/settings/compliance/one-pager` | 69 Compliance profile — the printable sheet |
+| `/setup/identity` | 85 Day one — step 1 |
+| `/setup/bank` | 85 Day one — step 2 |
+| `/setup/vat` | 85 Day one — step 3 |
+| `/setup/numbering` | 85 Day one — step 4 |
 
 ## By phase
 

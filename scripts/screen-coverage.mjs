@@ -11,10 +11,27 @@ import { join } from "node:path";
  * `(pattern)`, `(reference)`, `(overlay)`, `(proof)` and `(responsive)` have no
  * route by design and are counted separately. `later` is the parked list.
  */
-const ROOT = "C:/SUPSERV-ERP";
+const ROOT = join(import.meta.dirname, "..");
 const APP = join(ROOT, "src/app/[locale]/(app)");
 
-const rows = readFileSync(join(ROOT, "docs/SCREENS.md"), "utf8")
+const SCREENS = readFileSync(join(ROOT, "docs/SCREENS.md"), "utf8");
+
+/**
+ * The other direction: routes that exist and are not screens. Each is written
+ * down in the "Supporting routes" table with the screen it serves, so a route
+ * built with no line explaining it fails this check rather than accumulating
+ * quietly.
+ */
+const supporting = new Set(
+  (SCREENS.split(/^## Supporting routes$/m)[1] ?? "")
+    .split(/^## /m)[0]
+    .split(/\r?\n/)
+    .map((line) => line.match(/^\|\s*`([^`]+)`\s*\|/))
+    .filter(Boolean)
+    .map((m) => m[1]),
+);
+
+const rows = SCREENS
   .split(/\r?\n/)
   .map((line) => line.match(/^\|\s*(\d{2})\s*\|\s*([^|]+?)\s*\|\s*`([^`]+)`\s*\|\s*([^|]+?)\s*\|/))
   .filter(Boolean)
@@ -72,10 +89,22 @@ const onDisk = [];
 })(APP);
 
 const mapped = new Set(rows.map((row) => row.route));
-const unmapped = onDisk.filter((route) => !mapped.has(route));
+const unmapped = onDisk.filter((route) => !mapped.has(route) && !supporting.has(route));
+
+console.log(`  ${supporting.size} supporting routes, each written down`);
+
 if (unmapped.length > 0) {
-  console.log(`\n${unmapped.length} routes on disk with no row in the map:`);
+  console.log(`\n${unmapped.length} routes on disk accounted for NOWHERE:`);
   for (const route of unmapped) console.log(`  ${route}`);
 }
 
-process.exit(missing.length > 0 ? 1 : 0);
+// A supporting row for a route that no longer exists is the same drift in
+// reverse — documentation describing a screen nobody can open.
+const present = new Set(onDisk);
+const stale = [...supporting].filter((route) => !present.has(route));
+if (stale.length > 0) {
+  console.log(`\n${stale.length} supporting routes written down but NOT on disk:`);
+  for (const route of stale) console.log(`  ${route}`);
+}
+
+process.exit(missing.length + unmapped.length + stale.length > 0 ? 1 : 0);

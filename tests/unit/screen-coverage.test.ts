@@ -1,4 +1,4 @@
-import { existsSync, readFileSync } from "node:fs";
+import { existsSync, readdirSync, readFileSync, statSync } from "node:fs";
 import { join } from "node:path";
 import { describe, expect, it } from "vitest";
 
@@ -23,8 +23,19 @@ const APP = join(root, "src/app/[locale]/(app)");
 
 type Row = { n: string; name: string; route: string; phase: string };
 
-const rows: Row[] = readFileSync(join(root, "docs/SCREENS.md"), "utf8")
-  .split(/\r?\n/)
+const SCREENS = readFileSync(join(root, "docs/SCREENS.md"), "utf8");
+
+/** Routes that exist and are not Figma screens, each with the screen it serves. */
+const supporting = new Set(
+  (SCREENS.split(/^## Supporting routes$/m)[1] ?? "")
+    .split(/^## /m)[0]
+    ?.split(/\r?\n/)
+    .map((line) => line.match(/^\|\s*`([^`]+)`\s*\|/))
+    .filter((m): m is RegExpMatchArray => m !== null)
+    .map((m) => m[1] as string),
+);
+
+const rows: Row[] = SCREENS.split(/\r?\n/)
   .map((line) => line.match(/^\|\s*(\d{2})\s*\|\s*([^|]+?)\s*\|\s*`([^`]+)`\s*\|\s*([^|]+?)\s*\|/))
   .filter((m): m is RegExpMatchArray => m !== null)
   .map((m) => ({
@@ -45,6 +56,20 @@ function pageFor(route: string): string | null {
   return null;
 }
 
+/** Every directory under the app group that has a page.tsx, as its route. */
+function onDisk(): string[] {
+  const found: string[] = [];
+  (function walk(dir: string, prefix: string): void {
+    for (const name of readdirSync(dir)) {
+      const full = join(dir, name);
+      if (!statSync(full).isDirectory()) continue;
+      if (existsSync(join(full, "page.tsx"))) found.push(`${prefix}/${name}`);
+      walk(full, `${prefix}/${name}`);
+    }
+  })(APP, "");
+  return found;
+}
+
 /** `(pattern)`, `(reference)`, `(overlay)` and friends have no route by design. */
 const routed = rows.filter((row) => !/^\(/.test(row.route) && row.phase !== "later");
 
@@ -53,6 +78,11 @@ describe("the screen map matches the filesystem", () => {
     // A regex that stopped matching would make every assertion below vacuous.
     expect(rows.length).toBe(86);
     expect(routed.length).toBeGreaterThan(50);
+    // Same for the supporting table: an empty set would make "accounted for
+    // nowhere" fail loudly rather than pass quietly, but a set that silently
+    // stopped parsing would take the staleness check down with it.
+    expect(supporting.size).toBeGreaterThan(5);
+    expect(onDisk().length).toBeGreaterThan(50);
   });
 
   it("every screen that should have a route has one", () => {
@@ -76,5 +106,26 @@ describe("the screen map matches the filesystem", () => {
 
     const dead = hrefs.filter((href) => !parked.has(href) && pageFor(href) === null);
     expect(dead, "nav entries with no page and no parked row in the map").toEqual([]);
+  });
+
+  it("every route on disk is written down somewhere", () => {
+    // The check in reverse. A map that only asks "is every documented screen
+    // built" goes green while routes nobody agreed to accumulate beside it —
+    // and the first person to find one has no way to tell a deliberate
+    // supporting route from something left behind by an abandoned attempt.
+    const mapped = new Set(rows.map((row) => row.route));
+    const unaccounted = onDisk().filter((r) => !mapped.has(r) && !supporting.has(r));
+
+    expect(
+      unaccounted,
+      "routes on disk that are neither a screen row nor a supporting route",
+    ).toEqual([]);
+  });
+
+  it("no supporting route is written down for a page that is gone", () => {
+    const present = new Set(onDisk());
+    const stale = [...supporting].filter((route) => !present.has(route));
+
+    expect(stale, "supporting routes documented but not on disk").toEqual([]);
   });
 });
