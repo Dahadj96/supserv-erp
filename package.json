@@ -17,7 +17,7 @@
     "test": "node scripts/test-db.mjs && vitest run --config vitest.config.mts",
     "test:db": "node scripts/test-db.mjs",
     "test:watch": "vitest",
-    "test:e2e": "playwright test",
+    "smoke": "node scripts/smoke-routes.mjs",
     "db:generate": "drizzle-kit generate",
     "db:migrate": "drizzle-kit migrate",
     "db:studio": "drizzle-kit studio",

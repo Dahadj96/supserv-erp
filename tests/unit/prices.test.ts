@@ -19,6 +19,7 @@ function quote(over: Partial<Quote> & { price: string }): Quote {
     id: `q${n}`,
     dealLineId: "line-1",
     itemId: null,
+    designation: "Vanne papillon DN80",
     source: "supplier_email" as PriceSource,
     supplierName: "Sono Alger SARL",
     currency: "DZD",

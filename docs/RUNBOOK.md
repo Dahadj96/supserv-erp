@@ -31,6 +31,18 @@ Written 23 Aug 2026, the day `erp.supserv-dz.com` went live.
 > points at nothing. That answers with a Cloudflare error page rather than
 > silence, which is the version that looks like the internet's fault.
 >
+> **Measured, 30 Aug, against the process actually on port 3000 —
+> `pnpm smoke` says 41 of 85 routes are broken.** Seventeen answer **404**:
+> they are screens built after that build was made, and the sidebar links at
+> them. Twenty-four answer **500**: those routes exist in that build, but the
+> database has moved forward under it — migrations 0033–0035 are applied — and
+> old code querying new tables throws. It gets worse, not better, the longer it
+> runs. Everything below is one command away from correct; the build on disk
+> passes all 85.
+>
+> The process cannot be stopped from an ordinary shell — it was started from an
+> elevated one, and `Stop-Process` answers `Access is denied`. It has to be you.
+>
 > **One command fixes all of it**, from an Administrator PowerShell:
 >
 > ```powershell
@@ -43,6 +55,15 @@ Written 23 Aug 2026, the day `erp.supserv-dz.com` went live.
 > tasks and says NOT REGISTERED in red if either is missing — it used to print a
 > blank line, which is how this went unnoticed while being the exact command
 > everybody checked.
+>
+> Then, to see it for yourself rather than take my word for it:
+>
+> ```powershell
+> pnpm smoke
+> ```
+>
+> It should end `all 85 routes answer`. §4 explains what it does and does not
+> prove.
 
 Still to do, and only you can do them:
 
@@ -50,6 +71,13 @@ Still to do, and only you can do them:
   command and it closes three things at once: the ERP becomes a service, the
   nightly backup becomes a task, and the restart puts today's build on port
   3000 so the sidebar stops linking at 404s.
+- **Fill in day one** — `/fr/setup`, four forms. `company_identity`,
+  `bank_account`, `vat_rate` and `numbering_series` are all still empty, which
+  means **nothing can be issued at all**: no devis, no facture, no bon de
+  livraison. Every screen that builds a document is gated on it, and the gate
+  works — it is the forms behind it that have never been filled in. This is
+  twenty minutes with the company's papers in front of you, and until it is
+  done the ERP can record work but cannot produce a single document.
 - **Windows auto-login** (`netplwiz`) plus the lock-screen scheduled task —
   §3. Docker Desktop needs a logged-in session, so the database does not come
   back on its own without this.
@@ -321,6 +349,36 @@ evening before this script existed.
 
 It kills **by port, not by name**. `node` also runs this repository's tooling,
 and `Stop-Process -Name node` would take a running build with it.
+
+### After a restart, ask the ERP whether it is actually there
+
+```
+pnpm smoke
+```
+
+It asks every one of the eighty-five routes in `docs/SCREENS.md` whether it
+answers, and expects each to send a signed-out visitor to the sign-in page. It
+takes about ten seconds and needs nothing seeded — every screen checks the
+session before it reads anything, so a route that exists always answers the
+same way.
+
+By default it asks `http://127.0.0.1:3000` — whatever is actually serving, dev
+build or production. Point it somewhere else with `--base`:
+
+```
+pnpm smoke --base http://127.0.0.1:3100
+```
+
+**Why this exists.** On 30 August `/fr/reports` and `/fr/dashboard` returned
+**404 for two days** while the sidebar linked straight at them — the process on
+port 3000 was hand-started and serving a build from before those screens
+existed. Nothing in the test suite could have noticed: `screen-coverage.mjs`
+checks that a `page.tsx` is on disk, and a file on disk is not a route that
+answers. This is the cheapest check that would have caught it, and it is the
+one to run after every restart and every deploy.
+
+What it does **not** do is render a page body — it stops at the redirect. A
+screen can answer and still be wrong once you are signed in.
 
 ---
 
