@@ -51,9 +51,13 @@ export const MODULES: Module[] = [
   // is the part of this module still parked.
   { key: "tenders", state: "built", href: "/tenders", phase: "4" },
 
+  // Built 30 Aug. Screens 15 and 16 - situations, retention and the bank
+  // guarantees, which is what happens between winning work and being paid for
+  // it, and which for a company doing travaux is most of the year.
+  { key: "projects", state: "built", href: "/projects", phase: "5" },
+
   // PLAN §7, "Later, deliberately parked". Named here so that "the system does
   // not do this" is visible rather than discovered.
-  { key: "projects", state: "parked", href: null, phase: "later" },
   { key: "recruitment", state: "parked", href: null, phase: "later" },
   { key: "supplierScorecard", state: "parked", href: null, phase: "later" },
   { key: "websiteForms", state: "parked", href: null, phase: "later" },

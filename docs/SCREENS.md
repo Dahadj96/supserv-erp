@@ -24,8 +24,8 @@ you are about to build, stop and ask — do not invent an interface.
 | 12 | Offer builder | `/offers/[id]/build` | **4** |
 | 13 | Orders | `/orders` | **5** |
 | 14 | Deliveries | `/deliveries` | **5** |
-| 15 | Projects | `/projects` | later |
-| 16 | Project detail | `/projects/[id]` | later |
+| 15 | Projects | `/projects` | **5** |
+| 16 | Project detail | `/projects/[id]` | **5** |
 | 17 | Invoices | `/invoices` | **5** |
 | 18 | Invoice preview | `/documents/[id]` | **3** |
 | 19 | Payments | `/payments` | **5** |
@@ -128,12 +128,12 @@ nothing gets built into this ERP without a line saying what it is for.
 - **Phase 2** — Capture: 02, 38, 39, 40, 41, 46, 61, 62, 86
 - **Phase 3** — The document engine: 18, 47, 50, 70, 71
 - **Phase 4** — Sell side, end to end: 05, 06, 07, 08, 09, 10, 11, 12, 67, 68, 74, 77, 78
-- **Phase 5** — Money: 03, 04, 13, 14, 17, 19, 20, 48, 49, 72
+- **Phase 5** — Money: 03, 04, 13, 14, 15, 16, 17, 19, 20, 48, 49, 72
 - **Phase 6** — Organisation: 33, 55, 56, 57, 58, 59, 60, 63, 65, 66, 83
 - **Phase 7** — Control and the assistant: 27, 28, 32, 43, 44, 45, 64, 69
-- **Parked — after the first release**: 15, 16, 23, 24, 25, 26, 42
+- **Parked — after the first release**: 23, 24, 25, 26, 42
 
-Three screens left that list on 30 Aug.
+Five screens left that list on 30 Aug.
 
 **68** was parked as "tenders module depth", which it is not: a supplier order
 is the leg between an offer that was won and an invoice that can be defended,
@@ -147,5 +147,10 @@ dossier screen answers one question — will this folder be accepted at the desk
 on the day it is deposited — and the state it exists for is a paper that is
 valid today and expired on the morning of the deposit. See
 `docs/DECISIONS/2026-08-30-the-date-that-decides-is-not-today.md`.
+
+**15 and 16** because `/projects` was the second dead link in the same rail, and
+because for a company doing travaux the period between winning the work and the
+last invoice being paid is most of the year — situations waiting for a
+signature, retention nobody goes back for, bank guarantees lapsing quietly.
 
 - **Reference only, no route**: 37, 52, 54

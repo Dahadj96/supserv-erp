@@ -3472,7 +3472,8 @@
       "vat_rate": "VAT rate",
       "assistant_proposal": "Assistant proposal",
       "tender": "Tender",
-      "company_credential": "Company paper"
+      "company_credential": "Company paper",
+      "project": "Project"
     },
     "action": {
       "alias": {
@@ -4004,5 +4005,143 @@
     },
     "thisIsAnEnquiry": "This is an enquiry",
     "thisIsAnEnquiryWhy": "A tender is a deal with a procedure. The client, the lines, the offer and the outcome all live on the enquiry, and every screen that reads them reads the same record."
+  },
+  "projects": {
+    "summary": "{active, plural, one {# active} other {# active}} · {warranty, plural, =0 {none in warranty} one {# in warranty} other {# in warranty}} · {retention} held in retenue de garantie",
+    "none": "No projects yet. A project is what happens after a deal is won — the situations, the retention and the bank guarantees. Open the enquiry and start one.",
+    "openSituation": "Open the situation",
+    "waitingBanner": "Situation n°{n} on {code} has been with {client} for {days} days without approval. Payment cannot start until it is signed.",
+    "cautionsAt": "{n} caution(s)",
+    "facet": {
+      "all": "All",
+      "active": "Active",
+      "warranty": "Warranty",
+      "closed": "Closed"
+    },
+    "state": {
+      "active": "Active",
+      "warranty": "Warranty",
+      "closed": "Closed"
+    },
+    "card": {
+      "active": "Active projects",
+      "waiting": "Situations pending approval",
+      "retention": "Retenue held",
+      "cautions": "Cautions wanting attention"
+    },
+    "column": {
+      "code": "Code",
+      "client": "Client",
+      "object": "Object",
+      "wilaya": "Wilaya",
+      "progress": "Progress",
+      "situations": "Situations",
+      "retention": "Retenue",
+      "status": "Status"
+    }
+  },
+  "project": {
+    "startedOn": "started {on}",
+    "draft": "Draft",
+    "waitingDays": "Waiting {days} days",
+    "daysLeft": "{days} days left",
+    "lateBy": "{days} days late",
+    "months": "{n} months",
+    "expiresOn": "expires {on}",
+    "fromEnquiry": "This came from an enquiry",
+    "fromEnquiryWhy": "Every project belongs to a deal. The client, the offer and the order that started the work all live there, and nothing about this site is recorded twice.",
+    "situations": {
+      "title": "Situations / attachements",
+      "approvedToDate": "{amount} approved to date",
+      "none": "No situation has been raised yet. A situation is a document of kind `situation` against this project — the same engine as every other document."
+    },
+    "situation": {
+      "draft": "Draft",
+      "submitted": "Submitted",
+      "approved": "Approved",
+      "paid": "Paid"
+    },
+    "crew": {
+      "title": "Crew on site",
+      "count": "{n} people",
+      "none": "Nobody is recorded on this site. The people come from screen 51 and their tickets come with them."
+    },
+    "crewState": {
+      "onSite": "On site",
+      "proposed": "Proposed",
+      "expiring": "Ticket expiring",
+      "expired": "Ticket expired",
+      "left": "Left"
+    },
+    "column": {
+      "period": "Document",
+      "amount": "Amount HT",
+      "retention": "Retenue",
+      "submitted": "Submitted",
+      "status": "Status",
+      "name": "Name",
+      "trade": "Trade",
+      "certification": "Certification",
+      "expires": "Expires",
+      "onSiteSince": "On site since"
+    },
+    "panel": {
+      "title": "Project",
+      "client": "Client",
+      "contract": "Contract",
+      "amount": "Amount HT",
+      "started": "Started",
+      "end": "Contractual end",
+      "daysLeft": "Délai restant"
+    },
+    "progress": {
+      "physical": "Physical progress",
+      "financial": "Financial progress",
+      "ahead": "{points} points of work done and not yet billed. That is money already spent and not asked for.",
+      "level": "Billing has caught up with the work.",
+      "noEstimate": "Nobody has estimated physical progress. Financial progress alone says what has been signed off, not what has been built."
+    },
+    "reception": {
+      "title": "Réception",
+      "provisoire": "PV de réception provisoire",
+      "definitive": "PV de réception définitive",
+      "planned": "planned {on}",
+      "notIssued": "Not issued",
+      "warranty": "Warranty period"
+    },
+    "retention": {
+      "title": "Retenue de garantie",
+      "rate": "Rate",
+      "held": "Held to date",
+      "release": "Expected release",
+      "basis": {
+        "definitive": "Counted from the PV de réception définitive.",
+        "provisional": "A projection off the provisional acceptance. It is not a date anybody has agreed to until the PV définitif exists.",
+        "unknown": "No release date can be worked out until the work is accepted and a warranty period is recorded."
+      }
+    },
+    "cautions": {
+      "title": "Cautions",
+      "live": "{n} live",
+      "why": "A lapsed guarantee can be called in by the client — they draw on it and we argue afterwards. A bank takes about six weeks to renew one."
+    },
+    "caution": {
+      "bonne_execution": "Bonne exécution",
+      "restitution_avance": "Restitution d'avance",
+      "retenue_garantie": "Retenue de garantie",
+      "soumission": "Soumission"
+    },
+    "cautionState": {
+      "live": "Live",
+      "released": "Released",
+      "expiring": "Expiring",
+      "expiresBeforeAcceptance": "Expires first",
+      "lapsed": "Lapsed"
+    },
+    "cautionBanner": {
+      "expiresBeforeAcceptance": "The {kind} guarantee expires {on} — before provisional acceptance. Renew it or the client can call it in.",
+      "lapsed": "The {kind} guarantee lapsed on {on}. Until it is renewed the client is holding an unsecured contract.",
+      "expiring": "The {kind} guarantee expires {on}. A bank takes about six weeks to renew one."
+    }
   }
 }

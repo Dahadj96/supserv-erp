@@ -218,6 +218,13 @@
       "when": 1788113218669,
       "tag": "0030_spooky_freak",
       "breakpoints": true
+    },
+    {
+      "idx": 31,
+      "version": "7",
+      "when": 1788114301099,
+      "tag": "0031_slippery_the_call",
+      "breakpoints": true
     }
   ]
 }

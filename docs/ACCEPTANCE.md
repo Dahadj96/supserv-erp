@@ -176,6 +176,22 @@ sidebar since phase 0, and tenders are how this company gets most of its work:
 
 Proved end to end.
 
+Screens 15 and 16 joined this phase on 30 Aug. `/projects` was the second dead
+link in the same rail, and for a company doing travaux the period between
+winning the work and the last invoice being paid is most of the year:
+
+- `tests/unit/project.test.ts` :: "counts only what the client has signed as progress"
+- `tests/unit/project.test.ts` :: "holds retention on approved situations only"
+- `tests/unit/project.test.ts` :: "reports the gap between work done and work billed"
+- `tests/unit/project.test.ts` :: "is in WARRANTY once accepted while the client still holds the retention"
+- `tests/unit/project.test.ts` :: "projects off the provisional acceptance until then, and says so"
+- `tests/unit/project.test.ts` :: "EXPIRES BEFORE ACCEPTANCE — the client can call it in"
+- `tests/unit/project.test.ts` :: "is EXPIRED, not gone, when the ticket has run out under a man still working"
+- `tests/integration/project.test.ts` :: "reads the payments off the allocations, not off the situation"
+- `tests/integration/project.test.ts` :: "names the situation that has been waiting for a signature"
+- `tests/integration/project.test.ts` :: "brings the SOONEST-expiring certification through, not the latest"
+- `tests/integration/project.test.ts` :: "is stored with a name against it, and shows the gap"
+
 ---
 
 ## Phase 6 — Organisation

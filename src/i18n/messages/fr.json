@@ -3472,7 +3472,8 @@
       "vat_rate": "Taux de TVA",
       "assistant_proposal": "Proposition de l'assistant",
       "tender": "Appel d'offres",
-      "company_credential": "Pièce de la société"
+      "company_credential": "Pièce de la société",
+      "project": "Chantier"
     },
     "action": {
       "alias": {
@@ -4004,5 +4005,143 @@
     },
     "thisIsAnEnquiry": "C'est une consultation",
     "thisIsAnEnquiryWhy": "Un appel d'offres est une consultation avec une procédure. Le client, les lignes, l'offre et l'issue vivent sur la consultation, et tous les écrans qui les lisent lisent le même enregistrement."
+  },
+  "projects": {
+    "summary": "{active, plural, one {# en cours} other {# en cours}} · {warranty, plural, =0 {aucun en garantie} one {# en garantie} other {# en garantie}} · {retention} retenus en retenue de garantie",
+    "none": "Aucun chantier pour l'instant. Un chantier est ce qui suit une affaire gagnée — les situations, la retenue et les cautions. Ouvrez la consultation et démarrez-en un.",
+    "openSituation": "Ouvrir la situation",
+    "waitingBanner": "La situation n°{n} de {code} est chez {client} depuis {days} jours sans approbation. Le paiement ne peut pas démarrer tant qu'elle n'est pas signée.",
+    "cautionsAt": "{n} caution(s)",
+    "facet": {
+      "all": "Tous",
+      "active": "En cours",
+      "warranty": "En garantie",
+      "closed": "Clôturés"
+    },
+    "state": {
+      "active": "En cours",
+      "warranty": "En garantie",
+      "closed": "Clôturé"
+    },
+    "card": {
+      "active": "Chantiers en cours",
+      "waiting": "Situations en attente d'approbation",
+      "retention": "Retenue détenue",
+      "cautions": "Cautions à surveiller"
+    },
+    "column": {
+      "code": "Code",
+      "client": "Client",
+      "object": "Objet",
+      "wilaya": "Wilaya",
+      "progress": "Avancement",
+      "situations": "Situations",
+      "retention": "Retenue",
+      "status": "État"
+    }
+  },
+  "project": {
+    "startedOn": "démarré le {on}",
+    "draft": "Brouillon",
+    "waitingDays": "En attente {days} jours",
+    "daysLeft": "{days} jours restants",
+    "lateBy": "{days} jours de retard",
+    "months": "{n} mois",
+    "expiresOn": "expire le {on}",
+    "fromEnquiry": "Vient d'une consultation",
+    "fromEnquiryWhy": "Chaque chantier appartient à une affaire. Le client, l'offre et la commande qui a lancé les travaux y vivent, et rien de ce chantier n'est enregistré deux fois.",
+    "situations": {
+      "title": "Situations / attachements",
+      "approvedToDate": "{amount} approuvés à ce jour",
+      "none": "Aucune situation n'a encore été établie. Une situation est un document de type `situation` rattaché à ce chantier — le même moteur que tous les autres documents."
+    },
+    "situation": {
+      "draft": "Brouillon",
+      "submitted": "Déposée",
+      "approved": "Approuvée",
+      "paid": "Payée"
+    },
+    "crew": {
+      "title": "Équipe sur site",
+      "count": "{n} personnes",
+      "none": "Personne n'est enregistré sur ce chantier. Les personnes viennent de l'écran 51 et leurs habilitations les suivent."
+    },
+    "crewState": {
+      "onSite": "Sur site",
+      "proposed": "Proposé",
+      "expiring": "Habilitation expire",
+      "expired": "Habilitation expirée",
+      "left": "Parti"
+    },
+    "column": {
+      "period": "Document",
+      "amount": "Montant HT",
+      "retention": "Retenue",
+      "submitted": "Déposée le",
+      "status": "État",
+      "name": "Nom",
+      "trade": "Métier",
+      "certification": "Habilitation",
+      "expires": "Expire",
+      "onSiteSince": "Sur site depuis"
+    },
+    "panel": {
+      "title": "Chantier",
+      "client": "Client",
+      "contract": "Marché",
+      "amount": "Montant HT",
+      "started": "Démarré",
+      "end": "Fin contractuelle",
+      "daysLeft": "Délai restant"
+    },
+    "progress": {
+      "physical": "Avancement physique",
+      "financial": "Avancement financier",
+      "ahead": "{points} points de travaux réalisés et non encore facturés. C'est de l'argent déjà dépensé et non réclamé.",
+      "level": "La facturation a rattrapé les travaux.",
+      "noEstimate": "Personne n'a estimé l'avancement physique. L'avancement financier seul dit ce qui a été approuvé, pas ce qui a été construit."
+    },
+    "reception": {
+      "title": "Réception",
+      "provisoire": "PV de réception provisoire",
+      "definitive": "PV de réception définitive",
+      "planned": "prévue le {on}",
+      "notIssued": "Non établi",
+      "warranty": "Période de garantie"
+    },
+    "retention": {
+      "title": "Retenue de garantie",
+      "rate": "Taux",
+      "held": "Retenue à ce jour",
+      "release": "Restitution attendue",
+      "basis": {
+        "definitive": "Comptée à partir du PV de réception définitive.",
+        "provisional": "Une projection à partir de la réception provisoire. Ce n'est pas une date convenue tant que le PV définitif n'existe pas.",
+        "unknown": "Aucune date de restitution ne peut être calculée tant que les travaux ne sont pas réceptionnés et qu'aucune période de garantie n'est enregistrée."
+      }
+    },
+    "cautions": {
+      "title": "Cautions",
+      "live": "{n} en cours",
+      "why": "Une caution périmée peut être appelée par le client — il tire dessus et on discute après. Une banque met environ six semaines à en renouveler une."
+    },
+    "caution": {
+      "bonne_execution": "Bonne exécution",
+      "restitution_avance": "Restitution d'avance",
+      "retenue_garantie": "Retenue de garantie",
+      "soumission": "Soumission"
+    },
+    "cautionState": {
+      "live": "En cours",
+      "released": "Restituée",
+      "expiring": "Expire bientôt",
+      "expiresBeforeAcceptance": "Expire avant",
+      "lapsed": "Périmée"
+    },
+    "cautionBanner": {
+      "expiresBeforeAcceptance": "La caution {kind} expire le {on} — avant la réception provisoire. Renouvelez-la ou le client peut l'appeler.",
+      "lapsed": "La caution {kind} a expiré le {on}. Tant qu'elle n'est pas renouvelée, le client détient un marché non garanti.",
+      "expiring": "La caution {kind} expire le {on}. Une banque met environ six semaines à en renouveler une."
+    }
   }
 }
