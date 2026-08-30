@@ -27,6 +27,8 @@ mid-install. Back up by pushing to GitHub, not by syncing the folder.
 | `STACK.md` | Every tool and library, with the reason and the version |
 | `docs/PLAN.md` | The build plan — data model, phases, what is still open |
 | `docs/SCREENS.md` | 86 screens → routes → phase |
+| **`docs/ACCEPTANCE.md`** | **Is the plan finished? Each phase's "Done when", the tests that prove it, and what is not proved** |
+| `docs/RUNBOOK.md` | The server as it actually is — what is done, what is not, and the commands |
 | `docs/UI_INDEX.md` | What each screen says and why |
 | `docs/SERVER.md` | The office mini PC — hardware, backups, power |
 | `docs/NETWORK.md` | How people reach the ERP, and why no public IP is needed |

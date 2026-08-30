@@ -449,6 +449,11 @@ Unchanged from v3 — the artwork gave no reason to move.
 
 Eight phases. Each ends with something a person can use on a real day.
 
+> Every **Done when** below is answered in `docs/ACCEPTANCE.md`, which names the
+> tests that prove it and — where nothing proves it — says so. A test reads that
+> file and fails if any citation has been renamed away, so "the plan is
+> finished" is checkable rather than remembered.
+
 **Phase 0 — Shell and the interface layer (2 weeks)**
 Screens 79 80 81 34 35 36 85.
 Auth, roles, layout, the filter panel, saved views, the column chooser, the avatar
