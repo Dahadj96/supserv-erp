@@ -3598,5 +3598,53 @@
       "unknownTool": "Unknown tool.",
       "missingSubject": "The proposal does not say what it is about."
     }
+  },
+  "assistantPage": {
+    "title": "The assistant",
+    "subtitle": "What is late, and why. Every line links to the screen the fact came from.",
+    "whatICanDo": "{count} tools available",
+    "whatIsLate": "What is late",
+    "examined": "{count} items examined",
+    "nothingLate": "Nothing is late. {count} items examined.",
+    "nothingChecked": "Nothing to examine yet — no deadlines, no invoices, no messages waiting.",
+    "summary": "{count} things late, {amount} DZD involved.",
+    "see": "See",
+    "arithmetic": "Computed from dates and balances. No language model is involved and nothing leaves this machine.",
+    "waitingOnOthers": "{count} things are waiting on other people —",
+    "proposals": "Proposals",
+    "noProposals": "No proposals waiting. The assistant writes one only when asked.",
+    "someProposals": "{count} waiting on your decision.",
+    "openProposals": "Open proposals",
+    "cannotDo": "What it cannot do",
+    "cannotDoWhat": "Issue, send, take payment, delete, change permissions, confirm a compliance rule. None of it exists in its registry.",
+    "theWholeList": "The whole list"
+  },
+  "reports": {
+    "title": "Reports",
+    "subtitle": "Everything is computed when the page is drawn. No total is stored.",
+    "nothingIssuedYet": "No document has been issued yet. These reports fill themselves — there is nothing to configure.",
+    "invoiced": "Invoiced",
+    "offered": "Offers issued",
+    "twelveMonths": "Last 12 months",
+    "noInvoices": "No invoices issued.",
+    "noOffers": "No offers issued.",
+    "enquiries": "Enquiries",
+    "noDeals": "No enquiries recorded.",
+    "seeThem": "See",
+    "wonHow": "Won is not a tick box: it is a client order arriving. The figure is counted off the documents, not off a flag somebody has to remember to set.",
+    "outcome": {
+      "won": "Won",
+      "lost": "Lost",
+      "noBid": "No bid",
+      "open": "Open"
+    },
+    "owed": "Owed to us",
+    "nothingOwed": "Nothing is owed.",
+    "total": "Total",
+    "byKind": "By document kind",
+    "draftsAreNotSales": "A draft is not a sale",
+    "noDocuments": "No documents.",
+    "drafts": "{count} draft(s)",
+    "computedNow": "These figures are recomputed on every view. A stored total is a total that can disagree with the rows it claims to summarise, and nobody notices which of the two is wrong."
   }
 }

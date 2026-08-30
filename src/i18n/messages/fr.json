@@ -3598,5 +3598,53 @@
       "unknownTool": "Outil inconnu.",
       "missingSubject": "La proposition ne dit pas sur quoi elle porte."
     }
+  },
+  "assistantPage": {
+    "title": "L'assistant",
+    "subtitle": "Ce qui est en retard, et pourquoi. Chaque ligne renvoie à l'écran où le fait se vérifie.",
+    "whatICanDo": "{count} outils disponibles",
+    "whatIsLate": "Ce qui est en retard",
+    "examined": "{count} éléments examinés",
+    "nothingLate": "Rien n'est en retard. {count} éléments examinés.",
+    "nothingChecked": "Rien à examiner pour l'instant — aucune échéance, aucune facture, aucun message en attente.",
+    "summary": "{count} choses en retard, {amount} DZD concernés.",
+    "see": "Voir",
+    "arithmetic": "Calculé à partir des dates et des soldes. Aucun modèle de langage n'intervient et rien ne quitte cette machine.",
+    "waitingOnOthers": "{count} choses attendent chez quelqu'un d'autre —",
+    "proposals": "Propositions",
+    "noProposals": "Aucune proposition en attente. L'assistant n'en écrit que si on lui demande.",
+    "someProposals": "{count} attendent votre décision.",
+    "openProposals": "Ouvrir les propositions",
+    "cannotDo": "Ce qu'il ne peut pas faire",
+    "cannotDoWhat": "Émettre, envoyer, encaisser, supprimer, changer les permissions, confirmer une règle de conformité. Rien de tout cela n'existe dans son registre.",
+    "theWholeList": "La liste complète"
+  },
+  "reports": {
+    "title": "Rapports",
+    "subtitle": "Tout est calculé au moment de l'affichage. Aucun total n'est stocké.",
+    "nothingIssuedYet": "Aucun document n'a encore été émis. Ces rapports se rempliront tout seuls — il n'y a rien à configurer.",
+    "invoiced": "Facturé",
+    "offered": "Offres émises",
+    "twelveMonths": "12 derniers mois",
+    "noInvoices": "Aucune facture émise.",
+    "noOffers": "Aucune offre émise.",
+    "enquiries": "Affaires",
+    "noDeals": "Aucune affaire enregistrée.",
+    "seeThem": "Voir",
+    "wonHow": "« Gagné » n'est pas une case à cocher : c'est une commande client reçue. Le chiffre est compté sur les documents, pas sur un indicateur que quelqu'un doit penser à mettre à jour.",
+    "outcome": {
+      "won": "Gagnées",
+      "lost": "Perdues",
+      "noBid": "Sans suite",
+      "open": "En cours"
+    },
+    "owed": "Encours client",
+    "nothingOwed": "Rien n'est dû.",
+    "total": "Total",
+    "byKind": "Par type de document",
+    "draftsAreNotSales": "Un brouillon n'est pas une vente",
+    "noDocuments": "Aucun document.",
+    "drafts": "{count} brouillon(s)",
+    "computedNow": "Ces chiffres sont recalculés à chaque affichage. Un total stocké est un total qui peut contredire les lignes qu'il prétend résumer, et personne ne remarque lequel des deux a tort."
   }
 }

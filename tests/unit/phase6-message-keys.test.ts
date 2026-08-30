@@ -26,6 +26,8 @@ const SCREENS = [
   "src/app/[locale]/(app)/compliance/page.tsx",
   "src/app/[locale]/(app)/settings/assistant/page.tsx",
   "src/app/[locale]/(app)/assistant/proposals/page.tsx",
+  "src/app/[locale]/(app)/assistant/page.tsx",
+  "src/app/[locale]/(app)/reports/page.tsx",
 ];
 
 const load = (locale: string) =>

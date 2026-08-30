@@ -1,6 +1,6 @@
 "use client";
 
-import { Bell, Check, LogOut, Search, User } from "lucide-react";
+import { Bell, Bot, Check, LogOut, Search, User } from "lucide-react";
 import { useSearchParams } from "next/navigation";
 import { useTranslations } from "next-intl";
 import { useState } from "react";
@@ -21,10 +21,13 @@ export function Topbar({
   displayName,
   role,
   locale,
+  unread,
 }: {
   displayName: string;
   role: Role;
   locale: string;
+  /** Counted on the server, in the layout. Zero hides the dot entirely. */
+  unread: number;
 }) {
   const t = useTranslations();
   const tNav = useTranslations("nav");
@@ -75,14 +78,39 @@ export function Topbar({
           />
         </form>
 
-        <button
-          type="button"
+        {/*
+          Screen 43. The frame draws the assistant as an overlay; it is a page,
+          because a layout cannot read search params and an overlay in the shell
+          would need a second data path with its own permission checks.
+          docs/DECISIONS/2026-08-28-the-assistant-is-a-page.md
+        */}
+        <Link
+          href="/assistant"
+          aria-label={t("assistantPage.title")}
+          className="flex size-[34px] items-center justify-center rounded-[var(--radius-control)] hover:bg-sunken"
+        >
+          <Bot className="size-4 text-secondary" aria-hidden />
+        </Link>
+
+        {/*
+          The dot used to be `<span className="… bg-critical" />` — hardcoded, on
+          every screen, for every person, forever. A permanent red dot is not a
+          notification; it is decoration that teaches people to ignore the real
+          one. It now shows only when there is something unread, and the count
+          comes from `unreadCount` like the sidebar badge does.
+        */}
+        <Link
+          href="/notifications"
           aria-label={t("nav.notifications")}
           className="relative flex size-[34px] items-center justify-center rounded-[var(--radius-control)] hover:bg-sunken"
         >
           <Bell className="size-4 text-secondary" aria-hidden />
-          <span className="absolute end-2 top-2 size-2 rounded-full bg-critical" />
-        </button>
+          {unread > 0 ? (
+            <span className="absolute end-1 top-1 min-w-[16px] rounded-full bg-critical px-1 text-center text-[10px] font-semibold leading-4 text-surface">
+              {unread > 99 ? "99+" : unread}
+            </span>
+          ) : null}
+        </Link>
 
         <button
           type="button"
