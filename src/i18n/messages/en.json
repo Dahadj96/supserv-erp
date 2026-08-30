@@ -3476,7 +3476,9 @@
       "company_credential": "Company paper",
       "project": "Project",
       "personnel_request": "Personnel request",
-      "personnel_candidate": "Shortlist entry"
+      "personnel_candidate": "Shortlist entry",
+      "bpu_mapping": "column mapping",
+      "bpu_erratum": "bordereau erratum"
     },
     "action": {
       "alias": {
@@ -3518,7 +3520,10 @@
       "decline": "Declined",
       "propose": "Proposed",
       "send": "Sent",
-      "settle": "Settled"
+      "settle": "Settled",
+      "erratum": "applied an erratum",
+      "importBpu": "imported the bordereau",
+      "applyLastPrices": "applied the last prices paid"
     }
   },
   "complianceNow": {
@@ -4329,6 +4334,151 @@
       "replied": "Replied",
       "turnaround": "Turnaround",
       "outcome": "Outcome"
+    }
+  },
+  "bpu": {
+    "title": "Schedule of prices — {n} lines",
+    "readFrom": "read from {file}",
+    "replacedByErratum": "{n} lines replaced by the erratum",
+    "askSuppliers": "Ask suppliers for these lines",
+    "buildOffer": "Build financial offer",
+    "noDraftOffer": "No draft offer on this enquiry yet. Start one from the enquiry.",
+    "read": "Read the file",
+    "readErratum": "Read the erratum",
+    "applyLastPrices": "Apply last prices",
+    "banner": "{lines} lines imported without retyping. {known} of them we have priced before — the last price we paid is shown so you are not starting from zero.",
+    "tab": {
+      "lines": "Lines",
+      "mapping": "Mapping",
+      "erratum": "Changed by erratum",
+      "sources": "Sources"
+    },
+    "col": {
+      "position": "N°",
+      "designation": "Designation",
+      "unit": "Unit",
+      "qty": "Qty",
+      "lastPaid": "Last paid",
+      "cost": "Cost",
+      "margin": "Margin",
+      "ourPrice": "Our price"
+    },
+    "state": {
+      "priced": "Priced",
+      "awaitingQuote": "Awaiting quote",
+      "noPrice": "No price"
+    },
+    "lines": {
+      "title": "Priceable lines",
+      "count": "{n} lines"
+    },
+    "empty": {
+      "title": "No lines yet",
+      "body": "The bordereau arrives as a spreadsheet. It is read here, column by column, and confirmed by a person — nothing is imported on a guess."
+    },
+    "mapping": {
+      "title": "Column mapping",
+      "once": "confirm once — remembered for this client",
+      "idle": "Upload the client's bordereau. The columns are proposed from their headings and you confirm them: a column called “Montant” read as a unit price puts a wrong figure on a submitted bid.",
+      "readFile": "{file} · sheet {sheet} · {lines} readable lines",
+      "confirm": "Import {n} lines",
+      "fileErratum": "File the erratum"
+    },
+    "target": {
+      "ignored": "Ignored",
+      "lineNumber": "Line number",
+      "reference": "Reference",
+      "designation": "Designation",
+      "unit": "Unit",
+      "quantity": "Quantity",
+      "unitPrice": "Unit price",
+      "amount": "Amount"
+    },
+    "problem": {
+      "noLineNumber": "Row {row}: no line number — not imported.",
+      "noDesignation": "Row {row}: no designation — not imported.",
+      "unreadableQuantity": "Row {row}: quantity could not be read — not imported.",
+      "duplicateLine": "Row {row}: that line number is already used — not imported.",
+      "more": "and {n} more"
+    },
+    "erratum": {
+      "title": "Erratum",
+      "of": "Erratum of {on}",
+      "count": "{n} lines",
+      "none": "No erratum waiting",
+      "noneWhy": "When the buyer issues a corrected bordereau, upload it here. It is diffed line by line against what is held, and nothing moves until somebody applies it.",
+      "receivedOn": "Dated",
+      "explain": "{repriced} lines keep their price — a quantity change does not change a unit price. {losing} lose it: a designation or a unit that changes names a different article.",
+      "issued": "An offer has already gone out against the previous bordereau ({numbers}). It will not be amended — an issued document does not change. Tick below to apply the erratum knowing that.",
+      "acknowledge": "Apply it knowing an issued offer carries the old quantities.",
+      "reason": "Reason (required to discard)",
+      "apply": "Apply the erratum",
+      "discard": "Discard",
+      "review": "Review and apply",
+      "lineIs": "Line {n} — {what}",
+      "detachWhy": "Supplier prices on lines that change are not deleted: they are stamped stale as of the day the erratum is applied. What a supplier quoted in August stays as evidence of what the valve cost then."
+    },
+    "change": {
+      "added": "added",
+      "removed": "removed",
+      "quantityChanged": "quantity",
+      "designationChanged": "designation",
+      "unitChanged": "unit",
+      "unchanged": "unchanged",
+      "losesPrice": "loses its price"
+    },
+    "progress": {
+      "title": "Progress",
+      "imported": "Lines imported",
+      "priced": "Priced",
+      "awaitingQuote": "Awaiting a supplier quote",
+      "noPrice": "No price at all",
+      "erratum": "Replaced by the erratum"
+    },
+    "totals": {
+      "title": "Totals",
+      "hidden": "cost and margin hidden from Commercial",
+      "cost": "Total cost",
+      "excl": "Total excl. VAT",
+      "margin": "Margin",
+      "caution": "Caution {pct}%",
+      "partial": "These totals cover the {priced} priced lines out of {lines}. They are not the value of the offer."
+    },
+    "history": {
+      "title": "History helps here",
+      "known": "Lines we have priced before",
+      "drift": "Average price drift",
+      "why": "Measured over the {lines} lines where we know both the last price paid and a cost today."
+    },
+    "sources": {
+      "title": "Files read",
+      "never": "files are never modified",
+      "none": "No file has been read for this enquiry yet.",
+      "line": "{kind} · {total} rows read · {imported} imported · {skipped} skipped",
+      "kind": {
+        "deal_line": "Bordereau",
+        "bpu_erratum": "Erratum"
+      }
+    },
+    "error": {
+      "notAllowed": "Pricing a bordereau means seeing costs. Your role does not allow it.",
+      "noFile": "No file was chosen.",
+      "noBatch": "That file is no longer available. Upload it again.",
+      "noSuchBatch": "That file is no longer available. Upload it again.",
+      "noSuchDeal": "That enquiry does not exist.",
+      "noSuchErratum": "That erratum does not exist.",
+      "alreadyImported": "This enquiry already has lines. A second file is an erratum: upload it from the Erratum tab, where it is compared line by line.",
+      "nothingImportedYet": "Import the bordereau first — there is nothing to compare against.",
+      "unreadable": "That file could not be read.",
+      "emptySheet": "The first sheet of that file is empty.",
+      "mappingIncomplete": "At least the line number, the designation or the quantity is missing. Without those three it is not a bordereau.",
+      "noLines": "No readable lines in that file.",
+      "nothingToImport": "Nothing to import.",
+      "nothingChanged": "This erratum changes nothing against the lines held.",
+      "erratumAlreadyPending": "An erratum is already waiting. Deal with it before uploading another.",
+      "erratumNotPending": "That erratum has already been dealt with.",
+      "offerAlreadyIssued": "An offer has already gone out against the previous bordereau. Tick the box to apply the erratum knowing that.",
+      "reasonRequired": "A reason is required."
     }
   }
 }

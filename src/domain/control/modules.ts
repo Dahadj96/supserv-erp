@@ -46,9 +46,10 @@ export const MODULES: Module[] = [
   { key: "control", state: "built", href: "/compliance", phase: "7" },
   { key: "assistant", state: "built", href: "/assistant", phase: "7" },
 
-  // Built 30 Aug. Screens 07 and 08 - the tender list and the dossier that says
-  // whether a folder will be accepted at the desk. Screen 42, the BPU import,
-  // is the part of this module still parked.
+  // Built 30 Aug. Screens 07, 08 and 42 - the tender list, the dossier that
+  // says whether a folder will be accepted at the desk, and the bordereau des
+  // prix with the erratum that arrives against it a fortnight before the
+  // deadline. Nothing in this module is parked any more.
   { key: "tenders", state: "built", href: "/tenders", phase: "4" },
 
   // Built 30 Aug. Screens 15 and 16 - situations, retention and the bank

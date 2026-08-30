@@ -252,6 +252,30 @@ export const MACHINES = {
   },
 
   /**
+   * Screen 42 — a corrected bordereau that has arrived from the buyer.
+   *
+   * TERMINAL BOTH WAYS, and that is the point. An erratum is applied once or it
+   * is thrown away with a reason, and neither is undoable: applying it moved
+   * forty-two lines and expired the prices on the ones that changed, and there
+   * is no "un-apply" that could put a supplier's August quote back on a line
+   * that now names a different valve.
+   *
+   * A buyer who withdraws an erratum and issues another one gets a second row.
+   * The first stays as evidence that a corrected bordereau arrived on the 14th.
+   */
+  bpu_erratum: {
+    entity: "bpu_erratum",
+    initial: "pending",
+    to: {
+      pending: ["applied", "discarded"],
+      applied: [],
+      discarded: [],
+    },
+    unwritten: [],
+    legacy: [],
+  },
+
+  /**
    * Screen 26 — one person against one request.
    *
    * `rejected` goes back, and it takes a reason to get there. Somebody turned

@@ -19,8 +19,17 @@ export const importBatch = pgTable("import_batch", {
   /** upload | onedrive. OneDrive discovery needs Graph Files.Read — see below. */
   sourceKind: text("source_kind").notNull().default("upload"),
 
-  /** What the sheet becomes: party | contact | person. */
+  /**
+   * What the sheet becomes: party | contact | person | deal_line | bpu_erratum.
+   *
+   * The last two are screen 42's. A bordereau is not a list of records that
+   * become rows in a catalogue — it belongs to one enquiry — which is why
+   * `dealId` below is set for those two and null for the rest.
+   */
   becomes: text("becomes").notNull(),
+
+  /** The enquiry a bordereau was read for. Null for every other kind of sheet. */
+  dealId: uuid("deal_id"),
 
   /** { sourceColumn: targetField | null }. Null means deliberately ignored. */
   mapping: jsonb("mapping").notNull(),

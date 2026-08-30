@@ -232,6 +232,20 @@
       "when": 1788115365451,
       "tag": "0032_messy_carmella_unuscione",
       "breakpoints": true
+    },
+    {
+      "idx": 33,
+      "version": "7",
+      "when": 1788118459470,
+      "tag": "0033_faulty_dakota_north",
+      "breakpoints": true
+    },
+    {
+      "idx": 34,
+      "version": "7",
+      "when": 1788118942918,
+      "tag": "0034_high_gargoyle",
+      "breakpoints": true
     }
   ]
 }

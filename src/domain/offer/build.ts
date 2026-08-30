@@ -212,6 +212,10 @@ export async function buildOffer(opts: {
         position: index + 1,
         lineKind: "item",
         itemId: line.itemId,
+        // Which enquiry line this answers. Screen 42 reads `our price` back
+        // through it; position cannot, because the client numbers their own
+        // bordereau and an erratum leaves gaps in it.
+        dealLineId: line.id,
         // The client's own reference travels onto the offer unchanged. It is
         // how they will check our document against their consultation.
         reference: line.reference,

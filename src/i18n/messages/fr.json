@@ -3476,7 +3476,9 @@
       "company_credential": "Pièce de la société",
       "project": "Chantier",
       "personnel_request": "Demande de personnel",
-      "personnel_candidate": "Ligne de liste restreinte"
+      "personnel_candidate": "Ligne de liste restreinte",
+      "bpu_mapping": "correspondance de colonnes",
+      "bpu_erratum": "erratum au bordereau"
     },
     "action": {
       "alias": {
@@ -3518,7 +3520,10 @@
       "decline": "Refusé",
       "propose": "Proposé",
       "send": "Envoyé",
-      "settle": "Soldé"
+      "settle": "Soldé",
+      "erratum": "a appliqué un erratum",
+      "importBpu": "a importé le bordereau",
+      "applyLastPrices": "a repris les derniers prix payés"
     }
   },
   "complianceNow": {
@@ -4329,6 +4334,151 @@
       "replied": "Répondu",
       "turnaround": "Délai",
       "outcome": "Issue"
+    }
+  },
+  "bpu": {
+    "title": "Bordereau des prix — {n} lignes",
+    "readFrom": "lu depuis {file}",
+    "replacedByErratum": "{n} lignes modifiées par l'erratum",
+    "askSuppliers": "Consulter des fournisseurs",
+    "buildOffer": "Construire l'offre financière",
+    "noDraftOffer": "Aucune offre en brouillon sur cette affaire. Créez-la depuis l'affaire.",
+    "read": "Lire le fichier",
+    "readErratum": "Lire l'erratum",
+    "applyLastPrices": "Reprendre les derniers prix",
+    "banner": "{lines} lignes importées sans ressaisie. {known} d'entre elles ont déjà été chiffrées — le dernier prix payé est affiché, vous ne partez pas de zéro.",
+    "tab": {
+      "lines": "Lignes",
+      "mapping": "Colonnes",
+      "erratum": "Erratum",
+      "sources": "Sources"
+    },
+    "col": {
+      "position": "N°",
+      "designation": "Désignation",
+      "unit": "Unité",
+      "qty": "Qté",
+      "lastPaid": "Dernier payé",
+      "cost": "Coût",
+      "margin": "Marge",
+      "ourPrice": "Notre prix"
+    },
+    "state": {
+      "priced": "Chiffrée",
+      "awaitingQuote": "En attente",
+      "noPrice": "Sans prix"
+    },
+    "lines": {
+      "title": "Lignes à chiffrer",
+      "count": "{n} lignes"
+    },
+    "empty": {
+      "title": "Aucune ligne pour l'instant",
+      "body": "Le bordereau arrive en tableur. Il est lu ici, colonne par colonne, puis confirmé par une personne — rien n'est importé sur une supposition."
+    },
+    "mapping": {
+      "title": "Correspondance des colonnes",
+      "once": "à confirmer une fois — retenu pour ce client",
+      "idle": "Chargez le bordereau du client. Les colonnes sont proposées d'après leurs intitulés, et c'est vous qui confirmez : une colonne « Montant » lue comme un prix unitaire met un chiffre faux sur une offre déposée.",
+      "readFile": "{file} · feuille {sheet} · {lines} lignes lisibles",
+      "confirm": "Importer {n} lignes",
+      "fileErratum": "Enregistrer l'erratum"
+    },
+    "target": {
+      "ignored": "Ignorée",
+      "lineNumber": "N° de prix",
+      "reference": "Référence",
+      "designation": "Désignation",
+      "unit": "Unité",
+      "quantity": "Quantité",
+      "unitPrice": "Prix unitaire",
+      "amount": "Montant"
+    },
+    "problem": {
+      "noLineNumber": "Ligne {row} : pas de numéro de prix — non importée.",
+      "noDesignation": "Ligne {row} : pas de désignation — non importée.",
+      "unreadableQuantity": "Ligne {row} : quantité illisible — non importée.",
+      "duplicateLine": "Ligne {row} : ce numéro de prix existe déjà — non importée.",
+      "more": "et {n} autres"
+    },
+    "erratum": {
+      "title": "Erratum",
+      "of": "Erratum du {on}",
+      "count": "{n} lignes",
+      "none": "Aucun erratum en attente",
+      "noneWhy": "Quand l'acheteur publie un bordereau corrigé, chargez-le ici. Il est comparé ligne par ligne à ce qui est détenu, et rien ne bouge avant que quelqu'un l'applique.",
+      "receivedOn": "Daté du",
+      "explain": "{repriced} lignes gardent leur prix — un changement de quantité ne change pas le prix unitaire. {losing} le perdent : une désignation ou une unité qui change désigne un autre article.",
+      "issued": "Une offre est déjà partie contre l'ancien bordereau ({numbers}). Elle ne sera pas modifiée — un document émis ne change pas. Cochez ci-dessous pour appliquer l'erratum en le sachant.",
+      "acknowledge": "J'applique l'erratum en sachant qu'une offre émise porte les anciennes quantités.",
+      "reason": "Motif (obligatoire pour écarter l'erratum)",
+      "apply": "Appliquer l'erratum",
+      "discard": "Écarter",
+      "review": "Examiner et appliquer",
+      "lineIs": "Ligne {n} — {what}",
+      "detachWhy": "Les prix fournisseurs des lignes qui changent ne sont pas supprimés : ils sont marqués périmés à la date d'application. Ce qu'un fournisseur a annoncé en août reste une preuve de ce que la vanne coûtait alors."
+    },
+    "change": {
+      "added": "ajoutée",
+      "removed": "supprimée",
+      "quantityChanged": "quantité",
+      "designationChanged": "désignation",
+      "unitChanged": "unité",
+      "unchanged": "inchangée",
+      "losesPrice": "perd son prix"
+    },
+    "progress": {
+      "title": "Avancement",
+      "imported": "Lignes importées",
+      "priced": "Chiffrées",
+      "awaitingQuote": "En attente d'un prix fournisseur",
+      "noPrice": "Sans aucun prix",
+      "erratum": "Modifiées par l'erratum"
+    },
+    "totals": {
+      "title": "Totaux",
+      "hidden": "coût et marge masqués au commercial",
+      "cost": "Coût total",
+      "excl": "Total HT",
+      "margin": "Marge",
+      "caution": "Caution {pct} %",
+      "partial": "Ces totaux ne couvrent que les {priced} lignes chiffrées sur {lines}. Ce n'est pas le montant de l'offre."
+    },
+    "history": {
+      "title": "L'historique aide ici",
+      "known": "Lignes déjà chiffrées",
+      "drift": "Dérive moyenne des prix",
+      "why": "Calculée sur les {lines} lignes dont nous connaissons le dernier prix payé et un coût actuel."
+    },
+    "sources": {
+      "title": "Fichiers lus",
+      "never": "les fichiers ne sont jamais modifiés",
+      "none": "Aucun fichier n'a encore été lu pour cette affaire.",
+      "line": "{kind} · {total} lignes lues · {imported} importées · {skipped} écartées",
+      "kind": {
+        "deal_line": "Bordereau",
+        "bpu_erratum": "Erratum"
+      }
+    },
+    "error": {
+      "notAllowed": "Chiffrer un bordereau demande de voir les coûts. Votre rôle ne le permet pas.",
+      "noFile": "Aucun fichier n'a été choisi.",
+      "noBatch": "Ce fichier n'est plus disponible. Rechargez-le.",
+      "noSuchBatch": "Ce fichier n'est plus disponible. Rechargez-le.",
+      "noSuchDeal": "Cette affaire n'existe pas.",
+      "noSuchErratum": "Cet erratum n'existe pas.",
+      "alreadyImported": "Cette affaire a déjà des lignes. Un second fichier est un erratum : il se charge depuis l'onglet Erratum et se compare ligne par ligne.",
+      "nothingImportedYet": "Importez d'abord le bordereau — il n'y a rien à comparer.",
+      "unreadable": "Ce fichier n'a pas pu être lu.",
+      "emptySheet": "La première feuille de ce fichier est vide.",
+      "mappingIncomplete": "Il manque au moins le numéro de prix, la désignation ou la quantité. Sans ces trois colonnes ce n'est pas un bordereau.",
+      "noLines": "Aucune ligne lisible dans ce fichier.",
+      "nothingToImport": "Aucune ligne à importer.",
+      "nothingChanged": "Cet erratum ne change rien par rapport aux lignes détenues.",
+      "erratumAlreadyPending": "Un erratum est déjà en attente. Traitez-le avant d'en charger un autre.",
+      "erratumNotPending": "Cet erratum a déjà été traité.",
+      "offerAlreadyIssued": "Une offre est déjà partie contre l'ancien bordereau. Cochez la case pour appliquer l'erratum en le sachant.",
+      "reasonRequired": "Un motif est obligatoire."
     }
   }
 }

@@ -1,5 +1,6 @@
-import { date, integer, numeric, pgTable, text, timestamp, uuid } from "drizzle-orm/pg-core";
+import { date, integer, jsonb, numeric, pgTable, text, timestamp, uuid } from "drizzle-orm/pg-core";
 import { deal } from "./deal";
+import { party } from "./party";
 
 /**
  * Screens 07 and 08 — tenders and the dossier.
@@ -68,6 +69,16 @@ export const tender = pgTable("tender", {
   submittedAt: timestamp("submitted_at", { withTimezone: true }),
   submittedBy: text("submitted_by"),
   depositReceiptRef: text("deposit_receipt_ref"),
+
+  /**
+   * Screen 42's subtitle — "read from BPU.xls".
+   *
+   * The name of the file the bordereau was read from, kept so the header can
+   * say where forty-two lines came from without anybody having to remember.
+   * Null while the lines were typed rather than imported, which is also normal.
+   */
+  bpuSource: text("bpu_source"),
+  bpuImportedAt: timestamp("bpu_imported_at", { withTimezone: true }),
 
   createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
 });
@@ -152,4 +163,66 @@ export const tenderPiece = pgTable("tender_piece", {
   note: text("note"),
   addedBy: text("added_by"),
   addedAt: timestamp("added_at", { withTimezone: true }).notNull().defaultNow(),
+});
+
+/**
+ * Screen 42 — how this client's bordereau is laid out.
+ *
+ * "Confirm once — remembered for this client." A BPU arrives as a spreadsheet
+ * with the buyer's own column headings: SADEG writes `N° de prix`, ANBT writes
+ * `Num`, and one of them puts the unit before the designation. The mapping is
+ * proposed from the headings and CONFIRMED BY A PERSON, never guessed silently
+ * — screen 62's columns file says why, and the reason is stronger here: a
+ * column called `Montant` read as a unit price puts a wrong figure on a
+ * submitted bid.
+ *
+ * Keyed on the client, not on the tender, because the same authority publishes
+ * the same template four times a year and nobody should confirm it four times.
+ */
+export const bpuMapping = pgTable("bpu_mapping", {
+  partyId: uuid("party_id")
+    .primaryKey()
+    .references(() => party.id, { onDelete: "cascade" }),
+  /** { sourceColumn: target | null }. Null means deliberately ignored. */
+  mapping: jsonb("mapping").notNull(),
+  confirmedBy: text("confirmed_by"),
+  confirmedAt: timestamp("confirmed_at", { withTimezone: true }).notNull().defaultNow(),
+});
+
+/**
+ * AN ERRATUM THAT HAS ARRIVED AND HAS NOT BEEN APPLIED.
+ *
+ * A fortnight before the deadline, with thirty-one lines priced, the buyer
+ * issues a corrected bordereau. Re-importing it is correct and throws away
+ * every price already gathered. So it lands HERE first, as the lines it
+ * contains and nothing more, and the screen shows the diff against what is
+ * held. A person applies it.
+ *
+ * The lines are stored verbatim as read from the file. That is the point: the
+ * row is evidence of what the buyer sent, and it stays readable after the
+ * lines have moved underneath it.
+ */
+export const bpuErratum = pgTable("bpu_erratum", {
+  id: uuid("id").primaryKey().defaultRandom(),
+  dealId: uuid("deal_id")
+    .notNull()
+    .references(() => deal.id, { onDelete: "cascade" }),
+
+  filename: text("filename"),
+  /** The date the buyer put on it, which is not the date it was read. */
+  receivedOn: date("received_on"),
+
+  /** `BpuLine[]`, verbatim from the file. */
+  lines: jsonb("lines").notNull(),
+
+  /** pending | applied | discarded */
+  status: text("status").notNull().default("pending"),
+
+  addedBy: text("added_by"),
+  addedAt: timestamp("added_at", { withTimezone: true }).notNull().defaultNow(),
+  appliedBy: text("applied_by"),
+  appliedAt: timestamp("applied_at", { withTimezone: true }),
+  discardedAt: timestamp("discarded_at", { withTimezone: true }),
+  /** Why it was applied over an issued offer, or why it was thrown away. */
+  reason: text("reason"),
 });

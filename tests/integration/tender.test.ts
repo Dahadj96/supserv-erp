@@ -284,7 +284,14 @@ describe("the list", () => {
     const rows = await listTenders(NOW);
     const mine = rows.find((r) => r.dealId === dealId);
     expect(mine?.submittedAt).not.toBeNull();
-    expect(counts.incomplete).toBe(0);
+
+    // Scoped to this tender rather than asserting the count is nought: the
+    // test database is shared and other suites leave tenders in it. What is
+    // being proved is that a DEPOSITED tender drops out of the chase list, and
+    // that the count is exactly the rows that are still in it.
+    const stillChasing = rows.filter((r) => r.submittedAt === null && r.blocking > 0);
+    expect(stillChasing.map((r) => r.dealId)).not.toContain(dealId);
+    expect(counts.incomplete).toBe(stillChasing.length);
   });
 
   it("lets a piece this tender does not ask for be removed", async () => {

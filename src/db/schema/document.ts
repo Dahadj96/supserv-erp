@@ -129,6 +129,24 @@ export const documentLine = pgTable("document_line", {
    */
   sourceLineId: uuid("source_line_id"),
 
+  /**
+   * The ENQUIRY line this line answers. Not the same thing as `sourceLineId`
+   * above, which points at another DOCUMENT line.
+   *
+   * Screen 42 needs it. A bordereau's forty-two lines are `deal_line` rows
+   * numbered as the client numbered them — 1, 2, 3, then 5 after an erratum
+   * removed 4 — while an offer's lines are numbered 1..n in their own order,
+   * so position does not join the two. The alternative is matching on the
+   * designation, which is the thing this codebase says is wrong everywhere
+   * else: two lines that happen to read the same collapse into one.
+   *
+   * Deliberately no foreign key, for the reason given above `sourceLineId`:
+   * deleting a draft's line must never write to an issued document's row. A
+   * dangling id joins to nothing, which is the correct answer once the client
+   * has removed the line it pointed at.
+   */
+  dealLineId: uuid("deal_line_id"),
+
   itemId: uuid("item_id").references(() => item.id),
   reference: text("reference"),
   designation: text("designation"),

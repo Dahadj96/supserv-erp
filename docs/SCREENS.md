@@ -51,7 +51,7 @@ you are about to build, stop and ask — do not invent an interface.
 | 39 | Dossier intake | `/inbox/dossier` | **2** |
 | 40 | Extraction review | `/inbox/dossier/[id]/review` | **2** |
 | 41 | Scan station | `/inbox/scan` | **2** |
-| 42 | BPU import and pricing | `/tenders/[id]/bpu` | later |
+| 42 | BPU import and pricing | `/tenders/[id]/bpu` | **4** |
 | 43 | Assistant in context | `/assistant` | **7** |
 | 44 | Assistant proposals | `/assistant/proposals` | **7** |
 | 45 | Assistant permissions and safety | `/settings/assistant` | **7** |
@@ -127,13 +127,13 @@ nothing gets built into this ERP without a line saying what it is for.
 - **Phase 1** — Records and search: 21, 22, 24, 25, 51, 73, 75, 76, 82, 84
 - **Phase 2** — Capture: 02, 38, 39, 40, 41, 46, 61, 62, 86
 - **Phase 3** — The document engine: 18, 47, 50, 70, 71
-- **Phase 4** — Sell side, end to end: 05, 06, 07, 08, 09, 10, 11, 12, 23, 67, 68, 74, 77, 78
+- **Phase 4** — Sell side, end to end: 05, 06, 07, 08, 09, 10, 11, 12, 23, 42, 67, 68, 74, 77, 78
 - **Phase 5** — Money: 03, 04, 13, 14, 15, 16, 17, 19, 20, 26, 48, 49, 72
 - **Phase 6** — Organisation: 33, 55, 56, 57, 58, 59, 60, 63, 65, 66, 83
 - **Phase 7** — Control and the assistant: 27, 28, 32, 43, 44, 45, 64, 69
-- **Parked — after the first release**: 42
+- **Parked — after the first release**: none
 
-Nine screens left that list on 30 Aug.
+Ten screens left that list on 30 Aug, and the parked list is now empty.
 
 **68** was parked as "tenders module depth", which it is not: a supplier order
 is the leg between an offer that was won and an invoice that can be defended,
@@ -166,5 +166,17 @@ two small tables. The rule the whole module turns on is the one screens 08 and
 16 already follow — a welding attestation valid this morning and expired on the
 day a man is due on site does not make him a warning, it makes the crew one
 short.
+
+**42** last, and it was the one screen still on the parked list. It is not an
+import screen with a pricing table bolted on. The bordereau IS the deal's
+lines — `deal_line` already holds the client's own number, reference,
+designation, quantity and unit — so importing one is importing deal lines, and
+the screen's real subject is what happens a fortnight later when the buyer
+issues an ERRATUM against thirty-one lines that have already been priced.
+Re-importing is correct and throws every price away; ignoring it means bidding
+against the wrong quantities. So the incoming file is diffed on the client's
+line number, a quantity change keeps its price and a redesignation does not,
+and the prices a redesignation invalidates are stamped stale rather than
+deleted. See `docs/DECISIONS/2026-08-30-an-erratum-is-not-a-re-import.md`.
 
 - **Reference only, no route**: 37, 52, 54

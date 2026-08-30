@@ -165,6 +165,39 @@ over sourcing rows that already existed:
 - `tests/unit/scorecard.test.ts` :: "does not split an article the supplier renamed halfway through the year"
 - `tests/unit/scorecard.test.ts` :: "does not blame a supplier for an enquiry we walked away from"
 
+Screen 42 last, and it was the only screen still on the parked list. The
+sentence it has to earn is not "a spreadsheet can be imported" — it is that a
+bordereau which has been priced for three weeks survives an erratum:
+
+- `tests/unit/bpu.test.ts` :: "reports the QUANTITY when a line changed in two ways at once"
+- `tests/unit/bpu.test.ts` :: "reports a reworded line as reworded, not as a delete and an add"
+- `tests/unit/bpu.test.ts` :: "keeps the price when only the quantity moved"
+- `tests/unit/bpu.test.ts` :: "drops the price when the words changed"
+- `tests/unit/bpu.test.ts` :: "covers the priced lines and says how many are not"
+- `tests/unit/bpu.test.ts` :: "refuses to call a price with no cost behind it infinitely profitable"
+- `tests/unit/bpu.test.ts` :: "says nothing rather than nought when nothing has been bought before"
+- `tests/unit/bpu-columns.test.ts` :: "gives a target to the first heading that claims it, not the last"
+- `tests/unit/bpu-columns.test.ts` :: "reads the four ways a quantity is written in the same folder"
+- `tests/unit/bpu-columns.test.ts` :: "returns null for something unreadable rather than a nought it invented"
+- `tests/unit/bpu-columns.test.ts` :: "skips a section heading in silence, because forty of them are not forty problems"
+- `tests/integration/bpu.test.ts` :: "refuses a second file against lines that already exist"
+- `tests/integration/bpu.test.ts` :: "keeps the price on a line whose quantity moved and expires it on one reworded"
+- `tests/integration/bpu.test.ts` :: "stops counting a stale price as a cost"
+- `tests/integration/bpu.test.ts` :: "leaves the lines as the buyer numbered them"
+- `tests/integration/bpu.test.ts` :: "refuses until somebody says in writing that they know"
+- `tests/integration/bpu.test.ts` :: "writes an internal costing only where no cost is held"
+- `tests/integration/bpu.test.ts` :: "keeps a discarded erratum as evidence that it arrived"
+
+### Not proved here
+
+The column mapping is confirmed by a person and remembered per client, and
+`commitBpuBatch` re-reads the SAME stored bytes rather than a parse held in
+memory — the arrangement screen 62 already uses and for the same reason. What is
+not proved by a test is the file handling itself: no test uploads a real `.xls`
+through the page. `readWorkbook` is screen 62's and is exercised by
+`tests/integration/import.test.ts`; the BPU-shaped reading on top of it is
+tested against rows, not against a workbook.
+
 ---
 
 ## Phase 5 — Money
@@ -288,5 +321,13 @@ tells you what you want to hear.
 3. **The backup is on the same disk as the database.** §5b of the RUNBOOK.
 4. **The mailbox has never been read.** Phase 2, above.
 5. **SharePoint is not connected.** Phase 6, above.
-6. **Ten screens are parked** until after the first release — `docs/SCREENS.md`
-   lists which, and that was a decision, not an omission.
+6. ~~**Ten screens are parked** until after the first release.~~ **Closed on 30
+   August.** All eighty-six screens in the map are now routed and present, and
+   the parked list in `docs/SCREENS.md` is empty. Twelve of the eighty-six are
+   patterns, references and overlays with no route by design, which is what
+   they always were.
+7. **No test uploads a real spreadsheet.** Screens 42 and 62 both read
+   workbooks, and both are tested against rows rather than against a file. The
+   reader itself — `src/domain/import/sheet.ts` — is the one piece of this
+   system whose behaviour on a real client's `.xls` has been reasoned about and
+   not demonstrated.
