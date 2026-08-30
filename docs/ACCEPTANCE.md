@@ -156,6 +156,15 @@ sidebar since phase 0, and tenders are how this company gets most of its work:
 - `tests/integration/tender.test.ts` :: "refuses while a piece would have the bid thrown out"
 - `tests/integration/tender.test.ts` :: "allows it with a reason, and freezes what was blocking at the time"
 
+Screen 23 the same day, and it needed no schema — every figure is arithmetic
+over sourcing rows that already existed:
+
+- `tests/unit/scorecard.test.ts` :: "keeps a bounced message out of the reply rate entirely"
+- `tests/unit/scorecard.test.ts` :: "leaves an undecided enquiry out of both halves"
+- `tests/unit/scorecard.test.ts` :: "counts only lines where somebody else also quoted"
+- `tests/unit/scorecard.test.ts` :: "does not split an article the supplier renamed halfway through the year"
+- `tests/unit/scorecard.test.ts` :: "does not blame a supplier for an enquiry we walked away from"
+
 ---
 
 ## Phase 5 — Money

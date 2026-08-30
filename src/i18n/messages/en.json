@@ -191,7 +191,8 @@
     "noContacts": "Nobody recorded at this company yet.",
     "contactName": "Name",
     "contactTrade": "Job title",
-    "tradeUnspecified": "not specified"
+    "tradeUnspecified": "not specified",
+    "scorecard": "Scorecard"
   },
   "bin": {
     "title": "Deleted",
@@ -4267,6 +4268,67 @@
       "expires": "Expires",
       "mobility": "Mobility",
       "stage": "Stage"
+    }
+  },
+  "scorecard": {
+    "backToCompany": "back to the company",
+    "bouncedNote": "{n} messages bounced and are kept out of the reply rate",
+    "days": "{n} days",
+    "ofRequests": "{replied} of {asked} requests",
+    "fromAsked": "from the day we asked to the day they answered",
+    "wonWith": "{n} offers won on their price",
+    "bestOn": "Best on {best} of {of}",
+    "vsOthers": "against other suppliers who priced the same line",
+    "neverAsked": "never asked",
+    "replyPct": "{pct}% reply",
+    "nothingStored": "Nothing here is stored",
+    "nothingStoredWhy": "There is no rating field. Every figure is arithmetic over the requests we sent, what they answered and whether the offer built on their price was won — so a supplier who stops replying shows it the following month, without anybody remembering to update anything.",
+    "card": {
+      "replyRate": "Reply rate",
+      "turnaround": "Average turnaround",
+      "winRate": "Win rate as our source",
+      "position": "Price position",
+      "lastAsked": "Last asked"
+    },
+    "prices": {
+      "title": "Price history",
+      "how": "the last price they quoted, per reference",
+      "none": "They have never quoted a price. A supplier with no history is a supplier nobody has asked, which is its own answer."
+    },
+    "requests": {
+      "title": "Recent requests",
+      "count": "{n} in all",
+      "none": "This supplier has never been on a sourcing request."
+    },
+    "peers": {
+      "title": "Against other suppliers",
+      "how": "everyone we have asked"
+    },
+    "outcome": {
+      "usedInOffer": "Quoted — used in offer",
+      "offerWon": "Quoted — offer won",
+      "offerLost": "Quoted — offer lost",
+      "notBestPrice": "Quoted — not the best price",
+      "noReply": "No reply",
+      "bounced": "Bounced",
+      "declined": "Declined to quote",
+      "weNoBid": "Quoted — we no-bid",
+      "waiting": "Waiting"
+    },
+    "column": {
+      "reference": "Reference",
+      "designation": "Designation",
+      "lastQuoted": "Last quoted",
+      "unitPrice": "Unit price",
+      "previous": "Previous",
+      "change": "Change",
+      "times": "Times quoted",
+      "enquiry": "Enquiry",
+      "items": "Items",
+      "asked": "Asked",
+      "replied": "Replied",
+      "turnaround": "Turnaround",
+      "outcome": "Outcome"
     }
   }
 }

@@ -61,9 +61,12 @@ export const MODULES: Module[] = [
   // is three columns on `person` and two small tables.
   { key: "recruitment", state: "built", href: "/personnel-requests", phase: "5" },
 
+  // Built 30 Aug. Screen 23, and it needed no schema: every figure is
+  // arithmetic over sourcing rows that already existed.
+  { key: "supplierScorecard", state: "built", href: "/companies", phase: "4" },
+
   // PLAN §7, "Later, deliberately parked". Named here so that "the system does
   // not do this" is visible rather than discovered.
-  { key: "supplierScorecard", state: "parked", href: null, phase: "later" },
   { key: "websiteForms", state: "parked", href: null, phase: "later" },
   { key: "arabic", state: "parked", href: null, phase: "later" },
 ];

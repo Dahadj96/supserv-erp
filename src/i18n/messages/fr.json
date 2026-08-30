@@ -191,7 +191,8 @@
     "noContacts": "Aucune personne enregistrée dans cette société.",
     "contactName": "Nom",
     "contactTrade": "Fonction",
-    "tradeUnspecified": "à préciser"
+    "tradeUnspecified": "à préciser",
+    "scorecard": "Fiche fournisseur"
   },
   "bin": {
     "title": "Supprimés",
@@ -4267,6 +4268,67 @@
       "expires": "Expire",
       "mobility": "Mobilité",
       "stage": "Étape"
+    }
+  },
+  "scorecard": {
+    "backToCompany": "retour à la société",
+    "bouncedNote": "{n} messages en échec, exclus du taux de réponse",
+    "days": "{n} jours",
+    "ofRequests": "{replied} demandes sur {asked}",
+    "fromAsked": "du jour où l'on demande au jour où ils répondent",
+    "wonWith": "{n} offres gagnées sur leur prix",
+    "bestOn": "Meilleur sur {best} de {of}",
+    "vsOthers": "face aux autres fournisseurs ayant chiffré la même ligne",
+    "neverAsked": "jamais sollicité",
+    "replyPct": "{pct}% de réponse",
+    "nothingStored": "Rien ici n'est stocké",
+    "nothingStoredWhy": "Il n'y a pas de champ « note ». Chaque chiffre est un calcul sur les demandes envoyées, ce qu'ils ont répondu et si l'offre bâtie sur leur prix a été gagnée — un fournisseur qui cesse de répondre le montre le mois suivant, sans que personne n'ait à mettre quoi que ce soit à jour.",
+    "card": {
+      "replyRate": "Taux de réponse",
+      "turnaround": "Délai moyen",
+      "winRate": "Taux de réussite comme source",
+      "position": "Position prix",
+      "lastAsked": "Dernière sollicitation"
+    },
+    "prices": {
+      "title": "Historique des prix",
+      "how": "le dernier prix chiffré, par référence",
+      "none": "Ils n'ont jamais chiffré de prix. Un fournisseur sans historique est un fournisseur que personne n'a sollicité, ce qui est déjà une réponse."
+    },
+    "requests": {
+      "title": "Demandes récentes",
+      "count": "{n} au total",
+      "none": "Ce fournisseur n'a jamais figuré sur une demande de prix."
+    },
+    "peers": {
+      "title": "Face aux autres fournisseurs",
+      "how": "tous ceux que nous avons sollicités"
+    },
+    "outcome": {
+      "usedInOffer": "Chiffré — utilisé dans l'offre",
+      "offerWon": "Chiffré — offre gagnée",
+      "offerLost": "Chiffré — offre perdue",
+      "notBestPrice": "Chiffré — pas le meilleur prix",
+      "noReply": "Sans réponse",
+      "bounced": "Adresse en échec",
+      "declined": "A refusé de chiffrer",
+      "weNoBid": "Chiffré — nous n'avons pas soumissionné",
+      "waiting": "En attente"
+    },
+    "column": {
+      "reference": "Référence",
+      "designation": "Désignation",
+      "lastQuoted": "Dernier chiffrage",
+      "unitPrice": "Prix unitaire",
+      "previous": "Précédent",
+      "change": "Évolution",
+      "times": "Fois chiffré",
+      "enquiry": "Consultation",
+      "items": "Articles",
+      "asked": "Demandé",
+      "replied": "Répondu",
+      "turnaround": "Délai",
+      "outcome": "Issue"
     }
   }
 }

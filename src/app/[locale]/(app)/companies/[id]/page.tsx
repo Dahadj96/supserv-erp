@@ -87,7 +87,15 @@ export default async function CompanyPage({
             ))}
           </p>
         </div>
-        <div className="ms-auto">
+        <div className="ms-auto flex items-center gap-2">
+          {/* Screen 23, and only for suppliers: a scorecard on a client would
+              be reply rates and price positions about somebody who has never
+              quoted us anything. */}
+          {company.roles.includes("supplier") ? (
+            <Link href={`/companies/${id}/scorecard`}>
+              <Button variant="secondary">{t("company.scorecard")}</Button>
+            </Link>
+          ) : null}
           <Link href={`/companies/${id}/edit`}>
             <Button variant="secondary">{t("company.edit")}</Button>
           </Link>
