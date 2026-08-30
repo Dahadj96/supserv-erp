@@ -192,6 +192,19 @@ winning the work and the last invoice being paid is most of the year:
 - `tests/integration/project.test.ts` :: "brings the SOONEST-expiring certification through, not the latest"
 - `tests/integration/project.test.ts` :: "is stored with a name against it, and shows the gap"
 
+And screens 24, 25 and 26 — `/personnel-requests` was the third dead link in
+the rail, and a certification that lapses before a man is due on site is the
+same rule for the third time:
+
+- `tests/unit/recruitment.test.ts` :: "is flagged when it expires between today and the start"
+- `tests/unit/recruitment.test.ts` :: "does NOT count a confirmed man whose ticket lapses, when the site needs one"
+- `tests/unit/recruitment.test.ts` :: "counts him anyway on a site that requires no certification"
+- `tests/unit/recruitment.test.ts` :: "is LATE once the start date has passed with nobody on site"
+- `tests/integration/recruitment.test.ts` :: "takes the SOONEST-expiring certification, not the latest"
+- `tests/integration/recruitment.test.ts` :: "counts him again the moment the certificate is renewed"
+- `tests/integration/recruitment.test.ts` :: "keeps the row, the trade and every certification when they are hired"
+- `tests/integration/recruitment.test.ts` :: "refuses a rejection with no reason, the same rule the go/no-go card follows"
+
 ---
 
 ## Phase 6 — Organisation

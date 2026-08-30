@@ -3473,7 +3473,9 @@
       "assistant_proposal": "Assistant proposal",
       "tender": "Tender",
       "company_credential": "Company paper",
-      "project": "Project"
+      "project": "Project",
+      "personnel_request": "Personnel request",
+      "personnel_candidate": "Shortlist entry"
     },
     "action": {
       "alias": {
@@ -4142,6 +4144,129 @@
       "expiresBeforeAcceptance": "The {kind} guarantee expires {on} — before provisional acceptance. Renew it or the client can call it in.",
       "lapsed": "The {kind} guarantee lapsed on {on}. Until it is renewed the client is holding an unsecured contract.",
       "expiring": "The {kind} guarantee expires {on}. A bank takes about six weeks to renew one."
+    }
+  },
+  "candidates": {
+    "title": "Candidates",
+    "subtitle": "{n} people in the pipeline · {expiring} certifications expiring",
+    "discipline": "Discipline",
+    "none": "Nobody matches this filter. A candidate is a person whose relationship is `candidate` — the same table as everybody else on a site.",
+    "expiringBanner": "{n, plural, one {# site certification expires} other {# site certifications expire}} within {days} days. A ticket running out under a man who is working is worth more attention than one under a CV nobody has read.",
+    "expiresIn": "{on} — {days} d",
+    "expired": "Expired",
+    "facet": {
+      "all": "All",
+      "new": "New",
+      "reviewing": "Reviewing",
+      "shortlisted": "Shortlisted",
+      "interview": "Interview",
+      "hired": "Hired",
+      "archived": "Archived"
+    },
+    "stage": {
+      "new": "New",
+      "reviewing": "Reviewing",
+      "shortlisted": "Shortlisted",
+      "interview": "Interview",
+      "hired": "Hired",
+      "archived": "Archived"
+    },
+    "column": {
+      "name": "Name",
+      "discipline": "Discipline",
+      "appliedFor": "Applied for",
+      "certifications": "Certifications",
+      "expires": "Expires",
+      "wilaya": "Mobility",
+      "received": "Received",
+      "status": "Status"
+    }
+  },
+  "candidate": {
+    "appliedFor": "applied for {for}",
+    "arrivedBy": "arrived {source}",
+    "startsOn": "starts {on}",
+    "doesNotExpire": "does not expire",
+    "verified": "Verified",
+    "unverified": "Not verified",
+    "details": "Details",
+    "usOrNobody": "SUPSERV, or nobody yet",
+    "samePerson": "The same person, everywhere",
+    "samePersonWhy": "A candidate is a row in the people table. Hiring them changes one field — they keep their trade, their number and every certification already attached, and nothing is copied anywhere.",
+    "certifications": {
+      "title": "Certifications",
+      "why": "the soonest to expire decides which sites they can go to",
+      "none": "No certification is recorded. That is normal for a manœuvre and it is a problem for a welder on a TouatGaz site."
+    },
+    "considered": {
+      "title": "Being considered for",
+      "none": "Not on any shortlist. Screen 26 is where a request puts somebody forward."
+    },
+    "column": {
+      "kind": "Certification",
+      "number": "Number",
+      "issuedBy": "Issued by",
+      "expires": "Expires",
+      "verified": "Checked"
+    },
+    "field": {
+      "trade": "Trade",
+      "appliedFor": "Applied for",
+      "mobility": "Mobility",
+      "wilaya": "Wilaya",
+      "phone": "Phone",
+      "email": "Email",
+      "employer": "Employer",
+      "received": "Received"
+    }
+  },
+  "requests": {
+    "summary": "{open, plural, one {# open} other {# open}} · {positions, plural, =0 {every position filled} one {# position to fill} other {# positions to fill}} · {soon, plural, =0 {none needed this week} one {# needed within 7 days} other {# needed within 7 days}}",
+    "none": "No personnel request matches this filter. A request is a site asking for people by a date — not a job advertisement.",
+    "banner": "{ref} needs {needed} {role} in {wilaya} in {days} days and has {usable} who can actually go. The rest are confirmed with a certification that expires before the start date.",
+    "ofConfirmed": "of {n} confirmed",
+    "expiresBeforeStart": "{on} — before the start",
+    "facet": {
+      "all": "All",
+      "open": "Open",
+      "filled": "Filled",
+      "cancelled": "Cancelled"
+    },
+    "state": {
+      "urgent": "Urgent",
+      "open": "Open",
+      "filled": "Filled",
+      "cancelled": "Cancelled",
+      "late": "Late"
+    },
+    "stage": {
+      "new": "New",
+      "reviewing": "Reviewing",
+      "shortlisted": "Shortlisted",
+      "interview": "Interview",
+      "confirmed": "Confirmed",
+      "rejected": "Rejected"
+    },
+    "shortlist": {
+      "title": "Shortlist — {ref} · {needed} {role}, {wilaya}",
+      "certificationMandatory": "certification is mandatory for this site",
+      "noCertificationNeeded": "no certification required for this site"
+    },
+    "column": {
+      "ref": "Ref",
+      "role": "Role",
+      "for": "For",
+      "wilaya": "Wilaya",
+      "needed": "Needed",
+      "confirmed": "Can go",
+      "start": "Start",
+      "status": "Status",
+      "candidate": "Candidate",
+      "trade": "Trade",
+      "certification": "Certification",
+      "expires": "Expires",
+      "mobility": "Mobility",
+      "stage": "Stage"
     }
   }
 }

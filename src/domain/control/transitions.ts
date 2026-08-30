@@ -224,6 +224,82 @@ export const MACHINES = {
     unwritten: [],
     legacy: [],
   },
+
+  /**
+   * Screen 26 — a request for people.
+   *
+   * ONE STATE, and one way out. `filled` is not here on purpose: it is
+   * arithmetic over the shortlist and moves the day somebody's certificate
+   * expires, which is exactly the change nobody remembers to record. What the
+   * column holds is what a person decided — that the request was cancelled, and
+   * why.
+   *
+   * A machine with a single edge looks like overkill and is not: without it,
+   * "open" and "cancelled" are two string literals in the codebase that nothing
+   * checks, which is what the test below is for.
+   */
+  personnel_request: {
+    entity: "personnel_request",
+    initial: "open",
+    to: {
+      open: ["cancelled"],
+      // Reopening is real: a site that was told to wait gets told to go.
+      cancelled: ["open"],
+    },
+    unwritten: [],
+    legacy: [],
+    cyclic: true,
+  },
+
+  /**
+   * Screen 26 — one person against one request.
+   *
+   * `rejected` goes back, and it takes a reason to get there. Somebody turned
+   * down in June because their attestation had lapsed is exactly the person to
+   * put forward in September once it is renewed, and a terminal rejection would
+   * mean creating a second shortlist row and losing why the first was refused.
+   */
+  personnel_candidate: {
+    entity: "personnel_candidate",
+    initial: "new",
+    to: {
+      new: ["reviewing", "shortlisted", "rejected"],
+      reviewing: ["shortlisted", "rejected"],
+      shortlisted: ["interview", "confirmed", "rejected"],
+      interview: ["confirmed", "rejected"],
+      confirmed: ["rejected"],
+      rejected: ["reviewing", "shortlisted"],
+    },
+    unwritten: [],
+    legacy: [],
+    cyclic: true,
+  },
+
+  /**
+   * Screens 24 and 25 — where a candidate is in the pipeline.
+   *
+   * Separate from the one above and deliberately so: the same welder can be
+   * confirmed on one site and merely shortlisted for another, so `person.stage`
+   * is about the person and `personnel_candidate.stage` is about one request.
+   *
+   * `hired` is not terminal. People leave and come back, and this company hires
+   * the same daily men every season.
+   */
+  person_stage: {
+    entity: "person",
+    initial: "new",
+    to: {
+      new: ["reviewing", "shortlisted", "archived"],
+      reviewing: ["shortlisted", "interview", "archived"],
+      shortlisted: ["interview", "hired", "archived"],
+      interview: ["hired", "archived"],
+      hired: ["archived"],
+      archived: ["reviewing", "shortlisted"],
+    },
+    unwritten: [],
+    legacy: [],
+    cyclic: true,
+  },
 } as const satisfies Record<string, Machine>;
 
 export type MachineName = keyof typeof MACHINES;

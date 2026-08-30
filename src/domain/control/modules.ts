@@ -56,9 +56,13 @@ export const MODULES: Module[] = [
   // it, and which for a company doing travaux is most of the year.
   { key: "projects", state: "built", href: "/projects", phase: "5" },
 
+  // Built 30 Aug. Screens 24, 25 and 26. A candidate turned out not to be a new
+  // kind of record - screen 24's breadcrumb reads "People / Candidates" - so it
+  // is three columns on `person` and two small tables.
+  { key: "recruitment", state: "built", href: "/personnel-requests", phase: "5" },
+
   // PLAN §7, "Later, deliberately parked". Named here so that "the system does
   // not do this" is visible rather than discovered.
-  { key: "recruitment", state: "parked", href: null, phase: "later" },
   { key: "supplierScorecard", state: "parked", href: null, phase: "later" },
   { key: "websiteForms", state: "parked", href: null, phase: "later" },
   { key: "arabic", state: "parked", href: null, phase: "later" },

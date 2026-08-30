@@ -125,6 +125,35 @@ export const person = pgTable("person", {
   bouncedAt: timestamp("bounced_at", { withTimezone: true }),
   /** Last time anybody here actually spoke to or wrote to them. */
   lastContactAt: timestamp("last_contact_at", { withTimezone: true }),
+  /**
+   * RECRUITMENT — screens 24 and 25, and null for everybody who did not arrive
+   * as a candidate.
+   *
+   * They are here rather than in a `candidate` table because screen 24's own
+   * breadcrumb reads "People / Candidates": it is a view of this list. A
+   * candidate who is hired keeps their row, their trade, their phone number and
+   * every certification already attached to them, and changes `relationship`
+   * from `candidate` to `employee`. A second table would have meant copying a
+   * person across on the day they were hired, which is the day the two copies
+   * start to drift.
+   *
+   * `stage` is the recruitment pipeline: new | reviewing | shortlisted |
+   * interview | hired | archived. It is deliberately NOT the stage on a
+   * personnel request — the same welder can be confirmed on one site and merely
+   * shortlisted for another, and `personnel_candidate.stage` holds that.
+   */
+  stage: text("stage"),
+  /** What they applied for, in their words. Rarely the same as `trade`. */
+  appliedFor: text("applied_for"),
+  /**
+   * Where they will travel. "Adrar only", "Toutes wilayas", "Ouargla, sud".
+   *
+   * Free text, and it stays free text: a welder who will go anywhere south of
+   * Ghardaïa but not to In Salah in July has said something an enum cannot
+   * hold, and a system that rounded it to "mobile" would send him.
+   */
+  mobility: text("mobility"),
+
   supersededBy: uuid("superseded_by"),
   deletedAt: timestamp("deleted_at", { withTimezone: true }),
   deletedBy: text("deleted_by"),

@@ -33,9 +33,9 @@ you are about to build, stop and ask — do not invent an interface.
 | 21 | Companies | `/companies` | **1** |
 | 22 | Company detail | `/companies/[id]` | **1** |
 | 23 | Supplier scorecard | `/companies/[id]/scorecard` | later |
-| 24 | Candidates | `/candidates` | later |
-| 25 | Candidate detail | `/candidates/[id]` | later |
-| 26 | Personnel requests | `/personnel-requests` | later |
+| 24 | Candidates | `/candidates` | **1** |
+| 25 | Candidate detail | `/candidates/[id]` | **1** |
+| 26 | Personnel requests | `/personnel-requests` | **5** |
 | 27 | Compliance | `/compliance` | **7** |
 | 28 | Reports | `/reports` | **7** |
 | 29 | Settings | `/settings` | **0** |
@@ -124,16 +124,16 @@ nothing gets built into this ERP without a line saying what it is for.
 ## By phase
 
 - **Phase 0** — Shell and the interface layer: 01, 29, 30, 31, 34, 35, 36, 53, 79, 80, 81, 85
-- **Phase 1** — Records and search: 21, 22, 51, 73, 75, 76, 82, 84
+- **Phase 1** — Records and search: 21, 22, 24, 25, 51, 73, 75, 76, 82, 84
 - **Phase 2** — Capture: 02, 38, 39, 40, 41, 46, 61, 62, 86
 - **Phase 3** — The document engine: 18, 47, 50, 70, 71
 - **Phase 4** — Sell side, end to end: 05, 06, 07, 08, 09, 10, 11, 12, 67, 68, 74, 77, 78
-- **Phase 5** — Money: 03, 04, 13, 14, 15, 16, 17, 19, 20, 48, 49, 72
+- **Phase 5** — Money: 03, 04, 13, 14, 15, 16, 17, 19, 20, 26, 48, 49, 72
 - **Phase 6** — Organisation: 33, 55, 56, 57, 58, 59, 60, 63, 65, 66, 83
 - **Phase 7** — Control and the assistant: 27, 28, 32, 43, 44, 45, 64, 69
-- **Parked — after the first release**: 23, 24, 25, 26, 42
+- **Parked — after the first release**: 23, 42
 
-Five screens left that list on 30 Aug.
+Eight screens left that list on 30 Aug.
 
 **68** was parked as "tenders module depth", which it is not: a supplier order
 is the leg between an offer that was won and an invoice that can be defended,
@@ -152,5 +152,13 @@ valid today and expired on the morning of the deposit. See
 because for a company doing travaux the period between winning the work and the
 last invoice being paid is most of the year — situations waiting for a
 signature, retention nobody goes back for, bank guarantees lapsing quietly.
+
+**24, 25 and 26** because `/personnel-requests` was the third dead link, and
+because a candidate turned out not to be a new kind of record at all: screen
+24's own breadcrumb reads "People / Candidates". Three columns on `person` and
+two small tables. The rule the whole module turns on is the one screens 08 and
+16 already follow — a welding attestation valid this morning and expired on the
+day a man is due on site does not make him a warning, it makes the crew one
+short.
 
 - **Reference only, no route**: 37, 52, 54

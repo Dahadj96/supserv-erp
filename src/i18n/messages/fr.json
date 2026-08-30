@@ -3473,7 +3473,9 @@
       "assistant_proposal": "Proposition de l'assistant",
       "tender": "Appel d'offres",
       "company_credential": "Pièce de la société",
-      "project": "Chantier"
+      "project": "Chantier",
+      "personnel_request": "Demande de personnel",
+      "personnel_candidate": "Ligne de liste restreinte"
     },
     "action": {
       "alias": {
@@ -4142,6 +4144,129 @@
       "expiresBeforeAcceptance": "La caution {kind} expire le {on} — avant la réception provisoire. Renouvelez-la ou le client peut l'appeler.",
       "lapsed": "La caution {kind} a expiré le {on}. Tant qu'elle n'est pas renouvelée, le client détient un marché non garanti.",
       "expiring": "La caution {kind} expire le {on}. Une banque met environ six semaines à en renouveler une."
+    }
+  },
+  "candidates": {
+    "title": "Candidats",
+    "subtitle": "{n} personnes dans le pipeline · {expiring} habilitations expirent",
+    "discipline": "Métier",
+    "none": "Personne ne correspond à ce filtre. Un candidat est une personne dont la relation est `candidat` — la même table que tous ceux qui vont sur un chantier.",
+    "expiringBanner": "{n, plural, one {# habilitation de chantier expire} other {# habilitations de chantier expirent}} dans les {days} jours. Une habilitation qui expire sous un homme qui travaille mérite plus d'attention qu'une qui expire sous un CV que personne n'a lu.",
+    "expiresIn": "{on} — {days} j",
+    "expired": "Expirée",
+    "facet": {
+      "all": "Tous",
+      "new": "Nouveau",
+      "reviewing": "En examen",
+      "shortlisted": "Présélectionné",
+      "interview": "Entretien",
+      "hired": "Recruté",
+      "archived": "Archivé"
+    },
+    "stage": {
+      "new": "Nouveau",
+      "reviewing": "En examen",
+      "shortlisted": "Présélectionné",
+      "interview": "Entretien",
+      "hired": "Recruté",
+      "archived": "Archivé"
+    },
+    "column": {
+      "name": "Nom",
+      "discipline": "Métier",
+      "appliedFor": "Poste demandé",
+      "certifications": "Habilitations",
+      "expires": "Expire",
+      "wilaya": "Mobilité",
+      "received": "Reçu",
+      "status": "État"
+    }
+  },
+  "candidate": {
+    "appliedFor": "postule pour {for}",
+    "arrivedBy": "arrivé {source}",
+    "startsOn": "démarre le {on}",
+    "doesNotExpire": "n'expire pas",
+    "verified": "Vérifiée",
+    "unverified": "Non vérifiée",
+    "details": "Détails",
+    "usOrNobody": "SUPSERV, ou personne encore",
+    "samePerson": "La même personne, partout",
+    "samePersonWhy": "Un candidat est une ligne de la table des personnes. Le recruter change un champ — il garde son métier, son numéro et toutes ses habilitations, et rien n'est copié nulle part.",
+    "certifications": {
+      "title": "Habilitations",
+      "why": "celle qui expire en premier décide des chantiers accessibles",
+      "none": "Aucune habilitation enregistrée. C'est normal pour un manœuvre et c'est un problème pour un soudeur sur un chantier TouatGaz."
+    },
+    "considered": {
+      "title": "Considéré pour",
+      "none": "Sur aucune liste restreinte. L'écran 26 est celui où une demande propose quelqu'un."
+    },
+    "column": {
+      "kind": "Habilitation",
+      "number": "Numéro",
+      "issuedBy": "Délivrée par",
+      "expires": "Expire",
+      "verified": "Contrôlée"
+    },
+    "field": {
+      "trade": "Métier",
+      "appliedFor": "Poste demandé",
+      "mobility": "Mobilité",
+      "wilaya": "Wilaya",
+      "phone": "Téléphone",
+      "email": "E-mail",
+      "employer": "Employeur",
+      "received": "Reçu le"
+    }
+  },
+  "requests": {
+    "summary": "{open, plural, one {# ouverte} other {# ouvertes}} · {positions, plural, =0 {tous les postes pourvus} one {# poste à pourvoir} other {# postes à pourvoir}} · {soon, plural, =0 {aucun sous 7 jours} one {# nécessaire sous 7 jours} other {# nécessaires sous 7 jours}}",
+    "none": "Aucune demande de personnel ne correspond à ce filtre. Une demande, c'est un chantier qui réclame des personnes pour une date — pas une annonce.",
+    "banner": "{ref} demande {needed} {role} à {wilaya} dans {days} jours et n'en a que {usable} qui peuvent réellement y aller. Les autres sont confirmés avec une habilitation qui expire avant la date de démarrage.",
+    "ofConfirmed": "sur {n} confirmés",
+    "expiresBeforeStart": "{on} — avant le démarrage",
+    "facet": {
+      "all": "Toutes",
+      "open": "Ouvertes",
+      "filled": "Pourvues",
+      "cancelled": "Annulées"
+    },
+    "state": {
+      "urgent": "Urgente",
+      "open": "Ouverte",
+      "filled": "Pourvue",
+      "cancelled": "Annulée",
+      "late": "En retard"
+    },
+    "stage": {
+      "new": "Nouveau",
+      "reviewing": "En examen",
+      "shortlisted": "Présélectionné",
+      "interview": "Entretien",
+      "confirmed": "Confirmé",
+      "rejected": "Refusé"
+    },
+    "shortlist": {
+      "title": "Liste restreinte — {ref} · {needed} {role}, {wilaya}",
+      "certificationMandatory": "habilitation obligatoire sur ce chantier",
+      "noCertificationNeeded": "aucune habilitation requise sur ce chantier"
+    },
+    "column": {
+      "ref": "Réf",
+      "role": "Poste",
+      "for": "Pour",
+      "wilaya": "Wilaya",
+      "needed": "Demandés",
+      "confirmed": "Peuvent y aller",
+      "start": "Démarrage",
+      "status": "État",
+      "candidate": "Candidat",
+      "trade": "Métier",
+      "certification": "Habilitation",
+      "expires": "Expire",
+      "mobility": "Mobilité",
+      "stage": "Étape"
     }
   }
 }
