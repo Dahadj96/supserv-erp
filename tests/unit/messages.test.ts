@@ -81,6 +81,54 @@ describe("messages", () => {
   });
 
   /**
+   * The gap the block above admits to, narrowed.
+   *
+   * A key built as `t(`week.kind.${kind}`)` cannot be resolved statically -
+   * `kind` is a value. But the LITERAL PART can be, and a prefix that resolves
+   * to nothing is a call site where EVERY value throws, not an unlucky one.
+   * That is the whole of the /deals outage: `deals.filters.` had three members
+   * and the code needed nine, and `deals.filters.all` had never existed.
+   *
+   * So: for every template call site, the text before the first `${` must
+   * resolve to a group of messages that exists. It does not prove the member
+   * is there. It does prove somebody has not renamed a namespace out from
+   * under two hundred call sites.
+   */
+  it("resolves the literal prefix of every key built from a value", () => {
+    const broken: string[] = [];
+
+    for (const file of globSync(`${root}/src/**/*.{ts,tsx}`)) {
+      const src = readFileSync(file, "utf8");
+
+      const scopes = new Map<string, string>();
+      for (const m of src.matchAll(
+        /\b(?:const|let)\s+(\w+)\s*=\s*(?:await\s+)?(?:useTranslations|getTranslations)\(\s*(?:"([^"]*)")?\s*\)/g,
+      )) {
+        if (m[1]) scopes.set(m[1], m[2] ?? "");
+      }
+      if (scopes.size === 0) scopes.set("t", "");
+
+      for (const [name, namespace] of scopes) {
+        // `t(`a.b.${x}`)` and `t.has(`a.b.${x}`)` alike - a guarded call site
+        // still needs its namespace to exist, or the guard is answering false
+        // for a reason nobody intended.
+        const call = new RegExp(`\\b${name}(?:\\.has)?\\(\\s*\`([a-zA-Z0-9_.]*)\\$\\{`, "g");
+        for (const match of src.matchAll(call)) {
+          const literal = (match[1] as string).replace(/\.$/, "");
+          if (literal === "") continue;
+          const key = namespace ? `${namespace}.${literal}` : literal;
+          const found = get(en, key);
+          if (typeof found !== "object" || found === null) {
+            broken.push(`${key}  —  ${file.slice(root.length + 1).replaceAll("\\", "/")}`);
+          }
+        }
+      }
+    }
+
+    expect(broken, "template keys whose namespace does not exist").toEqual([]);
+  });
+
+  /**
    * next-intl 4 throws INVALID_KEY while LOADING the messages when a key name
    * contains a dot, because the dot is how nesting is expressed. One malformed
    * key breaks every page in the app, not just the screen that reads it — and

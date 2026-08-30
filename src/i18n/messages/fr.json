@@ -649,6 +649,13 @@
       "needsSourcingPicker": "Les demandes de prix existent, mais cet écran ne peut pas encore dire à laquelle ce devis répond — et le rattacher à la mauvaise demande ferait chiffrer une offre sur le mauvais devis.",
       "needsInvoicePicker": "Les factures et les règlements existent, mais la facture réglée doit être choisie, pas devinée d'après un montant dans un objet de message.",
       "senderHasNoCompany": "Une demande a besoin d'un client, et cet expéditeur n'est rattaché à aucune société. Ajoutez-le d'abord comme contact sous la bonne société, et ceci fonctionnera."
+    },
+    "attachment": {
+      "cv": "CV",
+      "quote": "Devis",
+      "invoice": "Facture",
+      "delivery_note": "Bon de livraison",
+      "tender_dossier": "Dossier d'appel d'offres"
     }
   },
   "moveIn": {
@@ -1150,14 +1157,6 @@
       "lastSeen": "Vu la dernière fois",
       "change": "Modifier",
       "permission": "Permission"
-    },
-    "role": {
-      "gerant": "Gérant",
-      "commercial": "Commercial",
-      "achats": "Achats",
-      "chantier": "Chantier",
-      "compta": "Comptabilité",
-      "lecture": "Lecture seule"
     },
     "permission": {
       "offers": {
@@ -2405,7 +2404,14 @@
       "notMatched": "Cette ligne n’a pas encore été rapprochée d’un article du catalogue, il n’y a donc nulle part où l’enregistrer.",
       "reasonRequired": "Dites pourquoi aucune fiche n’existe. Une marque sans raison n’apprend rien à personne."
     },
-    "tab": "Dossier technique"
+    "tab": "Dossier technique",
+    "mediaKind": {
+      "datasheet": "Fiche technique",
+      "photo": "Photo",
+      "certificate": "Certificat",
+      "diagram": "Schéma",
+      "manual": "Notice"
+    }
   },
   "ageing": {
     "title": "Balance âgée et relances",

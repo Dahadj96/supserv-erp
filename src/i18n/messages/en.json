@@ -45,7 +45,7 @@
       "achats": "Achats",
       "chantier": "Chantier",
       "compta": "Comptabilité",
-      "lecture": "Lecture seule"
+      "lecture": "Read only"
     }
   },
   "profile": {
@@ -649,6 +649,13 @@
       "needsSourcingPicker": "Sourcing requests exist, but this screen cannot yet say which one the quote answers — and attaching it to the wrong request would price an offer from the wrong quote.",
       "needsInvoicePicker": "Invoices and payments exist, but which invoice this pays has to be chosen, not guessed from an amount in a subject line.",
       "senderHasNoCompany": "An enquiry needs a client, and this sender is not linked to a company yet. Add them as a contact under the right company first, then this works."
+    },
+    "attachment": {
+      "cv": "CV",
+      "quote": "Quotation",
+      "invoice": "Invoice",
+      "delivery_note": "Delivery note",
+      "tender_dossier": "Tender dossier"
     }
   },
   "moveIn": {
@@ -1150,14 +1157,6 @@
       "lastSeen": "Last seen",
       "change": "Change",
       "permission": "Permission"
-    },
-    "role": {
-      "gerant": "Gérant",
-      "commercial": "Commercial",
-      "achats": "Achats",
-      "chantier": "Chantier",
-      "compta": "Comptabilité",
-      "lecture": "Read only"
     },
     "permission": {
       "offers": {
@@ -2405,7 +2404,14 @@
       "notMatched": "This line has not been matched to an item in the catalogue yet, so there is nowhere to record it.",
       "reasonRequired": "Say why no datasheet exists. A mark with no reason teaches nobody anything."
     },
-    "tab": "Technical file"
+    "tab": "Technical file",
+    "mediaKind": {
+      "datasheet": "Datasheet",
+      "photo": "Photo",
+      "certificate": "Certificate",
+      "diagram": "Diagram",
+      "manual": "Manual"
+    }
   },
   "ageing": {
     "title": "Ageing and relances",

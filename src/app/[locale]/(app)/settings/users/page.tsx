@@ -125,7 +125,7 @@ export default async function UsersPage({
                     <td className="py-2.5 pe-4">
                       {row.role ? (
                         <Badge tone={ROLE_TONE[row.role] ?? "neutral"}>
-                          {t(`users.role.${row.role}`)}
+                          {t(`auth.roles.${row.role}`)}
                         </Badge>
                       ) : (
                         <Badge tone="warning">{t("users.noRole")}</Badge>
@@ -156,7 +156,7 @@ export default async function UsersPage({
                             <option value="">{t("users.noRole")}</option>
                             {ROLE_KEYS.map((role) => (
                               <option key={role} value={role}>
-                                {t(`users.role.${role}`)}
+                                {t(`auth.roles.${role}`)}
                               </option>
                             ))}
                           </select>
@@ -194,7 +194,7 @@ export default async function UsersPage({
                   </th>
                   {ROLE_KEYS.map((role) => (
                     <th key={role} className="w-[110px] py-2.5 pe-4 text-center font-medium">
-                      {t(`users.role.${role}`)}
+                      {t(`auth.roles.${role}`)}
                     </th>
                   ))}
                 </tr>

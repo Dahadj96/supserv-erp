@@ -1,11 +1,12 @@
 import { GeistSans } from "geist/font/sans";
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
-import { hasLocale, NextIntlClientProvider } from "next-intl";
-import { setRequestLocale } from "next-intl/server";
+import { hasLocale } from "next-intl";
+import { getMessages, setRequestLocale } from "next-intl/server";
 import { NuqsAdapter } from "nuqs/adapters/next/app";
 import type { ReactNode } from "react";
 import { Toaster } from "sonner";
+import { IntlProvider } from "@/i18n/client-provider";
 import { routing } from "@/i18n/routing";
 import "../globals.css";
 
@@ -44,15 +45,24 @@ export default async function LocaleLayout({
   if (!hasLocale(routing.locales, locale)) notFound();
   setRequestLocale(locale);
 
+  // Read HERE, on the server, and passed down. IntlProvider is a client module,
+  // and a NextIntlClientProvider rendered from one inherits nothing from the
+  // request config - it would come up with no messages at all. See the comment
+  // in src/i18n/client-provider.tsx; the build caught this the first time.
+  const messages = await getMessages();
+
   return (
     <html lang={locale} dir="ltr" className={geist.variable}>
       <body className="bg-plane text-ink antialiased">
-        <NextIntlClientProvider>
+        {/* Not NextIntlClientProvider directly: onError and getMessageFallback
+            are functions and cannot cross to the client, so they are supplied
+            again inside IntlProvider. See src/i18n/fallback.ts. */}
+        <IntlProvider locale={locale} messages={messages}>
           {/* NuqsAdapter is what lets the filter live in the address — screen 79. */}
           <NuqsAdapter>{children}</NuqsAdapter>
           {/* Screen 36 — toasts. */}
           <Toaster position="bottom-center" toastOptions={{ className: "text-tiny" }} />
-        </NextIntlClientProvider>
+        </IntlProvider>
       </body>
     </html>
   );

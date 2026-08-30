@@ -53,7 +53,12 @@ export default async function FormsPage({ params }: { params: Promise<{ locale: 
         <div className="flex items-baseline gap-3">
           <h1 className="text-[19px] font-semibold text-ink">{t("forms.title")}</h1>
           <Badge tone={status === "live" ? "good" : "warning"}>
-            {t.has(`channels.status.${status}`) ? t(`channels.status.${status}`) : status}
+            {/* `intake.statusValue`, which is where screen 38 reads the same
+                four values from. The first version of this line invented a
+                `channels.status` namespace that has never existed, so the
+                guard was always false and the badge showed the raw enum
+                `not_built` to anybody who opened the screen. */}
+            {t(`intake.statusValue.${status}`)}
           </Badge>
           <Link
             href="/settings/channels"

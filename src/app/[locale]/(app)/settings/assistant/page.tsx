@@ -162,7 +162,7 @@ export default async function AssistantSettingsPage({
             <h2 className="text-tiny font-semibold text-ink">{t("assistantSafety.identity")}</h2>
             <p className="mt-3 text-tiny leading-relaxed text-secondary">
               {t("assistantSafety.identityWhat", {
-                role: session.role ? t(`roles.${session.role}`) : t("assistantSafety.noRole"),
+                role: session.role ? t(`auth.roles.${session.role}`) : t("assistantSafety.noRole"),
               })}
             </p>
             <p className="mt-3 rounded-[var(--radius-control)] bg-plane p-3 text-micro leading-relaxed text-secondary">
@@ -178,7 +178,7 @@ export default async function AssistantSettingsPage({
               <tbody>
                 {roleNames.map((role) => (
                   <tr key={role} className="border-b border-line-subtle last:border-0">
-                    <td className="py-2 ps-5 text-secondary">{t(`roles.${role}`)}</td>
+                    <td className="py-2 ps-5 text-secondary">{t(`auth.roles.${role}`)}</td>
                     <td className="py-2 pe-5 text-end tabular-nums text-ink">
                       {toolsFor(role).length}
                     </td>
