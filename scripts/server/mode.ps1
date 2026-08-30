@@ -62,8 +62,33 @@ switch ($Mode) {
 
     Get-Service cloudflared -ErrorAction SilentlyContinue |
       Format-Table Name, Status, StartType -AutoSize
-    Get-ScheduledTask -TaskName "SUPSERV ERP" -ErrorAction SilentlyContinue |
-      Format-Table TaskName, State -AutoSize
+
+    # SAY IT WHEN IT IS MISSING. This used to be a bare Get-ScheduledTask piped
+    # into Format-Table, which prints NOTHING when the task does not exist -
+    # and it did not exist, for days, while this same command was the thing
+    # everybody checked. A blank line where a row should be is not a status.
+    foreach ($name in @("SUPSERV ERP", "SUPSERV backup")) {
+      $found = Get-ScheduledTask -TaskName $name -ErrorAction SilentlyContinue
+      if ($found) {
+        $info = Get-ScheduledTaskInfo -TaskName $name -ErrorAction SilentlyContinue
+        Write-Host ("{0,-16} {1}   last run {2}" -f $name, $found.State, $(if ($info) { $info.LastRunTime } else { "?" }))
+      } else {
+        Write-Host ("{0,-16} NOT REGISTERED - run scripts\server\install-services.ps1 as Administrator" -f $name) -ForegroundColor Red
+      }
+    }
+
     docker ps --filter name=supserv-db --format "db: {{.Status}}"
+
+    # The backup, from the receipt the ERP itself reads. Same source as
+    # screen 66, so the two can never disagree.
+    $receipt = "C:\SUPSERV-ERP\.data\last-backup.json"
+    if (Test-Path $receipt) {
+      $r = Get-Content $receipt -Raw | ConvertFrom-Json
+      $days = [int]((Get-Date) - [datetime]$r.finishedAt).TotalDays
+      $where = if ($r.offsite) { "off this disk" } else { "SAME DISK" }
+      Write-Host ("backup: {0} days ago, verified {1}, {2}" -f $days, $r.verified, $where)
+    } else {
+      Write-Host "backup: NEVER TAKEN" -ForegroundColor Red
+    }
   }
 }

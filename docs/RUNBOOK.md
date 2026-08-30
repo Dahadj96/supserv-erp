@@ -17,10 +17,39 @@ Written 23 Aug 2026, the day `erp.supserv-dz.com` went live.
 |---|---|---|
 | 1 | **Cloudflare Access** — application, policy, Entra as identity provider | **done** 28 Aug |
 | 2 | **Entra redirect URI** — so sign-in works on the new address | **done** |
-| 3 | **Survive a reboot** — services installed, reboot tested | **done**, except auto-login + BIOS below |
+| 3 | **Survive a reboot** — cloudflared installed; **the ERP is NOT a service** | **NOT done** — see the box below |
+
+> ## THE ERP IS NOT SET TO COME BACK  — found 30 Aug 2026
+>
+> `Get-ScheduledTask` returns **nothing** for `SUPSERV ERP`. The task was never
+> registered on this machine. What has been running on port 3000 was started by
+> hand, and it was still serving a build from two days earlier — `/dashboard`,
+> `/reports` and every route added since returned **404**, with the sidebar
+> linking straight at them.
+>
+> `cloudflared` *is* a real service, so after a reboot the tunnel comes back and
+> points at nothing. That answers with a Cloudflare error page rather than
+> silence, which is the version that looks like the internet's fault.
+>
+> **One command fixes all of it**, from an Administrator PowerShell:
+>
+> ```powershell
+> cd C:\SUPSERV-ERP
+> powershell -ExecutionPolicy Bypass -File scripts\server\install-services.ps1
+> ```
+>
+> It registers `SUPSERV ERP`, registers `SUPSERV backup`, and runs the first
+> backup while you watch. Afterwards `scripts\server\mode.ps1 status` names both
+> tasks and says NOT REGISTERED in red if either is missing — it used to print a
+> blank line, which is how this went unnoticed while being the exact command
+> everybody checked.
 
 Still to do, and only you can do them:
 
+- **Run `install-services.ps1` as Administrator.** The box above. It is one
+  command and it closes three things at once: the ERP becomes a service, the
+  nightly backup becomes a task, and the restart puts today's build on port
+  3000 so the sidebar stops linking at 404s.
 - **Windows auto-login** (`netplwiz`) plus the lock-screen scheduled task —
   §3. Docker Desktop needs a logged-in session, so the database does not come
   back on its own without this.

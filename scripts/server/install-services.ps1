@@ -176,6 +176,40 @@ Register-ScheduledTask -TaskName "SUPSERV ERP" -Action $action -Trigger $trigger
 
 Write-Host "registered task 'SUPSERV ERP' (at startup, restarts up to 3 times if it dies)"
 
+# AND START IT, replacing whatever is on port 3000 by hand.
+#
+# Registering a startup task and walking away leaves the machine in the state
+# this script was written to fix: a hand-started process serving whatever build
+# it was started with. That is exactly what was found on 30 Aug - a two-day-old
+# build answering 404 for every route added since, with the task never
+# registered at all and `mode.ps1 status` printing a blank line where its row
+# should have been.
+Say "putting the current build on port 3000"
+
+foreach ($connection in @(Get-NetTCPConnection -LocalPort 3000 -State Listen -ErrorAction SilentlyContinue)) {
+  Write-Host "  killing pid $($connection.OwningProcess), started by hand"
+  Stop-Process -Id $connection.OwningProcess -Force -ErrorAction SilentlyContinue
+}
+Start-Sleep -Seconds 2
+
+Start-ScheduledTask -TaskName "SUPSERV ERP"
+
+# A bound port is not a working server - the same distinction that cost a day
+# on the tunnel. Ask for a page.
+$up = $false
+$deadline = (Get-Date).AddSeconds(120)
+while ((Get-Date) -lt $deadline) {
+  Start-Sleep -Seconds 3
+  try { Invoke-WebRequest -Uri "http://localhost:3000/fr/sign-in" -UseBasicParsing -TimeoutSec 5 | Out-Null; $up = $true; break }
+  catch { if ($_.Exception.Response) { $up = $true; break } }
+}
+
+if ($up) {
+  Write-Host "the ERP answers on http://localhost:3000" -ForegroundColor Green
+} else {
+  Write-Warning "Nothing answering on port 3000 after two minutes. Read C:\SUPSERV-ERP\.data\server.log"
+}
+
 # ----------------------------------------------------------- 3. the backup
 Say "the nightly backup"
 
