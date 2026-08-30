@@ -2185,7 +2185,23 @@
       "notQuoted": "Only a quoted supplier has terms to record."
     },
     "validityDays": "Validity, in days",
-    "leadTimeDays": "Lead time, in days"
+    "leadTimeDays": "Lead time, in days",
+    "subtitle": "{waiting} request(s) not fully answered, {unsent} not sent yet.",
+    "noneYet": "No supplier requests yet.",
+    "none": "No requests recorded.",
+    "notSent": "Not sent",
+    "quotedOf": "{quoted}/{asked} answered",
+    "silent": "{count} silent",
+    "bounced": "{count} bounced",
+    "bouncedWarning": "{count} request(s) contain a bounced address. A message that never arrived is not a slow supplier: it is an address book to fix, and chasing it will achieve nothing.",
+    "column": {
+      "ref": "Reference",
+      "subject": "Subject",
+      "client": "Client",
+      "sent": "Sent",
+      "replyBy": "Reply by",
+      "answers": "Answers"
+    }
   },
   "ask": {
     "title": "Ask suppliers",
@@ -3646,5 +3662,135 @@
     "noDocuments": "No documents.",
     "drafts": "{count} draft(s)",
     "computedNow": "These figures are recomputed on every view. A stored total is a total that can disagree with the rows it claims to summarise, and nobody notices which of the two is wrong."
+  },
+  "dashboard": {
+    "subtitle": "What matters today, seen as {role}.",
+    "late": "Late",
+    "ofExamined": "of {count} examined",
+    "openEnquiries": "Open enquiries",
+    "ofDeals": "of {count} in total",
+    "awaitingSuppliers": "Suppliers not replied",
+    "bounced": "{count} address(es) bounced",
+    "undelivered": "Orders not delivered",
+    "owed": "Owed to us",
+    "outcomes": "Outcomes",
+    "allReports": "All reports",
+    "moneyHidden": "Collection figures are not shown: they need the permission to issue invoices. Not greyed out — on a dashboard a greyed bar still gives away an order of magnitude by its width.",
+    "nothingIssuedYet": "No document has been issued yet. The figures fill themselves once day one is done."
+  },
+  "orders": {
+    "subtitle": "What clients ordered from us, and what we ordered from suppliers. Two directions, one list.",
+    "none": "No orders recorded.",
+    "draft": "Draft",
+    "undelivered": "{count} issued with nothing delivered",
+    "deliveredCount": "{count} note(s)",
+    "nothingDelivered": "Nothing delivered",
+    "kind": {
+      "all": "All",
+      "client_order": "Client orders",
+      "purchase_order": "Purchase orders"
+    },
+    "column": {
+      "number": "Number",
+      "counterparty": "Counterparty",
+      "kind": "Kind",
+      "total": "Amount",
+      "issued": "Issued",
+      "delivered": "Delivery"
+    }
+  },
+  "dealItems": {
+    "title": "Item list",
+    "subtitle": "{client} · {count} line(s)",
+    "current": "What is recorded",
+    "lineCount": "{count} line(s)",
+    "noLines": "No lines. Paste the client's request below.",
+    "replace": "Replace the list",
+    "replaceNotMerge": "Replaces, does not merge",
+    "pasteLabel": "Paste here — reference, designation, quantity, unit",
+    "save": "Save the list",
+    "saved": "{count} line(s) saved.",
+    "howItReads": "The text is re-read by the server, not taken from the table shown: what the browser displayed is what a person SAW, and that is not evidence of what the text says. Tabs, numbered lines and dashes are all recognised.",
+    "whatItAffects": "What this touches",
+    "affects": "Captured prices and technical coverage hang off the lines. Replacing the list unhooks them — deliberately: a line that changed no longer has the same price.",
+    "closed": "Lost — cannot be edited",
+    "error": {
+      "nothingToAdd": "Nothing to save: the pasted text holds no readable line.",
+      "noSuchDeal": "No such enquiry.",
+      "closed": "This enquiry is lost. Editing what the client asked for would rewrite history."
+    },
+    "column": {
+      "reference": "Reference",
+      "designation": "Designation",
+      "qty": "Qty",
+      "unit": "Unit"
+    }
+  },
+  "itemTechnical": {
+    "noDatasheet": "No datasheet",
+    "noBrand": "No brand or model recorded",
+    "held": "What we hold",
+    "provenanceMatters": "Where it came from matters",
+    "nothingHeld": "Nothing is held on this item yet. This is what the technical annexe will ask for on the first enquiry that needs it.",
+    "usedOn": "Asked for on",
+    "usedOnWhy": "A datasheet found once serves the next time",
+    "neverAsked": "No enquiry has asked for this item yet.",
+    "item": "The item",
+    "gathering": "Pieces gather across enquiries. Nothing here is invented: every row was recorded by somebody, with its provenance.",
+    "column": {
+      "kind": "Piece",
+      "provenance": "Provenance",
+      "from": "From whom",
+      "where": "Where"
+    },
+    "field": {
+      "code": "Code",
+      "kind": "Nature",
+      "unit": "Unit",
+      "brand": "Brand",
+      "model": "Model"
+    }
+  },
+  "modules": {
+    "title": "Modules",
+    "subtitle": "{built} built, {parked} deliberately parked.",
+    "noSwitches": "There are no switches, deliberately. Turning a module off would have to mean something: either the screens vanish — and somebody who opened Deliveries yesterday cannot find them, while the rows stay in the database being counted by every report — or the screens stay and the switch does nothing, which is a lie with a toggle on it.",
+    "built": "Built",
+    "parked": "Parked",
+    "parkedBadge": "Not built",
+    "parkedWhy": "Not coming soon: a decision written into the plan, §7. The system does not do these things, and saying so beats letting somebody find out.",
+    "phase": "Phase {n}",
+    "name": {
+      "capture": "Capture",
+      "records": "Companies and people",
+      "documents": "Document engine",
+      "sell": "Sell side",
+      "sourcing": "Sourcing",
+      "money": "Money",
+      "deliveries": "Deliveries",
+      "organisation": "Organisation",
+      "control": "Control",
+      "assistant": "Assistant",
+      "tenders": "Tenders (depth)",
+      "projects": "Projects and situations",
+      "recruitment": "Recruitment",
+      "supplierScorecard": "Supplier scorecard",
+      "websiteForms": "Website forms",
+      "arabic": "Arabic interface"
+    }
+  },
+  "forms": {
+    "title": "Website intake forms",
+    "subtitle": "An intake channel that does not exist yet, and why.",
+    "allChannels": "All channels",
+    "whyNotBuilt": "What is missing is not the form. It is a public endpoint on a machine that today answers only through Cloudflare Access: every request is authenticated at the edge, which is exactly what a public form must not be. That is an infrastructure decision, not a UI one.",
+    "whatItNeeds": "What it would need",
+    "need": {
+      "publicEndpoint": "One public path, excluded from Cloudflare Access, and only that one — the rest of the ERP stays closed.",
+      "spam": "Filtering: a public address receives spam from the first day.",
+      "routing": "A routing rule, like screen 38's, to say what an arriving message becomes."
+    },
+    "meanwhile": "Meanwhile",
+    "meanwhileWhat": "Enquiries arrive at contact@supserv-dz.com and show up in the Inbox. Nothing is lost — it is an email address rather than a form."
   }
 }

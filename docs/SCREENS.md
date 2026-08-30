@@ -10,7 +10,7 @@ you are about to build, stop and ask — do not invent an interface.
 
 | # | Screen | Route | Phase |
 |---|---|---|---|
-| 01 | Login | `/[locale]/login` | **0** |
+| 01 | Login | `/sign-in` | **0** |
 | 02 | Inbox | `/inbox` | **2** |
 | 03 | Dashboard (Gerant) | `/dashboard` | **5** |
 | 04 | Dashboard (Commercial) | `/dashboard` | **5** |
@@ -19,7 +19,7 @@ you are about to build, stop and ask — do not invent an interface.
 | 07 | Tenders | `/tenders` | later |
 | 08 | Tender dossier | `/tenders/[id]` | later |
 | 09 | Sourcing | `/sourcing` | **4** |
-| 10 | Supplier RFQ composer | `/sourcing/[id]/rfq` | **4** |
+| 10 | Supplier RFQ composer | `/deals/[id]` | **4** |
 | 11 | Offers | `/offers` | **4** |
 | 12 | Offer builder | `/offers/[id]/build` | **4** |
 | 13 | Orders | `/orders` | **5** |
@@ -27,9 +27,9 @@ you are about to build, stop and ask — do not invent an interface.
 | 15 | Projects | `/projects` | later |
 | 16 | Project detail | `/projects/[id]` | later |
 | 17 | Invoices | `/invoices` | **5** |
-| 18 | Invoice preview | `/invoices/[id]/preview` | **3** |
+| 18 | Invoice preview | `/documents/[id]` | **3** |
 | 19 | Payments | `/payments` | **5** |
-| 20 | Ageing and relances | `/invoices/ageing` | **5** |
+| 20 | Ageing and relances | `/payments/ageing` | **5** |
 | 21 | Companies | `/companies` | **1** |
 | 22 | Company detail | `/companies/[id]` | **1** |
 | 23 | Supplier scorecard | `/companies/[id]/scorecard` | later |
@@ -47,8 +47,8 @@ you are about to build, stop and ask — do not invent an interface.
 | 35 | Component states | `(pattern)` | **0** |
 | 36 | Overlays and patterns | `(pattern)` | **0** |
 | 37 | Flow map | `(reference)` | — |
-| 38 | Intake channels | `/inbox/channels` | **2** |
-| 39 | Dossier intake | `/inbox/dossier/[id]` | **2** |
+| 38 | Intake channels | `/settings/channels` | **2** |
+| 39 | Dossier intake | `/inbox/dossier` | **2** |
 | 40 | Extraction review | `/inbox/dossier/[id]/review` | **2** |
 | 41 | Scan station | `/inbox/scan` | **2** |
 | 42 | BPU import and pricing | `/tenders/[id]/bpu` | later |
@@ -56,9 +56,9 @@ you are about to build, stop and ask — do not invent an interface.
 | 44 | Assistant proposals | `/assistant/proposals` | **7** |
 | 45 | Assistant permissions and safety | `/settings/assistant` | **7** |
 | 46 | Website intake forms | `/settings/forms` | **2** |
-| 47 | Document builder | `/documents/[id]/build` | **3** |
+| 47 | Document builder | `/documents/[id]/edit` | **3** |
 | 48 | Proforma to invoice | `/documents/[id]/convert` | **5** |
-| 49 | Delivery note builder | `/deliveries/[id]/build` | **5** |
+| 49 | Delivery note builder | `/deliveries/[id]` | **5** |
 | 50 | Document types | `/settings/document-types` | **3** |
 | 51 | People | `/people` | **1** |
 | 52 | Standardisation | `(reference)` | — |
@@ -90,7 +90,7 @@ you are about to build, stop and ask — do not invent an interface.
 | 78 | Technical coverage | `/deals/[id]/technical` | **4** |
 | 79 | Filtering, views and bulk actions | `(pattern)` | **0** |
 | 80 | Menus, pickers and shortcuts | `(pattern)` | **0** |
-| 81 | My profile and preferences | `/me` | **0** |
+| 81 | My profile and preferences | `/settings/profile` | **0** |
 | 82 | Search | `/search` | **1** |
 | 83 | Deleted and restore | `/settings/bin` | **6** |
 | 84 | Merge duplicates | `/companies/merge` | **1** |

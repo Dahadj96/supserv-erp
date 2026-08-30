@@ -28,6 +28,13 @@ const SCREENS = [
   "src/app/[locale]/(app)/assistant/proposals/page.tsx",
   "src/app/[locale]/(app)/assistant/page.tsx",
   "src/app/[locale]/(app)/reports/page.tsx",
+  "src/app/[locale]/(app)/dashboard/page.tsx",
+  "src/app/[locale]/(app)/orders/page.tsx",
+  "src/app/[locale]/(app)/sourcing/page.tsx",
+  "src/app/[locale]/(app)/deals/[id]/items/page.tsx",
+  "src/app/[locale]/(app)/items/[id]/technical/page.tsx",
+  "src/app/[locale]/(app)/settings/modules/page.tsx",
+  "src/app/[locale]/(app)/settings/forms/page.tsx",
 ];
 
 const load = (locale: string) =>

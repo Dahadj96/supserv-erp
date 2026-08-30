@@ -2185,7 +2185,23 @@
       "notQuoted": "Seul un fournisseur qui a chiffré a des conditions à enregistrer."
     },
     "validityDays": "Validité, en jours",
-    "leadTimeDays": "Délai, en jours"
+    "leadTimeDays": "Délai, en jours",
+    "subtitle": "{waiting} consultation(s) sans réponse complète, {unsent} pas encore envoyée(s).",
+    "noneYet": "Aucune consultation fournisseur pour l'instant.",
+    "none": "Aucune consultation enregistrée.",
+    "notSent": "Pas envoyée",
+    "quotedOf": "{quoted}/{asked} ont répondu",
+    "silent": "{count} sans réponse",
+    "bounced": "{count} en échec",
+    "bouncedWarning": "{count} consultation(s) contiennent une adresse en échec. Un message qui n'arrive pas n'est pas un fournisseur lent : c'est un carnet d'adresses à corriger, et le relancer ne servira à rien.",
+    "column": {
+      "ref": "Référence",
+      "subject": "Objet",
+      "client": "Client",
+      "sent": "Envoyée",
+      "replyBy": "Réponse avant",
+      "answers": "Réponses"
+    }
   },
   "ask": {
     "title": "Consulter des fournisseurs",
@@ -3646,5 +3662,135 @@
     "noDocuments": "Aucun document.",
     "drafts": "{count} brouillon(s)",
     "computedNow": "Ces chiffres sont recalculés à chaque affichage. Un total stocké est un total qui peut contredire les lignes qu'il prétend résumer, et personne ne remarque lequel des deux a tort."
+  },
+  "dashboard": {
+    "subtitle": "Ce qui compte aujourd'hui, vu comme {role}.",
+    "late": "En retard",
+    "ofExamined": "sur {count} examinés",
+    "openEnquiries": "Affaires en cours",
+    "ofDeals": "sur {count} au total",
+    "awaitingSuppliers": "Fournisseurs sans réponse",
+    "bounced": "{count} adresse(s) en échec",
+    "undelivered": "Commandes non livrées",
+    "owed": "Encours client",
+    "outcomes": "Issues",
+    "allReports": "Tous les rapports",
+    "moneyHidden": "Les chiffres d'encaissement ne sont pas affichés : ils demandent le droit d'émettre des factures. Ce n'est pas une case grisée — sur un tableau de bord, une barre grisée laisse encore deviner un ordre de grandeur.",
+    "nothingIssuedYet": "Aucun document n'a encore été émis. Les chiffres se rempliront d'eux-mêmes une fois le jour un terminé."
+  },
+  "orders": {
+    "subtitle": "Ce que les clients nous ont commandé et ce que nous avons commandé aux fournisseurs. Deux sens, une seule liste.",
+    "none": "Aucune commande enregistrée.",
+    "draft": "Brouillon",
+    "undelivered": "{count} émise(s) sans livraison",
+    "deliveredCount": "{count} bon(s)",
+    "nothingDelivered": "Rien de livré",
+    "kind": {
+      "all": "Toutes",
+      "client_order": "Commandes clients",
+      "purchase_order": "Commandes fournisseurs"
+    },
+    "column": {
+      "number": "Numéro",
+      "counterparty": "Tiers",
+      "kind": "Type",
+      "total": "Montant",
+      "issued": "Émise le",
+      "delivered": "Livraison"
+    }
+  },
+  "dealItems": {
+    "title": "Liste des articles",
+    "subtitle": "{client} · {count} ligne(s)",
+    "current": "Ce qui est enregistré",
+    "lineCount": "{count} ligne(s)",
+    "noLines": "Aucune ligne. Collez la demande du client ci-dessous.",
+    "replace": "Remplacer la liste",
+    "replaceNotMerge": "Remplace, ne fusionne pas",
+    "pasteLabel": "Collez ici — référence, désignation, quantité, unité",
+    "save": "Enregistrer la liste",
+    "saved": "{count} ligne(s) enregistrées.",
+    "howItReads": "Le texte est relu par le serveur, pas repris du tableau affiché : ce que le navigateur montrait est ce qu'une personne a VU, ce n'est pas une preuve de ce que le texte dit. Tabulations, lignes numérotées ou tirets sont reconnus.",
+    "whatItAffects": "Ce que cela touche",
+    "affects": "Les prix relevés et la couverture technique sont rattachés aux lignes. Remplacer la liste les délie — c'est voulu : une ligne qui a changé n'a plus le même prix.",
+    "closed": "Affaire perdue — non modifiable",
+    "error": {
+      "nothingToAdd": "Rien à enregistrer : le texte collé ne contient aucune ligne lisible.",
+      "noSuchDeal": "Affaire introuvable.",
+      "closed": "Cette affaire est perdue. Modifier ce que le client avait demandé réécrirait l'histoire."
+    },
+    "column": {
+      "reference": "Référence",
+      "designation": "Désignation",
+      "qty": "Qté",
+      "unit": "Unité"
+    }
+  },
+  "itemTechnical": {
+    "noDatasheet": "Sans fiche technique",
+    "noBrand": "Ni marque ni modèle enregistrés",
+    "held": "Ce que nous détenons",
+    "provenanceMatters": "D'où cela vient compte",
+    "nothingHeld": "Rien n'est encore détenu sur cet article. C'est ce que l'annexe technique réclamera à la première affaire qui en a besoin.",
+    "usedOn": "Demandé sur",
+    "usedOnWhy": "Une fiche trouvée une fois sert la fois suivante",
+    "neverAsked": "Aucune affaire n'a encore réclamé cet article.",
+    "item": "L'article",
+    "gathering": "Les pièces se rassemblent au fil des affaires. Rien n'est inventé ici : chaque ligne a été enregistrée par quelqu'un, avec sa provenance.",
+    "column": {
+      "kind": "Pièce",
+      "provenance": "Provenance",
+      "from": "De qui",
+      "where": "Où"
+    },
+    "field": {
+      "code": "Code",
+      "kind": "Nature",
+      "unit": "Unité",
+      "brand": "Marque",
+      "model": "Modèle"
+    }
+  },
+  "modules": {
+    "title": "Modules",
+    "subtitle": "{built} construits, {parked} volontairement remis à plus tard.",
+    "noSwitches": "Il n'y a pas d'interrupteur, et c'est délibéré. Éteindre un module devrait vouloir dire quelque chose : soit les écrans disparaissent — et quelqu'un qui ouvrait Livraisons hier ne les trouve plus, alors que les lignes restent en base et sont comptées par tous les rapports — soit les écrans restent et l'interrupteur ne fait rien, ce qui est un mensonge avec un bouton dessus.",
+    "built": "Construits",
+    "parked": "Remis à plus tard",
+    "parkedBadge": "Non construit",
+    "parkedWhy": "Ce n'est pas « bientôt disponible » : c'est une décision inscrite au plan, §7. Le système ne fait pas ces choses, et le dire vaut mieux que le laisser découvrir.",
+    "phase": "Phase {n}",
+    "name": {
+      "capture": "Capture",
+      "records": "Sociétés et personnes",
+      "documents": "Moteur documentaire",
+      "sell": "Vente",
+      "sourcing": "Approvisionnement",
+      "money": "Argent",
+      "deliveries": "Livraisons",
+      "organisation": "Organisation",
+      "control": "Contrôle",
+      "assistant": "Assistant",
+      "tenders": "Appels d'offres (profondeur)",
+      "projects": "Chantiers et situations",
+      "recruitment": "Recrutement",
+      "supplierScorecard": "Évaluation fournisseurs",
+      "websiteForms": "Formulaires du site",
+      "arabic": "Interface en arabe"
+    }
+  },
+  "forms": {
+    "title": "Formulaires du site",
+    "subtitle": "Un canal d'entrée qui n'existe pas encore, et pourquoi.",
+    "allChannels": "Tous les canaux",
+    "whyNotBuilt": "Ce qui manque n'est pas le formulaire. C'est un point d'entrée public sur une machine qui ne répond aujourd'hui qu'à travers Cloudflare Access : chaque requête est authentifiée en périphérie, ce qu'un formulaire public ne doit précisément pas être. C'est une décision d'infrastructure, pas d'interface.",
+    "whatItNeeds": "Ce qu'il faudrait",
+    "need": {
+      "publicEndpoint": "Un chemin public, exclu de Cloudflare Access, et lui seul — le reste de l'ERP doit rester fermé.",
+      "spam": "Un filtrage : une adresse publique reçoit du spam dès le premier jour.",
+      "routing": "Une règle de routage, comme celles de l'écran 38, pour dire ce que le message devient."
+    },
+    "meanwhile": "En attendant",
+    "meanwhileWhat": "Les demandes arrivent par contact@supserv-dz.com et sont visibles dans la boîte de réception. Rien n'est perdu — c'est simplement une adresse e-mail plutôt qu'un formulaire."
   }
 }
