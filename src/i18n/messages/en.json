@@ -3316,7 +3316,26 @@
     },
     "backup": {
       "title": "Backup",
-      "none": "No backup has ever been taken, of this disk or of the database. Real mail, classifications and read state exist only here, on this machine. It is the largest single risk in the installation today."
+      "none": "No backup has ever been taken, of this disk or of the database. Real mail, classifications and read state exist only here, on this machine. It is the largest single risk in the installation today.",
+      "state": {
+        "never": "Never taken",
+        "failing": "Not verified",
+        "stale": "Out of date",
+        "sameDisk": "Same disk",
+        "good": "Good"
+      },
+      "lastAt": "Last backup",
+      "today": "today",
+      "daysAgo": "{days, plural, one {# day ago} other {# days ago}}",
+      "destination": "Written to",
+      "database": "Database",
+      "files": "Working files",
+      "compared": "{tables} tables, {rows} rows compared",
+      "how": "Taken by scripts\\server\\backup.ps1, nightly. It restores each dump into a scratch database and compares every row before calling it good.",
+      "failingWhy": "The last run did not read its dump back, so nobody knows whether it can be restored. Run scripts\\server\\backup.ps1 by hand and read what it says.",
+      "staleWhy": "A backup runs every night. This one is older than that, so the scheduled task is not running. Check it: Get-ScheduledTask -TaskName 'SUPSERV backup'.",
+      "sameDiskWhy": "This backup is on the same disk as the database it protects. It covers a mistake and nothing else - not the disk, not the machine, not the room. Plug in the external drive and set BACKUP_LOCAL_PATH.",
+      "drill": "Prove it: scripts\\server\\restore.ps1 restores the newest dump into a scratch database and counts what comes back. Nothing live is touched."
     }
   },
   "emailTemplates": {

@@ -3316,7 +3316,26 @@
     },
     "backup": {
       "title": "Sauvegarde",
-      "none": "Aucune sauvegarde n'a jamais été prise, ni de ce disque ni de la base. Le courrier réel, les classements et l'état de lecture n'existent qu'ici, sur cette machine. C'est aujourd'hui le plus gros risque de l'installation."
+      "none": "Aucune sauvegarde n'a jamais été prise, ni de ce disque ni de la base. Le courrier réel, les classements et l'état de lecture n'existent qu'ici, sur cette machine. C'est aujourd'hui le plus gros risque de l'installation.",
+      "state": {
+        "never": "Jamais faite",
+        "failing": "Non vérifiée",
+        "stale": "Périmée",
+        "sameDisk": "Même disque",
+        "good": "Bonne"
+      },
+      "lastAt": "Dernière sauvegarde",
+      "today": "aujourd'hui",
+      "daysAgo": "{days, plural, one {il y a # jour} other {il y a # jours}}",
+      "destination": "Écrite dans",
+      "database": "Base de données",
+      "files": "Fichiers de travail",
+      "compared": "{tables} tables, {rows} lignes comparées",
+      "how": "Prise par scripts\\server\\backup.ps1, chaque nuit. Chaque copie est restaurée dans une base d'essai et toutes les lignes sont comparées avant d'être déclarée bonne.",
+      "failingWhy": "La dernière exécution n'a pas relu sa copie : personne ne sait si elle est restaurable. Lancez scripts\\server\\backup.ps1 à la main et lisez ce qu'il dit.",
+      "staleWhy": "Une sauvegarde tourne chaque nuit. Celle-ci est plus ancienne : la tâche planifiée ne tourne pas. Vérifiez : Get-ScheduledTask -TaskName 'SUPSERV backup'.",
+      "sameDiskWhy": "Cette sauvegarde est sur le même disque que la base qu'elle protège. Elle couvre une erreur, rien d'autre — ni le disque, ni la machine, ni le local. Branchez le disque externe et renseignez BACKUP_LOCAL_PATH.",
+      "drill": "Preuve : scripts\\server\\restore.ps1 restaure la copie la plus récente dans une base d'essai et compte ce qui revient. Rien de vivant n'est touché."
     }
   },
   "emailTemplates": {

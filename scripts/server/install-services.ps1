@@ -176,7 +176,44 @@ Register-ScheduledTask -TaskName "SUPSERV ERP" -Action $action -Trigger $trigger
 
 Write-Host "registered task 'SUPSERV ERP' (at startup, restarts up to 3 times if it dies)"
 
-# ------------------------------------------------------- 3. docker desktop
+# ----------------------------------------------------------- 3. the backup
+Say "the nightly backup"
+
+# The time comes from .env, so it is changed in the same place as everything
+# else about backups rather than by editing a scheduled task nobody remembers
+# exists.
+$at = "02:30"
+$line = (Select-String -Path (Join-Path $repo ".env") -Pattern '^\s*BACKUP_AT\s*=\s*(\d{1,2}:\d{2})' -ErrorAction SilentlyContinue | Select-Object -First 1)
+if ($line) { $at = $line.Matches[0].Groups[1].Value }
+
+$backup = Join-Path $repo "scripts\server\backup.ps1"
+
+# SYSTEM, like the ERP task, and for the same reason: this must run whether or
+# not anybody is logged in. It calls docker.exe, which is on the machine PATH.
+$bAction = New-ScheduledTaskAction -Execute "powershell.exe" `
+            -Argument "-NoProfile -ExecutionPolicy Bypass -WindowStyle Hidden -File `"$backup`"" `
+            -WorkingDirectory $repo
+$bTrigger = New-ScheduledTaskTrigger -Daily -At $at
+$bSettings = New-ScheduledTaskSettingsSet -AllowStartIfOnBatteries -DontStopIfGoingOnBatteries `
+              -StartWhenAvailable -ExecutionTimeLimit (New-TimeSpan -Hours 2)
+
+Register-ScheduledTask -TaskName "SUPSERV backup" -Action $bAction -Trigger $bTrigger `
+  -Principal $principal -Settings $bSettings -Force | Out-Null
+
+# -StartWhenAvailable, because this machine is switched off at night sometimes.
+# Without it a missed 02:30 is simply never run and the gap is invisible.
+Write-Host "registered task 'SUPSERV backup' (daily at $at, catches up if the machine was off)"
+
+# Run it now. An installer that schedules a backup for tonight and walks away
+# has not proved anything - and the first run is where a missing pg_dump, an
+# unreachable container or an unwritable destination shows up.
+Say "running it once, now, to prove it works"
+& powershell.exe -NoProfile -ExecutionPolicy Bypass -File $backup
+if ($LASTEXITCODE -ne 0) {
+  Write-Warning "THE FIRST BACKUP DID NOT SUCCEED. Read the output above. Do not leave this."
+}
+
+# ------------------------------------------------------- 4. docker desktop
 Say "Docker Desktop on login"
 
 $docker = "C:\Program Files\Docker\Docker\Docker Desktop.exe"
@@ -201,7 +238,7 @@ if (Test-Path $docker) {
 # The database container already restarts by itself once the engine is up.
 docker update --restart unless-stopped supserv-db 2>$null | Out-Null
 
-# ------------------------------------------------------------- 4. the gap
+# ------------------------------------------------------------- 5. the gap
 Say "What is still not automatic"
 
 $auto = (Get-ItemProperty 'HKLM:\SOFTWARE\Microsoft\Windows NT\CurrentVersion\Winlogon' `
@@ -226,5 +263,21 @@ Until one of those is done, 'it comes back by itself' is not true.
   Write-Host "automatic login is on - Docker Desktop will come back after a reboot"
 }
 
+$backupPath = (Select-String -Path (Join-Path $repo ".env") -Pattern '^\s*BACKUP_LOCAL_PATH\s*=\s*(.*)$' -ErrorAction SilentlyContinue | Select-Object -First 1)
+$backupDest = if ($backupPath) { ($backupPath.Matches[0].Groups[1].Value -replace '\s+#.*$', '').Trim() } else { "" }
+
+if (-not $backupDest -or $backupDest.StartsWith("/") -or -not (Test-Path $backupDest -ErrorAction SilentlyContinue)) {
+  Write-Warning @"
+BACKUP_LOCAL_PATH does not name a folder that exists on this machine, so the
+nightly backup writes to C:\SUPSERV-ERP\.data\backups - the same disk as the
+database it is backing up.
+
+That covers a mistake. It does not cover the disk, the machine or the room.
+Plug in an external drive, set BACKUP_LOCAL_PATH to its path in .env, and run
+scripts\server\backup.ps1 once by hand to confirm it lands there.
+"@
+}
+
 Say "Done"
 Write-Host "Check it with:  scripts\server\mode.ps1 status"
+Write-Host "Prove the backup with:  powershell -ExecutionPolicy Bypass -File scripts\server\restore.ps1"

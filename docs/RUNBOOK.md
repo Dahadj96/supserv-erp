@@ -26,9 +26,12 @@ Still to do, and only you can do them:
   back on its own without this.
 - **The BIOS setting**: ThinkCentre → **F1** → Power → *After Power Loss* →
   **Power On**. No script can reach it. §3.
-- **Take a backup.** There has never been one. Real mail, classifications and
-  read state now live only in the Postgres container on that one machine.
-  This is the largest single risk in the whole setup.
+- **Give the backup somewhere off this disk to go.** As of 30 Aug there IS a
+  backup — nightly, and it restores every dump into a scratch database and
+  compares every row before calling it good (§5b). But `BACKUP_LOCAL_PATH` is
+  still the leftover POSIX path from the VPS plan, so it lands in
+  `.data\backups`, on the same disk as the database. That covers a mistake and
+  nothing else. Plug in an external drive and set the path.
 - **Optional, whenever you like:** `node scripts\clean-test-litter.mjs` reports
   the 276 audit rows and 131 files the test suite left in the application
   database and file store before it was given its own (see
@@ -311,6 +314,78 @@ facing the internet.
 
 ---
 
+## 5b · Backups — taken, verified, and restorable
+
+Two scripts and one scheduled task. `scripts\server\install-services.ps1`
+registers **SUPSERV backup** to run `scripts\server\backup.ps1` daily at the
+time in `BACKUP_AT`, as SYSTEM, catching up if the machine was off.
+
+### What a run does
+
+1. `pg_dump -Fc` of `supserv`, inside the container, copied out with `docker cp`
+   — never piped through PowerShell, which puts a text encoder on the pipeline
+   and quietly corrupts a binary dump.
+2. **Restores that dump into a scratch database and compares every row of every
+   table against the live one.** If a single count disagrees, or a table is
+   missing on either side, the run fails and says so.
+3. Zips the working files.
+4. Writes `last-backup.json` beside the backups **and** into `.data\`, which is
+   the copy screen 66 reads.
+5. Keeps 14 days of dailies plus the first backup of each month for a year.
+
+The verification is the point. `.env` has said since the day it was written
+that *a backup you have never restored is not a backup*, and a dump that exits 0
+proves only that the command ran.
+
+### The monthly drill — five minutes, no risk
+
+```powershell
+cd C:\SUPSERV-ERP
+powershell -ExecutionPolicy Bypass -File scripts\server\restore.ps1
+```
+
+With no arguments it lists what exists, restores the newest dump into a
+throwaway database, and prints the row counts. It cannot touch `supserv` by
+accident: that needs `-Into supserv -Force`, and even then it refuses while
+anything is serving on port 3000 and dumps the current database first.
+
+### The real thing
+
+```powershell
+Stop-ScheduledTask -TaskName 'SUPSERV ERP'
+powershell -ExecutionPolicy Bypass -File scripts\server\restore.ps1 `
+  -From supserv-2026-08-30-0230.dump -Into supserv -Force
+# then expand files-<same stamp>.zip into .data\files
+Start-ScheduledTask -TaskName 'SUPSERV ERP'
+```
+
+Open `/settings/storage` afterwards. It lists every file a record points at and
+cannot find — that screen is how you know the database half and the files half
+came back matching.
+
+### Two things it does NOT back up, deliberately
+
+- **`.env`.** It holds `MS_CLIENT_SECRET` and the database password. A copy on a
+  USB drive in a drawer is a copy of the company's credentials in a drawer.
+  Rebuilding a machine means writing a new `.env` from `.env.example` plus the
+  password manager. That is a feature.
+- **`.next`.** A build output. `pnpm build` reproduces it from git.
+
+### The gap that is still yours
+
+`BACKUP_LOCAL_PATH` in `.env` still says `/mnt/usb-backup`, which is a POSIX
+path left over from when this was going to be a VPS. The script refuses to
+invent `C:\mnt\usb-backup` from it — a backup that looks configured and sits on
+the disk it is protecting is worse than none — so it falls back to
+`C:\SUPSERV-ERP\.data\backups` and prints a warning every night.
+
+**That covers a mistake and nothing else.** Not the disk, not the machine, not
+the room. Plug in an external drive, set `BACKUP_LOCAL_PATH` to its path, and
+run `scripts\server\backup.ps1` once by hand to confirm it lands there. Screen
+66 shows **Same disk** in amber until you do.
+
+---
+
 ## 6 · Where things are
 
 | | |
@@ -417,7 +492,8 @@ cannot complete a sign-in — the same failure, pointed the other way.
 3. **Windows 10 is unpatched since October 2025** and this machine cannot run
    Windows 11 — `docs/SERVER.md` §3. It is now also reachable from the internet.
    This moves the Ubuntu migration from "good hygiene" to "the next real task".
-4. **No backup has ever been taken.** `docs/SERVER.md` §2 is blunt about this
-   and it is still true. A machine that is now published to the internet and has
-   no backup is a bad combination. Nothing in the database is irreplaceable
+4. **The backup is on the same disk as the database.** No longer "there is no
+   backup" — §5b, nightly and verified by a real restore. But until
+   `BACKUP_LOCAL_PATH` names an external drive, one dead disk still takes the
+   ERP and every copy of it together. Nothing in the database is irreplaceable
    today; that stops being true the first day you type in a real invoice.

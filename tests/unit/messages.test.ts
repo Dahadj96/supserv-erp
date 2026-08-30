@@ -145,8 +145,15 @@ describe("every badge a deal can carry has a label", () => {
   it("leaves no screen building a deals.filters key by hand", () => {
     // The pattern itself, banned. A template literal cannot be typechecked, so
     // the only durable fix is that nobody writes one for these labels again.
+    // Comments stripped first, and this is the second time that has been
+    // necessary: a ban that a COMMENT can trip is a ban that fires on the
+    // documentation explaining why the ban exists. Screen 66's backup card
+    // cites this exact bug in a comment about why it uses a lookup table, and
+    // was failed by the test it was obeying.
+    const code = (text: string) => text.replace(/\/\*[\s\S]*?\*\//g, "").replace(/\/\/[^\n]*/g, "");
+
     const offenders = globSync(`${root}/src/**/*.{ts,tsx}`)
-      .filter((file) => readFileSync(file, "utf8").includes("deals.filters.${"))
+      .filter((file) => code(readFileSync(file, "utf8")).includes("deals.filters.${"))
       .map((file) => file.slice(root.length + 1).replaceAll("\\", "/"))
       // The one place allowed to build it: the function everything else calls.
       .filter((file) => file !== "src/domain/deal/stage.ts");

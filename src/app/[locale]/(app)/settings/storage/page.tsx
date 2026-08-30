@@ -5,6 +5,7 @@ import { can } from "@/auth/can";
 import { getSession } from "@/auth/session";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import { type BackupState, backupReport } from "@/domain/control/backup";
 import { storageReport } from "@/domain/files/storage-report";
 import { Link } from "@/i18n/navigation";
 
@@ -25,6 +26,35 @@ import { Link } from "@/i18n/navigation";
  * ever tell you a file the database is sure about is not on the disk.
  */
 export const dynamic = "force-dynamic";
+
+/**
+ * `sameDisk` is a warning, not a failure. A verified backup taken last night
+ * that happens to sit on the wrong disk is worth far more than none, and
+ * painting it the same red as "never taken" would teach somebody to read past
+ * both. `stale` and `failing` are red because in both cases the honest answer
+ * to "can we restore?" is no.
+ */
+const BACKUP_TONE: Record<BackupState, "good" | "warning" | "critical"> = {
+  never: "critical",
+  failing: "critical",
+  stale: "critical",
+  sameDisk: "warning",
+  good: "good",
+};
+
+/**
+ * A lookup rather than a built key. `storage.backup.${state}Why` would compile,
+ * render, and throw MISSING_MESSAGE for `good` and `never` - which have no
+ * explanation and should not - and this codebase has already shipped that exact
+ * 500 once from `deals.filters.${badge}`.
+ */
+const BACKUP_WHY: Record<BackupState, string> = {
+  never: "none",
+  failing: "failingWhy",
+  stale: "staleWhy",
+  sameDisk: "sameDiskWhy",
+  good: "how",
+};
 
 function human(bytes: number): string {
   if (bytes < 1024) return `${bytes} B`;
@@ -52,7 +82,7 @@ export default async function StoragePage({ params }: { params: Promise<{ locale
     );
   }
 
-  const { working, final } = await storageReport();
+  const [{ working, final }, backup] = await Promise.all([storageReport(), backupReport()]);
   const drifting = working.missing.length > 0 || working.orphanedCount > 0;
 
   return (
@@ -241,9 +271,73 @@ export default async function StoragePage({ params }: { params: Promise<{ locale
           </section>
 
           <section className="rounded-[var(--radius-card)] border border-line bg-surface p-5">
-            <h2 className="text-tiny font-semibold text-ink">{t("storage.backup.title")}</h2>
-            <p className="mt-3 text-tiny leading-relaxed text-secondary">
-              {t("storage.backup.none")}
+            <div className="flex items-baseline gap-3">
+              <h2 className="text-tiny font-semibold text-ink">{t("storage.backup.title")}</h2>
+              <span className="ms-auto">
+                <Badge tone={BACKUP_TONE[backup.state]}>
+                  {t(`storage.backup.state.${backup.state}`)}
+                </Badge>
+              </span>
+            </div>
+
+            {backup.state === "never" ? (
+              <p className="mt-3 text-tiny leading-relaxed text-secondary">
+                {t("storage.backup.none")}
+              </p>
+            ) : (
+              <dl className="mt-3">
+                <div className="flex items-baseline gap-3 border-b border-line-subtle py-2">
+                  <dt className="text-tiny text-secondary">{t("storage.backup.lastAt")}</dt>
+                  <dd className="ms-auto text-end text-tiny text-ink">
+                    {backup.ageDays === 0
+                      ? t("storage.backup.today")
+                      : t("storage.backup.daysAgo", { days: backup.ageDays ?? 0 })}
+                  </dd>
+                </div>
+                <div className="flex items-baseline gap-3 border-b border-line-subtle py-2">
+                  <dt className="shrink-0 text-tiny text-secondary">
+                    {t("storage.backup.destination")}
+                  </dt>
+                  <dd className="ms-auto break-all text-end font-mono text-micro text-ink">
+                    {backup.destination}
+                  </dd>
+                </div>
+                <div className="flex items-baseline gap-3 border-b border-line-subtle py-2">
+                  <dt className="text-tiny text-secondary">{t("storage.backup.database")}</dt>
+                  <dd className="ms-auto text-end text-tiny tabular-nums text-ink">
+                    {human(backup.dumpBytes)}
+                  </dd>
+                </div>
+                <div className="flex items-baseline gap-3 py-2">
+                  <dt className="text-tiny text-secondary">{t("storage.backup.files")}</dt>
+                  <dd className="ms-auto text-end text-tiny tabular-nums text-ink">
+                    {human(backup.filesBytes)}
+                  </dd>
+                </div>
+                {backup.verified ? (
+                  <p className="mt-1 text-micro text-muted">
+                    {t("storage.backup.compared", {
+                      tables: backup.tablesChecked,
+                      rows: backup.rowsChecked,
+                    })}
+                  </p>
+                ) : null}
+              </dl>
+            )}
+
+            {/* One sentence, and only when something is wrong with it. A card
+                that explains itself when it is green is a card people stop
+                reading before the day it turns red. */}
+            {backup.state !== "good" && backup.state !== "never" ? (
+              <p className="mt-3 flex items-start gap-2 rounded-[var(--radius-control)] bg-critical-bg px-3 py-2.5 text-micro leading-relaxed text-critical-ink">
+                <CircleAlert className="mt-px size-4 shrink-0" aria-hidden />
+                {t(`storage.backup.${BACKUP_WHY[backup.state]}`)}
+              </p>
+            ) : null}
+
+            <p className="mt-3 text-micro leading-relaxed text-muted">{t("storage.backup.how")}</p>
+            <p className="mt-2 text-micro leading-relaxed text-muted">
+              {t("storage.backup.drill")}
             </p>
           </section>
         </div>
