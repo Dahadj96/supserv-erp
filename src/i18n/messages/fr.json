@@ -3817,5 +3817,91 @@
     },
     "meanwhile": "En attendant",
     "meanwhileWhat": "Les demandes arrivent par contact@supserv-dz.com et sont visibles dans la boîte de réception. Rien n'est perdu — c'est simplement une adresse e-mail plutôt qu'un formulaire."
+  },
+  "purchaseOrder": {
+    "draft": "Brouillon — pas encore de numéro",
+    "issuedOn": "émis le {on}",
+    "repriced": "Prix modifié",
+    "noReserves": "Conforme",
+    "banner": {
+      "held": "La facture fournisseur dépasse le bon de commande de {amount}. Rien n'est payé tant que vous n'avez pas décidé si cet écart est accepté.",
+      "quantity": "Le fournisseur a facturé plus que ce qui est arrivé. Rien n'est payé tant que les deux ne concordent pas."
+    },
+    "lines": {
+      "title": "Commandé au fournisseur",
+      "how": "reçu et restant sont comptés sur les bons de réception, jamais saisis"
+    },
+    "receipts": {
+      "title": "Marchandises reçues",
+      "how": "ce qui est réellement arrivé, pas ce qui a été commandé",
+      "none": "Rien n'est encore arrivé sur cette commande. Tant qu'aucun bon de réception n'existe, la colonne Reçu est à zéro et la date de livraison au client n'est qu'une estimation."
+    },
+    "match": {
+      "title": "Rapprochement à trois",
+      "how": "bon de commande · réception · facture fournisseur",
+      "quantity": "Quantité — toutes les lignes",
+      "total": "Total",
+      "unitPrice": "Prix unitaire — ligne {position}",
+      "nothingIsPaid": "Rien n'est payé tant qu'un écart n'est pas réglé. Soit le fournisseur a changé son prix sans le dire, soit ce n'est pas le même article — ce sont deux questions pour une personne, et ni l'une ni l'autre ne justifie de bloquer les lignes correctes."
+    },
+    "leg": {
+      "ordered": "Commandé",
+      "received": "Reçu",
+      "invoiced": "Facturé"
+    },
+    "verdict": {
+      "matches": "Concorde",
+      "explained": "Expliqué",
+      "doesNotMatch": "Ne concorde pas"
+    },
+    "state": {
+      "complete": "Complet",
+      "partial": "Partiel",
+      "awaiting": "En attente",
+      "over": "Sur-livré"
+    },
+    "column": {
+      "designation": "Désignation",
+      "unit": "Unité",
+      "ordered": "Commandé",
+      "received": "Reçu",
+      "remaining": "Restant",
+      "unitCost": "Coût unitaire",
+      "status": "État",
+      "receipt": "Réception",
+      "date": "Date",
+      "supplierRef": "BL fournisseur",
+      "lines": "Lignes",
+      "receivedBy": "Reçu par",
+      "condition": "État à la réception"
+    },
+    "owed": {
+      "title": "Ce que nous leur devons",
+      "ordered": "Commandé",
+      "invoiced": "Facture reçue",
+      "paid": "Payé",
+      "held": "Retenu en attente de la question",
+      "safeToPay": "Payable sans risque",
+      "terms": "Leurs conditions : {terms}. Ce qui a réellement été payé est lu sur la banque, pas sur les conditions.",
+      "noTerms": "Aucune condition de paiement n'est enregistrée pour ce fournisseur. C'est l'écran 22 qui les porte, et chaque offre et chaque facture les y lisent."
+    },
+    "blocks": {
+      "title": "Ce que cela bloque",
+      "deliverReceived": "Livrer {count} lignes complètes au client",
+      "deliverShort": "Livrer {count} lignes incomplètes",
+      "deliverNotReceived": "Livrer {count} lignes non arrivées",
+      "invoiceInFull": "Facturer le client en totalité",
+      "invoiceWhatIsDelivered": "Facturer ce qui est livré",
+      "why": "C'est le maillon qui manquait. Sans lui, la date de livraison au client est une estimation et la marge est ce que le fournisseur décide de facturer."
+    },
+    "blockState": {
+      "ready": "Possible",
+      "waiting": "En attente",
+      "blocked": "Bloqué"
+    },
+    "invoices": {
+      "title": "Factures fournisseur",
+      "theirNumber": "Numérotées par le fournisseur, jamais par nous — le numéro sur le papier est celui que tout le monde cite."
+    }
   }
 }

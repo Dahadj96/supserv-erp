@@ -77,7 +77,7 @@ you are about to build, stop and ask — do not invent an interface.
 | 65 | Approvals | `/approvals` | **6** |
 | 66 | Storage and files | `/settings/storage` | **6** |
 | 67 | Sourcing request | `/sourcing/[id]` | **4** |
-| 68 | Supplier order | `/purchase-orders/[id]` | later |
+| 68 | Supplier order | `/purchase-orders/[id]` | **4** |
 | 69 | Compliance profile | `/settings/compliance` | **7** |
 | 70 | Document engine | `(reference)` | **3** |
 | 71 | Document templates | `/settings/templates` | **3** |
@@ -127,9 +127,16 @@ nothing gets built into this ERP without a line saying what it is for.
 - **Phase 1** — Records and search: 21, 22, 51, 73, 75, 76, 82, 84
 - **Phase 2** — Capture: 02, 38, 39, 40, 41, 46, 61, 62, 86
 - **Phase 3** — The document engine: 18, 47, 50, 70, 71
-- **Phase 4** — Sell side, end to end: 05, 06, 09, 10, 11, 12, 67, 74, 77, 78
+- **Phase 4** — Sell side, end to end: 05, 06, 09, 10, 11, 12, 67, 68, 74, 77, 78
 - **Phase 5** — Money: 03, 04, 13, 14, 17, 19, 20, 48, 49, 72
 - **Phase 6** — Organisation: 33, 55, 56, 57, 58, 59, 60, 63, 65, 66, 83
 - **Phase 7** — Control and the assistant: 27, 28, 32, 43, 44, 45, 64, 69
-- **Parked — after the first release**: 07, 08, 15, 16, 23, 24, 25, 26, 42, 68
+- **Parked — after the first release**: 07, 08, 15, 16, 23, 24, 25, 26, 42
+
+68 left that list on 30 Aug. It was parked as "tenders module depth", which it
+is not: a supplier order is the leg between an offer that was won and an invoice
+that can be defended, and without it the client delivery date is a guess and the
+margin is whatever the supplier decides to bill. See
+`docs/DECISIONS/2026-08-30-the-supplier-order-was-not-a-parked-screen.md`.
+
 - **Reference only, no route**: 37, 52, 54

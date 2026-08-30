@@ -1,0 +1,1 @@
+ALTER TABLE "delivery_detail" ADD COLUMN "counterparty_ref" text;

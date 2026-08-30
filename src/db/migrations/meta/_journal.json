@@ -204,6 +204,13 @@
       "when": 1787956388321,
       "tag": "0028_pink_shotgun",
       "breakpoints": true
+    },
+    {
+      "idx": 29,
+      "version": "7",
+      "when": 1788111881391,
+      "tag": "0029_tricky_korath",
+      "breakpoints": true
     }
   ]
 }

@@ -69,4 +69,24 @@ export const deliveryDetail = pgTable("delivery_detail", {
    * evidence of nothing.
    */
   reserves: text("reserves"),
+
+  /**
+   * THE OTHER SIDE'S OWN REFERENCE FOR THE SAME MOVEMENT.
+   *
+   * Added for screen 68. A goods receipt is a bon de livraison read from the
+   * other end: the supplier hands over their BL-HE-4412, we write our
+   * BR-2026-0021 against it, and every conversation afterwards - the one where
+   * they say two crates are missing - happens in THEIR number, because it is
+   * the number on the paper in the driver's hand.
+   *
+   * On our own delivery notes it holds the client's reception reference when
+   * they give one. Same fact from the opposite side, so it is one column and
+   * not two. Null is normal and means nobody wrote a number down.
+   *
+   * `delivery_detail` takes it rather than a new table for the same reason it
+   * exists at all: a goods receipt is a movement of goods with a signature on
+   * it, which is precisely what this row already holds. Reusing it means screen
+   * 68 needed no schema of its own beyond this line.
+   */
+  counterpartyRef: text("counterparty_ref"),
 });

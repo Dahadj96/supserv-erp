@@ -49,9 +49,34 @@ describe("the document type catalogue", () => {
     expect(await ensureTypesExist()).toBe(0);
   });
 
-  it("gives every accounting document a reserved number", async () => {
-    for (const type of SEED_TYPES.filter((t) => t.legalValue === "accounting")) {
+  it("gives every accounting document WE issue a reserved number", async () => {
+    /**
+     * The qualifier arrived with `supplier_invoice` and it is the right rule
+     * rather than a loosened one.
+     *
+     * A reserved number means a gapless series the tax authority can audit,
+     * and that obligation is ours only for documents we issue. A supplier's
+     * invoice is an accounting document — it is what the company deducts VAT
+     * against — and its number belongs to the supplier. Allocating one of ours
+     * would put two references on one piece of paper and burn a number in a
+     * series that has to be defensible.
+     *
+     * `clientReference` is precisely the marker for "this number is theirs",
+     * which is why the test can tell the two apart without a new field.
+     */
+    const ours = SEED_TYPES.filter(
+      (t) => t.legalValue === "accounting" && t.numbering !== "clientReference",
+    );
+    expect(ours.length, "no accounting documents left to check").toBeGreaterThan(2);
+
+    for (const type of ours) {
       expect(type.numbering, type.kind).toBe("reservedOnIssue");
+    }
+
+    // And the other side of it: a document numbered by the counterparty must
+    // carry no pattern at all, or a series would generate one anyway.
+    for (const type of SEED_TYPES.filter((t) => t.numbering === "clientReference")) {
+      expect(type.pattern, type.kind).toBeNull();
     }
   });
 
@@ -91,10 +116,14 @@ describe("the document type catalogue", () => {
 
   it("only ever converts into a kind that exists", async () => {
     const kinds = new Set(SEED_TYPES.map((t) => t.kind));
-    // supplier_invoice and retention_release are named as destinations by the
-    // mockup but are not types of their own yet — the test names them rather
-    // than letting a dangling reference pass unnoticed.
-    const knownGaps = new Set(["supplier_invoice", "retention_release"]);
+    // retention_release is named as a destination by the mockup but is not a
+    // type of its own yet — the test names it rather than letting a dangling
+    // reference pass unnoticed.
+    //
+    // `supplier_invoice` was here too until screen 68 needed it to be real. A
+    // known gap that stays known for months is a decision nobody made; this
+    // list is meant to shrink.
+    const knownGaps = new Set(["retention_release"]);
 
     for (const type of SEED_TYPES) {
       for (const target of type.convertsTo) {

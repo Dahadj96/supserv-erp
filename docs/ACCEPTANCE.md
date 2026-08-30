@@ -100,7 +100,7 @@ See `docs/MAILBOX-ACCESS.md`.
 - `tests/integration/pdf.test.ts` :: "prints the bank domiciliation"
 - `tests/integration/pdf.test.ts` :: "prints the amount in words"
 - `tests/integration/reprint.test.ts` :: "gives back the ORIGINAL document after the company moves and renews its RC"
-- `tests/integration/document-types.test.ts` :: "gives every accounting document a reserved number"
+- `tests/integration/document-types.test.ts` :: "gives every accounting document WE issue a reserved number"
 
 Proved end to end.
 
@@ -126,6 +126,21 @@ Proved end to end.
 - `tests/unit/technical.test.ts` :: "does not block when the client never asked"
 - `tests/unit/technical.test.ts` :: "says where the files it holds came from"
 - `tests/unit/technical.test.ts` :: "refuses to build an annex with nothing in it"
+
+Screen 68 joined this phase on 30 Aug — it was parked as "tenders module depth"
+and is nothing of the sort. The margin an offer is priced on is fiction until
+what the supplier bills is compared with what they quoted:
+
+- `tests/unit/purchase-match.test.ts` :: "values a repriced line on what was BILLED, not on what was ordered"
+- `tests/unit/purchase-match.test.ts` :: "calls a partial delivery billed correctly EXPLAINED, not a mismatch"
+- `tests/unit/purchase-match.test.ts` :: "refuses to explain an invoice for more than arrived"
+- `tests/unit/purchase-match.test.ts` :: "does not call the total a match when the full order was billed before it arrived"
+- `tests/unit/purchase-match.test.ts` :: "never goes below zero, however much is held"
+- `tests/integration/purchase-order.test.ts` :: "counts what arrived per line, through source_line_id"
+- `tests/integration/purchase-order.test.ts` :: "does not collapse two lines that read exactly the same"
+- `tests/integration/purchase-order.test.ts` :: "reads what has been paid off the bank, not off the terms"
+- `tests/integration/purchase-order.test.ts` :: "says the client can be invoiced for what arrived, and not in full"
+- `tests/integration/purchase-order.test.ts` :: "writes nothing"
 
 ---
 

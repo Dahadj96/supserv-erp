@@ -3817,5 +3817,91 @@
     },
     "meanwhile": "Meanwhile",
     "meanwhileWhat": "Enquiries arrive at contact@supserv-dz.com and show up in the Inbox. Nothing is lost — it is an email address rather than a form."
+  },
+  "purchaseOrder": {
+    "draft": "Draft — no number yet",
+    "issuedOn": "issued {on}",
+    "repriced": "Repriced",
+    "noReserves": "Conforme",
+    "banner": {
+      "held": "The supplier invoice is {amount} above the purchase order. Nothing is paid until you decide whether that difference is agreed.",
+      "quantity": "The supplier has invoiced more than has arrived. Nothing is paid until the two are reconciled."
+    },
+    "lines": {
+      "title": "Ordered from the supplier",
+      "how": "received and remaining are counted off the goods receipts, never typed"
+    },
+    "receipts": {
+      "title": "Goods received",
+      "how": "what actually arrived, not what was ordered",
+      "none": "Nothing has arrived against this order yet. Until a goods receipt exists, every quantity in the Received column is nought and the client delivery date is a guess."
+    },
+    "match": {
+      "title": "Three-way match",
+      "how": "purchase order · goods received · supplier invoice",
+      "quantity": "Quantity — all lines",
+      "total": "Total",
+      "unitPrice": "Unit price — line {position}",
+      "nothingIsPaid": "Nothing is paid until a difference is settled. Either the supplier repriced without telling us, or it is a different article — both are questions for a person, and neither is a reason to hold up the lines that are correct."
+    },
+    "leg": {
+      "ordered": "Ordered",
+      "received": "Received",
+      "invoiced": "Invoiced"
+    },
+    "verdict": {
+      "matches": "Matches",
+      "explained": "Explained",
+      "doesNotMatch": "Does not match"
+    },
+    "state": {
+      "complete": "Complete",
+      "partial": "Partial",
+      "awaiting": "Awaiting",
+      "over": "Over-delivered"
+    },
+    "column": {
+      "designation": "Designation",
+      "unit": "Unit",
+      "ordered": "Ordered",
+      "received": "Received",
+      "remaining": "Remaining",
+      "unitCost": "Unit cost",
+      "status": "Status",
+      "receipt": "Receipt",
+      "date": "Date",
+      "supplierRef": "Supplier BL",
+      "lines": "Lines",
+      "receivedBy": "Received by",
+      "condition": "Condition"
+    },
+    "owed": {
+      "title": "What we owe them",
+      "ordered": "Ordered",
+      "invoiced": "Invoice received",
+      "paid": "Paid",
+      "held": "Held pending the query",
+      "safeToPay": "Safe to pay now",
+      "terms": "Their terms: {terms}. What has actually been paid is read from the bank, not from the terms.",
+      "noTerms": "No payment terms are recorded against this supplier. Screen 22 is where they go, and every offer and invoice reads them from there."
+    },
+    "blocks": {
+      "title": "What this blocks",
+      "deliverReceived": "Deliver {count} complete lines to the client",
+      "deliverShort": "Deliver {count} short lines",
+      "deliverNotReceived": "Deliver {count} lines that have not arrived",
+      "invoiceInFull": "Invoice the client in full",
+      "invoiceWhatIsDelivered": "Invoice what is delivered",
+      "why": "This is the leg that was missing. Without it the client delivery date is a guess and the margin is whatever the supplier decides to invoice."
+    },
+    "blockState": {
+      "ready": "Ready",
+      "waiting": "Waiting",
+      "blocked": "Blocked"
+    },
+    "invoices": {
+      "title": "Supplier invoices",
+      "theirNumber": "Numbered by the supplier, never by us — the number on the paper is the one everybody quotes."
+    }
   }
 }

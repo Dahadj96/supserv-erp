@@ -11,9 +11,13 @@ import { documentType } from "@/db/schema/document-type";
  * two names ("Supplier goods receipt" and "Goods receipt — bon de réception",
  * both on series BR-{YYYY}-{####}). Seeding both would put two rows in a table
  * whose primary key is the kind, and give the company two names for one piece
- * of paper. Eighteen are seeded and the duplicate is recorded in
- * docs/DECISIONS. The screen's own footer says "Showing 1–10 of 10" over
- * nineteen rows, so the frame was mid-edit.
+ * of paper. The duplicate is recorded in docs/DECISIONS. The screen's own
+ * footer says "Showing 1–10 of 10" over nineteen rows, so the frame was
+ * mid-edit.
+ *
+ * Eighteen were seeded until screen 68 was built. `supplier_invoice` is the
+ * nineteenth and it closes a dangling reference: `goods_receipt` has converted
+ * to it on paper since the catalogue was written, and the kind did not exist.
  */
 
 export type SeedType = {
@@ -141,6 +145,36 @@ export const SEED_TYPES: SeedType[] = [
     languages: ["fr"],
     active: true,
     pattern: "BR-{YYYY}-{####}",
+  },
+  {
+    /**
+     * THE SUPPLIER'S INVOICE, and the nineteenth kind.
+     *
+     * `goods_receipt` has named it as a conversion target since the catalogue
+     * was written, and it did not exist — a dangling reference the type test
+     * has been carrying as a known gap. Screen 68 is what needed it: without a
+     * record of what the supplier billed there is no third leg to the
+     * three-way match, and "invoice received 1 043 700" is a figure somebody
+     * reads off a piece of paper.
+     *
+     * `clientReference`, and the name of that numbering mode is the only thing
+     * wrong with it: the number on this document is THEIRS, exactly as with a
+     * client order. We never allocate one. `pattern` is null for the same
+     * reason — a series that generated a number for a document somebody else
+     * numbered would put two references on one invoice.
+     *
+     * `legalValue: accounting`, because it is: it is what the company deducts
+     * VAT against, and the tax inspector asking for it will not accept "we
+     * treated it as a note".
+     */
+    kind: "supplier_invoice",
+    family: "buy",
+    legalValue: "accounting",
+    numbering: "clientReference",
+    convertsTo: [],
+    languages: ["fr", "en"],
+    active: true,
+    pattern: null,
   },
   {
     kind: "comparison_sheet",

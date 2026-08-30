@@ -111,7 +111,19 @@ export default async function OrdersPage({
               {rows.map((row) => (
                 <tr key={row.id} className="border-b border-line-subtle hover:bg-plane">
                   <td className="px-7 py-2.5">
-                    <Link href={`/documents/${row.id}`} className="text-ink hover:underline">
+                    {/* A purchase order has a screen of its own — screen 68,
+                        with the goods received and the three-way match against
+                        the supplier's invoice. A client order does not: the
+                        document IS the record. Sending both to /documents
+                        would bury the one panel that stops a wrong payment. */}
+                    <Link
+                      href={
+                        row.kind === "purchase_order"
+                          ? `/purchase-orders/${row.id}`
+                          : `/documents/${row.id}`
+                      }
+                      className="text-ink hover:underline"
+                    >
                       {row.number ?? t("orders.draft")}
                     </Link>
                   </td>
