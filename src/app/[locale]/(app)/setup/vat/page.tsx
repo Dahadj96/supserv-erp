@@ -47,7 +47,7 @@ export default async function VatPage({
       <div className="max-w-[860px] px-7 py-6">
         {error ? (
           <p className="mb-4 rounded-[var(--radius-control)] bg-critical-bg px-3 py-2 text-micro text-critical-ink">
-            {t("setup.error.rateInvalid")}
+            {t(`setup.error.${error}`)}
           </p>
         ) : null}
         {saved ? (

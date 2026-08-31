@@ -14,18 +14,18 @@ import { numberingSeries } from "@/db/schema/document";
 
 /** décret 05-468. Fifteen digits for the NIF, and the paper is the authority. */
 export const identityInput = z.object({
-  legalName: z.string().trim().min(2, "legalNameRequired"),
+  legalName: z.string({ error: "legalNameRequired" }).trim().min(2, "legalNameRequired"),
   tradeName: z.string().trim().optional().or(z.literal("")),
   legalForm: z.string().trim().optional().or(z.literal("")),
   capital: z.string().trim().optional().or(z.literal("")),
-  rc: z.string().trim().min(1, "rcRequired"),
+  rc: z.string({ error: "rcRequired" }).trim().min(1, "rcRequired"),
   nif: z
-    .string()
+    .string({ error: "nifFifteenDigits" })
     .trim()
     .regex(/^\d{15}$/, "nifFifteenDigits"),
-  nis: z.string().trim().min(1, "nisRequired"),
-  ai: z.string().trim().min(1, "aiRequired"),
-  address: z.string().trim().min(4, "addressRequired"),
+  nis: z.string({ error: "nisRequired" }).trim().min(1, "nisRequired"),
+  ai: z.string({ error: "aiRequired" }).trim().min(1, "aiRequired"),
+  address: z.string({ error: "addressRequired" }).trim().min(4, "addressRequired"),
   wilaya: z.string().trim().optional().or(z.literal("")),
   phone: z.string().trim().optional().or(z.literal("")),
   email: z.string().trim().email("emailInvalid").optional().or(z.literal("")),
@@ -97,14 +97,25 @@ export async function setLogo(path: string, actorId: string) {
 
 /* ------------------------------------------------------------- VAT rates */
 
+/**
+ * Every message here is a KEY, never a sentence — the action puts it straight
+ * into `?error=` and the page renders `t("setup.error." + key)`.
+ *
+ * The type-level `error` matters as much as the rule-level one. Without it a
+ * field that arrives missing rather than empty produces Zod's own English
+ * ("Invalid input: expected string, received undefined"), the key does not
+ * resolve, and screen 85 shows that sentence in brackets to somebody typing in
+ * their company's registration number. `tests/unit/setup-errors.test.ts` asks
+ * these four schemas what they will actually say.
+ */
 export const vatInput = z.object({
   rate: z
-    .string()
+    .string({ error: "rateInvalid" })
     .trim()
     .regex(/^\d{1,2}([.,]\d{1,3})?$/, "rateInvalid"),
-  kind: z.enum(["normal", "reduced", "exempt"]),
+  kind: z.enum(["normal", "reduced", "exempt"], { error: "kindRequired" }),
   startsOn: z
-    .string()
+    .string({ error: "startDateRequired" })
     .trim()
     .regex(/^\d{4}-\d{2}-\d{2}$/, "startDateRequired"),
   authority: z.string().trim().optional().or(z.literal("")),
@@ -174,10 +185,10 @@ export async function rateOn(kind: string, on: string): Promise<number | null> {
 /* ---------------------------------------------------------- bank accounts */
 
 export const bankInput = z.object({
-  bankName: z.string().trim().min(2, "bankRequired"),
+  bankName: z.string({ error: "bankRequired" }).trim().min(2, "bankRequired"),
   agency: z.string().trim().optional().or(z.literal("")),
   rib: z
-    .string()
+    .string({ error: "ribTwentyDigits" })
     .trim()
     .regex(/^\d[\d\s]{18,26}\d$/, "ribTwentyDigits")
     .transform((v) => v.replace(/\s+/g, "")),
@@ -232,9 +243,9 @@ export async function addBankAccount(input: BankInput, actorId: string) {
  * because a series with two shapes in it is a series nobody can defend."
  */
 export const seriesInput = z.object({
-  kind: z.string().trim().min(2, "kindRequired"),
+  kind: z.string({ error: "kindRequired" }).trim().min(2, "kindRequired"),
   pattern: z
-    .string()
+    .string({ error: "patternNeedsCounter" })
     .trim()
     .regex(/\{#+\}/, "patternNeedsCounter")
     .refine((p) => p.includes("{YYYY}") || p.includes("{YY}"), "patternNeedsYear"),

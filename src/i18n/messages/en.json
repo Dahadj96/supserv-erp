@@ -989,7 +989,8 @@
       "patternNeedsYear": "The pattern needs a year, like {'{'}YYYY{'}'}.",
       "bankRequired": "The bank name is required.",
       "ribTwentyDigits": "A RIB is twenty digits.",
-      "invalid": "Something in the form was not accepted."
+      "invalid": "Something in the form was not accepted.",
+      "startDateRequired": "The start date has to be a date, written YYYY-MM-DD."
     }
   },
   "documents": {

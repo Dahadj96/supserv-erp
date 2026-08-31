@@ -83,8 +83,16 @@ export async function saveVatRate(locale: string, formData: FormData) {
       },
       session.userId,
     );
-  } catch {
-    redirect({ href: "/setup/vat?error=invalid", locale });
+  } catch (error) {
+    // Named, like the other three. This one used to throw away the issue and
+    // send `invalid` while the page printed "the rate is not valid" whatever
+    // had actually gone wrong — so a mistyped START DATE was reported as a bad
+    // rate, on the screen that decides what every invoice charges.
+    const issue =
+      error instanceof Error && "issues" in error
+        ? (error as { issues: { message: string }[] }).issues[0]?.message
+        : "invalid";
+    redirect({ href: `/setup/vat?error=${issue ?? "invalid"}`, locale });
     return;
   }
   revalidatePath(`/${locale}/setup`);

@@ -989,7 +989,8 @@
       "patternNeedsYear": "Le format a besoin d'une année, comme {'{'}YYYY{'}'}.",
       "bankRequired": "Le nom de la banque est obligatoire.",
       "ribTwentyDigits": "Un RIB fait vingt chiffres.",
-      "invalid": "Quelque chose dans le formulaire n'a pas été accepté."
+      "invalid": "Quelque chose dans le formulaire n'a pas été accepté.",
+      "startDateRequired": "La date d'entrée en vigueur doit être une date, au format AAAA-MM-JJ."
     }
   },
   "documents": {
