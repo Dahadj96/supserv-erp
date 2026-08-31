@@ -188,15 +188,22 @@ bordereau which has been priced for three weeks survives an erratum:
 - `tests/integration/bpu.test.ts` :: "writes an internal costing only where no cost is held"
 - `tests/integration/bpu.test.ts` :: "keeps a discarded erratum as evidence that it arrived"
 
-### Not proved here
+And from an actual spreadsheet — a workbook built in the test with a title row
+above the table, a section heading in the middle of it, a `TOTAL` at the bottom,
+quantities written four different ways, and a column nobody asked for:
 
-The column mapping is confirmed by a person and remembered per client, and
-`commitBpuBatch` re-reads the SAME stored bytes rather than a parse held in
-memory — the arrangement screen 62 already uses and for the same reason. What is
-not proved by a test is the file handling itself: no test uploads a real `.xls`
-through the page. `readWorkbook` is screen 62's and is exercised by
-`tests/integration/import.test.ts`; the BPU-shaped reading on top of it is
-tested against rows, not against a workbook.
+- `tests/integration/bpu-import.test.ts` :: "finds the header row under the title and proposes the columns"
+- `tests/integration/bpu-import.test.ts` :: "reads the quantities however the buyer wrote them"
+- `tests/integration/bpu-import.test.ts` :: "passes over the section headings and reports only the total row"
+- `tests/integration/bpu-import.test.ts` :: "writes nothing until the mapping is confirmed"
+- `tests/integration/bpu-import.test.ts` :: "turns the confirmed mapping into the deal's lines, and remembers it"
+- `tests/integration/bpu-import.test.ts` :: "uses the mapping this client already confirmed instead of guessing again"
+- `tests/integration/bpu-import.test.ts` :: "lists every file that has been read for this enquiry"
+
+The bytes go through storage and are read TWICE — once to propose the mapping,
+once to apply the confirmed one — which is the arrangement screen 62 uses and
+for the same stated reason: a preview and an import that parse separately can
+quietly disagree about what was in the file.
 
 ---
 
@@ -326,8 +333,15 @@ tells you what you want to hear.
    the parked list in `docs/SCREENS.md` is empty. Twelve of the eighty-six are
    patterns, references and overlays with no route by design, which is what
    they always were.
-7. **No test uploads a real spreadsheet.** Screens 42 and 62 both read
-   workbooks, and both are tested against rows rather than against a file. The
-   reader itself — `src/domain/import/sheet.ts` — is the one piece of this
-   system whose behaviour on a real client's `.xls` has been reasoned about and
-   not demonstrated.
+7. ~~**No test uploads a real spreadsheet.**~~ **Closed on 30 August** by
+   `tests/integration/bpu-import.test.ts`, which builds a workbook and reads it
+   through storage exactly as the screen does. `src/domain/import/sheet.ts` —
+   the header-row detection, the blank-line handling, the trailing-column trim —
+   is now exercised against a file rather than reasoned about.
+8. **No screen has been rendered signed in.** `pnpm smoke` proves all 85 routes
+   answer and send a signed-out visitor to sign-in; it stops at the redirect.
+   Every store behind every screen is tested directly, and the build compiles
+   every page, but the JSX between them has only ever been type-checked. A
+   screen can answer and still be wrong once you are through the door. Proving
+   otherwise needs a session, and minting one means handling the app's signing
+   secret — so this is a gap I am naming rather than closing.
