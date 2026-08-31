@@ -338,10 +338,15 @@ tells you what you want to hear.
    through storage exactly as the screen does. `src/domain/import/sheet.ts` —
    the header-row detection, the blank-line handling, the trailing-column trim —
    is now exercised against a file rather than reasoned about.
-8. **No screen has been rendered signed in.** `pnpm smoke` proves all 85 routes
-   answer and send a signed-out visitor to sign-in; it stops at the redirect.
-   Every store behind every screen is tested directly, and the build compiles
-   every page, but the JSX between them has only ever been type-checked. A
-   screen can answer and still be wrong once you are through the door. Proving
-   otherwise needs a session, and minting one means handling the app's signing
-   secret — so this is a gap I am naming rather than closing.
+8. ~~**No screen has been rendered signed in.**~~ **Closed on 30 August.**
+   `pnpm smoke:in` signs itself in as Gérant and asks all 84 screens for their
+   HTML, expecting the sidebar around it; all 84 answer with it. The session is
+   minted by Better Auth's own `internalAdapter` and signed with its own
+   `makeSignature`, against the test database, and the seeded user is removed
+   whether the run passes or fails. There is no back door in the application —
+   remove the script and Entra is still the only way in.
+
+   What it proves is that every screen renders with an EMPTY database. It does
+   not exercise a screen with real records in it, and it clicks nothing: no
+   form is submitted, no server action runs. The stores behind those actions
+   are tested directly, and the actions themselves are not.

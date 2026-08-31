@@ -377,8 +377,36 @@ checks that a `page.tsx` is on disk, and a file on disk is not a route that
 answers. This is the cheapest check that would have caught it, and it is the
 one to run after every restart and every deploy.
 
-What it does **not** do is render a page body — it stops at the redirect. A
-screen can answer and still be wrong once you are signed in.
+What it does **not** do is render a page body — it stops at the redirect.
+
+### And the same question from behind the door
+
+`pnpm smoke` proves a screen answers. This proves it renders:
+
+```powershell
+# a spare copy on the TEST database, in one window
+$env:DATABASE_URL = "postgres://supserv:devpassword@localhost:5432/supserv_test"
+pnpm exec next start -p 3100
+
+# in another
+$env:DATABASE_URL = "postgres://supserv:devpassword@localhost:5432/supserv_test"
+pnpm smoke:in
+```
+
+It signs itself in and asks every screen for its HTML, expecting the sidebar to
+be around it. A `404` for a record that does not exist is fine and is reported
+as such; a `500`, a bounce back to sign-in, or a bare page with no shell is not.
+
+**Both windows must be on the same database, and it must not be the real one.**
+It seeds a user, gives them Gérant, mints a session, and deletes all three at
+the end whether it passes or fails — but a seeded user is still a row, and it
+has no business in `supserv`.
+
+The session is minted by Better Auth's own code — `internalAdapter` for the
+user and the session, `makeSignature` for the cookie, with the secret the
+library already reads from `.env`. The token never leaves the process and
+nothing prints it. There is no back door in the application: take the script
+away and there is no other way in but Entra.
 
 ---
 

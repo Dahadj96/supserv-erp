@@ -18,6 +18,7 @@
     "test:db": "node scripts/test-db.mjs",
     "test:watch": "vitest",
     "smoke": "node scripts/smoke-routes.mjs",
+    "smoke:in": "tsx --env-file=.env scripts/smoke-signed-in.ts",
     "db:generate": "drizzle-kit generate",
     "db:migrate": "drizzle-kit migrate",
     "db:studio": "drizzle-kit studio",
