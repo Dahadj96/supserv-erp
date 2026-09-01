@@ -17,7 +17,23 @@ export const identityInput = z.object({
   legalName: z.string({ error: "legalNameRequired" }).trim().min(2, "legalNameRequired"),
   tradeName: z.string().trim().optional().or(z.literal("")),
   legalForm: z.string().trim().optional().or(z.literal("")),
-  capital: z.string().trim().optional().or(z.literal("")),
+  /**
+   * Written the way it is on every proforma — "6 000 000,00 DA" — and stored
+   * as a number. The column is numeric, and before this transform the form
+   * accepted the words and Postgres refused them: a 500 on the first form of
+   * day one, on the value copied straight off the company's own letterhead.
+   */
+  capital: z
+    .string()
+    .trim()
+    .transform((raw) => {
+      const bare = raw.replace(/\s|DA|DZD|د\.?ج/gi, "");
+      // A comma is the decimal mark, and any dots before it group thousands.
+      return bare.includes(",") ? bare.replace(/\./g, "").replace(",", ".") : bare;
+    })
+    .refine((v) => v === "" || /^\d+(\.\d+)?$/.test(v), "capitalInvalid")
+    .optional()
+    .or(z.literal("")),
   rc: z.string({ error: "rcRequired" }).trim().min(1, "rcRequired"),
   nif: z
     .string({ error: "nifFifteenDigits" })

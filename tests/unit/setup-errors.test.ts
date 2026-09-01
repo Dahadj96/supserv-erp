@@ -51,6 +51,7 @@ const SCHEMAS: { name: string; schema: z.ZodType; bad: unknown[] }[] = [
         ai: "",
         address: "x",
         email: "not-an-email",
+        capital: "six millions",
       },
     ],
   },
@@ -76,6 +77,40 @@ const SCHEMAS: { name: string; schema: z.ZodType; bad: unknown[] }[] = [
     ],
   },
 ];
+
+describe("the capital is read the way it is written on the letterhead", () => {
+  /**
+   * The column is numeric. The value on every SUPSERV proforma reads
+   * "Capital : 6 000 000,00 DA", and before this transform existed the form
+   * accepted those words and Postgres refused them — a 500 on the first form
+   * of day one, found by rehearsing day one against the test database.
+   */
+  const base = {
+    legalName: "SARL SUP SERV",
+    rc: "01/00-0883062 B19",
+    nif: "001901088306288",
+    nis: "001901010000282",
+    ai: "01011120488",
+    address: "N°19, Cité 67 Logements, 01000 Adrar",
+  };
+
+  it.each([
+    ["6 000 000,00 DA", "6000000.00"],
+    ["6.000.000,00", "6000000.00"],
+    ["6000000", "6000000"],
+    ["1 500 000 DZD", "1500000"],
+    ["", ""],
+  ])("turns %j into %j", (written, stored) => {
+    const parsed = identityInput.parse({ ...base, capital: written });
+    expect(parsed.capital).toBe(stored);
+  });
+
+  it("refuses words with a key the screen can show", () => {
+    const result = identityInput.safeParse({ ...base, capital: "six millions" });
+    expect(result.success).toBe(false);
+    expect(result.error?.issues[0]?.message).toBe("capitalInvalid");
+  });
+});
 
 describe("day one says something a person can read", () => {
   it.each(SCHEMAS)("$name only produces keys that resolve", ({ schema, bad }) => {

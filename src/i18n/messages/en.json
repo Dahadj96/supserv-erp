@@ -990,7 +990,8 @@
       "bankRequired": "The bank name is required.",
       "ribTwentyDigits": "A RIB is twenty digits.",
       "invalid": "Something in the form was not accepted.",
-      "startDateRequired": "The start date has to be a date, written YYYY-MM-DD."
+      "startDateRequired": "The start date has to be a date, written YYYY-MM-DD.",
+      "capitalInvalid": "The capital has to be an amount — “6 000 000,00 DA” is fine, words are not."
     }
   },
   "documents": {

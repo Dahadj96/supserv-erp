@@ -990,7 +990,8 @@
       "bankRequired": "Le nom de la banque est obligatoire.",
       "ribTwentyDigits": "Un RIB fait vingt chiffres.",
       "invalid": "Quelque chose dans le formulaire n'a pas été accepté.",
-      "startDateRequired": "La date d'entrée en vigueur doit être une date, au format AAAA-MM-JJ."
+      "startDateRequired": "La date d'entrée en vigueur doit être une date, au format AAAA-MM-JJ.",
+      "capitalInvalid": "Le capital doit être un montant — « 6 000 000,00 DA » convient, un texte non."
     }
   },
   "documents": {
