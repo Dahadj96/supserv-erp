@@ -36,6 +36,26 @@ export function dateline(place: string | null, value: Date, locale: string): str
   return locale === "en" ? `${place}, ${long}` : `${place}, le ${long}`;
 }
 
+/**
+ * "Mode de règlement : virement" — the five instruments `payment.method` knows,
+ * in the document's language. Null in, null out: a draft that has not said how
+ * it will be settled prints nothing, not a dash a client would read as an
+ * answer.
+ */
+export function settlementLabel(settlement: string | null | undefined, locale: string) {
+  if (!settlement) return null;
+  const words: Record<string, { fr: string; en: string }> = {
+    virement: { fr: "Virement bancaire", en: "Bank transfer" },
+    cheque: { fr: "Chèque", en: "Cheque" },
+    especes: { fr: "Espèces", en: "Cash" },
+    traite: { fr: "Traite", en: "Bill of exchange" },
+    compensation: { fr: "Compensation", en: "Set-off" },
+  };
+  const word = words[settlement];
+  if (!word) return null;
+  return locale === "en" ? word.en : word.fr;
+}
+
 /** 19 % in French (with the space French typography requires), 19% in English. */
 export function percent(rate: number, locale: string): string {
   const n = new Intl.NumberFormat(locale === "en" ? "en-GB" : "fr-DZ", {

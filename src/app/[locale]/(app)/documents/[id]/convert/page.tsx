@@ -72,6 +72,7 @@ export default async function ConvertPage({
       currency: document.currency,
       totals: document.totals,
       partyId: document.partyId,
+      settlement: document.settlement,
       clientName: sql<string>`coalesce(nullif(trim(${party.tradeName}), ''), ${party.legalName})`,
     })
     .from(document)
@@ -106,9 +107,11 @@ export default async function ConvertPage({
     company: company ?? null,
     counterparty: counterparty ?? null,
     total: Number(totals.totalIncl ?? "0"),
-    // Nobody has said how this will be settled yet, so the cash-only rules are
-    // not asserted against it.
-    settlementInCash: false,
+    // The proforma may already say how it will be settled; the facture made
+    // from it inherits that. Nought duty here: the facture is a new draft and
+    // `saveDraft` will put the figure on it.
+    settlementInCash: source.settlement === "especes",
+    stampDuty: 0,
   });
   const blockers = findings.filter((f) => f.severity === "block");
   const passing = findings.filter((f) => f.severity === "pass");

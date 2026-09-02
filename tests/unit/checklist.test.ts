@@ -35,6 +35,7 @@ function doc(over: Partial<RenderedDocument> = {}): RenderedDocument {
     locale: "fr",
     issuedOn: "19/08/2026",
     dateline: "Adrar, le 19 août 2026",
+    settlement: null,
     company: {
       legalName: "SARL SUPSERV",
       address: "Adrar",

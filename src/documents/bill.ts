@@ -5,6 +5,7 @@ import { document, documentLine, documentLink } from "@/db/schema/document";
 import { progress } from "@/domain/delivery/lines";
 import { coveredAgainst, sourceLines } from "@/domain/delivery/store";
 import { computeTotals } from "@/domain/money";
+import { dutyOnDraft } from "./draft";
 
 /**
  * Screen 72 — New invoice, from something that already exists.
@@ -140,20 +141,19 @@ export async function billFrom(opts: {
     .filter((row): row is { line: (typeof lines)[number]; qty: string } => Boolean(row.line));
   if (chosen.length === 0) throw new CannotBill("nothingLeftToBill");
 
-  const totals = computeTotals(
-    chosen.map(({ line, qty }) => ({
-      qty,
-      unitPrice: line.unitPrice ?? "0",
-      discountPct: line.discountPct ?? "0",
-      vatRate: line.vatRate ?? "0",
-    })),
-    {
-      globalDiscountPct: source.globalDiscountPct ?? "0",
-      // Not carried across. It depends on how the client settles, which nobody
-      // knows yet, and nobody has confirmed the threshold or the rate anyway.
-      stampDuty: "0",
-    },
-  );
+  const priceable = chosen.map(({ line, qty }) => ({
+    qty,
+    unitPrice: line.unitPrice ?? "0",
+    discountPct: line.discountPct ?? "0",
+    vatRate: line.vatRate ?? "0",
+  }));
+  const adjustments = { globalDiscountPct: source.globalDiscountPct ?? "0" };
+
+  // The invoice inherits how the order said it would be settled, and the droit
+  // de timbre follows — once the rule is confirmed, on the sum including VAT.
+  const before = computeTotals(priceable, adjustments);
+  const stampDuty = await dutyOnDraft(before.totalIncl, source.settlement);
+  const totals = computeTotals(priceable, { ...adjustments, stampDuty });
 
   return db.transaction(async (tx) => {
     const [created] = await tx
@@ -171,7 +171,8 @@ export async function billFrom(opts: {
         status: "draft",
         globalDiscountPct: source.globalDiscountPct,
         retentionPct: source.retentionPct,
-        stampDuty: "0",
+        settlement: source.settlement,
+        stampDuty,
         totals,
       })
       .returning({ id: document.id });

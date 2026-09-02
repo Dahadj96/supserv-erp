@@ -82,6 +82,7 @@ export async function complianceStatus(): Promise<ComplianceStatus> {
       kind: document.kind,
       totals: document.totals,
       partyId: document.partyId,
+      settlement: document.settlement,
     })
     .from(document)
     .where(eq(document.status, "draft"))
@@ -96,7 +97,7 @@ export async function complianceStatus(): Promise<ComplianceStatus> {
   const found: DraftFinding[] = [];
   for (const draft of drafts) {
     const counterparty = draft.partyId ? (byId.get(draft.partyId) ?? null) : null;
-    const totals = draft.totals as { totalIncl?: string } | null;
+    const totals = draft.totals as { totalIncl?: string; stampDuty?: string } | null;
     const total = Number(totals?.totalIncl ?? 0);
 
     // `ruleRows` is passed in so this loop reads `blocking_rule` once rather
@@ -107,15 +108,12 @@ export async function complianceStatus(): Promise<ComplianceStatus> {
         company: company ?? null,
         counterparty,
         total,
-        /**
-         * Always false here, and that is a limit worth stating rather than
-         * hiding. `settlementInCash` is not a column on `document` — it is a
-         * flag on the RENDER request, decided when somebody issues. So the
-         * stamp-duty rule cannot be evaluated in a sweep like this, and this
-         * screen reports it as unevaluated instead of reporting a pass it did
-         * not earn.
-         */
-        settlementInCash: false,
+        // This used to be `false`, with a note saying the settlement was not a
+        // column on `document` and so the stamp-duty rule could not be swept.
+        // It is a column now — `settlement`, set on screen 47 — so the sweep
+        // reads what the draft says and the rule is evaluated for real.
+        settlementInCash: draft.settlement === "especes",
+        stampDuty: Number(totals?.stampDuty ?? 0),
       },
       ruleRows,
     );

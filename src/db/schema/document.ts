@@ -61,6 +61,21 @@ export const document = pgTable("document", {
   validDays: integer("valid_days"),
 
   /**
+   * HOW THE DOCUMENT IS EXPECTED TO BE SETTLED — virement | cheque | especes |
+   * traite | compensation, the same five words `payment.method` uses.
+   *
+   * "Mode de règlement" is one of the mentions décret 05-468 requires on an
+   * invoice, and until this column existed the engine had nowhere to read it
+   * from and printed nothing. It is also the one fact the droit de timbre
+   * turns on: a sum settled in cash attracts it and a transfer does not, and
+   * `saveDraft` reads this to decide — once a person has confirmed the rule.
+   *
+   * Nullable, because a quotation does not know yet. Frozen at issue with the
+   * rest of the document.
+   */
+  settlement: text("settlement"),
+
+  /**
    * WHAT THE DOCUMENT IS: draft | issued | credited | written_off.
    *
    * Not overdue, and — since phase 5 — not paid or part-paid either. Those

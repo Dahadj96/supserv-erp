@@ -76,6 +76,7 @@ export default async function NewInvoicePage({
       currency: document.currency,
       partyId: document.partyId,
       totals: document.totals,
+      settlement: document.settlement,
       clientName: sql<string>`coalesce(nullif(trim(${party.tradeName}), ''), ${party.legalName})`,
     })
     .from(document)
@@ -101,7 +102,8 @@ export default async function NewInvoicePage({
     company: company ?? null,
     counterparty: counterparty ?? null,
     total: Number((doc.totals as { totalIncl?: string })?.totalIncl ?? "0"),
-    settlementInCash: false,
+    settlementInCash: doc.settlement === "especes",
+    stampDuty: Number((doc.totals as { stampDuty?: string })?.stampDuty ?? "0"),
   });
   const blockers = findings.filter((f) => f.severity === "block");
 

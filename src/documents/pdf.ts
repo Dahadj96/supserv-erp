@@ -116,6 +116,7 @@ const WORDS = {
     option: "option",
     draft: "BROUILLON — SANS VALEUR",
     inWords: "Arrêtée la présente facture à la somme de :",
+    settlement: "Mode de règlement",
     domiciliation: "Domiciliation bancaire",
     totals: {
       totalExcl: "Total HT",
@@ -139,6 +140,7 @@ const WORDS = {
     option: "option",
     draft: "DRAFT — NOT VALID",
     inWords: "The present invoice is settled at the sum of:",
+    settlement: "Payment method",
     domiciliation: "Bank details",
     totals: {
       totalExcl: "Total excl. VAT",
@@ -296,6 +298,12 @@ export async function toPdf(doc: RenderedDocument): Promise<Buffer> {
   text(ctx, w.inWords, { size: 8, color: MUTED });
   ctx.y -= 12;
   text(ctx, doc.amountInWords, { size: 9, bold: true, maxWidth: edge - MARGIN });
+
+  /* ── how it is to be settled — a mention décret 05-468 requires ─────── */
+  if (doc.settlement) {
+    ctx.y -= 14;
+    text(ctx, `${w.settlement} : ${doc.settlement}`, { size: 8.5, color: MUTED });
+  }
 
   /* ── the footer décret 05-468 requires ──────────────────────────────── */
   ctx.y = MARGIN + 52;

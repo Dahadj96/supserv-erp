@@ -7,6 +7,8 @@ import { INPUT } from "@/app/[locale]/(app)/setup/field";
 import { Button } from "@/components/ui/button";
 import type { LineKind } from "@/documents/draft";
 import { computeTotals, formatMoney } from "@/domain/money";
+import { INSTRUMENTS } from "@/domain/money/instruments";
+import { stampDutyFor } from "@/domain/money/stamp-duty";
 
 /**
  * Screen 47 — the line editor.
@@ -56,6 +58,8 @@ export function Builder({
   globalDiscountPct,
   advanceDeducted,
   retentionPct,
+  settlement: initialSettlement,
+  stampDutyConfirmed,
   initial,
   currency,
   action,
@@ -67,6 +71,10 @@ export function Builder({
   globalDiscountPct: string;
   advanceDeducted: string;
   retentionPct: string;
+  /** virement | cheque | especes | traite | compensation, or "" for not said. */
+  settlement: string;
+  /** Screen 69: has a person confirmed `invoice.stampDutyThreshold`? */
+  stampDutyConfirmed: boolean;
   initial: Row[];
   currency: string;
   action: (form: FormData) => void;
@@ -79,6 +87,7 @@ export function Builder({
   const [discount, setDiscount] = useState(globalDiscountPct);
   const [advance, setAdvance] = useState(advanceDeducted);
   const [retention, setRetention] = useState(retentionPct);
+  const [settlement, setSettlement] = useState(initialSettlement);
 
   const set = (key: number, field: keyof Row, value: string | boolean) =>
     setRows((all) => all.map((r) => (r.key === key ? { ...r, [field]: value } : r)));
@@ -93,22 +102,28 @@ export function Builder({
       return copy;
     });
 
-  const totals = useMemo(
-    () =>
-      computeTotals(
-        rows
-          .filter((r) => r.lineKind === "item" && r.designation.trim() && Number(r.qty) > 0)
-          .map((r) => ({
-            qty: r.qty || 0,
-            unitPrice: r.unitPrice || 0,
-            discountPct: r.discountPct || 0,
-            vatRate: r.vatRate || 0,
-            isOption: r.isOption,
-          })),
-        { globalDiscountPct: discount || "0", advanceDeducted: advance || "0" },
-      ),
-    [rows, discount, advance],
-  );
+  const totals = useMemo(() => {
+    const priceable = rows
+      .filter((r) => r.lineKind === "item" && r.designation.trim() && Number(r.qty) > 0)
+      .map((r) => ({
+        qty: r.qty || 0,
+        unitPrice: r.unitPrice || 0,
+        discountPct: r.discountPct || 0,
+        vatRate: r.vatRate || 0,
+        isOption: r.isOption,
+      }));
+    const adjustments = { globalDiscountPct: discount || "0", advanceDeducted: advance || "0" };
+    // The same two passes `saveDraft` makes, so what the screen shows while
+    // typing is what the server will store. The duty is on the sum including
+    // VAT, and only once the rule is confirmed and the settlement is cash.
+    const before = computeTotals(priceable, adjustments);
+    const stampDuty = stampDutyFor({
+      totalIncl: before.totalIncl,
+      settlement,
+      ruleConfirmed: stampDutyConfirmed,
+    });
+    return computeTotals(priceable, { ...adjustments, stampDuty });
+  }, [rows, discount, advance, settlement, stampDutyConfirmed]);
 
   const money = (value: string) => formatMoney(value, { locale, currency });
 
@@ -387,6 +402,9 @@ export function Builder({
                 value={money(amount)}
               />
             ))}
+            {Number(totals.stampDuty) !== 0 ? (
+              <Line label={t("builder.stampDuty")} value={money(totals.stampDuty)} />
+            ) : null}
             <Line label={t("builder.totalIncl")} value={money(totals.totalIncl)} strong />
             {Number(totals.advanceDeducted) !== 0 ? (
               <>
@@ -407,6 +425,30 @@ export function Builder({
           <h2 className="text-tiny font-semibold text-ink">{t("builder.adjustments")}</h2>
 
           <div className="mt-3 flex flex-col gap-3">
+            <label className="block">
+              <span className="text-micro text-secondary">{t("builder.settlement")}</span>
+              <select
+                name="settlement"
+                value={settlement}
+                onChange={(e) => setSettlement(e.target.value)}
+                className={`${INPUT} mt-1`}
+              >
+                <option value="">{t("builder.settlementUnsaid")}</option>
+                {INSTRUMENTS.map((instrument) => (
+                  <option key={instrument} value={instrument}>
+                    {t(`payments.instrumentName.${instrument}`)}
+                  </option>
+                ))}
+              </select>
+              {settlement === "especes" ? (
+                <span className="mt-1 block text-micro leading-relaxed text-muted">
+                  {stampDutyConfirmed
+                    ? t("builder.stampDutyApplied")
+                    : t("builder.stampDutyUnconfirmed")}
+                </span>
+              ) : null}
+            </label>
+
             <label className="block">
               <span className="text-micro text-secondary">{t("builder.globalDiscountPct")}</span>
               <input

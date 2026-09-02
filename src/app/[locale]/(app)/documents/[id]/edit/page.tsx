@@ -7,9 +7,11 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { db } from "@/db";
 import { document, documentLine } from "@/db/schema/document";
+import { blockingRule } from "@/db/schema/interface";
 import { party } from "@/db/schema/party";
 import type { LineKind } from "@/documents/draft";
 import { listTypes } from "@/domain/document-types";
+import { STAMP_DUTY_RULE } from "@/domain/money/instruments";
 import { Link } from "@/i18n/navigation";
 import { saveDraftAction } from "./actions";
 import { Builder, type Row } from "./builder";
@@ -61,6 +63,15 @@ export default async function EditDocumentPage({
 
   const types = await listTypes();
   const kindName = (k: string) => (t.has(`docTypes.kind.${k}`) ? t(`docTypes.kind.${k}`) : k);
+
+  // Whether the droit de timbre rule has been confirmed decides what the
+  // builder may SAY about cash: a figure once it has, a question until then.
+  const [stampRule] = await db
+    .select({ confirmedOn: blockingRule.confirmedOn })
+    .from(blockingRule)
+    .where(eq(blockingRule.code, STAMP_DUTY_RULE))
+    .limit(1);
+  const stampDutyConfirmed = Boolean(stampRule?.confirmedOn);
 
   const offered = (types.length > 0 ? types.filter((type) => type.active) : [{ kind: record.kind }])
     .map((type) => type.kind)
@@ -123,6 +134,8 @@ export default async function EditDocumentPage({
           globalDiscountPct={record.globalDiscountPct ?? "0"}
           advanceDeducted={record.advanceDeducted ?? "0"}
           retentionPct={record.retentionPct ?? "0"}
+          settlement={record.settlement ?? ""}
+          stampDutyConfirmed={stampDutyConfirmed}
           initial={initial}
           currency={record.currency}
           action={saveDraftAction.bind(null, locale, id)}

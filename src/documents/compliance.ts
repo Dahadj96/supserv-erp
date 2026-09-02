@@ -3,6 +3,7 @@ import { db } from "@/db";
 import type { companyIdentity } from "@/db/schema/company";
 import { blockingRule } from "@/db/schema/interface";
 import type { party } from "@/db/schema/party";
+import { STAMP_DUTY_AUTHORITY } from "@/domain/money/stamp-duty";
 
 /**
  * Screen 70 — "Applies the compliance profile: blocks if a CONFIRMED rule
@@ -40,6 +41,8 @@ export type CheckSubject = {
   /** DZD. Used by the rules that have a threshold. */
   total: number;
   settlementInCash: boolean;
+  /** DZD. What the document already carries as droit de timbre. */
+  stampDuty: number;
 };
 
 /**
@@ -57,7 +60,14 @@ const CHECKS: Record<string, (s: CheckSubject) => boolean> = {
 
   // The four waiting on the accountant. They are written down, they warn, and
   // the day somebody confirms them they start refusing.
-  "invoice.stampDutyThreshold": (s) => s.settlementInCash && s.total > 0,
+  //
+  // The stamp-duty rule FAILS when a sum settled in cash carries no duty. It
+  // used to fail on cash alone, which once confirmed refused every cash
+  // invoice — a rule about a tax read as a ban on the payment. `saveDraft` puts
+  // the duty on the document from the moment the rule is confirmed, so the
+  // ordinary case passes; what this catches is a draft saved before the
+  // confirmation and issued after it.
+  "invoice.stampDutyThreshold": (s) => s.settlementInCash && s.total > 0 && !(s.stampDuty > 0),
   "invoice.retentionTreatment": () => false,
   "invoice.vatServicesAbroad": () => false,
   "proforma.validityPeriod": (s) => s.kind === "proforma",
@@ -118,7 +128,9 @@ export const ACCOUNTANT_RULES = [
     code: "invoice.stampDutyThreshold",
     appliesTo: "invoice.issue",
     messageKey: "rules.invoice.stampDutyThreshold",
-    authority: "code du timbre",
+    // The barème itself is written down in src/domain/money/stamp-duty.ts,
+    // with this same line above it. Confirming the rule confirms that text.
+    authority: STAMP_DUTY_AUTHORITY,
     fixRoute: "/settings/compliance",
   },
   {

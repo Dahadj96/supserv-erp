@@ -4,6 +4,7 @@ import { auditEntry } from "@/db/schema/control";
 import { document, documentLine, documentLink } from "@/db/schema/document";
 import { computeTotals } from "@/domain/money";
 import { mayConvert } from "./conversion";
+import { dutyOnDraft } from "./draft";
 
 /**
  * Screen 48 — the write half.
@@ -81,24 +82,26 @@ export async function convertDocument(opts: ConvertOptions): Promise<string> {
     throw new CannotConvert("nothingToCopy");
   }
 
-  const totals = computeTotals(
-    kept
-      .filter((line) => line.lineKind === "item")
-      .map((line) => ({
-        qty: line.qty ?? "0",
-        unitPrice: line.unitPrice ?? "0",
-        discountPct: line.discountPct ?? "0",
-        vatRate: line.vatRate ?? "0",
-      })),
-    {
-      globalDiscountPct: source.globalDiscountPct ?? "0",
-      // Stamp duty depends on how the client settles, which nobody knows yet.
-      // It is added at issue, not carried across from a document that was
-      // never going to be settled.
-      stampDuty: "0",
-      advanceDeducted: source.advanceDeducted ?? "0",
-    },
-  );
+  const priceable = kept
+    .filter((line) => line.lineKind === "item")
+    .map((line) => ({
+      qty: line.qty ?? "0",
+      unitPrice: line.unitPrice ?? "0",
+      discountPct: line.discountPct ?? "0",
+      vatRate: line.vatRate ?? "0",
+    }));
+  const adjustments = {
+    globalDiscountPct: source.globalDiscountPct ?? "0",
+    advanceDeducted: source.advanceDeducted ?? "0",
+  };
+
+  // The facture inherits how the proforma said it would be settled, and the
+  // droit de timbre follows from that the same way it does in the builder —
+  // once the rule is confirmed, on the sum including VAT. This used to write
+  // "0" with a note that the duty would be added at issue, and nothing did.
+  const before = computeTotals(priceable, adjustments);
+  const stampDuty = await dutyOnDraft(before.totalIncl, source.settlement);
+  const totals = computeTotals(priceable, { ...adjustments, stampDuty });
 
   return db.transaction(async (tx) => {
     const [created] = await tx
@@ -117,7 +120,8 @@ export async function convertDocument(opts: ConvertOptions): Promise<string> {
         globalDiscountPct: source.globalDiscountPct,
         advanceDeducted: source.advanceDeducted,
         retentionPct: source.retentionPct,
-        stampDuty: "0",
+        settlement: source.settlement,
+        stampDuty,
         totals,
       })
       .returning({ id: document.id });

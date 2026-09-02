@@ -70,6 +70,7 @@ export async function saveDraftAction(locale: string, id: string, form: FormData
         globalDiscountPct: str(form, "globalDiscountPct") || "0",
         advanceDeducted: str(form, "advanceDeducted") || "0",
         retentionPct: str(form, "retentionPct") || "0",
+        settlement: str(form, "settlement") || null,
         lines: parseLines(form),
       },
       session.userId,

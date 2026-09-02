@@ -2,7 +2,10 @@ import { eq } from "drizzle-orm";
 import { db } from "@/db";
 import { auditEntry } from "@/db/schema/control";
 import { document, documentLine } from "@/db/schema/document";
+import { blockingRule } from "@/db/schema/interface";
 import { computeTotals, lineTotalExcl } from "@/domain/money";
+import { isInstrument, STAMP_DUTY_RULE } from "@/domain/money/instruments";
+import { stampDutyFor } from "@/domain/money/stamp-duty";
 
 /**
  * Screen 47 — the document builder, on the writing side.
@@ -39,6 +42,8 @@ export type DraftPatch = {
   advanceDeducted?: string;
   retentionPct?: string;
   validDays?: number | null;
+  /** virement | cheque | especes | traite | compensation. Null: not said yet. */
+  settlement?: string | null;
   lines: DraftLine[];
 };
 
@@ -46,6 +51,26 @@ export class DraftRefused extends Error {
   constructor(readonly reason: "noSuchDocument" | "alreadyIssued" | "noLines") {
     super(reason);
   }
+}
+
+/**
+ * The droit de timbre a draft should carry, given how it will be settled.
+ *
+ * The one place the rule's confirmation is read on the writing side. Three
+ * callers — `saveDraft`, `convertDocument`, `billDocument` — so that a facture
+ * made from a cash proforma carries the same figure the builder would show.
+ */
+export async function dutyOnDraft(
+  totalIncl: string,
+  settlement: string | null | undefined,
+): Promise<string> {
+  const [rule] = await db
+    .select({ confirmedOn: blockingRule.confirmedOn })
+    .from(blockingRule)
+    .where(eq(blockingRule.code, STAMP_DUTY_RULE))
+    .limit(1);
+
+  return stampDutyFor({ totalIncl, settlement, ruleConfirmed: Boolean(rule?.confirmedOn) });
 }
 
 /** Only an item line carries money. A section or a note priced at zero is noise. */
@@ -82,21 +107,40 @@ export async function saveDraft(
   const lines = keepable(patch.lines);
   if (lines.length === 0) throw new DraftRefused("noLines");
 
-  const totals = computeTotals(
-    lines.filter(priced).map((line) => ({
-      qty: line.qty ?? 0,
-      unitPrice: line.unitPrice ?? 0,
-      discountPct: line.discountPct ?? 0,
-      vatRate: line.vatRate ?? 0,
-      isOption: line.isOption ?? false,
-    })),
-    {
-      globalDiscountPct: patch.globalDiscountPct ?? "0",
-      advanceDeducted: patch.advanceDeducted ?? "0",
-      // Stamp duty is not chosen here. It follows the settlement method and a
-      // rule nobody has confirmed — see the compliance profile.
-    },
-  );
+  const settlement =
+    patch.settlement === undefined
+      ? record.settlement
+      : patch.settlement && isInstrument(patch.settlement)
+        ? patch.settlement
+        : null;
+
+  const priceable = lines.filter(priced).map((line) => ({
+    qty: line.qty ?? 0,
+    unitPrice: line.unitPrice ?? 0,
+    discountPct: line.discountPct ?? 0,
+    vatRate: line.vatRate ?? 0,
+    isOption: line.isOption ?? false,
+  }));
+
+  const adjustments = {
+    globalDiscountPct: patch.globalDiscountPct ?? "0",
+    advanceDeducted: patch.advanceDeducted ?? "0",
+  };
+
+  /**
+   * The droit de timbre is not chosen by a person and not asserted by the
+   * software. It follows the settlement method — cash attracts it, nothing
+   * else does — and it is only put on the document once somebody has confirmed
+   * `invoice.stampDutyThreshold` on screen 69 with a name and a date. Until
+   * then the figure is nought and the engine warns at issue, which is the
+   * behaviour screen 85 promises for every rule waiting on the accountant.
+   *
+   * Two passes because the duty is on the sum INCLUDING VAT, and the sum
+   * including VAT is what the first pass computes.
+   */
+  const before = computeTotals(priceable, adjustments);
+  const stampDuty = await dutyOnDraft(before.totalIncl, settlement);
+  const totals = computeTotals(priceable, { ...adjustments, stampDuty });
 
   await db.transaction(async (tx) => {
     await tx
@@ -108,6 +152,8 @@ export async function saveDraft(
         advanceDeducted: patch.advanceDeducted ?? "0",
         retentionPct: patch.retentionPct ?? "0",
         validDays: patch.validDays ?? record.validDays,
+        settlement,
+        stampDuty,
         totals,
       })
       .where(eq(document.id, documentId));

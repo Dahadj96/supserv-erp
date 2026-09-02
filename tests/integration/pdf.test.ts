@@ -19,6 +19,7 @@ const SAMPLE: RenderedDocument = {
   locale: "fr",
   issuedOn: "21/08/2026",
   dateline: "Adrar, le 21 août 2026",
+  settlement: null,
   company: {
     legalName: "SARL SUPSERV",
     address: "Zone industrielle, Adrar",

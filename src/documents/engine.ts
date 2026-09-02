@@ -11,7 +11,7 @@ import { assertCanIssue } from "@/domain/setup";
 import { storageFor } from "@/storage";
 import { amountInWords } from "./amount-in-words";
 import { Blocked, check, type Finding } from "./compliance";
-import { dateline, money, percent, shortDate } from "./format";
+import { dateline, money, percent, settlementLabel, shortDate } from "./format";
 import { reserveNumber } from "./numbering";
 import { currentTemplate } from "./templates";
 
@@ -64,6 +64,12 @@ export type RenderedDocument = {
   locale: string;
   issuedOn: string;
   dateline: string;
+  /**
+   * "Mode de règlement", in the document language. Null when the draft has
+   * not said — a quotation usually has not — and the renderer prints nothing
+   * rather than a dash the client would read as an answer.
+   */
+  settlement: string | null;
 
   company: {
     legalName: string;
@@ -210,7 +216,11 @@ export async function render(request: RenderRequest): Promise<RenderedDocument> 
     company: company ?? null,
     counterparty,
     total: grandTotal,
-    settlementInCash: request.settlementInCash ?? false,
+    // What the draft says about itself, unless the caller knows better. Two
+    // callers used to pass `false` here unconditionally, which meant the cash
+    // rule could never fire on any invoice however it was going to be paid.
+    settlementInCash: request.settlementInCash ?? record.settlement === "especes",
+    stampDuty: Number(totals.stampDuty ?? 0),
   });
 
   // Screen 50 — what this KIND of document is. Null when the catalogue has not
@@ -281,6 +291,7 @@ export async function render(request: RenderRequest): Promise<RenderedDocument> 
     locale,
     issuedOn: shortDate(issuedOn, locale),
     dateline: dateline(company?.wilaya ?? null, issuedOn, locale),
+    settlement: settlementLabel(record.settlement, locale),
 
     company: {
       legalName: company?.legalName ?? "",

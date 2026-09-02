@@ -239,7 +239,7 @@
       "clientNifMissing": "The client has no NIF",
       "companyIdentityIncomplete": "Company identity is incomplete — RC, NIF, NIS or article d'imposition",
       "noDeliveryNote": "No delivery note is linked",
-      "stampDutyThreshold": "Stamp duty threshold not confirmed",
+      "stampDutyThreshold": "Cash-settled invoice carrying no stamp duty",
       "retentionTreatment": "Retention treatment not confirmed",
       "vatServicesAbroad": "VAT on services rendered abroad not confirmed"
     },
@@ -1723,7 +1723,12 @@
       "alreadyIssued": "That document is issued. A correction is a new document.",
       "noLines": "A document needs at least one line with a description and a quantity.",
       "noSuchDocument": "That document no longer exists."
-    }
+    },
+    "settlement": "Payment method",
+    "settlementUnsaid": "Not stated",
+    "stampDuty": "Stamp duty",
+    "stampDutyApplied": "Cash settlement carries the droit de timbre. It is worked out on the total incl. VAT from the barème confirmed in the compliance profile and added to the total.",
+    "stampDutyUnconfirmed": "Cash settlement normally carries a droit de timbre. Nobody has confirmed the rule in the compliance profile yet: nothing is added, and issuing will say so."
   },
   "scan": {
     "title": "Scan station",

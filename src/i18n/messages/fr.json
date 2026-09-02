@@ -239,7 +239,7 @@
       "clientNifMissing": "Le client n'a pas de NIF",
       "companyIdentityIncomplete": "L'identité de la société est incomplète — RC, NIF, NIS ou article d'imposition",
       "noDeliveryNote": "Aucun bon de livraison n'est rattaché",
-      "stampDutyThreshold": "Seuil du droit de timbre non confirmé",
+      "stampDutyThreshold": "Facture réglée en espèces sans droit de timbre",
       "retentionTreatment": "Traitement de la retenue de garantie non confirmé",
       "vatServicesAbroad": "TVA sur services rendus à l'étranger non confirmée"
     },
@@ -1723,7 +1723,12 @@
       "alreadyIssued": "Ce document est émis. Une correction est un nouveau document.",
       "noLines": "Un document demande au moins une ligne avec une désignation et une quantité.",
       "noSuchDocument": "Ce document n'existe plus."
-    }
+    },
+    "settlement": "Mode de règlement",
+    "settlementUnsaid": "Non précisé",
+    "stampDuty": "Droit de timbre",
+    "stampDutyApplied": "Un règlement en espèces porte le droit de timbre. Il est calculé sur le TTC selon le barème confirmé dans le profil de conformité et ajouté au total.",
+    "stampDutyUnconfirmed": "Un règlement en espèces porte normalement un droit de timbre. Personne n'a encore confirmé la règle dans le profil de conformité : rien n'est ajouté, et l'émission le signalera."
   },
   "scan": {
     "title": "Station de numérisation",
