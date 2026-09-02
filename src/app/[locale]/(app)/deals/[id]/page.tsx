@@ -463,7 +463,21 @@ export default async function EnquiryPage({
                       <Link className="text-ink hover:underline" href={`/offers/${offer.id}/build`}>
                         {offer.number ?? t("offer.noNumberYet")}
                       </Link>
-                      <span className="ms-auto">
+                      <span className="ms-auto flex items-center gap-2">
+                        {/*
+                          The client said yes. Their bon de commande is recorded
+                          as a document made from the offer they accepted — the
+                          step every sales system calls "Confirm", and the only
+                          thing that moves this enquiry to "won".
+                        */}
+                        {offer.number && facts.ordersReceived === 0 ? (
+                          <Link
+                            className="text-micro text-accent-ink hover:underline"
+                            href={`/documents/${offer.id}/convert?target=client_order`}
+                          >
+                            {t("deals.recordOrder")}
+                          </Link>
+                        ) : null}
                         <Badge tone={offer.number ? "good" : "neutral"}>
                           {offer.number ? t("offer.issued") : t("offer.draft")}
                         </Badge>

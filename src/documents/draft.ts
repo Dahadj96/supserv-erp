@@ -3,6 +3,7 @@ import { db } from "@/db";
 import { auditEntry } from "@/db/schema/control";
 import { document, documentLine } from "@/db/schema/document";
 import { blockingRule } from "@/db/schema/interface";
+import { issuingRules } from "@/domain/document-types";
 import { computeTotals, lineTotalExcl } from "@/domain/money";
 import { isInstrument, STAMP_DUTY_RULE } from "@/domain/money/instruments";
 import { stampDutyFor } from "@/domain/money/stamp-duty";
@@ -44,6 +45,13 @@ export type DraftPatch = {
   validDays?: number | null;
   /** virement | cheque | especes | traite | compensation. Null: not said yet. */
   settlement?: string | null;
+  /**
+   * The counterparty's own reference, for a kind screen 50 numbers by
+   * `clientReference` — a client's bon de commande. Ignored on every kind we
+   * number ourselves: LAW 5 says those numbers are allocated at issue, never
+   * typed.
+   */
+  theirNumber?: string | null;
   lines: DraftLine[];
 };
 
@@ -99,13 +107,28 @@ export async function saveDraft(
   const [record] = await db.select().from(document).where(eq(document.id, documentId)).limit(1);
   if (!record) throw new DraftRefused("noSuchDocument");
 
-  // LAW 5. Not "the UI hides the button" — the function refuses.
-  if (record.number || record.lockedAt || record.status !== "draft") {
+  // LAW 5. Not "the UI hides the button" — the function refuses. The STATE is
+  // what says a document is issued; a client's order carries their number
+  // from the day it arrives and is still a draft until somebody records it.
+  if (record.lockedAt || record.status !== "draft") {
     throw new DraftRefused("alreadyIssued");
   }
 
   const lines = keepable(patch.lines);
   if (lines.length === 0) throw new DraftRefused("noLines");
+
+  const kind = patch.kind ?? record.kind;
+  const rules = await issuingRules(kind);
+  const carriesTheirNumber = !(rules?.reservesNumber ?? true);
+  // Only a kind numbered by the counterparty takes a typed number. On any
+  // other kind the field is ignored, and a number already on the row (which
+  // can only be there if the kind was changed from one that carries theirs)
+  // is cleared rather than presented as one of ours.
+  const number = carriesTheirNumber
+    ? patch.theirNumber === undefined
+      ? record.number
+      : patch.theirNumber?.trim() || null
+    : null;
 
   const settlement =
     patch.settlement === undefined
@@ -146,7 +169,8 @@ export async function saveDraft(
     await tx
       .update(document)
       .set({
-        kind: patch.kind ?? record.kind,
+        kind,
+        number,
         issuedOn: patch.issuedOn ?? record.issuedOn,
         globalDiscountPct: patch.globalDiscountPct ?? "0",
         advanceDeducted: patch.advanceDeducted ?? "0",
@@ -195,7 +219,7 @@ export async function saveDraft(
       entityId: documentId,
       action: "edit",
       before: { totals: record.totals, kind: record.kind },
-      after: { totals, kind: patch.kind ?? record.kind, lines: lines.length },
+      after: { totals, kind, number, lines: lines.length },
       sourceScreen: "47",
     });
   });

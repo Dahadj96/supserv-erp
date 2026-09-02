@@ -172,6 +172,9 @@ describe("the stage falls out of the documents", () => {
       // Their number, not ours — a client order never consumes one of our
       // series (screen 50, `clientReference` numbering).
       number: "PO-77120",
+      // Recorded — a draft order nobody has confirmed is not a win.
+      status: "issued",
+      lockedAt: new Date(),
       totals: {},
     });
     const found = await getDeal(id);
@@ -270,6 +273,8 @@ describe("the go / no-go card", () => {
       dealId: id,
       locale: "fr",
       number: "PO-77121",
+      status: "issued",
+      lockedAt: new Date(),
       totals: {},
     });
     await expect(

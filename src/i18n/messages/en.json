@@ -130,7 +130,8 @@
     "openCount": "{n, plural, =0 {nothing open} one {# open} other {# open}}",
     "stageIsDerived": "stage is computed from the documents, outcome is read from the offer",
     "stageDerivedLabel": "Stage — derived",
-    "newEnquiry": "New enquiry"
+    "newEnquiry": "New enquiry",
+    "recordOrder": "Record their order"
   },
   "search": {
     "title": "Search",
@@ -1728,7 +1729,10 @@
     "settlementUnsaid": "Not stated",
     "stampDuty": "Stamp duty",
     "stampDutyApplied": "Cash settlement carries the droit de timbre. It is worked out on the total incl. VAT from the barème confirmed in the compliance profile and added to the total.",
-    "stampDutyUnconfirmed": "Cash settlement normally carries a droit de timbre. Nobody has confirmed the rule in the compliance profile yet: nothing is added, and issuing will say so."
+    "stampDutyUnconfirmed": "Cash settlement normally carries a droit de timbre. Nobody has confirmed the rule in the compliance profile yet: nothing is added, and issuing will say so.",
+    "theirNumber": "Their number",
+    "theirNumberPlaceholder": "PO 2026/0457",
+    "theirNumberHint": "This document carries the client's number, not ours. It is not numbered in our series."
   },
   "scan": {
     "title": "Scan station",
@@ -2302,7 +2306,9 @@
       "marginLabel": "Starting margin %",
       "go": "Build the offer",
       "existing": "Offers on this enquiry"
-    }
+    },
+    "openDocument": "Preview, PDF and issue",
+    "editLines": "Edit the lines in the builder"
   },
   "technical": {
     "title": "Technical file — {ref}",
@@ -2601,12 +2607,12 @@
     "step": {
       "quotation": "Quotation",
       "proforma": "Pro forma",
-      "purchase_order": "Client purchase order",
       "delivery_note": "Delivery note",
       "invoice": "Invoice",
       "payment": "Payment",
       "credit_note": "Credit note",
-      "situation": "Progress statement"
+      "situation": "Progress statement",
+      "client_order": "Client purchase order"
     },
     "whatCarries": "What carries over",
     "nOpen": "{n, plural, =0 {nothing left to decide} one {# still to decide} other {# still to decide}}",
@@ -2649,9 +2655,9 @@
     "decisions": "Three decisions",
     "invoiceDate": "Invoice date",
     "dueDate": "Due date",
-    "paymentMethod": "Payment method",
+    "paymentMethod": "Payment terms",
     "termsDefault": "Bank transfer — {n} days",
-    "stampDutyNote": "Nothing adds a droit de timbre on its own. Nobody has confirmed the threshold or the rate, so a cash settlement is flagged on the payment screen for a person to handle.",
+    "stampDutyNote": "Stamp duty is only added once the accountant has confirmed the rule on the Compliance screen. Until then a cash settlement is flagged at issue and nothing is computed.",
     "checks": "Checks before issuing",
     "nToFix": "{n, plural, one {# to fix} other {# to fix}}",
     "allClear": "nothing refuses",
@@ -2682,7 +2688,14 @@
       "conversionNotAllowed": "That conversion is not one of the allowed ones.",
       "alreadyConverted": "This document has already been converted once.",
       "nothingToCopy": "There is nothing on this document to carry over."
-    }
+    },
+    "clientReference": "Client's order number",
+    "clientReferencePlaceholder": "PO 2026/0457",
+    "clientReferenceHint": "The number on their purchase order, or \"agreed\" if they signed the proforma back. It is the one they will quote about the delivery.",
+    "orderDate": "Order date",
+    "settlement": "Payment method",
+    "settlementUnsaid": "— not said yet —",
+    "stampDutyApplied": "Rule confirmed: a cash settlement carries stamp duty on the scale, computed on the total including VAT, when the draft is saved."
   },
   "deliveries": {
     "title": "Deliveries",

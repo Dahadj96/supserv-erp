@@ -60,6 +60,8 @@ export function Builder({
   retentionPct,
   settlement: initialSettlement,
   stampDutyConfirmed,
+  theirNumber,
+  carriesTheirNumber,
   initial,
   currency,
   action,
@@ -68,6 +70,10 @@ export function Builder({
   kind: string;
   kinds: { kind: string; label: string }[];
   issuedOn: string;
+  /** The counterparty's own reference, for a kind that carries theirs, not ours. */
+  theirNumber: string;
+  /** Screen 50: this kind is numbered by the counterparty (a client's order). */
+  carriesTheirNumber: boolean;
   globalDiscountPct: string;
   advanceDeducted: string;
   retentionPct: string;
@@ -502,6 +508,21 @@ export function Builder({
                 className={`${INPUT} mt-1`}
               />
             </label>
+
+            {carriesTheirNumber ? (
+              <label className="block">
+                <span className="text-micro text-secondary">{t("builder.theirNumber")}</span>
+                <input
+                  name="theirNumber"
+                  defaultValue={theirNumber}
+                  placeholder={t("builder.theirNumberPlaceholder")}
+                  className={`${INPUT} mt-1`}
+                />
+                <span className="mt-1 block text-micro leading-relaxed text-muted">
+                  {t("builder.theirNumberHint")}
+                </span>
+              </label>
+            ) : null}
           </div>
         </section>
 

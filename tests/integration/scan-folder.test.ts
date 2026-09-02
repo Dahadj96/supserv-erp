@@ -35,6 +35,7 @@ function sample(designation: string): RenderedDocument {
     issuedOn: "22/08/2026",
     dateline: "Adrar, le 22 août 2026",
     settlement: null,
+    issued: true,
     company: {
       legalName: "SARL SUPSERV (TEST SCAN)",
       address: "Adrar",

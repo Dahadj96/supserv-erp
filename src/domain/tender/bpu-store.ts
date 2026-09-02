@@ -5,6 +5,7 @@ import { deal, dealLine, priceQuote } from "@/db/schema/deal";
 import { document, documentLine } from "@/db/schema/document";
 import { sourcingLine, sourcingRequest, sourcingResponse } from "@/db/schema/sourcing";
 import { bpuErratum, bpuMapping, tender } from "@/db/schema/tender";
+import { recomputeTotals } from "@/documents/totals";
 import { assertTransition } from "../control/transitions";
 import {
   type BpuLine,
@@ -550,6 +551,16 @@ export async function applyErratum(opts: {
       },
     });
   });
+
+  // A cleared price changes the offer's total. The draft offers on this
+  // enquiry are re-summed so the figure on screen 12 is the figure on the lines.
+  if (result.draftPricesCleared > 0) {
+    const drafts = await db
+      .select({ id: document.id })
+      .from(document)
+      .where(and(eq(document.dealId, opts.dealId), isNull(document.number)));
+    for (const draft of drafts) await recomputeTotals(draft.id);
+  }
 
   return result;
 }

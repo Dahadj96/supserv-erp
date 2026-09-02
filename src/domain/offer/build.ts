@@ -5,6 +5,7 @@ import { deal, dealLine, priceQuote } from "@/db/schema/deal";
 import { document, documentLine } from "@/db/schema/document";
 import { party } from "@/db/schema/party";
 import { sourcingLine, sourcingRequest, sourcingResponse } from "@/db/schema/sourcing";
+import { recomputeTotals } from "@/documents/totals";
 import { priceFromMargin } from "./margin";
 
 /**
@@ -166,7 +167,7 @@ export async function buildOffer(opts: {
   const margin = opts.defaultMarginPct ?? "20";
   const vatRate = opts.vatRate ?? "19";
 
-  return db.transaction(async (tx) => {
+  const documentId = await db.transaction(async (tx) => {
     const [created] = await tx
       .insert(document)
       .values({
@@ -256,4 +257,11 @@ export async function buildOffer(opts: {
 
     return documentId;
   });
+
+  // The lines carry prices from the moment they are built; the document has
+  // to carry the sum of them from the same moment, or the first preview reads
+  // "Total HT 0,00" under a priced table.
+  await recomputeTotals(documentId);
+
+  return documentId;
 }

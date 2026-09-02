@@ -167,8 +167,9 @@ export async function startDelivery(opts: {
   const [source] = await db.select().from(document).where(eq(document.id, opts.sourceId)).limit(1);
   if (!source) throw new CannotDeliver("noSuchDocument");
   // Delivering against a draft means delivering against something the client
-  // has never agreed to.
-  if (!source.number) throw new CannotDeliver("sourceNotIssued");
+  // has never agreed to. The STATE, not the number: a client's own order is
+  // issued under their reference and may carry no number of ours at all.
+  if (source.status !== "issued") throw new CannotDeliver("sourceNotIssued");
 
   const wanted = Object.entries(opts.quantities).filter(([, qty]) => Number(qty) > 0);
   if (wanted.length === 0) throw new CannotDeliver("nothingToDeliver");

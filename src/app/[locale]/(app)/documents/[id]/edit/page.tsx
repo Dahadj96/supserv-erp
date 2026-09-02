@@ -10,7 +10,7 @@ import { document, documentLine } from "@/db/schema/document";
 import { blockingRule } from "@/db/schema/interface";
 import { party } from "@/db/schema/party";
 import type { LineKind } from "@/documents/draft";
-import { listTypes } from "@/domain/document-types";
+import { issuingRules, listTypes } from "@/domain/document-types";
 import { STAMP_DUTY_RULE } from "@/domain/money/instruments";
 import { Link } from "@/i18n/navigation";
 import { saveDraftAction } from "./actions";
@@ -44,10 +44,13 @@ export default async function EditDocumentPage({
   if (!record) notFound();
 
   // An issued document has nothing to edit. Sending somebody to the preview is
-  // more useful than telling them no.
-  if (record.number || record.lockedAt || record.status !== "draft") {
+  // more useful than telling them no. The STATE decides — a client's order
+  // carries their number while still a draft of ours.
+  if (record.lockedAt || record.status !== "draft") {
     hardRedirect(`/${locale}/documents/${id}?error=alreadyIssued`);
   }
+  const rules = await issuingRules(record.kind);
+  const carriesTheirNumber = !(rules?.reservesNumber ?? true);
 
   if (!mayIssue(session.role, record.kind)) {
     hardRedirect(`/${locale}/documents/${id}?error=notAllowed`);
@@ -136,6 +139,8 @@ export default async function EditDocumentPage({
           retentionPct={record.retentionPct ?? "0"}
           settlement={record.settlement ?? ""}
           stampDutyConfirmed={stampDutyConfirmed}
+          theirNumber={record.number ?? ""}
+          carriesTheirNumber={carriesTheirNumber}
           initial={initial}
           currency={record.currency}
           action={saveDraftAction.bind(null, locale, id)}

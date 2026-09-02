@@ -31,6 +31,7 @@ function finding(code: string, severity: Finding["severity"], extra: Partial<Fin
 function doc(over: Partial<RenderedDocument> = {}): RenderedDocument {
   return {
     number: null,
+    issued: false,
     kind: "invoice",
     locale: "fr",
     issuedOn: "19/08/2026",

@@ -7,6 +7,7 @@ import { can } from "@/auth/can";
 import { getSession } from "@/auth/session";
 import { db } from "@/db";
 import { document, documentLine } from "@/db/schema/document";
+import { recomputeTotals } from "@/documents/totals";
 import { applyMarginToAll, priceFromMargin } from "@/domain/offer/margin";
 import { markSubmitted, OfferRefused } from "@/domain/offer/store";
 
@@ -56,6 +57,7 @@ export async function applyMarginAction(locale: string, id: string, form: FormDa
       .set({ unitPrice: line.unitPrice })
       .where(eq(documentLine.id, line.id));
   }
+  await recomputeTotals(id);
 
   back(locale, id, "?applied=1");
 }
@@ -90,6 +92,7 @@ export async function setLineAction(locale: string, id: string, form: FormData):
   }
 
   await db.update(documentLine).set({ unitPrice }).where(eq(documentLine.id, lineId));
+  await recomputeTotals(id);
   back(locale, id, "?saved=1");
 }
 

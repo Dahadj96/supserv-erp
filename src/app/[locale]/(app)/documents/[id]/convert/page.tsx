@@ -9,6 +9,7 @@ import { Button } from "@/components/ui/button";
 import { db } from "@/db";
 import { companyIdentity } from "@/db/schema/company";
 import { document, documentLine } from "@/db/schema/document";
+import { blockingRule } from "@/db/schema/interface";
 import { party } from "@/db/schema/party";
 import { check } from "@/documents/compliance";
 import {
@@ -22,6 +23,7 @@ import {
 import { chainFor } from "@/documents/convert";
 import { peekNumber } from "@/documents/numbering";
 import { formatMoney } from "@/domain/money";
+import { INSTRUMENTS, STAMP_DUTY_RULE } from "@/domain/money/instruments";
 import { Link } from "@/i18n/navigation";
 import { convertAction } from "./actions";
 
@@ -52,10 +54,10 @@ export default async function ConvertPage({
   searchParams,
 }: {
   params: Promise<{ locale: string; id: string }>;
-  searchParams: Promise<{ error?: string }>;
+  searchParams: Promise<{ error?: string; target?: string }>;
 }) {
   const { locale, id } = await params;
-  const { error } = await searchParams;
+  const { error, target: wanted } = await searchParams;
   setRequestLocale(locale);
   const t = await getTranslations();
 
@@ -81,8 +83,12 @@ export default async function ConvertPage({
     .limit(1);
   if (!source) notFound();
 
+  // The link that brought the person here may say what the document should
+  // become — the deal page's "Record their order" asks for `client_order`.
+  // Anything not on the list for this kind falls back to the first entry.
   const targets = targetsFor(source.kind);
-  const target = targets[0] ?? "invoice";
+  const target = wanted && targets.includes(wanted) ? wanted : (targets[0] ?? "invoice");
+  const toOrder = target === "client_order";
 
   const [counts] = await db
     .select({
@@ -94,6 +100,12 @@ export default async function ConvertPage({
     .where(and(eq(documentLine.documentId, id)));
 
   const [company] = await db.select().from(companyIdentity).limit(1);
+  const [stampRule] = await db
+    .select({ confirmedOn: blockingRule.confirmedOn })
+    .from(blockingRule)
+    .where(eq(blockingRule.code, STAMP_DUTY_RULE))
+    .limit(1);
+  const stampDutyConfirmed = Boolean(stampRule?.confirmedOn);
   const [counterparty] = await db.select().from(party).where(eq(party.id, source.partyId)).limit(1);
 
   const totals = (source.totals ?? {}) as { totalExcl?: string; totalIncl?: string };
@@ -302,42 +314,105 @@ export default async function ConvertPage({
               className="mt-3 flex flex-col gap-3"
             >
               <input type="hidden" name="target" value={target} />
-              <div className="grid grid-cols-2 gap-3">
-                <label>
-                  <span className="text-micro text-secondary">{t("convert.invoiceDate")}</span>
-                  <input
-                    type="date"
-                    name="invoiceDate"
-                    defaultValue={invoiceDate}
-                    className={`${INPUT} mt-1`}
-                  />
-                </label>
-                <label>
-                  <span className="text-micro text-secondary">{t("convert.dueDate")}</span>
-                  <input
-                    type="date"
-                    name="dueDate"
-                    defaultValue={dueDate}
-                    className={`${INPUT} mt-1`}
-                  />
-                </label>
-              </div>
+              {targets.length > 1 ? (
+                <div className="flex flex-wrap gap-1.5">
+                  {targets.map((option) => (
+                    <Link
+                      key={option}
+                      href={`/documents/${id}/convert?target=${option}`}
+                      className={`rounded-full border px-3 py-1 text-micro ${
+                        option === target
+                          ? "border-accent bg-accent-bg text-accent-ink"
+                          : "border-line text-secondary hover:bg-plane"
+                      }`}
+                    >
+                      {t.has(`documents.kind.${option}`) ? t(`documents.kind.${option}`) : option}
+                    </Link>
+                  ))}
+                </div>
+              ) : null}
+              {toOrder ? (
+                <>
+                  <label>
+                    <span className="text-micro text-secondary">
+                      {t("convert.clientReference")}
+                    </span>
+                    <input
+                      name="clientReference"
+                      placeholder={t("convert.clientReferencePlaceholder")}
+                      className={`${INPUT} mt-1`}
+                    />
+                    <span className="mt-1 block text-micro leading-relaxed text-muted">
+                      {t("convert.clientReferenceHint")}
+                    </span>
+                  </label>
+                  <label>
+                    <span className="text-micro text-secondary">{t("convert.orderDate")}</span>
+                    <input
+                      type="date"
+                      name="invoiceDate"
+                      defaultValue={invoiceDate}
+                      className={`${INPUT} mt-1`}
+                    />
+                  </label>
+                </>
+              ) : (
+                <div className="grid grid-cols-2 gap-3">
+                  <label>
+                    <span className="text-micro text-secondary">{t("convert.invoiceDate")}</span>
+                    <input
+                      type="date"
+                      name="invoiceDate"
+                      defaultValue={invoiceDate}
+                      className={`${INPUT} mt-1`}
+                    />
+                  </label>
+                  <label>
+                    <span className="text-micro text-secondary">{t("convert.dueDate")}</span>
+                    <input
+                      type="date"
+                      name="dueDate"
+                      defaultValue={dueDate}
+                      className={`${INPUT} mt-1`}
+                    />
+                  </label>
+                </div>
+              )}
               <label>
-                <span className="text-micro text-secondary">{t("convert.paymentMethod")}</span>
-                <input
-                  name="paymentMethod"
-                  defaultValue={t("convert.termsDefault", { n: DEFAULT_TERMS_DAYS })}
+                <span className="text-micro text-secondary">{t("convert.settlement")}</span>
+                <select
+                  name="settlement"
+                  defaultValue={source.settlement ?? ""}
                   className={`${INPUT} mt-1`}
-                />
+                >
+                  <option value="">{t("convert.settlementUnsaid")}</option>
+                  {INSTRUMENTS.map((instrument) => (
+                    <option key={instrument} value={instrument}>
+                      {t(`payments.instrumentName.${instrument}`)}
+                    </option>
+                  ))}
+                </select>
               </label>
+              {toOrder ? null : (
+                <label>
+                  <span className="text-micro text-secondary">{t("convert.paymentMethod")}</span>
+                  <input
+                    name="paymentMethod"
+                    defaultValue={t("convert.termsDefault", { n: DEFAULT_TERMS_DAYS })}
+                    className={`${INPUT} mt-1`}
+                  />
+                </label>
+              )}
               {/*
                 The frame promises "If the client settles in cash, stamp duty is
-                added automatically." Nobody has confirmed the threshold or the
-                rate, so nothing is added automatically and the screen says so
-                rather than quietly computing a figure on a rule it was never
-                given. Screen 19 carries the same sentence.
+                added automatically." It is — on the barème in
+                src/domain/money/stamp-duty.ts — but only once the accountant has
+                confirmed the rule on screen 69. Until then the draft carries
+                nought and issue warns, and this line says which of the two it is.
               */}
-              <p className="text-micro leading-relaxed text-muted">{t("convert.stampDutyNote")}</p>
+              <p className="text-micro leading-relaxed text-muted">
+                {stampDutyConfirmed ? t("convert.stampDutyApplied") : t("convert.stampDutyNote")}
+              </p>
 
               <div className="flex items-center gap-3">
                 <p className="text-micro text-muted">{t("convert.createsADraft")}</p>

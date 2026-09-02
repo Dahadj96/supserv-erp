@@ -81,6 +81,19 @@ export default async function OfferBuilderPage({
               <Button variant="secondary">{t("prices.backToEnquiry")}</Button>
             </Link>
           ) : null}
+          {/*
+            Screen 12 prices the lines; screen 47 edits everything else on them
+            and screen 18 is where the offer is read as a PDF and issued. The
+            first walk-through of this page found no door to either.
+          */}
+          {issued ? null : (
+            <Link href={`/documents/${id}/edit`}>
+              <Button variant="secondary">{t("offer.editLines")}</Button>
+            </Link>
+          )}
+          <Link href={`/documents/${id}`}>
+            <Button variant="primary">{t("offer.openDocument")}</Button>
+          </Link>
         </div>
       </div>
 

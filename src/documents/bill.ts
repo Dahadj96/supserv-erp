@@ -126,7 +126,8 @@ export async function billFrom(opts: {
 }): Promise<string> {
   const [source] = await db.select().from(document).where(eq(document.id, opts.sourceId)).limit(1);
   if (!source) throw new CannotBill("noSuchDocument");
-  if (!source.number) throw new CannotBill("sourceNotIssued");
+  // The state, not the number — a client's order is issued under THEIR number.
+  if (source.status !== "issued") throw new CannotBill("sourceNotIssued");
 
   const wanted = Object.entries(opts.quantities).filter(([, qty]) => Number(qty) > 0);
   if (wanted.length === 0) throw new CannotBill("nothingChosen");

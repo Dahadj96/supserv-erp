@@ -71,6 +71,7 @@ export async function saveDraftAction(locale: string, id: string, form: FormData
         advanceDeducted: str(form, "advanceDeducted") || "0",
         retentionPct: str(form, "retentionPct") || "0",
         settlement: str(form, "settlement") || null,
+        ...(form.has("theirNumber") ? { theirNumber: str(form, "theirNumber") || null } : {}),
         lines: parseLines(form),
       },
       session.userId,

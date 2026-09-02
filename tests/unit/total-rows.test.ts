@@ -48,8 +48,18 @@ describe("the totals block", () => {
     expect(labels(rows)).toEqual(["totalExcl", "totalVat", "totalIncl"]);
   });
 
-  it("survives a document whose totals were never computed", () => {
+  it("prints nothing for a document that carries no money", () => {
+    // A bon de livraison stores `{}` on purpose. Two rows of "0,00" under it
+    // would read as a bill for nothing; no block at all reads as a BL.
     expect(() => totalRows(null, "fr")).not.toThrow();
-    expect(labels(totalRows({}, "fr"))).toEqual(["totalExcl", "totalIncl"]);
+    expect(totalRows(null, "fr")).toEqual([]);
+    expect(totalRows({}, "fr")).toEqual([]);
+  });
+
+  it("still prints the two anchor rows once a total exists, even at nought", () => {
+    expect(labels(totalRows({ totalExcl: "0.00", totalIncl: "0.00" }, "fr"))).toEqual([
+      "totalExcl",
+      "totalIncl",
+    ]);
   });
 });

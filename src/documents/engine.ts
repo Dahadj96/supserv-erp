@@ -59,6 +59,12 @@ export type RenderedLine = {
 export type RenderedDocument = {
   /** Null on a preview. Screen 70: never on a preview. */
   number: string | null;
+  /**
+   * Whether the document has been issued — the STATE, not the number. A
+   * client's order is issued under their reference and may have no number
+   * of ours; a screen that gates on `number` would offer to edit it forever.
+   */
+  issued: boolean;
   kind: string;
   /** LAW 4 — from the counterparty, not the user. */
   locale: string;
@@ -287,6 +293,7 @@ export async function render(request: RenderRequest): Promise<RenderedDocument> 
   //     rather than read from a request-scoped helper.
   const rendered: RenderedDocument = {
     number,
+    issued: purpose === "issue" || record.status === "issued",
     kind: record.kind,
     locale,
     issuedOn: shortDate(issuedOn, locale),
@@ -372,6 +379,11 @@ export async function render(request: RenderRequest): Promise<RenderedDocument> 
 export function totalRows(stored: unknown, locale: string): { label: string; value: string }[] {
   const totals = (stored ?? {}) as Partial<Totals> & Record<string, unknown>;
   const rows: { label: string; value: string }[] = [];
+
+  // A document that carries no money at all — a bon de livraison stores `{}`
+  // on purpose — gets no totals block, not a block of noughts a reader would
+  // take for a bill of zero.
+  if (totals.totalExcl === undefined && totals.totalIncl === undefined) return rows;
 
   const push = (label: string, raw: unknown, keepZero = false) => {
     const amount = Number(raw ?? 0);

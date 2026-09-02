@@ -3,6 +3,7 @@ import { db } from "@/db";
 import { auditEntry } from "@/db/schema/control";
 import { document, documentLine, documentLink } from "@/db/schema/document";
 import { computeTotals } from "@/domain/money";
+import { isInstrument } from "@/domain/money/instruments";
 import { mayConvert } from "./conversion";
 import { dutyOnDraft } from "./draft";
 
@@ -36,7 +37,21 @@ export type ConvertOptions = {
   /** The date that will go on the new document. */
   invoiceDate: string;
   dueDate: string | null;
+  /** Free text — the terms ("30 jours fin de mois"). Recorded, not enforced. */
   paymentMethod: string | null;
+  /**
+   * virement | cheque | especes | traite | compensation — the mode de
+   * règlement décret 05-468 wants on the facture. Screen 48 asks for it
+   * because the proforma's is a proposal and this is the document that will be
+   * enforced. Absent or unknown: the source's own carries over.
+   */
+  settlement?: string | null;
+  /**
+   * For a `client_order`: the CLIENT's number for it — their bon de commande
+   * reference. It is the document's number, because it is the number they
+   * will quote when they ring about the delivery.
+   */
+  clientReference?: string | null;
   actorId: string;
 };
 
@@ -99,16 +114,23 @@ export async function convertDocument(opts: ConvertOptions): Promise<string> {
   // droit de timbre follows from that the same way it does in the builder —
   // once the rule is confirmed, on the sum including VAT. This used to write
   // "0" with a note that the duty would be added at issue, and nothing did.
+  const settlement =
+    opts.settlement && isInstrument(opts.settlement) ? opts.settlement : source.settlement;
   const before = computeTotals(priceable, adjustments);
-  const stampDuty = await dutyOnDraft(before.totalIncl, source.settlement);
+  const stampDuty = await dutyOnDraft(before.totalIncl, settlement);
   const totals = computeTotals(priceable, { ...adjustments, stampDuty });
+
+  // A client's order carries THEIR number. It is not one of ours, so LAW 5's
+  // "null until issued" does not apply — the number exists before we do
+  // anything, on the paper they sent.
+  const number = opts.target === "client_order" ? opts.clientReference?.trim() || null : null;
 
   return db.transaction(async (tx) => {
     const [created] = await tx
       .insert(document)
       .values({
         kind: opts.target,
-        number: null,
+        number,
         partyId: source.partyId,
         dealId: source.dealId,
         locale: source.locale,
@@ -120,7 +142,7 @@ export async function convertDocument(opts: ConvertOptions): Promise<string> {
         globalDiscountPct: source.globalDiscountPct,
         advanceDeducted: source.advanceDeducted,
         retentionPct: source.retentionPct,
-        settlement: source.settlement,
+        settlement,
         stampDuty,
         totals,
       })
@@ -182,6 +204,8 @@ export async function convertDocument(opts: ConvertOptions): Promise<string> {
         linesCopied: kept.length,
         optionsDropped: lines.length - kept.length,
         paymentMethod: opts.paymentMethod,
+        settlement,
+        clientReference: number,
       },
       sourceScreen: "48",
     });

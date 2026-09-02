@@ -130,7 +130,8 @@
     "openCount": "{n, plural, =0 {aucune en cours} one {# en cours} other {# en cours}}",
     "stageIsDerived": "l’étape est calculée d’après les documents, l’issue est lue sur l’offre",
     "stageDerivedLabel": "Étape — calculée",
-    "newEnquiry": "Nouvelle consultation"
+    "newEnquiry": "Nouvelle consultation",
+    "recordOrder": "Enregistrer leur commande"
   },
   "search": {
     "title": "Recherche",
@@ -1728,7 +1729,10 @@
     "settlementUnsaid": "Non précisé",
     "stampDuty": "Droit de timbre",
     "stampDutyApplied": "Un règlement en espèces porte le droit de timbre. Il est calculé sur le TTC selon le barème confirmé dans le profil de conformité et ajouté au total.",
-    "stampDutyUnconfirmed": "Un règlement en espèces porte normalement un droit de timbre. Personne n'a encore confirmé la règle dans le profil de conformité : rien n'est ajouté, et l'émission le signalera."
+    "stampDutyUnconfirmed": "Un règlement en espèces porte normalement un droit de timbre. Personne n'a encore confirmé la règle dans le profil de conformité : rien n'est ajouté, et l'émission le signalera.",
+    "theirNumber": "Numéro chez le client",
+    "theirNumberPlaceholder": "BC n° 2026/0457",
+    "theirNumberHint": "Ce document porte le numéro du client, pas le nôtre. Il n'est pas numéroté dans nos séries."
   },
   "scan": {
     "title": "Station de numérisation",
@@ -2302,7 +2306,9 @@
       "marginLabel": "Marge de départ %",
       "go": "Construire l’offre",
       "existing": "Offres sur cette consultation"
-    }
+    },
+    "openDocument": "Aperçu, PDF et émission",
+    "editLines": "Modifier les lignes dans le constructeur"
   },
   "technical": {
     "title": "Dossier technique — {ref}",
@@ -2601,12 +2607,12 @@
     "step": {
       "quotation": "Devis",
       "proforma": "Pro forma",
-      "purchase_order": "Bon de commande client",
       "delivery_note": "Bon de livraison",
       "invoice": "Facture",
       "payment": "Règlement",
       "credit_note": "Avoir",
-      "situation": "Situation"
+      "situation": "Situation",
+      "client_order": "Bon de commande client"
     },
     "whatCarries": "Ce qui est repris",
     "nOpen": "{n, plural, =0 {plus rien à décider} one {# décision à prendre} other {# décisions à prendre}}",
@@ -2649,9 +2655,9 @@
     "decisions": "Trois décisions",
     "invoiceDate": "Date de facture",
     "dueDate": "Échéance",
-    "paymentMethod": "Mode de règlement",
+    "paymentMethod": "Conditions de règlement",
     "termsDefault": "Virement bancaire — {n} jours",
-    "stampDutyNote": "Rien n'ajoute un droit de timbre tout seul. Ni le seuil ni le taux n'ont été confirmés : un règlement en espèces est signalé sur l'écran des encaissements pour qu'une personne s'en occupe.",
+    "stampDutyNote": "Le droit de timbre n'est ajouté que lorsque le comptable a confirmé la règle sur l'écran Conformité. Jusque-là un règlement en espèces est signalé à l'émission et rien n'est calculé.",
     "checks": "Vérifications avant émission",
     "nToFix": "{n, plural, one {# à corriger} other {# à corriger}}",
     "allClear": "rien ne refuse",
@@ -2682,7 +2688,14 @@
       "conversionNotAllowed": "Cette conversion ne fait pas partie de celles autorisées.",
       "alreadyConverted": "Ce document a déjà été converti une fois.",
       "nothingToCopy": "Il n'y a rien à reprendre sur ce document."
-    }
+    },
+    "clientReference": "Numéro de commande du client",
+    "clientReferencePlaceholder": "BC n° 2026/0457",
+    "clientReferenceHint": "Le numéro qui figure sur leur bon de commande, ou « bon pour accord » s'ils ont signé la proforma. C'est celui qu'ils citeront pour la livraison.",
+    "orderDate": "Date de la commande",
+    "settlement": "Mode de règlement",
+    "settlementUnsaid": "— pas encore dit —",
+    "stampDutyApplied": "Règle confirmée : un règlement en espèces reçoit le droit de timbre au barème, calculé sur le TTC, à l'enregistrement du brouillon."
   },
   "deliveries": {
     "title": "Livraisons",

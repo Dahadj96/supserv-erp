@@ -83,8 +83,21 @@ describe("what may become what", () => {
     expect(mayConvert("credit_note", "invoice")).toBe(false);
   });
 
-  it("says what a document may become", () => {
-    expect(targetsFor("proforma")).toEqual(["invoice"]);
+  it("lets the client say yes — an offer becomes their order, and the order is billed", () => {
+    // Every sales system's "Confirm": the lines the client accepted, copied once
+    // under their number. Without it an enquiry could never reach "won".
+    expect(mayConvert("quotation", "client_order")).toBe(true);
+    expect(mayConvert("proforma", "client_order")).toBe(true);
+    expect(mayConvert("client_order", "invoice")).toBe(true);
+    // Never backwards, and never an order from an order.
+    expect(mayConvert("client_order", "proforma")).toBe(false);
+    expect(mayConvert("client_order", "client_order")).toBe(false);
+    expect(mayConvert("invoice", "client_order")).toBe(false);
+  });
+
+  it("says what a document may become, the client's answer first", () => {
+    expect(targetsFor("proforma")).toEqual(["client_order", "invoice"]);
+    expect(targetsFor("quotation")).toEqual(["proforma", "client_order", "invoice"]);
     expect(targetsFor("nonsense")).toEqual([]);
   });
 });

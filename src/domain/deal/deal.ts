@@ -175,7 +175,7 @@ export async function factsFor(
       dealId: document.dealId,
       kind: document.kind,
       issued: sql<number>`count(*) filter (where ${document.number} is not null)::int`,
-      any: sql<number>`count(*)::int`,
+      recorded: sql<number>`count(*) filter (where ${document.status} = 'issued')::int`,
     })
     .from(document)
     .where(
@@ -192,8 +192,9 @@ export async function factsFor(
     if (OFFER_KINDS.includes(row.kind)) facts.offersIssued += row.issued;
     // A client's own purchase order is not numbered by us — its number is
     // theirs (see the `clientReference` numbering rule on screen 50) — so this
-    // one counts rows, not issued rows.
-    if (ORDER_KINDS.includes(row.kind)) facts.ordersReceived += row.any;
+    // one counts RECORDED rows (issued, under their reference), not numbered
+    // ones. Not every row: a draft order nobody has confirmed is not a win.
+    if (ORDER_KINDS.includes(row.kind)) facts.ordersReceived += row.recorded;
     if (INVOICE_KINDS.includes(row.kind)) facts.invoicesIssued += row.issued;
   }
 

@@ -26,6 +26,8 @@ export async function convertAction(locale: string, id: string, form: FormData) 
       invoiceDate: String(form.get("invoiceDate") ?? ""),
       dueDate: String(form.get("dueDate") ?? "") || null,
       paymentMethod: String(form.get("paymentMethod") ?? "") || null,
+      settlement: String(form.get("settlement") ?? "") || null,
+      clientReference: String(form.get("clientReference") ?? "") || null,
       actorId: session.userId,
     });
   } catch (error) {

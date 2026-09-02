@@ -23,6 +23,53 @@ import { percent } from "./format";
  * the number unbreakable. Discovered by the first PDF this file ever produced,
  * which did not produce it.
  */
+const LOOKALIKES: Record<string, string> = {
+  "\u2192": "->",
+  "\u2190": "<-",
+  "\u2194": "<->",
+  "\u21D2": "=>",
+  "\u2265": ">=",
+  "\u2264": "<=",
+  "\u2260": "!=",
+  "\u2248": "~",
+  "\u2205": "\u00D8",
+  "\u03A9": "Ohm",
+  "\u2032": "'",
+  "\u2033": '"',
+  "\u2030": " pour mille",
+  "\u2022": "-",
+  "\u2713": "v",
+  "\u2714": "v",
+  "\u2717": "x",
+  "\u2605": "*",
+  "\u20AC": "EUR",
+  "\u2082": "2",
+  "\u2083": "3",
+  "\u221E": "inf",
+};
+
+/**
+ * Make a string the standard fonts can print, character by character.
+ *
+ * The first walk of enquiry -> PDF crashed on a designation that read
+ * "Transport Adrar \u2192 base": pdf-lib throws on the first character WinAnsi
+ * cannot encode, and a designation is typed by a person, who types arrows,
+ * "\u2265" and "\u03A9" without a thought. A document that cannot be printed because of
+ * one glyph is worse than a document with "->" in it, so anything the font
+ * cannot draw becomes its nearest look-alike, and failing that "?" - visibly,
+ * on the page, where a reader will notice and fix the wording.
+ */
+function printable(text: string, font: PDFFont): string {
+  const set = new Set(font.getCharacterSet());
+  let out = "";
+  for (const ch of winAnsi(text)) {
+    const code = ch.codePointAt(0) ?? 0;
+    if (set.has(code)) out += ch;
+    else out += LOOKALIKES[ch] ?? "?";
+  }
+  return out;
+}
+
 function winAnsi(text: string): string {
   return text
     .replace(/[   ]/g, " ")
@@ -59,7 +106,7 @@ function text(
 ) {
   const size = opts.size ?? 9;
   const font = opts.bold ? ctx.bold : ctx.regular;
-  let line = winAnsi(value);
+  let line = printable(value, font);
 
   // Cut rather than overflow into the next column. A designation that runs into
   // the price column is worse than one that is visibly truncated.
@@ -81,7 +128,7 @@ function text(
 
 function right(ctx: Ctx, value: string, edge: number, size = 9, bold = false) {
   const font = bold ? ctx.bold : ctx.regular;
-  const line = winAnsi(value);
+  const line = printable(value, font);
   const width = font.widthOfTextAtSize(line, size);
   ctx.page.drawText(line, { x: edge - width, y: ctx.y, size, font, color: INK });
 }

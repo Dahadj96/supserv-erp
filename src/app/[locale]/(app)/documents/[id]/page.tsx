@@ -61,7 +61,7 @@ export default async function DocumentPage({
   // Whether anything has actually been delivered against this document, which
   // is what decides if "invoice what is delivered" is a sentence that means
   // anything here.
-  const notes = doc.number ? await deliveryNotesFor(id) : [];
+  const notes = doc.issued ? await deliveryNotesFor(id) : [];
   const setup = await setupState();
   const allowed = mayIssue(session.role, doc.kind);
 
@@ -69,7 +69,7 @@ export default async function DocumentPage({
   // the order the refusals actually happen in, so the reason on the button is
   // the reason the action would give.
   const blockedRow = rows.find((r) => r.state === "block");
-  const disabledReason = doc.number
+  const disabledReason = doc.issued
     ? t("documents.alreadyIssued")
     : !allowed
       ? t("documents.notAllowed")
@@ -89,7 +89,7 @@ export default async function DocumentPage({
             {t.has(`documents.kind.${doc.kind}`) ? t(`documents.kind.${doc.kind}`) : doc.kind}
           </p>
           <h1 className="mt-0.5 text-[19px] font-semibold text-ink">
-            {doc.number ?? t("documents.draft")}
+            {doc.number ?? (doc.issued ? t("documents.stateIssued") : t("documents.draft"))}
           </h1>
           <p className="mt-1 text-tiny text-muted">
             {t("documents.forClient", { client: doc.counterparty.legalName })}
@@ -99,21 +99,21 @@ export default async function DocumentPage({
         <div className="ms-auto flex items-center gap-2">
           {/* A draft can still be changed; an issued document cannot, and the
               way to say so is not to offer the door. */}
-          {doc.number ? null : (
+          {doc.issued ? null : (
             <Link href={`/documents/${id}/edit`}>
               <Button variant="secondary">{t("documents.edit")}</Button>
             </Link>
           )}
           {/* Screen 48. Offered only on an issued document that may become
               something else — converting a draft is just editing it. */}
-          {doc.number && targetsFor(doc.kind).length > 0 ? (
+          {doc.issued && targetsFor(doc.kind).length > 0 ? (
             <Link href={`/documents/${id}/convert`}>
               <Button variant="secondary">{t("documents.convert")}</Button>
             </Link>
           ) : null}
           {/* Screen 49. Goods can only be delivered against something the
               client has actually agreed to, and a BL cannot deliver a BL. */}
-          {doc.number && DELIVERABLE.includes(doc.kind) ? (
+          {doc.issued && DELIVERABLE.includes(doc.kind) ? (
             <Link href={`/deliveries/new?source=${id}`}>
               <Button variant="secondary">{t("documents.recordDelivery")}</Button>
             </Link>
@@ -125,7 +125,7 @@ export default async function DocumentPage({
             invoice a client for goods still in the warehouse. The whole-document
             case is Convert, above.
           */}
-          {doc.number && notes.length > 0 && doc.kind !== "invoice" ? (
+          {doc.issued && notes.length > 0 && doc.kind !== "invoice" ? (
             <Link href={`/invoices/new?source=${id}`}>
               <Button variant="secondary">{t("documents.invoiceDelivered")}</Button>
             </Link>
@@ -316,8 +316,8 @@ function Output({ doc, t }: { doc: Awaited<ReturnType<typeof render>>; t: T }) {
     <section className="rounded-[var(--radius-card)] border border-line bg-surface p-5">
       <div className="flex items-baseline gap-3">
         <h2 className="text-tiny font-semibold text-ink">{t("documents.output")}</h2>
-        <Badge tone={doc.number ? "good" : "neutral"}>
-          {doc.number ? t("documents.stateIssued") : t("documents.stateDraft")}
+        <Badge tone={doc.issued ? "good" : "neutral"}>
+          {doc.issued ? t("documents.stateIssued") : t("documents.stateDraft")}
         </Badge>
       </div>
 

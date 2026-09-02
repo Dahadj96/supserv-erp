@@ -26,10 +26,21 @@
  * says it is not reserved yet. `peekNumber` exists for exactly this.
  */
 
-/** What may become what. Screen 48: "Quotation, pro forma, progress statement". */
+/**
+ * What may become what. Screen 48: "Quotation, pro forma, progress statement".
+ *
+ * `client_order` is the client saying yes — their bon de commande, or our
+ * proforma back with "bon pour accord" on it. Recording it as a document made
+ * FROM the offer is what every sales system does at "Confirm": the lines the
+ * client accepted are copied once, under the client's own number, and the
+ * deliveries and the factures hang off that rather than off an offer that may
+ * have been revised twice since. It is also the only thing that moves an
+ * enquiry to "won" (see `ORDER_KINDS` in domain/deal/deal.ts).
+ */
 export const CONVERSIONS: Record<string, string[]> = {
-  quotation: ["invoice", "proforma"],
-  proforma: ["invoice"],
+  quotation: ["proforma", "client_order", "invoice"],
+  proforma: ["client_order", "invoice"],
+  client_order: ["invoice"],
   situation: ["invoice"],
   delivery_note: ["invoice"],
 };
@@ -175,7 +186,7 @@ export function undecided(rows: CarryRow[]): CarryRow[] {
 export const CHAIN = [
   "quotation",
   "proforma",
-  "purchase_order",
+  "client_order",
   "delivery_note",
   "invoice",
   "payment",
