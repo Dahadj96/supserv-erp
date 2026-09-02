@@ -2,6 +2,7 @@
 
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
+import { canWrite } from "@/auth/can";
 import { getSession } from "@/auth/session";
 import {
   clearNotApplicable,
@@ -23,6 +24,7 @@ export async function setRequirementAction(
 ): Promise<void> {
   const session = await getSession();
   if (!session) redirect(`/${locale}/sign-in`);
+  if (!canWrite(session.role)) redirect(`/${locale}/deals/${id}/technical?error=notAllowed`);
 
   try {
     await setRequirement({
@@ -44,6 +46,7 @@ export async function markNotApplicableAction(
 ): Promise<void> {
   const session = await getSession();
   if (!session) redirect(`/${locale}/sign-in`);
+  if (!canWrite(session.role)) redirect(`/${locale}/deals/${id}/technical?error=notAllowed`);
 
   try {
     await markNotApplicable({
@@ -68,6 +71,7 @@ export async function clearNotApplicableAction(
 ): Promise<void> {
   const session = await getSession();
   if (!session) redirect(`/${locale}/sign-in`);
+  if (!canWrite(session.role)) redirect(`/${locale}/deals/${id}/technical?error=notAllowed`);
   await clearNotApplicable({
     dealId: id,
     itemId: String(form.get("itemId") ?? ""),

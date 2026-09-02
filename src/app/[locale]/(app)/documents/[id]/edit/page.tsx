@@ -81,16 +81,22 @@ export default async function EditDocumentPage({
     .filter((k) => mayIssue(session.role, k))
     .map((k) => ({ kind: k, label: kindName(k) }));
 
+  // Postgres hands numerics back at full scale — "4.0000", "4800.0000" — and
+  // a person editing a quantity should see "4". Trailing zeros go; the
+  // precision typed is the precision kept.
+  const plain = (value: string | null, fallback = "") =>
+    value === null ? fallback : value.includes(".") ? value.replace(/\.?0+$/, "") : value;
+
   const initial: Row[] = lines.map((line, index) => ({
     key: index + 1,
     lineKind: (line.lineKind ?? "item") as LineKind,
     designation: line.designation ?? "",
     reference: line.reference ?? "",
     unit: line.unit ?? "",
-    qty: line.qty ?? "",
-    unitPrice: line.unitPrice ?? "",
-    discountPct: line.discountPct ?? "0",
-    vatRate: line.vatRate ?? "19",
+    qty: plain(line.qty),
+    unitPrice: plain(line.unitPrice),
+    discountPct: plain(line.discountPct, "0") || "0",
+    vatRate: plain(line.vatRate, "19") || "19",
     isOption: line.isOption,
   }));
 

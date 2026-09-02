@@ -1,4 +1,4 @@
-import { eq, inArray } from "drizzle-orm";
+import { and, eq, inArray } from "drizzle-orm";
 import { afterAll, beforeAll, describe, expect, it } from "vitest";
 import { db } from "@/db";
 import { auditEntry } from "@/db/schema/control";
@@ -253,10 +253,13 @@ describe("recording a delivery", () => {
   });
 
   it("records in the log that no number was handed out", async () => {
+    // The CREATE entry, by name. This used to take "the first row" with no
+    // order, which was the create entry only while the planner happened to
+    // scan the heap; an index on (entity, entity_id, at) changed that.
     const [entry] = await db
       .select()
       .from(auditEntry)
-      .where(eq(auditEntry.entityId, notes[1] as string))
+      .where(and(eq(auditEntry.entityId, notes[1] as string), eq(auditEntry.action, "create")))
       .limit(1);
     const after = entry?.after as Record<string, unknown>;
     expect(after?.numberReserved).toBe(false);

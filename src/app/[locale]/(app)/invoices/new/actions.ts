@@ -1,5 +1,6 @@
 "use server";
 
+import { mayIssue } from "@/auth/can";
 import { getSession } from "@/auth/session";
 import { billFrom, CannotBill } from "@/documents/bill";
 import { redirect } from "@/i18n/navigation";
@@ -17,6 +18,10 @@ export async function billAction(locale: string, sourceId: string, form: FormDat
   const session = await getSession();
   if (!session) {
     redirect({ href: "/sign-in", locale });
+    return;
+  }
+  if (!mayIssue(session.role, "invoice")) {
+    redirect({ href: `/invoices?error=notAllowed`, locale });
     return;
   }
 

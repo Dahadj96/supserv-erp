@@ -47,11 +47,20 @@
   --radius-card: 10px;
   --radius-pill: 20px;
 
-  --text-micro: 9.5px;
-  --text-tiny: 11px;
-  --text-small: 11.5px;
-  --text-base: 12.5px;
-  --text-lead: 13px;
+  /*
+   * The type scale, measured rather than guessed. The frames were drawn at
+   * 9.5 / 11 / 11.5 / 12.5 / 13 px, and on the 12-inch laptop this runs on at
+   * 1366 × 768 the walk in scripts/screenshots.ts counted 292 pieces of text
+   * at 9.5 px per pass — captions, hints, table meta — which nobody over forty
+   * reads without leaning in. Every screen takes its sizes from these five
+   * tokens, so the whole application is raised here and nowhere else; the
+   * same walk then confirms nothing spills past the right edge.
+   */
+  --text-micro: 11.5px;
+  --text-tiny: 12px;
+  --text-small: 12.5px;
+  --text-base: 13.5px;
+  --text-lead: 14.5px;
 }
 
 html {

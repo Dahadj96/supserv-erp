@@ -1,6 +1,7 @@
 "use server";
 
 import { redirect } from "next/navigation";
+import { canWrite } from "@/auth/can";
 import { getSession } from "@/auth/session";
 import { createDeal, SUBMISSION_METHODS } from "@/domain/deal/deal";
 import { replaceLines } from "@/domain/deal/lines";
@@ -18,6 +19,7 @@ import { parsePaste } from "@/domain/deal/paste";
 export async function createAction(locale: string, form: FormData): Promise<void> {
   const session = await getSession();
   if (!session) redirect(`/${locale}/sign-in`);
+  if (!canWrite(session.role)) redirect(`/${locale}/deals/new?error=notAllowed`);
 
   const partyId = String(form.get("partyId") ?? "").trim();
   const subject = String(form.get("subject") ?? "").trim();

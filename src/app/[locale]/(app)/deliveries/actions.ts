@@ -1,6 +1,7 @@
 "use server";
 
 import { revalidatePath } from "next/cache";
+import { can } from "@/auth/can";
 import { getSession } from "@/auth/session";
 import {
   CannotDeliver,
@@ -23,6 +24,10 @@ export async function startDeliveryAction(locale: string, sourceId: string, form
   const session = await getSession();
   if (!session) {
     redirect({ href: "/sign-in", locale });
+    return;
+  }
+  if (!can(session.role, "deliveries.issue")) {
+    redirect({ href: `/deliveries?error=notAllowed`, locale });
     return;
   }
 
@@ -56,6 +61,10 @@ export async function saveDetailAction(locale: string, id: string, form: FormDat
   const session = await getSession();
   if (!session) {
     redirect({ href: "/sign-in", locale });
+    return;
+  }
+  if (!can(session.role, "deliveries.issue")) {
+    redirect({ href: `/deliveries?error=notAllowed`, locale });
     return;
   }
 
@@ -96,6 +105,10 @@ export async function signAction(locale: string, id: string, form: FormData) {
   const session = await getSession();
   if (!session) {
     redirect({ href: "/sign-in", locale });
+    return;
+  }
+  if (!can(session.role, "deliveries.issue")) {
+    redirect({ href: `/deliveries?error=notAllowed`, locale });
     return;
   }
 

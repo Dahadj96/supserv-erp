@@ -134,8 +134,13 @@ export function Builder({
   const money = (value: string) => formatMoney(value, { locale, currency });
 
   return (
-    <form action={action} className="grid grid-cols-3 items-start gap-5">
-      <div className="col-span-2 flex flex-col gap-5">
+    <form action={action} className="grid grid-cols-1 items-start gap-5 2xl:grid-cols-3">
+      {/*
+        One column under 1536px. On the 12-inch laptop the shell leaves about
+        1 100px for content, and a two-thirds column of that, less seven fixed
+        columns, gave the designation — the field a person types most — 30px.
+      */}
+      <div className="flex flex-col gap-5 2xl:col-span-2">
         <section className="rounded-[var(--radius-card)] border border-line bg-surface p-5">
           <h2 className="text-tiny font-semibold text-ink">{t("builder.kind")}</h2>
           <div className="mt-3 flex flex-wrap gap-2">
@@ -166,8 +171,8 @@ export function Builder({
             <table className="w-full border-collapse text-tiny">
               <thead>
                 <tr className="border-b border-line-subtle text-micro text-muted">
-                  <th className="w-[70px] py-2 ps-4 text-start font-medium">#</th>
-                  <th className="py-2 pe-2 text-start font-medium">
+                  <th className="w-[44px] py-2 ps-4 text-start font-medium">#</th>
+                  <th className="min-w-[240px] py-2 pe-2 text-start font-medium">
                     {t("builder.col.designation")}
                   </th>
                   <th className="w-[60px] py-2 pe-2 text-start font-medium">
@@ -176,7 +181,7 @@ export function Builder({
                   <th className="w-[80px] py-2 pe-2 text-end font-medium">
                     {t("builder.col.qty")}
                   </th>
-                  <th className="w-[110px] py-2 pe-2 text-end font-medium">
+                  <th className="w-[104px] py-2 pe-2 text-end font-medium">
                     {t("builder.col.unitPrice")}
                   </th>
                   <th className="w-[70px] py-2 pe-2 text-end font-medium">
@@ -185,7 +190,7 @@ export function Builder({
                   <th className="w-[80px] py-2 pe-2 text-end font-medium">
                     {t("builder.col.vat")}
                   </th>
-                  <th className="w-[120px] py-2 pe-2 text-end font-medium">
+                  <th className="w-[112px] py-2 pe-2 text-end font-medium">
                     {t("builder.col.total")}
                   </th>
                   <th className="w-[86px] py-2 pe-4" />
@@ -226,7 +231,7 @@ export function Builder({
                             value={row.designation}
                             onChange={(e) => set(row.key, "designation", e.target.value)}
                             placeholder={t(`builder.placeholder.${row.lineKind}`)}
-                            className={`${INPUT} ${
+                            className={`${INPUT} w-full ${
                               row.lineKind === "section" ? "font-semibold uppercase" : ""
                             }`}
                           />
@@ -241,7 +246,7 @@ export function Builder({
                                 name="unit"
                                 value={row.unit}
                                 onChange={(e) => set(row.key, "unit", e.target.value)}
-                                className={INPUT}
+                                className={`${INPUT} w-full`}
                               />
                             ) : (
                               <input type="hidden" name="unit" value="" />
@@ -256,7 +261,7 @@ export function Builder({
                                 min="0"
                                 value={row.qty}
                                 onChange={(e) => set(row.key, "qty", e.target.value)}
-                                className={`${INPUT} text-end`}
+                                className={`${INPUT} w-full text-end`}
                               />
                             ) : (
                               <input type="hidden" name="qty" value="" />
@@ -271,7 +276,7 @@ export function Builder({
                                 min="0"
                                 value={row.unitPrice}
                                 onChange={(e) => set(row.key, "unitPrice", e.target.value)}
-                                className={`${INPUT} text-end`}
+                                className={`${INPUT} w-full text-end`}
                               />
                             ) : (
                               <input type="hidden" name="unitPrice" value="" />
@@ -287,7 +292,7 @@ export function Builder({
                                 max="100"
                                 value={row.discountPct}
                                 onChange={(e) => set(row.key, "discountPct", e.target.value)}
-                                className={`${INPUT} text-end`}
+                                className={`${INPUT} w-full text-end`}
                               />
                             ) : (
                               <input type="hidden" name="discountPct" value="" />
@@ -299,7 +304,7 @@ export function Builder({
                                 name="vatRate"
                                 value={row.vatRate}
                                 onChange={(e) => set(row.key, "vatRate", e.target.value)}
-                                className={`${INPUT} text-end`}
+                                className={`${INPUT} w-full text-end`}
                               >
                                 <option value="19">19 %</option>
                                 <option value="9">9 %</option>

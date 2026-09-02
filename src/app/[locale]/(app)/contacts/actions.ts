@@ -1,6 +1,7 @@
 "use server";
 
 import { revalidatePath } from "next/cache";
+import { canWrite } from "@/auth/can";
 import { getSession } from "@/auth/session";
 import { contactInput, createContact } from "@/domain/contact";
 import { redirect } from "@/i18n/navigation";
@@ -15,6 +16,10 @@ export async function newContact(locale: string, formData: FormData) {
   const session = await getSession();
   if (!session) {
     redirect({ href: "/sign-in", locale });
+    return;
+  }
+  if (!canWrite(session.role)) {
+    redirect({ href: `/contacts/new?error=notAllowed`, locale });
     return;
   }
 

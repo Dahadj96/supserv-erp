@@ -408,6 +408,39 @@ library already reads from `.env`. The token never leaves the process and
 nothing prints it. There is no back door in the application: take the script
 away and there is no other way in but Entra.
 
+### And what it looks like on the laptop
+
+`pnpm smoke:in` proves a screen renders. This proves you could read it:
+
+```powershell
+# the same spare copy on the TEST database, on port 3100, then
+$env:DATABASE_URL = "postgres://supserv:devpassword@localhost:5432/supserv_test"
+pnpm shots --base http://127.0.0.1:3100
+```
+
+It seeds one whole enquiry — client, lines, supplier prices, an issued
+proforma, the client's order, a signed BL, a paid facture and a draft one —
+opens every screen with that data on it at **1366 × 768** (the 12-inch laptop)
+and **1920 × 1080** (the desktop), and saves a picture of each under
+`.data/screenshots/`. While each page is open it measures what a picture
+cannot: text drawn under 11.5 px, anything past the right edge, anything
+clipped, a navigation rail that runs off the bottom, a message key printed
+raw, a free-text field under 140 px. The flagged pages are listed at the end
+and in `.data/screenshots/report.json`; the seeded enquiry is removed after.
+
+If the Chromium build this Playwright pins is not installed, point it at one
+that is: `--chrome $env:LOCALAPPDATA\ms-playwright\chromium_headless_shell-1228\chrome-headless-shell-win64\chrome-headless-shell.exe`.
+
+### And whether every button asks who is pressing it
+
+```
+pnpm audit:actions
+```
+
+Reads every server action and refuses if one does not check the session and
+a permission. It runs inside `pnpm check`. It cannot say a check is the right
+one; it can say the line exists, which is the bug that had happened 39 times.
+
 ---
 
 ## 5 · Two modes, one port

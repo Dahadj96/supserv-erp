@@ -1,4 +1,13 @@
-import { bigserial, jsonb, pgTable, primaryKey, text, timestamp, uuid } from "drizzle-orm/pg-core";
+import {
+  bigserial,
+  index,
+  jsonb,
+  pgTable,
+  primaryKey,
+  text,
+  timestamp,
+  uuid,
+} from "drizzle-orm/pg-core";
 
 /**
  * Screen 84 — a merge is not a delete.
@@ -41,23 +50,30 @@ export const duplicateDismissal = pgTable(
 );
 
 /** PLAN §3.6 — an audit entry outlives the record it describes. */
-export const auditEntry = pgTable("audit_entry", {
-  id: bigserial("id", { mode: "number" }).primaryKey(),
-  at: timestamp("at", { withTimezone: true }).notNull().defaultNow(),
-  actorId: text("actor_id"),
-  actorKind: text("actor_kind").notNull().default("user"), // user | assistant | system
-  entity: text("entity").notNull(),
-  /**
-   * Text, not uuid. Most rows in this system are uuid, but a user is not: Entra
-   * hands Better Auth an opaque string id, and screen 30 writes an audit entry
-   * every time somebody is given a role. A column that could only hold a uuid
-   * would force that entry to leave `entity_id` null — an audit trail with a
-   * hole in it exactly where "who gave them that" is asked.
-   */
-  entityId: text("entity_id"),
-  action: text("action").notNull(),
-  before: jsonb("before"),
-  after: jsonb("after"),
-  reason: text("reason"),
-  sourceScreen: text("source_screen"),
-});
+export const auditEntry = pgTable(
+  "audit_entry",
+  {
+    id: bigserial("id", { mode: "number" }).primaryKey(),
+    at: timestamp("at", { withTimezone: true }).notNull().defaultNow(),
+    actorId: text("actor_id"),
+    actorKind: text("actor_kind").notNull().default("user"), // user | assistant | system
+    entity: text("entity").notNull(),
+    /**
+     * Text, not uuid. Most rows in this system are uuid, but a user is not: Entra
+     * hands Better Auth an opaque string id, and screen 30 writes an audit entry
+     * every time somebody is given a role. A column that could only hold a uuid
+     * would force that entry to leave `entity_id` null — an audit trail with a
+     * hole in it exactly where "who gave them that" is asked.
+     */
+    entityId: text("entity_id"),
+    action: text("action").notNull(),
+    before: jsonb("before"),
+    after: jsonb("after"),
+    reason: text("reason"),
+    sourceScreen: text("source_screen"),
+  },
+  (table) => [
+    // Screen 25 and every record's history read the trail by what it is about.
+    index("audit_entry_entity_idx").on(table.entity, table.entityId, table.at),
+  ],
+);

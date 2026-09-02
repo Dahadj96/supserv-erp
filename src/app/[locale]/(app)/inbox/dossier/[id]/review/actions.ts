@@ -1,6 +1,7 @@
 "use server";
 
 import { revalidatePath } from "next/cache";
+import { can } from "@/auth/can";
 import { getSession } from "@/auth/session";
 import {
   confirmAllHighConfidence,
@@ -19,6 +20,10 @@ async function requireUser(locale: string) {
   const session = await getSession();
   if (!session) {
     redirect({ href: "/sign-in", locale });
+    throw new Error("unreachable");
+  }
+  if (!can(session.role, "inbox.view")) {
+    redirect({ href: `/inbox/dossier?error=notAllowed`, locale });
     throw new Error("unreachable");
   }
   return session;

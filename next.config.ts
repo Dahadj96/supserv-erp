@@ -3,8 +3,34 @@ import createNextIntlPlugin from "next-intl/plugin";
 
 const withNextIntl = createNextIntlPlugin("./src/i18n/request.ts");
 
+/**
+ * The response headers every page carries. The ERP is reached through a
+ * Cloudflare tunnel from browsers on the open internet, and none of these
+ * costs a feature: nothing here is meant to be framed by another site, sniffed
+ * into a different type, or allowed a camera.
+ *
+ * No script-src CSP yet — Next's own inline bootstrap needs a nonce scheme to
+ * live under one, and a half-done CSP is a page that loads blank on a phone.
+ * `frame-ancestors` is the one CSP directive that costs nothing, so it is set.
+ */
+const SECURITY_HEADERS = [
+  { key: "X-Content-Type-Options", value: "nosniff" },
+  // Same origin, not none: screen 18 shows the PDF in an <object> on the page.
+  { key: "X-Frame-Options", value: "SAMEORIGIN" },
+  { key: "Content-Security-Policy", value: "frame-ancestors 'self'" },
+  { key: "Referrer-Policy", value: "strict-origin-when-cross-origin" },
+  { key: "Permissions-Policy", value: "camera=(), microphone=(), geolocation=(), payment=()" },
+  // Ignored over plain http (the mini PC on the LAN), honoured behind the
+  // tunnel where every request is already https.
+  { key: "Strict-Transport-Security", value: "max-age=15552000; includeSubDomains" },
+];
+
 const nextConfig: NextConfig = {
   reactStrictMode: true,
+
+  async headers() {
+    return [{ source: "/(.*)", headers: SECURITY_HEADERS }];
+  },
 
   /**
    * `output: "standalone"` is deliberately NOT set, and must not be re-added

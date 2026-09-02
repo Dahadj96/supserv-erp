@@ -1,6 +1,7 @@
 "use server";
 
 import { revalidatePath } from "next/cache";
+import { canWrite } from "@/auth/can";
 import { getSession } from "@/auth/session";
 import { addNote, NoteRefused } from "@/domain/timeline/gather";
 import { redirect } from "@/i18n/navigation";
@@ -17,6 +18,10 @@ export async function addNoteAction(locale: string, dealId: string, form: FormDa
   const session = await getSession();
   if (!session) {
     redirect({ href: "/sign-in", locale });
+    return;
+  }
+  if (!canWrite(session.role)) {
+    redirect({ href: `/deals/${dealId}/timeline?error=notAllowed`, locale });
     return;
   }
 

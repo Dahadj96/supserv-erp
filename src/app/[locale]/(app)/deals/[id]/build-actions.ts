@@ -1,6 +1,7 @@
 "use server";
 
 import { redirect } from "next/navigation";
+import { can } from "@/auth/can";
 import { getSession } from "@/auth/session";
 import { BuildRefused, buildOffer } from "@/domain/offer/build";
 
@@ -12,6 +13,7 @@ export async function buildOfferAction(
 ): Promise<void> {
   const session = await getSession();
   if (!session) redirect(`/${locale}/sign-in`);
+  if (!can(session.role, "offers.issue")) redirect(`/${locale}/deals/${dealId}?error=notAllowed`);
 
   const margin = String(form.get("marginPct") ?? "").trim();
 

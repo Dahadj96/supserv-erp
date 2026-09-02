@@ -1,6 +1,7 @@
 "use server";
 
 import { redirect } from "next/navigation";
+import { canAny } from "@/auth/can";
 import { getSession } from "@/auth/session";
 import { createRequest, SourcingRefused } from "@/domain/deal/sourcing-store";
 
@@ -19,6 +20,8 @@ export async function askSuppliersAction(
 ): Promise<void> {
   const session = await getSession();
   if (!session) redirect(`/${locale}/sign-in`);
+  if (!canAny(session.role, ["offers.issue", "purchase.order.issue"]))
+    redirect(`/${locale}/deals/${dealId}?error=notAllowed`);
 
   const supplierIds = form.getAll("supplierId").map(String).filter(Boolean);
   const replyBy = String(form.get("replyBy") ?? "").trim();

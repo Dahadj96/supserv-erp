@@ -2,6 +2,7 @@
 
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
+import { can } from "@/auth/can";
 import { getSession } from "@/auth/session";
 import { DecisionRefused, decide, recordLost, reopen } from "@/domain/deal/deal";
 
@@ -22,6 +23,7 @@ function back(locale: string, id: string, error?: string): never {
 export async function decideAction(locale: string, id: string, form: FormData): Promise<void> {
   const session = await getSession();
   if (!session) redirect(`/${locale}/sign-in`);
+  if (!can(session.role, "offers.issue")) redirect(`/${locale}/deals/${id}?error=notAllowed`);
 
   const choice = String(form.get("decision") ?? "");
   if (choice !== "pursue" && choice !== "no_bid") back(locale, id, "unknownReason");
@@ -51,6 +53,7 @@ export async function decideAction(locale: string, id: string, form: FormData): 
 export async function lostAction(locale: string, id: string, form: FormData): Promise<void> {
   const session = await getSession();
   if (!session) redirect(`/${locale}/sign-in`);
+  if (!can(session.role, "offers.issue")) redirect(`/${locale}/deals/${id}?error=notAllowed`);
 
   try {
     await recordLost({
@@ -68,6 +71,7 @@ export async function lostAction(locale: string, id: string, form: FormData): Pr
 export async function reopenAction(locale: string, id: string): Promise<void> {
   const session = await getSession();
   if (!session) redirect(`/${locale}/sign-in`);
+  if (!can(session.role, "offers.issue")) redirect(`/${locale}/deals/${id}?error=notAllowed`);
   await reopen({ dealId: id, actorId: session.userId });
   back(locale, id);
 }

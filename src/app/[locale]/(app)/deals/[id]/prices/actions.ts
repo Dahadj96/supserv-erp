@@ -2,6 +2,7 @@
 
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
+import { canAny } from "@/auth/can";
 import { getSession } from "@/auth/session";
 import { addQuote, PriceRefused } from "@/domain/deal/price-store";
 
@@ -13,6 +14,8 @@ export async function addPriceAction(
 ): Promise<void> {
   const session = await getSession();
   if (!session) redirect(`/${locale}/sign-in`);
+  if (!canAny(session.role, ["offers.issue", "purchase.order.issue"]))
+    redirect(`/${locale}/deals/${dealId}/prices?error=notAllowed`);
 
   const source = String(form.get("source") ?? "");
   const written = String(form.get("written") ?? "");

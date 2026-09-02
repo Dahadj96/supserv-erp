@@ -44,7 +44,13 @@ export function Sidebar({ displayName, roleLabel }: { displayName: string; roleL
         </span>
       </div>
 
-      <nav className="px-3">
+      {/*
+        Scrolls on its own. Twenty-eight destinations do not fit in the 768
+        pixels of a 12-inch laptop, and before this the rail simply ran off the
+        bottom of an `h-screen` shell — Conformité, Rapports and Paramètres were
+        below an edge nothing could scroll past. The footer stays pinned.
+      */}
+      <nav className="min-h-0 flex-1 overflow-y-auto px-3 pb-2">
         {NAV_GROUPS.map((group) => (
           <div key={group.messageKey ?? "primary"}>
             {group.messageKey ? (
@@ -87,10 +93,7 @@ export function Sidebar({ displayName, roleLabel }: { displayName: string; roleL
         ))}
       </nav>
 
-      {/* the filler — this is what pins the footer to the bottom */}
-      <div className="flex-1" />
-
-      <div className="flex h-[55px] items-center gap-3 border-t border-line-subtle ps-4">
+      <div className="flex h-[55px] shrink-0 items-center gap-3 border-t border-line-subtle ps-4">
         <span className="flex size-[30px] items-center justify-center rounded-full bg-chip text-tiny font-semibold text-secondary">
           {initials}
         </span>

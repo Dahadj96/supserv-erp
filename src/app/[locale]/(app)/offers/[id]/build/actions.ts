@@ -103,6 +103,7 @@ export async function markSubmittedAction(
 ): Promise<void> {
   const session = await getSession();
   if (!session) redirect(`/${locale}/sign-in`);
+  if (!can(session.role, "offers.issue")) back(locale, id, "?error=notAllowed");
 
   const when = String(form.get("when") ?? "").trim();
 

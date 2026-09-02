@@ -2,6 +2,7 @@
 
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
+import { can } from "@/auth/can";
 import { getSession } from "@/auth/session";
 import { owings, PaymentRefused, recordPayment } from "@/domain/money/store";
 
@@ -30,6 +31,7 @@ function back(locale: string, query = ""): never {
 export async function recordPaymentAction(locale: string, form: FormData): Promise<void> {
   const session = await getSession();
   if (!session) redirect(`/${locale}/sign-in`);
+  if (!can(session.role, "payments.record")) redirect(`/${locale}/payments?error=notAllowed`);
 
   const documentId = String(form.get("documentId") ?? "");
   const amount = String(form.get("amount") ?? "").trim();

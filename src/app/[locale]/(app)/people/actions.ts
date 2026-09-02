@@ -1,6 +1,7 @@
 "use server";
 
 import { revalidatePath } from "next/cache";
+import { canWrite } from "@/auth/can";
 import { getSession } from "@/auth/session";
 import { createPerson, personInput } from "@/domain/people";
 import { redirect } from "@/i18n/navigation";
@@ -14,6 +15,10 @@ export async function addPerson(locale: string, formData: FormData) {
   const session = await getSession();
   if (!session) {
     redirect({ href: "/sign-in", locale });
+    return;
+  }
+  if (!canWrite(session.role)) {
+    redirect({ href: `/people?error=notAllowed`, locale });
     return;
   }
 

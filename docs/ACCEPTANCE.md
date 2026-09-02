@@ -319,10 +319,13 @@ These are not acceptance criteria and no test can close them. They are here
 because a document called ACCEPTANCE that omitted them would be a document that
 tells you what you want to hear.
 
-1. **Day one has never been run.** `company_identity`, `bank_account`,
-   `vat_rate` and `numbering_series` are all empty, so nothing can be issued at
-   all. `/fr/setup`, four forms. The gate that enforces this is tested; the
-   forms have never been filled in.
+1. ~~**Day one has never been run.**~~ **Closed on 1 September** by
+   `scripts/day-one.ts`, which filled the identity, the logo, three VAT rates
+   and twelve numbering series from the company's own sent invoices, templates
+   and OneDrive — `canIssue=true` on the application database. Still open: the
+   bank account (a RIB is an account number, and it is typed by the Gérant on
+   `/fr/setup/bank`, not by a script), and the stamp-duty rule on
+   `/fr/settings/compliance`, which waits for the accountant's name.
 2. **The ERP is not registered as a service.** See the box at the top of
    `docs/RUNBOOK.md`. One command, as Administrator.
 3. **The backup is on the same disk as the database.** §5b of the RUNBOOK.
@@ -350,3 +353,34 @@ tells you what you want to hear.
    not exercise a screen with real records in it, and it clicks nothing: no
    form is submitted, no server action runs. The stores behind those actions
    are tested directly, and the actions themselves are not.
+9. ~~**Nothing had walked the whole chain.**~~ **Closed on 2 September** by
+   `tests/integration/a-to-z.test.ts`: one enquiry driven from the client on
+   file to the second facture paid, through the functions the screens call,
+   with the real letterhead. The walk found what eighty-six screens tested one
+   at a time could not — an offer priced on screen 12 printed "Total HT 0,00";
+   no enquiry could ever be won because nothing could record the client's
+   order; a client's order could not be delivered or billed against; screen 48
+   threw the payment method away; the PDF crashed on an arrow in a
+   designation. All five are closed and pinned by that file. And beyond it:
+   `mayIssue` refused thirteen of the nineteen document kinds to everybody,
+   the Gérant included — a devis and a bon de livraison could not be issued
+   from any screen. `tests/unit/issue-permission.test.ts` pins every kind in
+   the catalogue to a permission.
+10. ~~**The actions themselves are not tested.**~~ **Half closed on 2
+   September.** `pnpm audit:actions` reads every server action and refuses
+   the build if one does not check the session and a permission (or say, in
+   words the script accepts, that it writes only the caller's own rows). It
+   found 39 that checked the session and nothing else; all 39 now do, and
+   `lecture` — read-only — can no longer add a note, a contact or a line
+   anywhere. What it cannot do is prove a check is the RIGHT one.
+11. ~~**Nobody has looked at a screen on the laptop it runs on.**~~ **Closed on
+   2 September** by `pnpm shots`: every screen, at 1366 × 768 and 1920 × 1080,
+   photographed with a full enquiry on it and measured — text under 11.5px,
+   anything past the right edge, anything clipped, a navigation rail that runs
+   off the bottom, a message key printed raw, a free-text field under 140px.
+   The first pass found 292 pieces of 9.5px text per screen, the rail cut at
+   "Sociétés" on the laptop, the builder's designation field 60px wide, and
+   three untranslated keys. The type scale was raised once, in
+   `globals.css`; the rail scrolls; the builder is one column under 1536px;
+   `tests/unit/messages-compile.test.ts` compiles both catalogues. The last pass
+   flags nothing but the ten-pixel count in the bell.

@@ -1,5 +1,6 @@
 "use server";
 
+import { mayIssue } from "@/auth/can";
 import { getSession } from "@/auth/session";
 import { CannotConvert, convertDocument } from "@/documents/convert";
 import { redirect } from "@/i18n/navigation";
@@ -18,11 +19,17 @@ export async function convertAction(locale: string, id: string, form: FormData) 
     return;
   }
 
+  const target = String(form.get("target") ?? "invoice");
+  if (!mayIssue(session.role, target)) {
+    redirect({ href: `/documents/${id}/convert?error=notAllowed`, locale });
+    return;
+  }
+
   let created: string;
   try {
     created = await convertDocument({
       documentId: id,
-      target: String(form.get("target") ?? "invoice"),
+      target,
       invoiceDate: String(form.get("invoiceDate") ?? ""),
       dueDate: String(form.get("dueDate") ?? "") || null,
       paymentMethod: String(form.get("paymentMethod") ?? "") || null,

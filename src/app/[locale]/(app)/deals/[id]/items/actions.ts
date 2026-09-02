@@ -1,6 +1,7 @@
 "use server";
 
 import { revalidatePath } from "next/cache";
+import { canWrite } from "@/auth/can";
 import { getSession } from "@/auth/session";
 import { LinesRefused, replaceLines } from "@/domain/deal/lines";
 import { parsePaste } from "@/domain/deal/paste";
@@ -19,6 +20,10 @@ export async function replaceLinesAction(locale: string, dealId: string, form: F
   const session = await getSession();
   if (!session) {
     redirect({ href: "/sign-in", locale });
+    return;
+  }
+  if (!canWrite(session.role)) {
+    redirect({ href: `/deals/${dealId}/items?error=notAllowed`, locale });
     return;
   }
 

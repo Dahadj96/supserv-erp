@@ -17,6 +17,8 @@ async function requireUser(locale: string) {
     redirect({ href: "/sign-in", locale });
     throw new Error("unreachable");
   }
+  // own data — every write below is keyed on session.userId and nothing else,
+  // which is what scripts/audit-actions.mjs accepts in place of a permission.
   return session;
 }
 

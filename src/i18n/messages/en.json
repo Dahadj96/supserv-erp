@@ -924,7 +924,7 @@
     "seriesAdded": "Series added.",
     "chooseKind": "Choose a document type",
     "reservedAtIssue": "A number is allocated at issue and never on a draft, so a draft that is abandoned leaves no gap in the series.",
-    "patternExamples": "{a} and {b} are both valid. Use {'{'}YYYY{'}'} for the year and {'{'}####{'}'} for the counter.",
+    "patternExamples": "{a} and {b} are both valid. Use '{'YYYY'}' for the year and '{'####'}' for the counter.",
     "reset": {
       "yearly": "Restarts each year",
       "never": "Never restarts"
@@ -986,8 +986,8 @@
       "emailInvalid": "That email address does not look right.",
       "rateInvalid": "A rate is a number, and a start date is required.",
       "kindRequired": "Choose a document type.",
-      "patternNeedsCounter": "The pattern needs a counter, like {'{'}####{'}'}.",
-      "patternNeedsYear": "The pattern needs a year, like {'{'}YYYY{'}'}.",
+      "patternNeedsCounter": "The pattern needs a counter, like '{'####'}'.",
+      "patternNeedsYear": "The pattern needs a year, like '{'YYYY'}'.",
       "bankRequired": "The bank name is required.",
       "ribTwentyDigits": "A RIB is twenty digits.",
       "invalid": "Something in the form was not accepted.",
@@ -1179,6 +1179,9 @@
       "purchase": {
         "order": {
           "issue": "Purchase orders — issue"
+        },
+        "invoice": {
+          "record": "Supplier invoices — record"
         }
       },
       "people": {
@@ -1197,6 +1200,18 @@
       },
       "merge": {
         "execute": "Duplicates — merge"
+      },
+      "inbox": {
+        "view": "Inbox — read captured mail"
+      },
+      "deliveries": {
+        "issue": "Delivery notes — issue"
+      },
+      "works": {
+        "issue": "Work orders and reports — issue"
+      },
+      "letters": {
+        "issue": "Attestations and letters — issue"
       }
     },
     "error": {
@@ -2268,13 +2283,15 @@
       "allLinesCosted": "All lines costed",
       "submissionMethod": "Submission method set",
       "proofOfSubmission": "Proof of submission",
-      "validityCoversDeadline": "Our validity covers what the client asks"
+      "validityCoversDeadline": "Our validity covers what the client asks",
+      "annexeTechnique": "Technical annexe complete"
     },
     "checkDetail": {
       "allLinesPriced": "{n, plural, one {# line has no price.} other {# lines have no price.}}",
       "allLinesCosted": "{n, plural, one {# line has no cost, so its margin is unknown.} other {# lines have no cost, so their margin is unknown.}}",
       "proofOfSubmission": "Receipt {ref}",
-      "validityCoversDeadline": "Ours stands {ours} days; they ask for {theirs} — {shortBy} short."
+      "validityCoversDeadline": "Ours stands {ours} days; they ask for {theirs} — {shortBy} short.",
+      "annexeTechnique": "{n, plural, one {# datasheet still missing.} other {# datasheets still missing.}}"
     },
     "state": {
       "pass": "Yes",

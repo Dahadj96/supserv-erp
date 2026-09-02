@@ -2,6 +2,7 @@
 
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
+import { canAny } from "@/auth/can";
 import { getSession } from "@/auth/session";
 import { markSent, recordAnswer, recordChase, SourcingRefused } from "@/domain/deal/sourcing-store";
 
@@ -22,6 +23,8 @@ function back(locale: string, id: string, query = ""): never {
 export async function markSentAction(locale: string, id: string): Promise<void> {
   const session = await getSession();
   if (!session) redirect(`/${locale}/sign-in`);
+  if (!canAny(session.role, ["offers.issue", "purchase.order.issue"]))
+    redirect(`/${locale}/sourcing/${id}?error=notAllowed`);
   try {
     await markSent({ requestId: id, actorId: session.userId });
   } catch (error) {
@@ -34,6 +37,8 @@ export async function markSentAction(locale: string, id: string): Promise<void> 
 export async function chaseAction(locale: string, id: string, form: FormData): Promise<void> {
   const session = await getSession();
   if (!session) redirect(`/${locale}/sign-in`);
+  if (!canAny(session.role, ["offers.issue", "purchase.order.issue"]))
+    redirect(`/${locale}/sourcing/${id}?error=notAllowed`);
 
   const ids = form.getAll("responseId").map(String).filter(Boolean);
   const n = await recordChase({ responseIds: ids, actorId: session.userId });
@@ -43,6 +48,8 @@ export async function chaseAction(locale: string, id: string, form: FormData): P
 export async function answerAction(locale: string, id: string, form: FormData): Promise<void> {
   const session = await getSession();
   if (!session) redirect(`/${locale}/sign-in`);
+  if (!canAny(session.role, ["offers.issue", "purchase.order.issue"]))
+    redirect(`/${locale}/sourcing/${id}?error=notAllowed`);
 
   const responseId = String(form.get("responseId") ?? "");
   const status = String(form.get("status") ?? "");

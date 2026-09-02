@@ -2,6 +2,7 @@
 
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
+import { can } from "@/auth/can";
 import { getSession } from "@/auth/session";
 import { draftRelance, markRelanceSent, PaymentRefused, recordReply } from "@/domain/money/store";
 
@@ -21,6 +22,8 @@ function back(locale: string, query = ""): never {
 export async function draftAction(locale: string, form: FormData): Promise<void> {
   const session = await getSession();
   if (!session) redirect(`/${locale}/sign-in`);
+  if (!can(session.role, "payments.record"))
+    redirect(`/${locale}/payments/ageing?error=notAllowed`);
 
   try {
     await draftRelance({
@@ -40,6 +43,8 @@ export async function draftAction(locale: string, form: FormData): Promise<void>
 export async function markSentAction(locale: string, form: FormData): Promise<void> {
   const session = await getSession();
   if (!session) redirect(`/${locale}/sign-in`);
+  if (!can(session.role, "payments.record"))
+    redirect(`/${locale}/payments/ageing?error=notAllowed`);
   await markRelanceSent({
     relanceId: String(form.get("relanceId") ?? ""),
     actorId: session.userId,
@@ -50,6 +55,8 @@ export async function markSentAction(locale: string, form: FormData): Promise<vo
 export async function replyAction(locale: string, form: FormData): Promise<void> {
   const session = await getSession();
   if (!session) redirect(`/${locale}/sign-in`);
+  if (!can(session.role, "payments.record"))
+    redirect(`/${locale}/payments/ageing?error=notAllowed`);
   await recordReply({
     relanceId: String(form.get("relanceId") ?? ""),
     reply: String(form.get("reply") ?? ""),

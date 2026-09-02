@@ -1,6 +1,7 @@
 "use server";
 
 import { redirect } from "next/navigation";
+import { canWrite } from "@/auth/can";
 import { getSession } from "@/auth/session";
 import { NothingToSave, read, save } from "@/capture/quick";
 import { isCaptureMode, type Reading } from "@/capture/reading";
@@ -21,12 +22,14 @@ import { isCaptureMode, type Reading } from "@/capture/reading";
 export async function readAction(mode: string, text: string): Promise<Reading> {
   const session = await getSession();
   if (!session) throw new Error("notSignedIn");
+  // Reading proposes and writes nothing; every signed-in role may look.
   return read({ mode: isCaptureMode(mode) ? mode : "typed", text });
 }
 
 export async function saveAction(locale: string, mode: string, text: string): Promise<void> {
   const session = await getSession();
   if (!session) throw new Error("notSignedIn");
+  if (!canWrite(session.role)) redirect(`/${locale}/capture?error=notAllowed`);
 
   const captureMode = isCaptureMode(mode) ? mode : "typed";
 

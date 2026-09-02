@@ -410,6 +410,10 @@ Six roles out of the box; permissions are the unit, roles are bundles.
 | `invoices.cancel` | ✓ | — | — | — | — | — |
 | `payments.record` | ✓ | — | — | — | ✓ | — |
 | `purchase.order.issue` | ✓ | — | ✓ | — | — | — |
+| `purchase.invoice.record` | ✓ | — | ✓ | — | ✓ | — |
+| `deliveries.issue` | ✓ | ✓ | ✓ | ✓ | — | — |
+| `works.issue` | ✓ | ✓ | — | ✓ | — | — |
+| `letters.issue` | ✓ | ✓ | — | — | ✓ | — |
 | `people.salary.view` | ✓ | — | — | — | ✓ | — |
 | `settings.company` | ✓ | — | — | — | — | — |
 | `users.manage` | ✓ | — | — | — | — | — |

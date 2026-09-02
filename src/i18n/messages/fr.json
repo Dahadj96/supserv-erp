@@ -924,7 +924,7 @@
     "seriesAdded": "Série ajoutée.",
     "chooseKind": "Choisir un type de document",
     "reservedAtIssue": "Un numéro est attribué à l'émission, jamais sur un brouillon : un brouillon abandonné ne laisse donc aucun trou dans la série.",
-    "patternExamples": "{a} et {b} sont valables tous les deux. Utilisez {'{'}YYYY{'}'} pour l'année et {'{'}####{'}'} pour le compteur.",
+    "patternExamples": "{a} et {b} sont valables tous les deux. Utilisez '{'YYYY'}' pour l'année et '{'####'}' pour le compteur.",
     "reset": {
       "yearly": "Repart chaque année",
       "never": "Ne repart jamais"
@@ -986,8 +986,8 @@
       "emailInvalid": "Cette adresse e-mail ne semble pas correcte.",
       "rateInvalid": "Un taux est un nombre, et une date d'effet est obligatoire.",
       "kindRequired": "Choisissez un type de document.",
-      "patternNeedsCounter": "Le format a besoin d'un compteur, comme {'{'}####{'}'}.",
-      "patternNeedsYear": "Le format a besoin d'une année, comme {'{'}YYYY{'}'}.",
+      "patternNeedsCounter": "Le format a besoin d'un compteur, comme '{'####'}'.",
+      "patternNeedsYear": "Le format a besoin d'une année, comme '{'YYYY'}'.",
       "bankRequired": "Le nom de la banque est obligatoire.",
       "ribTwentyDigits": "Un RIB fait vingt chiffres.",
       "invalid": "Quelque chose dans le formulaire n'a pas été accepté.",
@@ -1179,6 +1179,9 @@
       "purchase": {
         "order": {
           "issue": "Bons de commande — émettre"
+        },
+        "invoice": {
+          "record": "Factures fournisseurs — enregistrer"
         }
       },
       "people": {
@@ -1197,6 +1200,18 @@
       },
       "merge": {
         "execute": "Doublons — fusionner"
+      },
+      "inbox": {
+        "view": "Boîte de réception — lire le courrier capturé"
+      },
+      "deliveries": {
+        "issue": "Bons de livraison — émettre"
+      },
+      "works": {
+        "issue": "Ordres de travail et rapports — émettre"
+      },
+      "letters": {
+        "issue": "Attestations et courriers — émettre"
       }
     },
     "error": {
@@ -2268,13 +2283,15 @@
       "allLinesCosted": "Toutes les lignes ont un coût",
       "submissionMethod": "Mode de dépôt renseigné",
       "proofOfSubmission": "Preuve de dépôt",
-      "validityCoversDeadline": "Notre validité couvre ce que le client demande"
+      "validityCoversDeadline": "Notre validité couvre ce que le client demande",
+      "annexeTechnique": "Annexe technique complète"
     },
     "checkDetail": {
       "allLinesPriced": "{n, plural, one {# ligne sans prix.} other {# lignes sans prix.}}",
       "allLinesCosted": "{n, plural, one {# ligne sans coût, donc sa marge est inconnue.} other {# lignes sans coût, donc leur marge est inconnue.}}",
       "proofOfSubmission": "Reçu {ref}",
-      "validityCoversDeadline": "La nôtre tient {ours} jours ; ils en demandent {theirs} — {shortBy} de moins."
+      "validityCoversDeadline": "La nôtre tient {ours} jours ; ils en demandent {theirs} — {shortBy} de moins.",
+      "annexeTechnique": "{n, plural, one {# fiche technique manque encore.} other {# fiches techniques manquent encore.}}"
     },
     "state": {
       "pass": "Oui",
