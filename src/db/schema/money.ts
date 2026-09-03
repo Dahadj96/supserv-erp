@@ -32,6 +32,14 @@ export const payment = pgTable("payment", {
     .notNull()
     .references(() => party.id),
 
+  /**
+   * Which way the money went. `in` is a client paying us; `out` is us paying a
+   * supplier, allocated against their invoice (kind `supplier_invoice`) the
+   * same way. One table, because a bank statement is one list — and screen 19
+   * filters on this rather than on which kind of invoice the allocation hit.
+   */
+  direction: text("direction").notNull().default("in"),
+
   /** virement | cheque | especes | traite | compensation */
   method: text("method").notNull(),
 

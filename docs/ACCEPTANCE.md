@@ -384,3 +384,14 @@ tells you what you want to hear.
    `globals.css`; the rail scrolls; the builder is one column under 1536px;
    `tests/unit/messages-compile.test.ts` compiles both catalogues. The last pass
    flags nothing but the ten-pixel count in the bell.
+12. ~~**The buy side could be read and not driven.**~~ **Closed on 2
+   September** by `tests/integration/buy-a-to-z.test.ts`: two suppliers
+   asked, both answer, the order goes to the cheaper one at their price
+   (`orderFromAnswer`), the goods arrive short (`receiveGoods`), their
+   facture arrives for more than arrived at a higher price
+   (`recordSupplierInvoice`), the match holds the difference, we pay what
+   is safe to pay (`recordPayment` with `direction: "out"`), the rest
+   arrives. Screen 68 had none of those writes, and its money panel mixed HT
+   rows with TTC payments — "safe to pay" came out short by the VAT. Screen 67
+   has "Order from them"; screen 68 has the three forms.
+

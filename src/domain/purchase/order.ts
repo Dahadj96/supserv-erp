@@ -108,6 +108,7 @@ async function linked(orderId: string, kind: string) {
       number: document.number,
       issuedOn: document.issuedOn,
       status: document.status,
+      totals: document.totals,
       createdAt: document.createdAt,
       // The supplier's own BL number and who took delivery here. Left-joined:
       // a goods receipt somebody has not filled in yet is still a goods
@@ -176,6 +177,7 @@ export async function purchaseOrder(id: string): Promise<PurchaseOrderView | nul
       rows.reduce((total, row) => total + Number(row.qty ?? 0), 0).toString();
 
     return {
+      lineId: line.id,
       position: line.position,
       designation: line.designation,
       unit: line.unit,
@@ -189,6 +191,7 @@ export async function purchaseOrder(id: string): Promise<PurchaseOrderView | nul
       // their own figure, and averaging the two would produce a price neither
       // document contains.
       invoicedUnitCost: billed.length > 0 ? (billed[billed.length - 1]?.unitPrice ?? "0") : null,
+      vatRate: line.vatRate,
     };
   });
 
@@ -202,6 +205,19 @@ export async function purchaseOrder(id: string): Promise<PurchaseOrderView | nul
     : [{ paid: "0" }];
 
   const paid = paidRow?.paid ?? "0";
+
+  // What the supplier has actually asked for, TTC, off the recorded factures'
+  // frozen totals. The match rows are HT because the three documents state
+  // unit prices HT; the money panel is TTC because that is what leaves the
+  // bank, and `paid` is read from the bank. The first version mixed the two,
+  // and "safe to pay" came out short by exactly the VAT.
+  const invoicedIncl = invoiceDocs
+    .filter((row) => row.status === "issued")
+    .reduce(
+      (total, row) => total + Number(((row.totals ?? {}) as { totalIncl?: string }).totalIncl ?? 0),
+      0,
+    )
+    .toFixed(2);
 
   const receipts: ReceiptRow[] = receiptDocs.map((row) => ({
     id: row.id,
@@ -235,16 +251,13 @@ export async function purchaseOrder(id: string): Promise<PurchaseOrderView | nul
     match,
     money: {
       currency: order.currency,
-      // Both figures come from the LINES, not from the documents' frozen
-      // `totals`. The match panel is computed line by line, and a money panel
-      // reading a different source would sooner or later print a total that
-      // disagrees with the rows directly above it — which is exactly the class
-      // of disagreement this screen exists to surface.
+      // HT, from the lines, like the rows above it.
       ordered: match.total.ordered,
-      invoiced: match.total.invoiced,
+      // TTC, from the recorded factures — see `invoicedIncl`.
+      invoiced: invoicedIncl,
       paid,
-      held: match.held,
-      safeToPay: safeToPayNow({ invoiced: match.total.invoiced, paid, held: match.held }),
+      held: match.heldIncl,
+      safeToPay: safeToPayNow({ invoiced: invoicedIncl, paid, held: match.heldIncl }),
       terms: supplier?.terms ?? null,
     },
     blocks: blocksFor(match),

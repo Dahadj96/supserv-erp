@@ -33,6 +33,8 @@ export type Verdict = (typeof VERDICTS)[number];
 
 /** One line of the purchase order, with what happened to it on the other two. */
 export type MatchLine = {
+  /** The order line, so a form can point a receipt or an invoice at it. */
+  lineId?: string;
   position: number;
   designation: string | null;
   unit: string | null;
@@ -44,6 +46,12 @@ export type MatchLine = {
   /** What the supplier billed. Null when no invoice covers this line yet. */
   invoicedQty: string | null;
   invoicedUnitCost: string | null;
+  /**
+   * The VAT on this line, as a percentage. The rows above are HT, because
+   * that is what the three documents state per unit; the money that leaves
+   * the bank is TTC, and `heldIncl` needs to know by how much.
+   */
+  vatRate?: string | null;
 };
 
 export type LineState = "complete" | "partial" | "awaiting" | "over";
@@ -123,9 +131,11 @@ export type ThreeWayMatch = {
   total: Rollup;
   /**
    * What is being asked for above what was agreed, and cannot be explained.
-   * This is the figure that stops a payment.
+   * This is the figure that stops a payment. HT, like the rows.
    */
   held: string;
+  /** The same, with each line's VAT on it — what it is worth at the bank. */
+  heldIncl: string;
   /** True when nothing on this order needs a person. */
   clean: boolean;
 };
@@ -156,9 +166,16 @@ export function threeWayMatch(lines: MatchLine[]): ThreeWayMatch {
       ? "matches"
       : "explained";
 
-  const held = matched
-    .filter((line) => line.price === "doesNotMatch")
-    .reduce((total, line) => total.plus(Decimal.max(d(line.priceDifference), 0)), new Decimal(0));
+  const disputed = matched.filter((line) => line.price === "doesNotMatch");
+  const held = disputed.reduce(
+    (total, line) => total.plus(Decimal.max(d(line.priceDifference), 0)),
+    new Decimal(0),
+  );
+  const heldIncl = disputed.reduce(
+    (total, line) =>
+      total.plus(Decimal.max(d(line.priceDifference), 0).times(d(line.vatRate).div(100).plus(1))),
+    new Decimal(0),
+  );
 
   /**
    * The total is judged against what the order committed to, not against what
@@ -190,6 +207,7 @@ export function threeWayMatch(lines: MatchLine[]): ThreeWayMatch {
       verdict: totalVerdict,
     },
     held: held.toFixed(2),
+    heldIncl: heldIncl.toFixed(2),
     clean: quantityVerdict !== "doesNotMatch" && totalVerdict !== "doesNotMatch" && held.isZero(),
   };
 }

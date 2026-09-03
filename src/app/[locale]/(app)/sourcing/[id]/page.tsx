@@ -17,7 +17,7 @@ import {
 import { requestFor } from "@/domain/deal/sourcing-store";
 import { formatMoney } from "@/domain/money";
 import { Link } from "@/i18n/navigation";
-import { answerAction, chaseAction, markSentAction } from "./actions";
+import { answerAction, chaseAction, markSentAction, orderAction } from "./actions";
 
 /**
  * Screen 67 — the sourcing request.
@@ -164,6 +164,7 @@ export default async function SourcingRequestPage({
                     <th className="py-2 pe-4 text-start font-medium">{t("sourcing.validity")}</th>
                     <th className="py-2 pe-4 text-start font-medium">{t("sourcing.leadTime")}</th>
                     <th className="py-2 pe-5 text-end font-medium">{t("sourcing.total")}</th>
+                    <th className="py-2 pe-5" />
                   </tr>
                 </thead>
                 <tbody>
@@ -195,6 +196,21 @@ export default async function SourcingRequestPage({
                             orders four fifths of a job.
                           */}
                           {total ? money(total) : t("sourcing.partial")}
+                        </td>
+                        <td className="py-2.5 pe-5 text-end">
+                          {/*
+                            The step that was missing: from their answer to a
+                            purchase order at THEIR prices, as a draft to be read
+                            and issued on screen 18. Only a quoted answer on a
+                            sent request can be ordered from.
+                          */}
+                          {answer.status === "quoted" && found.request.sentAt ? (
+                            <form action={orderAction.bind(null, locale, id, answer.responseId)}>
+                              <Button type="submit" variant="secondary">
+                                {t("sourcing.orderFromThem")}
+                              </Button>
+                            </form>
+                          ) : null}
                         </td>
                       </tr>
                     );

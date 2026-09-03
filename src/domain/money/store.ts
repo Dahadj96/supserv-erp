@@ -4,6 +4,7 @@ import { auditEntry } from "@/db/schema/control";
 import { document } from "@/db/schema/document";
 import { payment, paymentAllocation, relance, relanceStep } from "@/db/schema/money";
 import { party } from "@/db/schema/party";
+import { payables } from "@/domain/purchase/store";
 import { balanceOf, type Owing } from "./ageing";
 import type { Received, Settlement } from "./collection";
 import { DEFAULT_POLICY, type RelanceRecord, type RelanceStatus, type Step } from "./relance";
@@ -101,6 +102,8 @@ export async function owings(opts: { partyId?: string } = {}): Promise<Owing[]> 
  */
 export async function recordPayment(opts: {
   partyId: string;
+  /** `in` (default) — a client paid us. `out` — we paid a supplier. */
+  direction?: "in" | "out";
   method: string;
   amount: string;
   currency?: string;
@@ -119,8 +122,11 @@ export async function recordPayment(opts: {
   const allocated = entries.reduce((sum, [, v]) => sum + Number(v), 0);
   if (allocated > amount + 0.005) throw new PaymentRefused("exceedsPayment");
 
+  const direction = opts.direction ?? "in";
   if (entries.length > 0) {
-    const ledger = await owings();
+    // Money in settles what clients owe us; money out settles what we owe
+    // suppliers. The balance check is the same either way.
+    const ledger = direction === "out" ? await payables() : await owings();
     for (const [documentId, value] of entries) {
       const invoice = ledger.find((o) => o.documentId === documentId);
       if (!invoice) throw new PaymentRefused("noSuchInvoice");
@@ -135,6 +141,7 @@ export async function recordPayment(opts: {
       .insert(payment)
       .values({
         partyId: opts.partyId,
+        direction,
         method: opts.method,
         amount: opts.amount,
         currency: opts.currency || "DZD",
@@ -163,6 +170,7 @@ export async function recordPayment(opts: {
       action: "create",
       after: {
         partyId: opts.partyId,
+        direction,
         amount: opts.amount,
         method: opts.method,
         bankRef: opts.bankRef ?? null,
@@ -186,12 +194,18 @@ export async function unallocated(partyId?: string): Promise<string> {
         select sum(${paymentAllocation.amount}) from ${paymentAllocation}
         where ${paymentAllocation.paymentId} in (
           select id from ${payment} p2
-          where p2.deleted_at is null ${partyId ? sql`and p2.party_id = ${partyId}` : sql``}
+          where p2.deleted_at is null and p2.direction = 'in' ${partyId ? sql`and p2.party_id = ${partyId}` : sql``}
         )
       ), 0), 0)::text`,
     })
     .from(payment)
-    .where(and(isNull(payment.deletedAt), partyId ? eq(payment.partyId, partyId) : sql`true`));
+    .where(
+      and(
+        isNull(payment.deletedAt),
+        eq(payment.direction, "in"),
+        partyId ? eq(payment.partyId, partyId) : sql`true`,
+      ),
+    );
   return row?.held ?? "0";
 }
 
@@ -361,6 +375,7 @@ export async function listPayments(limit = 100) {
   return db
     .select({
       id: payment.id,
+      direction: payment.direction,
       amount: payment.amount,
       currency: payment.currency,
       method: payment.method,
@@ -471,7 +486,13 @@ export async function receivedSince(from: string): Promise<Received[]> {
   return db
     .select({ amount: payment.amount, currency: payment.currency })
     .from(payment)
-    .where(and(isNull(payment.deletedAt), sql`${payment.receivedOn} >= ${from}`));
+    .where(
+      and(
+        isNull(payment.deletedAt),
+        eq(payment.direction, "in"),
+        sql`${payment.receivedOn} >= ${from}`,
+      ),
+    );
 }
 
 /**

@@ -2,9 +2,10 @@
 
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
-import { canAny } from "@/auth/can";
+import { can, canAny } from "@/auth/can";
 import { getSession } from "@/auth/session";
 import { markSent, recordAnswer, recordChase, SourcingRefused } from "@/domain/deal/sourcing-store";
+import { CannotBuy, orderFromAnswer } from "@/domain/purchase/store";
 
 /**
  * Screen 67's buttons.
@@ -87,4 +88,24 @@ export async function answerAction(locale: string, id: string, form: FormData): 
     throw error;
   }
   back(locale, id, "?recorded=1");
+}
+
+/**
+ * Order from the supplier who answered — a draft purchase order at their
+ * prices, opened on screen 18 to be read and issued. Placing an order is
+ * spending money, so it takes `purchase.order.issue` and nothing less.
+ */
+export async function orderAction(locale: string, id: string, responseId: string): Promise<void> {
+  const session = await getSession();
+  if (!session) redirect(`/${locale}/sign-in`);
+  if (!can(session.role, "purchase.order.issue")) back(locale, id, "?error=notAllowed");
+
+  let orderId: string;
+  try {
+    orderId = await orderFromAnswer({ responseId, actorId: session.userId });
+  } catch (error) {
+    if (error instanceof CannotBuy) back(locale, id, `?error=${error.why}`);
+    throw error;
+  }
+  redirect(`/${locale}/documents/${orderId}?created=1`);
 }

@@ -2208,7 +2208,11 @@
       "alreadySent": "Cette consultation est déjà partie.",
       "noSuppliers": "Choisissez au moins un fournisseur à consulter.",
       "unknownStatus": "Choisissez une des réponses proposées.",
-      "notQuoted": "Seul un fournisseur qui a chiffré a des conditions à enregistrer."
+      "notQuoted": "Seul un fournisseur qui a chiffré a des conditions à enregistrer.",
+      "noSuchAnswer": "Cette réponse n'existe plus.",
+      "requestNotSent": "La demande n'a pas encore été marquée envoyée : on ne commande pas sur une réponse à une question jamais posée.",
+      "nothingPriced": "Ce fournisseur n'a chiffré aucune ligne.",
+      "notAllowed": "Passer une commande demande le droit d'émettre des bons de commande."
     },
     "validityDays": "Validité, en jours",
     "leadTimeDays": "Délai, en jours",
@@ -2227,7 +2231,8 @@
       "sent": "Envoyée",
       "replyBy": "Réponse avant",
       "answers": "Réponses"
-    }
+    },
+    "orderFromThem": "Commander chez eux"
   },
   "ask": {
     "title": "Consulter des fournisseurs",
@@ -3958,6 +3963,46 @@
     "invoices": {
       "title": "Factures fournisseur",
       "theirNumber": "Numérotées par le fournisseur, jamais par nous — le numéro sur le papier est celui que tout le monde cite."
+    },
+    "record": {
+      "title": "Enregistrer",
+      "notIssued": "Le bon de commande est encore un brouillon. Rien ne peut être reçu ni facturé contre une commande que personne n'a émise.",
+      "receipt": "Les marchandises sont arrivées",
+      "receiptGo": "Créer le bon de réception",
+      "receivedOn": "Reçu le",
+      "supplierRef": "N° de BL du fournisseur",
+      "receivedBy": "Réceptionné par",
+      "reserves": "Réserves",
+      "reservesHint": "« Conforme », ou ce qui n'allait pas — tel quel",
+      "invoice": "Leur facture est arrivée",
+      "invoiceGo": "Enregistrer leur facture",
+      "theirNumber": "Leur n° de facture",
+      "invoiceDate": "Date de la facture",
+      "dueDate": "Échéance",
+      "unitPrice": "P.U. facturé",
+      "invoiceHint": "Saisissez ce qu'ils ont facturé, pas ce qui était convenu. L'écart apparaît dans le rapprochement et retient le paiement jusqu'à ce qu'une personne l'explique.",
+      "payment": "Nous les avons payés",
+      "paymentGo": "Enregistrer le paiement",
+      "whichInvoice": "Facture réglée",
+      "amount": "Montant",
+      "paidOn": "Payé le",
+      "bankRef": "Référence bancaire",
+      "paymentHint": "Le montant proposé est ce qu'il est sûr de payer : facturé, moins déjà payé, moins ce qui est retenu.",
+      "paidOk": "Paiement enregistré et imputé sur leur facture.",
+      "createsADraft": "Crée un brouillon, à lire puis enregistrer"
+    },
+    "error": {
+      "notAllowed": "Votre rôle ne permet pas cette action.",
+      "noSuchOrder": "Ce bon de commande n'existe plus.",
+      "orderNotIssued": "Le bon de commande n'a pas été émis.",
+      "nothingToReceive": "Aucune quantité reçue n'a été saisie.",
+      "nothingToBill": "Aucune quantité facturée n'a été saisie.",
+      "lineNotOnOrder": "Une ligne saisie n'est pas sur ce bon de commande.",
+      "theirNumberRequired": "Le numéro de facture du fournisseur est obligatoire : c'est leur créance.",
+      "noSuchInvoice": "Cette facture fournisseur n'est pas enregistrée.",
+      "amountNotPositive": "Le montant doit être positif.",
+      "exceedsPayment": "L'imputation dépasse le paiement.",
+      "exceedsBalance": "L'imputation dépasse ce qui reste dû sur cette facture."
     }
   },
   "tenders": {

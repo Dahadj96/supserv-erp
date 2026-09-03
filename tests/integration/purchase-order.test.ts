@@ -118,7 +118,11 @@ beforeAll(async () => {
 
   // The supplier's invoice: everything billed, and line 3 repriced upward
   // despite never having arrived.
-  const invoiceId = await makeDocument("supplier_invoice", "FA-HE-2026-771");
+  // Recorded, with its frozen total: the money panel reads TTC off the facture
+  // itself, and this fixture carries no VAT so TTC equals the sum of its lines.
+  const invoiceId = await makeDocument("supplier_invoice", "FA-HE-2026-771", {
+    totals: { totalExcl: "936000.00", totalVat: "0.00", totalIncl: "936000.00" },
+  });
   await db.insert(documentLink).values({
     fromDocument: orderId,
     toDocument: invoiceId,
@@ -155,6 +159,7 @@ beforeAll(async () => {
     .insert(payment)
     .values({
       partyId: supplierId,
+      direction: "out",
       method: "virement",
       amount: "400000",
       receivedOn: "2026-08-22",

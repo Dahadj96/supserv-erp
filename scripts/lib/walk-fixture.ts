@@ -13,12 +13,15 @@ import { render } from "../../src/documents/engine";
 import { createDeal } from "../../src/domain/deal/deal";
 import { replaceLines } from "../../src/domain/deal/lines";
 import { addQuote } from "../../src/domain/deal/price-store";
+import { createRequest, markSent, recordAnswer } from "../../src/domain/deal/sourcing-store";
 import { recordSignedCopy, startDelivery } from "../../src/domain/delivery/store";
 import { ensureTypesExist } from "../../src/domain/document-types";
 import { recordPayment } from "../../src/domain/money/store";
 import { buildOffer } from "../../src/domain/offer/build";
 import { markSubmitted } from "../../src/domain/offer/store";
 import { createParty } from "../../src/domain/party";
+import { orderFromAnswer, receiveGoods, recordSupplierInvoice } from "../../src/domain/purchase/store";
+import { sourcingRequest, sourcingResponse } from "../../src/db/schema/sourcing";
 
 /**
  * The A-to-Z walk as a fixture: the same enquiry `tests/integration/a-to-z.test.ts`
@@ -39,6 +42,7 @@ export type WalkIds = {
   blId: string;
   invoiceId: string;
   draftInvoiceId: string;
+  purchaseOrderId: string | null;
 };
 
 export async function seedWalk(actorId: string): Promise<WalkIds> {
@@ -48,6 +52,8 @@ export async function seedWalk(actorId: string): Promise<WalkIds> {
     ["proforma", "PF-{YYYY}-{####}"],
     ["delivery_note", "BL-{YYYY}-{####}"],
     ["invoice", "FA-{YYYY}-{####}"],
+    ["purchase_order", "PO-{YYYY}-{####}"],
+    ["goods_receipt", "BR-{YYYY}-{####}"],
   ] as const) {
     const [existing] = await db.select().from(numberingSeries).where(eq(numberingSeries.kind, kind));
     if (!existing) await db.insert(numberingSeries).values({ kind, pattern, reset: "yearly" });
@@ -206,6 +212,60 @@ export async function seedWalk(actorId: string): Promise<WalkIds> {
     actorId,
   });
 
+  // The buy side of the same enquiry: the supplier asked, answered, ordered
+  // from, delivered short, and billed — so screen 68 has a match to show.
+  let purchaseOrderId: string | null = null;
+  if (supplier) {
+    const requestId = await createRequest({
+      dealId,
+      subject: "Galets de convoyeur",
+      supplierIds: [supplier.id],
+      replyBy: new Date("2026-09-05T16:00:00Z"),
+      actorId,
+    });
+    await markSent({ requestId, actorId, when: new Date("2026-09-02T09:00:00Z") });
+    const [answer] = await db
+      .select({ id: sourcingResponse.id })
+      .from(sourcingResponse)
+      .where(eq(sourcingResponse.requestId, requestId));
+    if (answer) {
+      await recordAnswer({
+        responseId: answer.id,
+        status: "quoted",
+        validityDays: 30,
+        leadTimeDays: 7,
+        prices: { [lines[0]?.id as string]: "4000" },
+        actorId,
+      });
+      purchaseOrderId = await orderFromAnswer({ responseId: answer.id, actorId });
+      await render({ documentId: purchaseOrderId, purpose: "issue", actorId });
+      const [poLine] = await db
+        .select({ id: documentLine.id })
+        .from(documentLine)
+        .where(eq(documentLine.documentId, purchaseOrderId));
+      const receiptId = await receiveGoods({
+        orderId: purchaseOrderId,
+        quantities: { [poLine?.id as string]: "6" },
+        receivedOn: "2026-09-04",
+        supplierRef: "BL 4471",
+        receivedBy: "Magasin Adrar",
+        reserves: "4 manquants",
+        actorId,
+      });
+      await render({ documentId: receiptId, purpose: "issue", actorId });
+      const supplierInvoiceId = await recordSupplierInvoice({
+        orderId: purchaseOrderId,
+        theirNumber: "F-2026-0088",
+        invoiceDate: "2026-09-05",
+        dueDate: "2026-10-05",
+        lines: { [poLine?.id as string]: { qty: "10", unitPrice: "4100" } },
+        settlement: "virement",
+        actorId,
+      });
+      await render({ documentId: supplierInvoiceId, purpose: "issue", actorId });
+    }
+  }
+
   // Left as a draft on purpose: the builder and the checklist need one.
   const draftInvoiceId = await billFrom({
     sourceId: orderId,
@@ -224,6 +284,7 @@ export async function seedWalk(actorId: string): Promise<WalkIds> {
     blId,
     invoiceId,
     draftInvoiceId,
+    purchaseOrderId,
   };
 }
 
@@ -256,6 +317,7 @@ export async function teardownWalk(actorId: string): Promise<void> {
     const deals = await db.select({ id: deal.id }).from(deal).where(inArray(deal.partyId, partyIds));
     const dealIds = deals.map((d) => d.id);
     if (dealIds.length > 0) {
+      await db.delete(sourcingRequest).where(inArray(sourcingRequest.dealId, dealIds));
       await db.delete(priceQuote).where(inArray(priceQuote.dealId, dealIds));
       await db.delete(dealLine).where(inArray(dealLine.dealId, dealIds));
       await db.delete(deal).where(inArray(deal.id, dealIds));

@@ -1,11 +1,14 @@
 import { CircleAlert } from "lucide-react";
 import { redirect as hardRedirect, notFound } from "next/navigation";
 import { getFormatter, getTranslations, setRequestLocale } from "next-intl/server";
+import { can } from "@/auth/can";
 import { getSession } from "@/auth/session";
 import { Badge } from "@/components/ui/badge";
 import type { Verdict } from "@/domain/purchase/match";
 import { purchaseOrder } from "@/domain/purchase/order";
+import { payables } from "@/domain/purchase/store";
 import { Link } from "@/i18n/navigation";
+import { RecordPanels } from "./record";
 
 /**
  * Screen 68 — Supplier order.
@@ -39,10 +42,13 @@ const BLOCK_TONE = { ready: "good", waiting: "warning", blocked: "critical" } as
 
 export default async function PurchaseOrderPage({
   params,
+  searchParams,
 }: {
   params: Promise<{ locale: string; id: string }>;
+  searchParams: Promise<{ error?: string; paid?: string }>;
 }) {
   const { locale, id } = await params;
+  const { error, paid } = await searchParams;
   setRequestLocale(locale);
   const t = await getTranslations();
 
@@ -51,6 +57,7 @@ export default async function PurchaseOrderPage({
 
   const order = await purchaseOrder(id);
   if (!order) notFound();
+  const owed = order.supplier ? await payables({ partyId: order.supplier.id }) : [];
 
   const format = await getFormatter({ locale });
   const money = (value: string) =>
@@ -92,8 +99,19 @@ export default async function PurchaseOrderPage({
         </div>
       ) : null}
 
-      <div className="grid max-w-[1400px] grid-cols-3 items-start gap-5 px-7 py-6">
-        <div className="col-span-2 flex flex-col gap-5">
+      {error ? (
+        <p className="mx-7 mt-4 rounded-[var(--radius-control)] bg-critical-bg px-4 py-2.5 text-tiny text-critical-ink">
+          {t.has(`purchaseOrder.error.${error}`) ? t(`purchaseOrder.error.${error}`) : error}
+        </p>
+      ) : null}
+      {paid ? (
+        <p className="mx-7 mt-4 rounded-[var(--radius-control)] bg-good-bg px-4 py-2.5 text-tiny text-good-ink">
+          {t("purchaseOrder.record.paidOk")}
+        </p>
+      ) : null}
+
+      <div className="grid max-w-[1400px] grid-cols-1 items-start gap-5 px-7 py-6 2xl:grid-cols-3">
+        <div className="flex flex-col gap-5 2xl:col-span-2">
           <section className="rounded-[var(--radius-card)] border border-line bg-surface">
             <div className="flex items-baseline gap-3 border-b border-line-subtle px-5 py-3.5">
               <h2 className="text-tiny font-semibold text-ink">{t("purchaseOrder.lines.title")}</h2>
@@ -406,6 +424,15 @@ export default async function PurchaseOrderPage({
               </p>
             </section>
           ) : null}
+
+          <RecordPanels
+            locale={locale}
+            order={order}
+            owed={owed}
+            canReceive={can(session.role, "purchase.order.issue")}
+            canRecordInvoice={can(session.role, "purchase.invoice.record")}
+            canPay={can(session.role, "payments.record")}
+          />
         </div>
       </div>
     </main>

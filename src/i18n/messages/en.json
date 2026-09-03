@@ -2208,7 +2208,11 @@
       "alreadySent": "This request has already gone out.",
       "noSuppliers": "Pick at least one supplier to ask.",
       "unknownStatus": "Choose one of the listed answers.",
-      "notQuoted": "Only a quoted supplier has terms to record."
+      "notQuoted": "Only a quoted supplier has terms to record.",
+      "noSuchAnswer": "That answer no longer exists.",
+      "requestNotSent": "The request has not been marked sent — nothing is ordered on an answer to a question never asked.",
+      "nothingPriced": "This supplier priced no line.",
+      "notAllowed": "Placing an order takes the right to issue purchase orders."
     },
     "validityDays": "Validity, in days",
     "leadTimeDays": "Lead time, in days",
@@ -2227,7 +2231,8 @@
       "sent": "Sent",
       "replyBy": "Reply by",
       "answers": "Answers"
-    }
+    },
+    "orderFromThem": "Order from them"
   },
   "ask": {
     "title": "Ask suppliers",
@@ -3958,6 +3963,46 @@
     "invoices": {
       "title": "Supplier invoices",
       "theirNumber": "Numbered by the supplier, never by us — the number on the paper is the one everybody quotes."
+    },
+    "record": {
+      "title": "Record",
+      "notIssued": "The purchase order is still a draft. Nothing can be received or billed against an order nobody has issued.",
+      "receipt": "The goods arrived",
+      "receiptGo": "Create the goods receipt",
+      "receivedOn": "Received on",
+      "supplierRef": "Supplier's delivery note no.",
+      "receivedBy": "Received by",
+      "reserves": "Reserves",
+      "reservesHint": "\"Conforming\", or what was wrong — verbatim",
+      "invoice": "Their invoice arrived",
+      "invoiceGo": "Record their invoice",
+      "theirNumber": "Their invoice number",
+      "invoiceDate": "Invoice date",
+      "dueDate": "Due date",
+      "unitPrice": "Billed unit price",
+      "invoiceHint": "Type what they billed, not what was agreed. The difference shows in the match and holds the payment until a person explains it.",
+      "payment": "We paid them",
+      "paymentGo": "Record the payment",
+      "whichInvoice": "Invoice settled",
+      "amount": "Amount",
+      "paidOn": "Paid on",
+      "bankRef": "Bank reference",
+      "paymentHint": "The amount offered is what is safe to pay: invoiced, less already paid, less what is held.",
+      "paidOk": "Payment recorded and allocated to their invoice.",
+      "createsADraft": "Creates a draft, to be read and then recorded"
+    },
+    "error": {
+      "notAllowed": "Your role does not allow this.",
+      "noSuchOrder": "That purchase order no longer exists.",
+      "orderNotIssued": "The purchase order has not been issued.",
+      "nothingToReceive": "No received quantity was entered.",
+      "nothingToBill": "No billed quantity was entered.",
+      "lineNotOnOrder": "A line entered is not on this purchase order.",
+      "theirNumberRequired": "The supplier's invoice number is required — it is their claim.",
+      "noSuchInvoice": "That supplier invoice is not recorded.",
+      "amountNotPositive": "The amount must be positive.",
+      "exceedsPayment": "The allocation exceeds the payment.",
+      "exceedsBalance": "The allocation exceeds what is still owed on that invoice."
     }
   },
   "tenders": {

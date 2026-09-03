@@ -136,7 +136,7 @@ const MEASURE = `(() => {
   // A text field a person types a sentence into, drawn narrower than a
   // sentence: the builder's designation column was 60px wide on the laptop.
   const narrowInputs = [];
-  for (const el of document.querySelectorAll('input[type=text]:not([name=unit]), input:not([type]):not([name=unit]), textarea')) {
+  for (const el of document.querySelectorAll('input[type=text]:not([name=unit]):not([inputmode=decimal]), input:not([type]):not([name=unit]):not([inputmode=decimal]), textarea')) {
     const r = el.getBoundingClientRect();
     if (r.width > 0 && r.width < 140 && narrowInputs.length < 8) narrowInputs.push(Math.round(r.width) + 'px ' + label(el));
   }
@@ -189,6 +189,7 @@ async function main() {
       if (route === "/documents/[id]/convert") return ids.offerId;
       if (route.startsWith("/documents")) return ids.invoiceId;
       if (route.startsWith("/offers")) return ids.offerId;
+      if (route.startsWith("/purchase-orders")) return ids.purchaseOrderId ?? NOWHERE;
       return NOWHERE;
     };
 
