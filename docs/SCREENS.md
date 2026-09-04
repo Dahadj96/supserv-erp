@@ -115,6 +115,7 @@ nothing gets built into this ERP without a line saying what it is for.
 | `/deliveries/new` | 14 Deliveries — the create form |
 | `/documents/new` | 47 Document builder — picking a kind before there is a draft |
 | `/inbox/[id]` | 02 Inbox — one item, opened |
+| `/prices/new` | 74 Price capture — the phone half, at a supplier's counter, with no enquiry open |
 | `/projects/new` | 15 Projects — open one on an enquiry the client said yes to |
 | `/projects/[id]/situation` | 16 Project detail — the next situation, typed against the marché's bordereau |
 | `/settings/compliance/one-pager` | 69 Compliance profile — the printable sheet |

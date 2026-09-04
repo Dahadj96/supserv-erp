@@ -49,7 +49,7 @@ export default async function FormsPage({ params }: { params: Promise<{ locale: 
 
   return (
     <main className="min-h-0 flex-1 overflow-auto">
-      <div className="border-b border-line-subtle bg-surface px-7 py-5">
+      <div className="border-b border-line-subtle bg-surface px-4 md:px-7 py-5">
         <div className="flex items-baseline gap-3">
           <h1 className="text-[19px] font-semibold text-ink">{t("forms.title")}</h1>
           <Badge tone={status === "live" ? "good" : "warning"}>
@@ -70,14 +70,14 @@ export default async function FormsPage({ params }: { params: Promise<{ locale: 
         <p className="mt-1 text-tiny text-muted">{t("forms.subtitle")}</p>
       </div>
 
-      <div className="mx-7 mt-4 flex items-start gap-3 rounded-[var(--radius-control)] border border-line bg-accent-bg px-4 py-3">
+      <div className="mx-4 md:mx-7 mt-4 flex items-start gap-3 rounded-[var(--radius-control)] border border-line bg-accent-bg px-4 py-3">
         <Info className="mt-px size-4 shrink-0 text-accent-ink" aria-hidden />
         <p className="max-w-[940px] text-tiny leading-relaxed text-accent-ink">
           {t("forms.whyNotBuilt")}
         </p>
       </div>
 
-      <div className="grid max-w-[1100px] grid-cols-1 gap-5 px-7 py-6">
+      <div className="grid max-w-[1100px] grid-cols-1 gap-5 px-4 md:px-7 py-6">
         <section className="rounded-[var(--radius-card)] border border-line bg-surface p-5">
           <h2 className="text-tiny font-semibold text-ink">{t("forms.whatItNeeds")}</h2>
           <ul className="mt-3 flex flex-col gap-2">

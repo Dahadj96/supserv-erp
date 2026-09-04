@@ -273,7 +273,7 @@ export default async function TechnicalPage({
               <span className="ms-auto text-micro text-muted">{t("technical.annexeHow")}</span>
             </div>
 
-            <dl className="mt-3 grid grid-cols-2 gap-3 text-tiny sm:grid-cols-4">
+            <dl className="mt-3 grid grid-cols-1 sm:grid-cols-2 gap-3 text-tiny sm:grid-cols-4">
               {(
                 [
                   ["pages", t("technical.nPages", { n: verdict.pages })],

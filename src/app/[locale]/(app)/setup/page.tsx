@@ -46,7 +46,7 @@ export default async function SetupPage({
 
   return (
     <main className="min-h-0 flex-1 overflow-auto">
-      <div className="flex items-start gap-3 border-b border-line-subtle bg-surface px-7 py-5">
+      <div className="flex items-start gap-3 border-b border-line-subtle bg-surface px-4 md:px-7 py-5">
         <div>
           <h1 className="text-[19px] font-semibold text-ink">{t("setup.title")}</h1>
           <p className="mt-1 text-tiny text-muted">{t("setup.subtitle")}</p>
@@ -59,7 +59,7 @@ export default async function SetupPage({
       </div>
 
       <div
-        className={`mx-7 mt-5 flex items-start gap-3 rounded-[var(--radius-control)] border px-4 py-3 ${
+        className={`mx-4 md:mx-7 mt-5 flex items-start gap-3 rounded-[var(--radius-control)] border px-4 py-3 ${
           state.canIssue ? "border-good bg-good-bg" : "border-warning bg-warning-bg"
         }`}
       >
@@ -82,13 +82,13 @@ export default async function SetupPage({
       </div>
 
       {saved ? (
-        <p className="mx-7 mt-4 rounded-[var(--radius-control)] bg-good-bg px-4 py-2.5 text-tiny text-good-ink">
+        <p className="mx-4 md:mx-7 mt-4 rounded-[var(--radius-control)] bg-good-bg px-4 py-2.5 text-tiny text-good-ink">
           {t("setup.saved")}
         </p>
       ) : null}
 
-      <div className="grid max-w-[1400px] grid-cols-3 items-start gap-5 px-7 py-6">
-        <div className="col-span-2 flex flex-col gap-5">
+      <div className="grid max-w-[1400px] grid-cols-1 md:grid-cols-3 items-start gap-5 px-4 md:px-7 py-6">
+        <div className="col-span-1 md:col-span-2 flex flex-col gap-5">
           <section className="rounded-[var(--radius-card)] border border-line bg-surface">
             <div className="flex items-baseline gap-3 border-b border-line-subtle px-5 py-3.5">
               <h2 className="text-tiny font-semibold text-ink">{t("setup.beforeAnything")}</h2>
@@ -131,7 +131,7 @@ export default async function SetupPage({
 
           <section className="rounded-[var(--radius-card)] border border-line bg-surface p-5">
             <h2 className="text-tiny font-semibold text-ink">{t("setup.willNotInvent")}</h2>
-            <div className="mt-3 grid grid-cols-3 gap-3">
+            <div className="mt-3 grid grid-cols-1 md:grid-cols-3 gap-3">
               <Panel
                 tone="critical"
                 title={t("setup.notInvent.identityTitle")}

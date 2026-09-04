@@ -73,7 +73,7 @@ export default async function ReviewPage({
 
   return (
     <main className="min-h-0 flex-1 overflow-auto">
-      <div className="flex items-start gap-3 border-b border-line-subtle bg-surface px-7 py-5">
+      <div className="flex items-start gap-3 border-b border-line-subtle bg-surface px-4 md:px-7 py-5">
         <div>
           <h1 className="text-[19px] font-semibold text-ink">
             {t("review.title", { file: review.filename, page: current, pages: review.pages })}
@@ -97,19 +97,19 @@ export default async function ReviewPage({
         </div>
       </div>
 
-      <div className="mx-7 mt-5 flex items-start gap-3 rounded-[var(--radius-control)] border border-accent bg-accent-bg px-4 py-3">
+      <div className="mx-4 md:mx-7 mt-5 flex items-start gap-3 rounded-[var(--radius-control)] border border-accent bg-accent-bg px-4 py-3">
         <Info className="mt-px size-4 shrink-0 text-accent-ink" aria-hidden />
         <p className="text-tiny leading-relaxed text-accent-ink">{t("review.becomesFact")}</p>
       </div>
 
       {confirmed ? (
-        <p className="mx-7 mt-4 rounded-[var(--radius-control)] bg-good-bg px-4 py-2.5 text-tiny text-good-ink">
+        <p className="mx-4 md:mx-7 mt-4 rounded-[var(--radius-control)] bg-good-bg px-4 py-2.5 text-tiny text-good-ink">
           {t("review.confirmedCount", { count: Number(confirmed) })}
         </p>
       ) : null}
 
       {review.unreadPages.length > 0 ? (
-        <p className="mx-7 mt-4 rounded-[var(--radius-control)] bg-warning-bg px-4 py-2.5 text-tiny text-warning-ink">
+        <p className="mx-4 md:mx-7 mt-4 rounded-[var(--radius-control)] bg-warning-bg px-4 py-2.5 text-tiny text-warning-ink">
           {t("review.unreadPages", {
             pages: review.unreadPages.join(", "),
             count: review.unreadPages.length,
@@ -117,9 +117,9 @@ export default async function ReviewPage({
         </p>
       ) : null}
 
-      <div className="grid max-w-[1400px] grid-cols-5 items-start gap-5 px-7 py-6">
+      <div className="grid max-w-[1400px] grid-cols-1 md:grid-cols-5 items-start gap-5 px-4 md:px-7 py-6">
         {/* -------------------------------------------------- the page */}
-        <section className="col-span-3 rounded-[var(--radius-card)] border border-line bg-surface">
+        <section className="col-span-1 md:col-span-3 rounded-[var(--radius-card)] border border-line bg-surface">
           <div className="flex items-center gap-2 border-b border-line-subtle px-4 py-2.5">
             <span className="truncate text-tiny text-ink">{review.filename}</span>
             {review.locale ? (
@@ -168,7 +168,7 @@ export default async function ReviewPage({
         </section>
 
         {/* ------------------------------------------------ the fields */}
-        <section className="col-span-2 rounded-[var(--radius-card)] border border-line bg-surface p-5">
+        <section className="col-span-1 md:col-span-2 rounded-[var(--radius-card)] border border-line bg-surface p-5">
           <div className="mb-3 flex items-baseline gap-3">
             <h2 className="text-tiny font-semibold text-ink">{t("review.fieldsRead")}</h2>
             <span className="ms-auto text-micro text-muted">

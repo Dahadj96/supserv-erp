@@ -8,6 +8,7 @@ import { setUiLocale, signOut } from "@/auth/actions";
 import type { Role } from "@/auth/can";
 import { Link, usePathname } from "@/i18n/navigation";
 import { NAV_GROUPS } from "./nav-items";
+import { PhoneMenu } from "./phone-menu";
 
 /**
  * Figma: component `Topbar` on page v5. Search, bell and avatar are constant;
@@ -50,12 +51,17 @@ export function Topbar({
 
   return (
     <header className="relative flex h-[58px] shrink-0 items-center gap-3 border-b border-line-subtle bg-surface pe-4 ps-4 md:ps-7">
-      <nav aria-label="Breadcrumb" className="text-tiny text-muted">
-        <span>SUPSERV</span>
+      {/* Below `md` the rail is gone; this is the door to the same list. */}
+      <PhoneMenu displayName={displayName} roleLabel={t(`auth.roles.${role}`)} />
+
+      <nav aria-label="Breadcrumb" className="min-w-0 text-tiny text-muted">
+        {/* On a phone the company name is on the drawer's header and in the
+            page above; the crumb keeps the part that says where you are. */}
+        <span className="hidden sm:inline">SUPSERV</span>
         {entry ? (
           <>
-            <span className="px-2">/</span>
-            <span className="text-secondary">{tNav(entry.messageKey)}</span>
+            <span className="hidden px-2 sm:inline">/</span>
+            <span className="block truncate text-secondary">{tNav(entry.messageKey)}</span>
           </>
         ) : null}
       </nav>

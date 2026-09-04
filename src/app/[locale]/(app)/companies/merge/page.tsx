@@ -58,7 +58,7 @@ export default async function MergePage({
 
   return (
     <main className="min-h-0 flex-1 overflow-auto">
-      <div className="flex items-start gap-3 border-b border-line-subtle bg-surface px-7 py-5">
+      <div className="flex items-start gap-3 border-b border-line-subtle bg-surface px-4 md:px-7 py-5">
         <div>
           <h1 className="text-[19px] font-semibold text-ink">{t("merge.title")}</h1>
           <p className="mt-1 text-tiny text-muted">{t("merge.subtitle")}</p>
@@ -81,15 +81,15 @@ export default async function MergePage({
         </div>
       </div>
 
-      <div className="grid max-w-[1400px] grid-cols-3 items-start gap-5 px-7 py-6">
-        <div className="col-span-2 flex flex-col gap-5">
+      <div className="grid max-w-[1400px] grid-cols-1 md:grid-cols-3 items-start gap-5 px-4 md:px-7 py-6">
+        <div className="col-span-1 md:col-span-2 flex flex-col gap-5">
           <section className="rounded-[var(--radius-card)] border border-line bg-surface p-5">
             <div className="mb-4 flex items-baseline gap-3">
               <h2 className="text-tiny font-semibold text-ink">{t("merge.fieldByField")}</h2>
               <span className="ms-auto text-micro text-muted">{t("merge.leftIsKept")}</span>
             </div>
 
-            <div className="mb-3 grid grid-cols-2 gap-3">
+            <div className="mb-3 grid grid-cols-1 sm:grid-cols-2 gap-3">
               <p className="text-tiny text-ink">
                 {kept.code}
                 <span className="ms-2 text-micro text-muted">{t("merge.keepThisOne")}</span>

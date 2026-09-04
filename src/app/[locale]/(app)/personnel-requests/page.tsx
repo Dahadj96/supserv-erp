@@ -72,7 +72,7 @@ export default async function PersonnelRequestsPage({
 
   return (
     <main className="flex min-h-0 flex-1 flex-col">
-      <div className="shrink-0 border-b border-line-subtle bg-surface px-7 py-5">
+      <div className="shrink-0 border-b border-line-subtle bg-surface px-4 md:px-7 py-5">
         <h1 className="text-[19px] font-semibold text-ink">{t("nav.personnelRequests")}</h1>
         <p className="mt-1 text-tiny text-muted">
           {t("requests.summary", {
@@ -85,7 +85,7 @@ export default async function PersonnelRequestsPage({
 
       <div className="min-h-0 flex-1 overflow-auto">
         {worst ? (
-          <div className="mx-7 mt-4 flex items-start gap-3 rounded-[var(--radius-control)] border border-critical bg-critical-bg px-4 py-3">
+          <div className="mx-4 md:mx-7 mt-4 flex items-start gap-3 rounded-[var(--radius-control)] border border-critical bg-critical-bg px-4 py-3">
             <CircleAlert className="mt-px size-4 shrink-0 text-critical-ink" aria-hidden />
             <p className="max-w-[940px] text-tiny leading-relaxed text-critical-ink">
               {t("requests.banner", {
@@ -100,7 +100,7 @@ export default async function PersonnelRequestsPage({
           </div>
         ) : null}
 
-        <div className="flex flex-wrap items-center gap-2 px-7 pt-4">
+        <div className="flex flex-wrap items-center gap-2 px-4 md:px-7 pt-4">
           {FACETS.map((facet) => (
             <Link
               key={facet}
@@ -128,20 +128,24 @@ export default async function PersonnelRequestsPage({
           <table className="mt-4 w-full border-collapse text-tiny">
             <thead>
               <tr className="border-b border-line-subtle bg-plane text-micro text-muted">
-                <th className="px-7 py-2 text-start font-medium">{t("requests.column.ref")}</th>
+                <th className="px-4 md:px-7 py-2 text-start font-medium">
+                  {t("requests.column.ref")}
+                </th>
                 <th className="px-4 py-2 text-start font-medium">{t("requests.column.role")}</th>
                 <th className="px-4 py-2 text-start font-medium">{t("requests.column.for")}</th>
                 <th className="px-4 py-2 text-start font-medium">{t("requests.column.wilaya")}</th>
                 <th className="px-4 py-2 text-end font-medium">{t("requests.column.needed")}</th>
                 <th className="px-4 py-2 text-end font-medium">{t("requests.column.confirmed")}</th>
                 <th className="px-4 py-2 text-start font-medium">{t("requests.column.start")}</th>
-                <th className="px-7 py-2 text-start font-medium">{t("requests.column.status")}</th>
+                <th className="px-4 md:px-7 py-2 text-start font-medium">
+                  {t("requests.column.status")}
+                </th>
               </tr>
             </thead>
             <tbody>
               {rows.map((row) => (
                 <tr key={row.id} className="border-b border-line-subtle hover:bg-plane">
-                  <td className="px-7 py-2.5 text-ink">{row.ref}</td>
+                  <td className="px-4 md:px-7 py-2.5 text-ink">{row.ref}</td>
                   <td className="px-4 py-2.5 text-ink">{row.role}</td>
                   <td className="px-4 py-2.5 text-secondary">
                     {row.projectId ? (
@@ -174,7 +178,7 @@ export default async function PersonnelRequestsPage({
                     ) : null}
                   </td>
                   <td className="px-4 py-2.5 text-secondary">{row.startOn ?? "—"}</td>
-                  <td className="px-7 py-2.5">
+                  <td className="px-4 md:px-7 py-2.5">
                     <Badge tone={STATE_TONE[row.request.state]}>
                       {t(`requests.state.${row.request.state}`)}
                     </Badge>
@@ -186,7 +190,7 @@ export default async function PersonnelRequestsPage({
         )}
 
         {open ? (
-          <section className="mx-7 my-6 rounded-[var(--radius-card)] border border-line bg-surface">
+          <section className="mx-4 md:mx-7 my-6 rounded-[var(--radius-card)] border border-line bg-surface">
             <div className="flex items-baseline gap-3 border-b border-line-subtle px-5 py-3.5">
               <h2 className="text-tiny font-semibold text-ink">
                 {t("requests.shortlist.title", {

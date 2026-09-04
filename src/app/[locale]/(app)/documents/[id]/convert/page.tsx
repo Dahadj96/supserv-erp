@@ -357,7 +357,7 @@ export default async function ConvertPage({
                   </label>
                 </>
               ) : (
-                <div className="grid grid-cols-2 gap-3">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                   <label>
                     <span className="text-micro text-secondary">{t("convert.invoiceDate")}</span>
                     <input

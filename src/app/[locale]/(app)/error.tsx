@@ -12,7 +12,7 @@ export default function AppError({ reset }: { error: Error; reset: () => void })
   const t = useTranslations();
 
   return (
-    <main className="min-h-0 flex-1 overflow-auto px-7 py-6">
+    <main className="min-h-0 flex-1 overflow-auto px-4 md:px-7 py-6">
       <StateBlock
         tone="error"
         title={t("empty.errorTitle")}

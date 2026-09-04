@@ -98,7 +98,7 @@ export default async function BpuPage({
 
   return (
     <main className="min-h-0 flex-1 overflow-auto">
-      <div className="border-b border-line-subtle bg-surface px-7 pt-5">
+      <div className="border-b border-line-subtle bg-surface px-4 md:px-7 pt-5">
         <div className="flex items-start gap-3">
           <div className="min-w-0">
             <h1 className="text-[19px] font-semibold text-ink">
@@ -158,14 +158,14 @@ export default async function BpuPage({
       </div>
 
       {error ? (
-        <div className="mx-7 mt-4 flex items-start gap-3 rounded-[var(--radius-control)] border border-critical bg-critical-bg px-4 py-3">
+        <div className="mx-4 md:mx-7 mt-4 flex items-start gap-3 rounded-[var(--radius-control)] border border-critical bg-critical-bg px-4 py-3">
           <CircleAlert className="mt-px size-4 shrink-0 text-critical-ink" aria-hidden />
           <p className="text-tiny leading-relaxed text-critical-ink">{t(`bpu.error.${error}`)}</p>
         </div>
       ) : null}
 
       {view.rows.length > 0 && view.knownBefore > 0 ? (
-        <div className="mx-7 mt-4 flex items-center gap-3 rounded-[var(--radius-control)] border border-good bg-good-bg px-4 py-3">
+        <div className="mx-4 md:mx-7 mt-4 flex items-center gap-3 rounded-[var(--radius-control)] border border-good bg-good-bg px-4 py-3">
           <Info className="size-4 shrink-0 text-good-ink" aria-hidden />
           <p className="max-w-[940px] text-tiny leading-relaxed text-good-ink">
             {t("bpu.banner", { lines: view.rows.length, known: view.knownBefore })}
@@ -183,8 +183,8 @@ export default async function BpuPage({
         </div>
       ) : null}
 
-      <div className="grid max-w-[1400px] grid-cols-3 items-start gap-5 px-7 py-6">
-        <div className="col-span-2 flex flex-col gap-5">
+      <div className="grid max-w-[1400px] grid-cols-1 md:grid-cols-3 items-start gap-5 px-4 md:px-7 py-6">
+        <div className="col-span-1 md:col-span-2 flex flex-col gap-5">
           {tab === "lines" ? (
             <LinesCard />
           ) : tab === "mapping" ? (
@@ -354,7 +354,7 @@ export default async function BpuPage({
             <span className="ms-auto text-micro text-muted">{t("bpu.mapping.once")}</span>
           </div>
 
-          <div className="grid grid-cols-3 gap-4 p-5">
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4 p-5">
             {batch.headers.map((heading) => (
               <label key={heading} className="block">
                 <span className="block text-micro text-muted">{heading}</span>

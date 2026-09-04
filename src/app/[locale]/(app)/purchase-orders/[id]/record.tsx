@@ -72,7 +72,7 @@ export async function RecordPanels({
                 ))}
               </tbody>
             </table>
-            <div className="grid grid-cols-2 gap-3">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
               <label>
                 <span className="text-micro text-secondary">
                   {t("purchaseOrder.record.receivedOn")}
@@ -126,7 +126,7 @@ export async function RecordPanels({
             action={supplierInvoiceAction.bind(null, locale, order.id)}
             className="mt-3 flex flex-col gap-3"
           >
-            <div className="grid grid-cols-2 gap-3">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
               <label>
                 <span className="text-micro text-secondary">
                   {t("purchaseOrder.record.theirNumber")}
@@ -185,7 +185,7 @@ export async function RecordPanels({
                 ))}
               </tbody>
             </table>
-            <div className="grid grid-cols-2 gap-3">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
               <label>
                 <span className="text-micro text-secondary">
                   {t("purchaseOrder.record.dueDate")}
@@ -240,7 +240,7 @@ export async function RecordPanels({
                 ))}
               </select>
             </label>
-            <div className="grid grid-cols-2 gap-3">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
               <label>
                 <span className="text-micro text-secondary">
                   {t("purchaseOrder.record.amount")}
@@ -259,7 +259,7 @@ export async function RecordPanels({
                 <input type="date" name="paidOn" defaultValue={today} className={`${INPUT} mt-1`} />
               </label>
             </div>
-            <div className="grid grid-cols-2 gap-3">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
               <label>
                 <span className="text-micro text-secondary">{t("convert.settlement")}</span>
                 <select name="method" defaultValue="virement" className={`${INPUT} mt-1`}>

@@ -38,12 +38,12 @@ export default async function DossierPage({
 
   return (
     <main className="min-h-0 flex-1 overflow-auto">
-      <div className="border-b border-line-subtle bg-surface px-7 py-5">
+      <div className="border-b border-line-subtle bg-surface px-4 md:px-7 py-5">
         <h1 className="text-[19px] font-semibold text-ink">{t("dossier.title")}</h1>
         <p className="mt-1 text-tiny text-muted">{t("dossier.subtitle")}</p>
       </div>
 
-      <div className="mx-7 mt-5 flex items-start gap-3 rounded-[var(--radius-control)] border border-accent bg-accent-bg px-4 py-3">
+      <div className="mx-4 md:mx-7 mt-5 flex items-start gap-3 rounded-[var(--radius-control)] border border-accent bg-accent-bg px-4 py-3">
         <Info className="mt-px size-4 shrink-0 text-accent-ink" aria-hidden />
         <p className="max-w-[860px] text-tiny leading-relaxed text-accent-ink">
           {t("dossier.textLayerFirst")}
@@ -51,12 +51,12 @@ export default async function DossierPage({
       </div>
 
       {error ? (
-        <p className="mx-7 mt-4 rounded-[var(--radius-control)] bg-critical-bg px-4 py-2.5 text-tiny text-critical-ink">
+        <p className="mx-4 md:mx-7 mt-4 rounded-[var(--radius-control)] bg-critical-bg px-4 py-2.5 text-tiny text-critical-ink">
           {t(`dossier.error.${error}`)}
         </p>
       ) : null}
 
-      <div className="max-w-[1000px] px-7 py-6">
+      <div className="max-w-[1000px] px-4 md:px-7 py-6">
         <section className="rounded-[var(--radius-card)] border border-line bg-surface p-5">
           <h2 className="text-tiny font-semibold text-ink">{t("dossier.readOne")}</h2>
           <form action={uploadDossier.bind(null, locale)} className="mt-3 flex items-end gap-3">

@@ -15,6 +15,7 @@
     "lint": "biome check .",
     "audit:actions": "node scripts/audit-actions.mjs",
     "shots": "tsx --env-file=.env scripts/screenshots.ts",
+    "phone": "tsx --env-file=.env scripts/phone-drawer.ts",
     "format": "biome check --write .",
     "test": "node scripts/test-db.mjs && vitest run --config vitest.config.mts",
     "test:db": "node scripts/test-db.mjs",

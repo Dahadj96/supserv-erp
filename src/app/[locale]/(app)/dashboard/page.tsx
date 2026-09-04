@@ -82,14 +82,14 @@ export default async function DashboardPage({ params }: { params: Promise<{ loca
 
   return (
     <main className="min-h-0 flex-1 overflow-auto">
-      <div className="border-b border-line-subtle bg-surface px-7 py-5">
+      <div className="border-b border-line-subtle bg-surface px-4 md:px-7 py-5">
         <h1 className="text-[19px] font-semibold text-ink">{t("nav.dashboard")}</h1>
         <p className="mt-1 text-tiny text-muted">
           {t("dashboard.subtitle", { role: t(`auth.roles.${session.role}`) })}
         </p>
       </div>
 
-      <div className="grid max-w-[1400px] grid-cols-4 gap-4 px-7 py-6">
+      <div className="grid max-w-[1400px] grid-cols-2 md:grid-cols-4 gap-4 px-4 md:px-7 py-6">
         <Tile
           label={t("dashboard.late")}
           value={String(late.things.length)}
@@ -123,8 +123,8 @@ export default async function DashboardPage({ params }: { params: Promise<{ loca
       </div>
 
       {seesMoney ? (
-        <div className="grid max-w-[1400px] grid-cols-3 items-start gap-5 px-7 pb-6">
-          <section className="col-span-2 rounded-[var(--radius-card)] border border-line bg-surface">
+        <div className="grid max-w-[1400px] grid-cols-1 md:grid-cols-3 items-start gap-5 px-4 md:px-7 pb-6">
+          <section className="col-span-1 md:col-span-2 rounded-[var(--radius-card)] border border-line bg-surface">
             <div className="flex items-baseline gap-3 border-b border-line-subtle px-5 py-3.5">
               <h2 className="text-tiny font-semibold text-ink">{t("dashboard.owed")}</h2>
               <Link
@@ -188,13 +188,13 @@ export default async function DashboardPage({ params }: { params: Promise<{ loca
           </section>
         </div>
       ) : (
-        <p className="mx-7 max-w-[760px] pb-6 text-micro leading-relaxed text-muted">
+        <p className="mx-4 md:mx-7 max-w-[760px] pb-6 text-micro leading-relaxed text-muted">
           {t("dashboard.moneyHidden")}
         </p>
       )}
 
       {data.everIssued ? null : (
-        <p className="mx-7 max-w-[900px] rounded-[var(--radius-control)] border border-line bg-accent-bg px-4 py-3 text-tiny leading-relaxed text-accent-ink">
+        <p className="mx-4 md:mx-7 max-w-[900px] rounded-[var(--radius-control)] border border-line bg-accent-bg px-4 py-3 text-tiny leading-relaxed text-accent-ink">
           {t("dashboard.nothingIssuedYet")}{" "}
           <Link href="/setup" className="underline">
             {t("settings.dayOne")}

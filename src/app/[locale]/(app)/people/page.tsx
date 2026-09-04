@@ -47,7 +47,7 @@ export default async function PeoplePage({
 
   return (
     <main className="flex min-h-0 flex-1 flex-col overflow-auto">
-      <div className="flex shrink-0 items-start gap-3 border-b border-line-subtle bg-surface px-7 py-5">
+      <div className="flex shrink-0 items-start gap-3 border-b border-line-subtle bg-surface px-4 md:px-7 py-5">
         <div>
           <h1 className="text-[19px] font-semibold text-ink">{t("nav.people")}</h1>
           <p className="mt-1 text-tiny text-muted">
@@ -66,17 +66,17 @@ export default async function PeoplePage({
       </div>
 
       {error ? (
-        <p className="mx-7 mt-5 rounded-[var(--radius-control)] bg-critical-bg px-3 py-2 text-micro text-critical-ink">
+        <p className="mx-4 md:mx-7 mt-5 rounded-[var(--radius-control)] bg-critical-bg px-3 py-2 text-micro text-critical-ink">
           {t(`people.error.${error}`)}
         </p>
       ) : null}
 
-      <div className="mx-7 mt-5 flex items-start gap-3 rounded-[var(--radius-control)] border border-accent bg-accent-bg px-4 py-3">
+      <div className="mx-4 md:mx-7 mt-5 flex items-start gap-3 rounded-[var(--radius-control)] border border-accent bg-accent-bg px-4 py-3">
         <Info className="mt-px size-4 shrink-0 text-accent-ink" aria-hidden />
         <p className="text-tiny leading-relaxed text-accent-ink">{t("people.directlyBanner")}</p>
       </div>
 
-      <div className="flex flex-wrap items-center gap-2 px-7 pt-5">
+      <div className="flex flex-wrap items-center gap-2 px-4 md:px-7 pt-5">
         {PEOPLE_FACETS.map((key) => {
           const active = key === facet;
           return (
@@ -99,8 +99,8 @@ export default async function PeoplePage({
 
       <PeopleList rows={rows} total={counts.all} />
 
-      <div className="grid max-w-[1400px] grid-cols-3 items-start gap-5 px-7 pb-8">
-        <div className="col-span-2">
+      <div className="grid max-w-[1400px] grid-cols-1 md:grid-cols-3 items-start gap-5 px-4 md:px-7 pb-8">
+        <div className="col-span-1 md:col-span-2">
           <AddPerson locale={locale} employers={employers} />
         </div>
 

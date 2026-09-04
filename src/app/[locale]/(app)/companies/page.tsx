@@ -44,7 +44,7 @@ export default async function CompaniesPage({ params }: { params: Promise<{ loca
 
   return (
     <main className="flex min-h-0 flex-1 flex-col">
-      <div className="flex shrink-0 items-start gap-3 border-b border-line-subtle bg-surface px-7 py-5">
+      <div className="flex shrink-0 items-start gap-3 border-b border-line-subtle bg-surface px-4 md:px-7 py-5">
         <div>
           <h1 className="text-[19px] font-semibold text-ink">{t("nav.companies")}</h1>
           <p className="mt-1 text-tiny text-muted">
@@ -61,7 +61,7 @@ export default async function CompaniesPage({ params }: { params: Promise<{ loca
       </div>
 
       {duplicates.length > 0 ? (
-        <div className="mx-7 mt-5 flex items-center gap-3 rounded-[var(--radius-control)] border border-warning bg-warning-bg px-4 py-2.5">
+        <div className="mx-4 md:mx-7 mt-5 flex items-center gap-3 rounded-[var(--radius-control)] border border-warning bg-warning-bg px-4 py-2.5">
           <p className="text-tiny text-warning-ink">
             {t("merge.banner", { count: duplicates.length })}
           </p>

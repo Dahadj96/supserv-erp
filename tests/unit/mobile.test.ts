@@ -49,7 +49,7 @@ describe("what a phone is for", () => {
     // Written out rather than derived from PHONE_JOBS, which would make it
     // tautological. The point is that shipping a phone job is a deliberate act:
     // somebody flips `built` and comes here to say so.
-    expect(phoneBar().map((j) => j.key)).toEqual(["capture", "approve", "today"]);
+    expect(phoneBar().map((j) => j.key)).toEqual(["capture", "price", "approve", "today"]);
   });
 });
 

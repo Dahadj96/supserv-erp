@@ -113,7 +113,7 @@ export default async function EditDocumentPage({
 
   return (
     <main className="min-h-0 flex-1 overflow-auto">
-      <div className="flex items-start gap-3 border-b border-line-subtle bg-surface px-7 py-5">
+      <div className="flex items-start gap-3 border-b border-line-subtle bg-surface px-4 md:px-7 py-5">
         <div>
           <p className="text-micro text-muted">{kindName(record.kind)}</p>
           <h1 className="mt-0.5 flex items-center gap-2 text-[19px] font-semibold text-ink">
@@ -135,17 +135,17 @@ export default async function EditDocumentPage({
       </div>
 
       {saved ? (
-        <p className="mx-7 mt-4 rounded-[var(--radius-control)] bg-good-bg px-4 py-2.5 text-tiny text-good-ink">
+        <p className="mx-4 md:mx-7 mt-4 rounded-[var(--radius-control)] bg-good-bg px-4 py-2.5 text-tiny text-good-ink">
           {t("builder.saved")}
         </p>
       ) : null}
       {error ? (
-        <p className="mx-7 mt-4 rounded-[var(--radius-control)] bg-critical-bg px-4 py-2.5 text-tiny text-critical-ink">
+        <p className="mx-4 md:mx-7 mt-4 rounded-[var(--radius-control)] bg-critical-bg px-4 py-2.5 text-tiny text-critical-ink">
           {t.has(`builder.error.${error}`) ? t(`builder.error.${error}`) : error}
         </p>
       ) : null}
 
-      <div className="max-w-[1400px] px-7 py-6">
+      <div className="max-w-[1400px] px-4 md:px-7 py-6">
         <Builder
           locale={record.locale}
           kind={record.kind}

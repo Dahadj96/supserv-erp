@@ -53,7 +53,7 @@ export function DataTable<Row extends { id: string }>({
 
   return (
     <section className="flex min-h-0 flex-1 flex-col">
-      <div className="flex items-center gap-2 px-7 py-3">
+      <div className="flex items-center gap-2 px-4 py-3 md:px-7">
         <SavedViews
           views={savedViews}
           activeId={activeView}
@@ -104,11 +104,18 @@ export function DataTable<Row extends { id: string }>({
         </div>
       </div>
 
-      <div className="mx-7 min-h-0 flex-1 overflow-auto rounded-[var(--radius-card)] border border-line bg-surface">
+      <div className="mx-4 min-h-0 flex-1 overflow-auto rounded-[var(--radius-card)] border border-line bg-surface md:mx-7">
         {rows.length === 0 ? (
           <div className="px-6 py-14 text-center">{emptyState}</div>
         ) : (
-          <table className="w-full border-collapse text-tiny">
+          /*
+            On a phone the table keeps its columns and the card scrolls
+            sideways; it does not shrink them to fit. Six columns squeezed into
+            390px wrap every cell to three lines and cut the last one off —
+            legible columns you slide to beat illegible columns you cannot.
+            Above `md` the width is the container's, exactly as before.
+          */
+          <table className="w-full min-w-[760px] border-collapse text-tiny md:min-w-0">
             <thead>
               <tr className="border-b border-line-subtle text-muted">
                 <th className="w-9 px-3 py-2.5">

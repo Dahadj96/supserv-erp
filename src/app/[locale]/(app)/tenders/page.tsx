@@ -57,7 +57,7 @@ export default async function TendersPage({
 
   return (
     <main className="flex min-h-0 flex-1 flex-col">
-      <div className="shrink-0 border-b border-line-subtle bg-surface px-7 py-5">
+      <div className="shrink-0 border-b border-line-subtle bg-surface px-4 md:px-7 py-5">
         <h1 className="text-[19px] font-semibold text-ink">{t("nav.tenders")}</h1>
         <p className="mt-1 text-tiny text-muted">
           {t("tenders.summary", {
@@ -68,7 +68,7 @@ export default async function TendersPage({
         </p>
       </div>
 
-      <div className="flex shrink-0 flex-wrap items-center gap-2 border-b border-line-subtle bg-surface px-7 py-2.5">
+      <div className="flex shrink-0 flex-wrap items-center gap-2 border-b border-line-subtle bg-surface px-4 md:px-7 py-2.5">
         {FACETS.map((facet) => (
           <Link
             key={facet}
@@ -97,7 +97,9 @@ export default async function TendersPage({
           <table className="w-full border-collapse text-tiny">
             <thead>
               <tr className="border-b border-line-subtle bg-plane text-micro text-muted">
-                <th className="px-7 py-2 text-start font-medium">{t("tenders.column.ref")}</th>
+                <th className="px-4 md:px-7 py-2 text-start font-medium">
+                  {t("tenders.column.ref")}
+                </th>
                 <th className="px-4 py-2 text-start font-medium">
                   {t("tenders.column.authority")}
                 </th>
@@ -110,13 +112,15 @@ export default async function TendersPage({
                 </th>
                 <th className="px-4 py-2 text-end font-medium">{t("tenders.column.caution")}</th>
                 <th className="px-4 py-2 text-start font-medium">{t("tenders.column.dossier")}</th>
-                <th className="px-7 py-2 text-start font-medium">{t("tenders.column.closes")}</th>
+                <th className="px-4 md:px-7 py-2 text-start font-medium">
+                  {t("tenders.column.closes")}
+                </th>
               </tr>
             </thead>
             <tbody>
               {rows.map((row) => (
                 <tr key={row.dealId} className="border-b border-line-subtle hover:bg-plane">
-                  <td className="px-7 py-2.5">
+                  <td className="px-4 md:px-7 py-2.5">
                     <Link href={`/tenders/${row.dealId}`} className="text-ink hover:underline">
                       {/* Their reference, not ours. It is the one on every
                           envelope and in every email about this tender. */}
@@ -162,7 +166,7 @@ export default async function TendersPage({
                       <span className="tabular-nums text-micro text-secondary">{row.percent}%</span>
                     </div>
                   </td>
-                  <td className="px-7 py-2.5">
+                  <td className="px-4 md:px-7 py-2.5">
                     {row.submittedAt ? (
                       <Badge tone="good">
                         {t("tenders.submittedOn", {

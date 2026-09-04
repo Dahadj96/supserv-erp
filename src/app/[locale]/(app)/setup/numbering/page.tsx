@@ -40,12 +40,12 @@ export default async function NumberingPage({
 
   return (
     <main className="min-h-0 flex-1 overflow-auto">
-      <div className="border-b border-line-subtle bg-surface px-7 py-5">
+      <div className="border-b border-line-subtle bg-surface px-4 md:px-7 py-5">
         <h1 className="text-[19px] font-semibold text-ink">{t("setup.numberingTitle")}</h1>
         <p className="mt-1 text-tiny text-muted">{t("setup.numberingSubtitle")}</p>
       </div>
 
-      <div className="max-w-[860px] px-7 py-6">
+      <div className="max-w-[860px] px-4 md:px-7 py-6">
         {error ? (
           <p className="mb-4 rounded-[var(--radius-control)] bg-critical-bg px-3 py-2 text-micro text-critical-ink">
             {t(`setup.error.${error}`)}
@@ -103,7 +103,7 @@ export default async function NumberingPage({
           <h2 className="text-tiny font-semibold text-ink">{t("setup.addSeries")}</h2>
 
           <form action={saveSeries.bind(null, locale)} className="mt-3">
-            <div className="grid grid-cols-3 gap-4">
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
               <Field htmlFor="kind" label={t("setup.f.kind")} required>
                 <select id="kind" name="kind" className={INPUT} defaultValue="">
                   <option value="" disabled>

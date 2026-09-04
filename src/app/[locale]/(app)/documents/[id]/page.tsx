@@ -83,7 +83,7 @@ export default async function DocumentPage({
 
   return (
     <main className="min-h-0 flex-1 overflow-auto">
-      <div className="flex items-start gap-3 border-b border-line-subtle bg-surface px-7 py-5">
+      <div className="flex items-start gap-3 border-b border-line-subtle bg-surface px-4 md:px-7 py-5">
         <div>
           <p className="text-micro text-muted">
             {t.has(`documents.kind.${doc.kind}`) ? t(`documents.kind.${doc.kind}`) : doc.kind}
@@ -153,26 +153,26 @@ export default async function DocumentPage({
       </div>
 
       {issued ? (
-        <p className="mx-7 mt-4 rounded-[var(--radius-control)] bg-good-bg px-4 py-2.5 text-tiny text-good-ink">
+        <p className="mx-4 md:mx-7 mt-4 rounded-[var(--radius-control)] bg-good-bg px-4 py-2.5 text-tiny text-good-ink">
           {t("documents.issuedOk", { number: doc.number ?? "" })}
         </p>
       ) : null}
 
       {converted ? (
-        <p className="mx-7 mt-4 rounded-[var(--radius-control)] bg-accent-bg px-4 py-2.5 text-tiny text-accent-ink">
+        <p className="mx-4 md:mx-7 mt-4 rounded-[var(--radius-control)] bg-accent-bg px-4 py-2.5 text-tiny text-accent-ink">
           {t("documents.convertedOk")}
         </p>
       ) : null}
 
       {error ? (
-        <p className="mx-7 mt-4 rounded-[var(--radius-control)] bg-critical-bg px-4 py-2.5 text-tiny text-critical-ink">
+        <p className="mx-4 md:mx-7 mt-4 rounded-[var(--radius-control)] bg-critical-bg px-4 py-2.5 text-tiny text-critical-ink">
           {t.has(`documents.error.${error}`) ? t(`documents.error.${error}`) : error}
           {rule && t.has(`rules.${rule}`) ? ` — ${t(`rules.${rule}`)}` : null}
         </p>
       ) : null}
 
       {blockedRow ? (
-        <div className="mx-7 mt-4 flex items-start gap-3 rounded-[var(--radius-control)] border border-critical bg-critical-bg px-4 py-3">
+        <div className="mx-4 md:mx-7 mt-4 flex items-start gap-3 rounded-[var(--radius-control)] border border-critical bg-critical-bg px-4 py-3">
           <CircleX className="mt-px size-4 shrink-0 text-critical-ink" aria-hidden />
           <p className="max-w-[900px] text-tiny leading-relaxed text-critical-ink">
             {t("documents.cannotIssueBecause", { reason: rowLabel(t, blockedRow) })}{" "}
@@ -188,8 +188,8 @@ export default async function DocumentPage({
         </div>
       ) : null}
 
-      <div className="grid max-w-[1400px] grid-cols-3 items-start gap-5 px-7 py-6">
-        <section className="col-span-2 rounded-[var(--radius-card)] border border-line bg-surface p-3">
+      <div className="grid max-w-[1400px] grid-cols-1 md:grid-cols-3 items-start gap-5 px-4 md:px-7 py-6">
+        <section className="col-span-1 md:col-span-2 rounded-[var(--radius-card)] border border-line bg-surface p-3">
           {/* A4 is 1:1.414. The object element gives us the browser's own PDF
               viewer, which is the closest thing to what the client will open. */}
           <object

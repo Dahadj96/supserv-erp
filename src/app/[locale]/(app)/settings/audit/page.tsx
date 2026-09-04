@@ -98,7 +98,7 @@ export default async function AuditPage({
 
   return (
     <main className="flex min-h-0 flex-1 flex-col">
-      <div className="shrink-0 border-b border-line-subtle bg-surface px-7 py-5">
+      <div className="shrink-0 border-b border-line-subtle bg-surface px-4 md:px-7 py-5">
         <h1 className="text-[19px] font-semibold text-ink">{t("audit.title")}</h1>
         <p className="mt-1 text-tiny text-muted">
           {since
@@ -107,7 +107,7 @@ export default async function AuditPage({
         </p>
       </div>
 
-      <div className="mx-7 mt-4 flex items-start gap-3 rounded-[var(--radius-control)] border border-line bg-accent-bg px-4 py-3">
+      <div className="mx-4 md:mx-7 mt-4 flex items-start gap-3 rounded-[var(--radius-control)] border border-line bg-accent-bg px-4 py-3">
         <Info className="mt-px size-4 shrink-0 text-accent-ink" aria-hidden />
         <p className="max-w-[940px] text-tiny leading-relaxed text-accent-ink">
           {t("audit.banner")}
@@ -118,7 +118,7 @@ export default async function AuditPage({
         <p className="max-w-[620px] p-7 text-tiny leading-relaxed text-muted">{t("audit.empty")}</p>
       ) : (
         <>
-          <div className="mt-4 flex shrink-0 flex-wrap items-center gap-2 border-y border-line-subtle bg-surface px-7 py-2.5">
+          <div className="mt-4 flex shrink-0 flex-wrap items-center gap-2 border-y border-line-subtle bg-surface px-4 md:px-7 py-2.5">
             <Link
               href={keep({ entity: undefined, page: undefined })}
               aria-current={entity ? undefined : "page"}
@@ -183,7 +183,7 @@ export default async function AuditPage({
             <table className="w-full border-collapse text-tiny">
               <thead>
                 <tr className="border-b border-line-subtle bg-plane">
-                  <th className="w-[160px] px-7 py-2 text-start font-medium text-muted">
+                  <th className="w-[160px] px-4 md:px-7 py-2 text-start font-medium text-muted">
                     {t("audit.column.when")}
                   </th>
                   <th className="w-[180px] px-4 py-2 text-start font-medium text-muted">
@@ -195,7 +195,7 @@ export default async function AuditPage({
                   <th className="px-4 py-2 text-start font-medium text-muted">
                     {t("audit.column.changed")}
                   </th>
-                  <th className="w-[90px] px-7 py-2 text-end font-medium text-muted">
+                  <th className="w-[90px] px-4 md:px-7 py-2 text-end font-medium text-muted">
                     {t("audit.column.from")}
                   </th>
                 </tr>
@@ -208,7 +208,7 @@ export default async function AuditPage({
 
                   return (
                     <tr key={row.id} className="border-b border-line-subtle align-top">
-                      <td className="px-7 py-2.5 text-secondary">{stamp(row.at)}</td>
+                      <td className="px-4 md:px-7 py-2.5 text-secondary">{stamp(row.at)}</td>
                       <td className="px-4 py-2.5">
                         <span className="flex items-center gap-1.5">
                           <Icon className="size-3.5 shrink-0 text-muted" aria-hidden />
@@ -260,7 +260,7 @@ export default async function AuditPage({
                           </>
                         )}
                       </td>
-                      <td className="px-7 py-2.5 text-end text-micro text-muted">
+                      <td className="px-4 md:px-7 py-2.5 text-end text-micro text-muted">
                         {row.sourceScreen ? `#${row.sourceScreen}` : "—"}
                       </td>
                     </tr>
@@ -270,7 +270,7 @@ export default async function AuditPage({
             </table>
           </div>
 
-          <div className="flex shrink-0 items-center gap-3 border-t border-line-subtle bg-surface px-7 py-2.5">
+          <div className="flex shrink-0 items-center gap-3 border-t border-line-subtle bg-surface px-4 md:px-7 py-2.5">
             <span className="text-micro text-muted">
               {t("audit.showing", { from: page * PAGE + 1, to: page * PAGE + rows.length })}
             </span>

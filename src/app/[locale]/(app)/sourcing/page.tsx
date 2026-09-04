@@ -37,7 +37,7 @@ export default async function SourcingPage({ params }: { params: Promise<{ local
 
   return (
     <main className="flex min-h-0 flex-1 flex-col">
-      <div className="shrink-0 border-b border-line-subtle bg-surface px-7 py-5">
+      <div className="shrink-0 border-b border-line-subtle bg-surface px-4 md:px-7 py-5">
         <h1 className="text-[19px] font-semibold text-ink">{t("nav.sourcing")}</h1>
         <p className="mt-1 text-tiny text-muted">
           {counts.all === 0
@@ -47,7 +47,7 @@ export default async function SourcingPage({ params }: { params: Promise<{ local
       </div>
 
       {counts.bounced > 0 ? (
-        <div className="mx-7 mt-4 flex items-start gap-3 rounded-[var(--radius-control)] border border-line bg-warning-bg px-4 py-3">
+        <div className="mx-4 md:mx-7 mt-4 flex items-start gap-3 rounded-[var(--radius-control)] border border-line bg-warning-bg px-4 py-3">
           <MailWarning className="mt-px size-4 shrink-0 text-warning-ink" aria-hidden />
           <p className="max-w-[900px] text-tiny leading-relaxed text-warning-ink">
             {t("sourcing.bouncedWarning", { count: counts.bounced })}
@@ -64,7 +64,7 @@ export default async function SourcingPage({ params }: { params: Promise<{ local
           <table className="w-full border-collapse text-tiny">
             <thead>
               <tr className="border-b border-line-subtle bg-plane">
-                <th className="px-7 py-2 text-start font-medium text-muted">
+                <th className="px-4 md:px-7 py-2 text-start font-medium text-muted">
                   {t("sourcing.column.ref")}
                 </th>
                 <th className="px-4 py-2 text-start font-medium text-muted">
@@ -79,7 +79,7 @@ export default async function SourcingPage({ params }: { params: Promise<{ local
                 <th className="px-4 py-2 text-start font-medium text-muted">
                   {t("sourcing.column.replyBy")}
                 </th>
-                <th className="px-7 py-2 text-end font-medium text-muted">
+                <th className="px-4 md:px-7 py-2 text-end font-medium text-muted">
                   {t("sourcing.column.answers")}
                 </th>
               </tr>
@@ -87,7 +87,7 @@ export default async function SourcingPage({ params }: { params: Promise<{ local
             <tbody>
               {rows.map((row) => (
                 <tr key={row.id} className="border-b border-line-subtle hover:bg-plane">
-                  <td className="px-7 py-2.5">
+                  <td className="px-4 md:px-7 py-2.5">
                     <Link href={`/sourcing/${row.id}`} className="text-ink hover:underline">
                       {row.ref}
                     </Link>
@@ -103,7 +103,7 @@ export default async function SourcingPage({ params }: { params: Promise<{ local
                     )}
                   </td>
                   <td className="px-4 py-2.5 text-secondary">{day(row.replyBy)}</td>
-                  <td className="px-7 py-2.5 text-end">
+                  <td className="px-4 md:px-7 py-2.5 text-end">
                     <span className="inline-flex items-center gap-2">
                       <span className="text-micro tabular-nums text-secondary">
                         {t("sourcing.quotedOf", { quoted: row.quoted, asked: row.asked })}

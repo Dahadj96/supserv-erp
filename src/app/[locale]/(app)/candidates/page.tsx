@@ -77,7 +77,7 @@ export default async function CandidatesPage({
 
   return (
     <main className="flex min-h-0 flex-1 flex-col">
-      <div className="shrink-0 border-b border-line-subtle bg-surface px-7 py-5">
+      <div className="shrink-0 border-b border-line-subtle bg-surface px-4 md:px-7 py-5">
         <h1 className="text-[19px] font-semibold text-ink">{t("candidates.title")}</h1>
         <p className="mt-1 text-tiny text-muted">
           {t("candidates.subtitle", { n: counts.all, expiring: counts.expiring })}
@@ -86,7 +86,7 @@ export default async function CandidatesPage({
 
       <div className="min-h-0 flex-1 overflow-auto">
         {counts.expiring > 0 ? (
-          <div className="mx-7 mt-4 flex items-start gap-3 rounded-[var(--radius-control)] border border-warning bg-warning-bg px-4 py-3">
+          <div className="mx-4 md:mx-7 mt-4 flex items-start gap-3 rounded-[var(--radius-control)] border border-warning bg-warning-bg px-4 py-3">
             <TriangleAlert className="mt-px size-4 shrink-0 text-warning-ink" aria-hidden />
             <p className="max-w-[940px] text-tiny leading-relaxed text-warning-ink">
               {t("candidates.expiringBanner", {
@@ -97,7 +97,7 @@ export default async function CandidatesPage({
           </div>
         ) : null}
 
-        <div className="flex flex-wrap items-center gap-2 px-7 pt-4">
+        <div className="flex flex-wrap items-center gap-2 px-4 md:px-7 pt-4">
           {FACETS.map((facet) => (
             <Link
               key={facet}
@@ -118,7 +118,7 @@ export default async function CandidatesPage({
         </div>
 
         {counts.trades.length > 1 ? (
-          <div className="flex flex-wrap items-center gap-2 px-7 pt-2.5">
+          <div className="flex flex-wrap items-center gap-2 px-4 md:px-7 pt-2.5">
             <span className="text-micro text-muted">{t("candidates.discipline")}</span>
             {counts.trades.map((trade) => (
               <Link
@@ -144,7 +144,9 @@ export default async function CandidatesPage({
           <table className="mt-4 w-full border-collapse text-tiny">
             <thead>
               <tr className="border-b border-line-subtle bg-plane text-micro text-muted">
-                <th className="px-7 py-2 text-start font-medium">{t("candidates.column.name")}</th>
+                <th className="px-4 md:px-7 py-2 text-start font-medium">
+                  {t("candidates.column.name")}
+                </th>
                 <th className="px-4 py-2 text-start font-medium">
                   {t("candidates.column.discipline")}
                 </th>
@@ -163,7 +165,7 @@ export default async function CandidatesPage({
                 <th className="px-4 py-2 text-start font-medium">
                   {t("candidates.column.received")}
                 </th>
-                <th className="px-7 py-2 text-start font-medium">
+                <th className="px-4 md:px-7 py-2 text-start font-medium">
                   {t("candidates.column.status")}
                 </th>
               </tr>
@@ -171,7 +173,7 @@ export default async function CandidatesPage({
             <tbody>
               {rows.map((row) => (
                 <tr key={row.id} className="border-b border-line-subtle hover:bg-plane">
-                  <td className="px-7 py-2.5">
+                  <td className="px-4 md:px-7 py-2.5">
                     <Link href={`/candidates/${row.id}`} className="text-ink hover:underline">
                       {row.name}
                     </Link>
@@ -205,7 +207,7 @@ export default async function CandidatesPage({
                   <td className="px-4 py-2.5 text-secondary">
                     {format.dateTime(row.receivedAt, { day: "numeric", month: "short" })}
                   </td>
-                  <td className="px-7 py-2.5">
+                  <td className="px-4 md:px-7 py-2.5">
                     <Badge tone={row.hired ? "good" : STAGE_TONE[row.stage]}>
                       {t(`candidates.stage.${row.hired ? "hired" : row.stage}`)}
                     </Badge>

@@ -42,7 +42,7 @@ export default async function CompanyPage({
   const gone = await deletedPartyNotice(id);
   if (gone) {
     return (
-      <main className="min-h-0 flex-1 overflow-auto px-7 py-10">
+      <main className="min-h-0 flex-1 overflow-auto px-4 md:px-7 py-10">
         <div className="mx-auto max-w-[560px] rounded-[var(--radius-card)] border border-line bg-surface p-6">
           <h1 className="text-lead font-semibold text-ink">
             {t("bin.goneTitle", { code: gone.code, name: gone.legalName })}
@@ -72,7 +72,7 @@ export default async function CompanyPage({
 
   return (
     <main className="min-h-0 flex-1 overflow-auto">
-      <div className="flex items-start gap-3 border-b border-line-subtle bg-surface px-7 py-5">
+      <div className="flex items-start gap-3 border-b border-line-subtle bg-surface px-4 md:px-7 py-5">
         <div>
           <h1 className="text-[19px] font-semibold text-ink">{company.legalName}</h1>
           <p className="mt-1 flex items-center gap-2 text-tiny text-muted">
@@ -102,8 +102,8 @@ export default async function CompanyPage({
         </div>
       </div>
 
-      <div className="grid max-w-[1100px] grid-cols-3 gap-5 px-7 py-6">
-        <section className="col-span-2 rounded-[var(--radius-card)] border border-line bg-surface p-5">
+      <div className="grid max-w-[1100px] grid-cols-1 md:grid-cols-3 gap-5 px-4 md:px-7 py-6">
+        <section className="col-span-1 md:col-span-2 rounded-[var(--radius-card)] border border-line bg-surface p-5">
           <h2 className="text-tiny font-semibold text-ink">{t("company.legalIdentity")}</h2>
           <p className="mt-1 text-micro text-muted">{t("company.usedOnEveryInvoice")}</p>
           <div className="mt-3">
@@ -152,7 +152,7 @@ export default async function CompanyPage({
           </form>
         </section>
 
-        <section className="col-span-3 rounded-[var(--radius-card)] border border-line bg-surface p-5">
+        <section className="col-span-1 md:col-span-3 rounded-[var(--radius-card)] border border-line bg-surface p-5">
           <h2 className="text-tiny font-semibold text-ink">{t("nav.contacts")}</h2>
           {contacts.length === 0 ? (
             <p className="mt-2 text-micro text-muted">{t("company.noContacts")}</p>
@@ -187,7 +187,7 @@ export default async function CompanyPage({
         </section>
 
         {/* Screen 83 — three words that are not the same. */}
-        <section className="col-span-3 rounded-[var(--radius-card)] border border-line bg-surface p-5">
+        <section className="col-span-1 md:col-span-3 rounded-[var(--radius-card)] border border-line bg-surface p-5">
           <h2 className="text-tiny font-semibold text-ink">{t("bin.removing")}</h2>
           <p className="mt-1 max-w-[720px] text-micro leading-relaxed text-secondary">
             {t("bin.removingHelp")}

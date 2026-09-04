@@ -66,7 +66,7 @@ export async function CompanyForm({
         <h2 className="text-tiny font-semibold text-ink">{t("company.identity")}</h2>
         <p className="mt-1 text-micro text-secondary">{t("company.identityHelp")}</p>
 
-        <div className="mt-4 grid grid-cols-2 gap-4">
+        <div className="mt-4 grid grid-cols-1 sm:grid-cols-2 gap-4">
           <Field htmlFor="legalName" label={t("companies.legalName")}>
             <input
               id="legalName"
@@ -115,7 +115,7 @@ export async function CompanyForm({
         <p className="mt-1 max-w-[620px] text-micro leading-relaxed text-secondary">
           {t("company.legalIdentityHelp")}
         </p>
-        <div className="mt-4 grid grid-cols-4 gap-4">
+        <div className="mt-4 grid grid-cols-2 md:grid-cols-4 gap-4">
           <Field htmlFor="nif" label="NIF" hint={t("company.nifHint")}>
             <input
               id="nif"
@@ -139,7 +139,7 @@ export async function CompanyForm({
 
       <section className="rounded-[var(--radius-card)] border border-line bg-surface p-5">
         <h2 className="text-tiny font-semibold text-ink">{t("company.reaching")}</h2>
-        <div className="mt-4 grid grid-cols-2 gap-4">
+        <div className="mt-4 grid grid-cols-1 sm:grid-cols-2 gap-4">
           <Field htmlFor="email" label={t("company.email")}>
             <input
               id="email"
@@ -178,7 +178,7 @@ export async function CompanyForm({
         <p className="mt-1 max-w-[620px] text-micro leading-relaxed text-secondary">
           {t("company.docLocaleHelp")}
         </p>
-        <div className="mt-4 grid grid-cols-4 gap-4">
+        <div className="mt-4 grid grid-cols-2 md:grid-cols-4 gap-4">
           <Field htmlFor="docLocale" label={t("companies.docLocale")}>
             <select
               id="docLocale"

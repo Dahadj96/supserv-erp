@@ -49,7 +49,7 @@ export default async function ContactsPage({
 
   return (
     <main className="flex min-h-0 flex-1 flex-col overflow-auto">
-      <div className="flex shrink-0 items-start gap-3 border-b border-line-subtle bg-surface px-7 py-5">
+      <div className="flex shrink-0 items-start gap-3 border-b border-line-subtle bg-surface px-4 md:px-7 py-5">
         <div>
           <h1 className="text-[19px] font-semibold text-ink">{t("nav.contacts")}</h1>
           <p className="mt-1 text-tiny text-muted">
@@ -75,7 +75,7 @@ export default async function ContactsPage({
       </div>
 
       {first ? (
-        <div className="mx-7 mt-5 flex items-center gap-3 rounded-[var(--radius-control)] border border-critical bg-critical-bg px-4 py-2.5">
+        <div className="mx-4 md:mx-7 mt-5 flex items-center gap-3 rounded-[var(--radius-control)] border border-critical bg-critical-bg px-4 py-2.5">
           <CircleAlert className="size-4 shrink-0 text-critical-ink" aria-hidden />
           <p className="text-tiny text-critical-ink">
             {first.lastContactAt
@@ -98,7 +98,7 @@ export default async function ContactsPage({
         </div>
       ) : null}
 
-      <div className="flex flex-wrap items-center gap-2 px-7 pt-5">
+      <div className="flex flex-wrap items-center gap-2 px-4 md:px-7 pt-5">
         {CONTACT_FACETS.map((key) => {
           const active = key === facet;
           return (
@@ -121,8 +121,8 @@ export default async function ContactsPage({
 
       <ContactsList rows={rows} total={counts.all} />
 
-      <div className="grid max-w-[1400px] grid-cols-3 items-start gap-5 px-7 pb-8">
-        <section className="col-span-2 rounded-[var(--radius-card)] border border-line bg-surface p-5">
+      <div className="grid max-w-[1400px] grid-cols-1 md:grid-cols-3 items-start gap-5 px-4 md:px-7 pb-8">
+        <section className="col-span-1 md:col-span-2 rounded-[var(--radius-card)] border border-line bg-surface p-5">
           <h2 className="text-tiny font-semibold text-ink">{t("contacts.whyOwnScreenTitle")}</h2>
           <p className="mt-2 max-w-[680px] text-tiny leading-relaxed text-secondary">
             {t("contacts.whyOwnScreenBody")}

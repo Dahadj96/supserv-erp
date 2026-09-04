@@ -235,3 +235,124 @@ export async function addQuote(input: NewQuote): Promise<string> {
 
   return id;
 }
+
+export type CounterPrice = {
+  /** What it was a price FOR, in words. The only mandatory subject. */
+  designation: string;
+  /** The shop. Created as a supplier with a name and nothing else if new. */
+  supplierName: string;
+  price: string;
+  currency?: string;
+  isExclVat: boolean;
+  /** Said, not written. True at a counter unless a paper came back with you. */
+  isVerbal: boolean;
+  /** "Ets Chergui, Adrar" — where you were standing. */
+  capturedPlace?: string | null;
+  /** Who said it, when the who is a person rather than a company. */
+  capturedFrom?: string | null;
+  validUntil?: string | null;
+  actorId: string;
+};
+
+/**
+ * Screen 74 — at the counter, writing down a price. The second of the four
+ * phone jobs.
+ *
+ * This is `addQuote`'s case with the enquiry taken away, and taking it away is
+ * the whole point: standing in a shop in Adrar there is usually no consultation
+ * open, and the price is worth keeping anyway. The schema said so from the
+ * start — `price_quote_has_a_subject` accepts a DESIGNATION as the subject, and
+ * `deal_id` is nullable because "a price with no deal is a catalogue price and
+ * serves every future enquiry".
+ *
+ * It serves them through `priceHistory`, which matches on the wording: a price
+ * captured at a counter in September answers "what did this cost last time" on
+ * an offer built in November, without anybody filing it anywhere.
+ *
+ * `isVerbal` defaults to true on the screen and is recorded either way, because
+ * the offer's "unconfirmed" mark rests on it — LAW 2, on a phone.
+ */
+export async function capturePrice(input: CounterPrice): Promise<string> {
+  const designation = input.designation.trim();
+  if (!designation) throw new PriceRefused("noSubject");
+
+  const price = input.price
+    .trim()
+    .replace(/[\s  ]/g, "")
+    .replace(",", ".");
+  if (!/^\d+(\.\d+)?$/.test(price) || Number(price) <= 0) throw new PriceRefused("noPrice");
+
+  // At a counter there is always a shop. `supplierByName` finds it or writes it
+  // down with a name and nothing else, which is honest: nobody asked for its
+  // NIF at the counter.
+  const supplier = await supplierByName(input.supplierName ?? "", input.actorId);
+
+  const [created] = await db
+    .insert(priceQuote)
+    .values({
+      // No item and no deal line: the wording is the subject, and it is what
+      // the price-history search reads.
+      itemId: null,
+      dealLineId: null,
+      dealId: null,
+      designation,
+      source: "shop_visit",
+      partyId: supplier.id,
+      price,
+      currency: input.currency || "DZD",
+      isExclVat: input.isExclVat,
+      isVerbal: input.isVerbal,
+      evidenceFileId: null,
+      capturedBy: input.actorId,
+      capturedPlace: input.capturedPlace?.trim() || null,
+      capturedFrom: input.capturedFrom?.trim() || null,
+      validUntil: input.validUntil || null,
+    })
+    .returning({ id: priceQuote.id });
+
+  const id = created?.id as string;
+  await db.insert(auditEntry).values({
+    actorId: input.actorId,
+    actorKind: "user",
+    entity: "price_quote",
+    entityId: id,
+    action: "create",
+    after: {
+      designation,
+      source: "shop_visit",
+      supplier: supplier.id,
+      supplierCreated: supplier.created,
+      price,
+      currency: input.currency || "DZD",
+      isVerbal: input.isVerbal,
+      isExclVat: input.isExclVat,
+      catalogue: true,
+    },
+    sourceScreen: "74",
+  });
+
+  return id;
+}
+
+/** The last few counter prices, newest first — what screen 74 shows under the form. */
+export async function recentCounterPrices(limit = 8) {
+  return db
+    .select({
+      id: priceQuote.id,
+      designation: priceQuote.designation,
+      price: priceQuote.price,
+      currency: priceQuote.currency,
+      isExclVat: priceQuote.isExclVat,
+      isVerbal: priceQuote.isVerbal,
+      capturedAt: priceQuote.capturedAt,
+      capturedPlace: priceQuote.capturedPlace,
+      supplier: sql<string | null>`(
+        select coalesce(nullif(trim(${party.tradeName}), ''), ${party.legalName})
+        from ${party} where ${party.id} = ${priceQuote.partyId}
+      )`,
+    })
+    .from(priceQuote)
+    .where(eq(priceQuote.source, "shop_visit"))
+    .orderBy(desc(priceQuote.capturedAt))
+    .limit(limit);
+}

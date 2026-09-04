@@ -62,7 +62,7 @@ export default async function ChannelsPage({ params }: { params: Promise<{ local
 
   return (
     <main className="min-h-0 flex-1 overflow-auto">
-      <div className="flex items-start gap-3 border-b border-line-subtle bg-surface px-7 py-5">
+      <div className="flex items-start gap-3 border-b border-line-subtle bg-surface px-4 md:px-7 py-5">
         <div>
           <h1 className="text-[19px] font-semibold text-ink">{t("intake.channelsTitle")}</h1>
           <p className="mt-1 text-tiny text-muted">
@@ -78,7 +78,7 @@ export default async function ChannelsPage({ params }: { params: Promise<{ local
       {/* The mailbox is the one live channel that can silently stop working, and
           the reason is always the same: the access policy. Say it here. */}
       {!mailbox.ok ? (
-        <div className="mx-7 mt-5 flex items-start gap-3 rounded-[var(--radius-control)] border border-critical bg-critical-bg px-4 py-3">
+        <div className="mx-4 md:mx-7 mt-5 flex items-start gap-3 rounded-[var(--radius-control)] border border-critical bg-critical-bg px-4 py-3">
           <CircleAlert className="mt-px size-4 shrink-0 text-critical-ink" aria-hidden />
           <div>
             <p className="text-tiny font-semibold text-critical-ink">
@@ -92,13 +92,13 @@ export default async function ChannelsPage({ params }: { params: Promise<{ local
       ) : null}
 
       {losing > 0 ? (
-        <div className="mx-7 mt-5 flex items-center gap-3 rounded-[var(--radius-control)] border border-critical bg-critical-bg px-4 py-3">
+        <div className="mx-4 md:mx-7 mt-5 flex items-center gap-3 rounded-[var(--radius-control)] border border-critical bg-critical-bg px-4 py-3">
           <CircleAlert className="size-4 shrink-0 text-critical-ink" aria-hidden />
           <p className="text-tiny leading-relaxed text-critical-ink">{t("intake.losingRecords")}</p>
         </div>
       ) : null}
 
-      <div className="px-7 py-6">
+      <div className="px-4 md:px-7 py-6">
         <table className="w-full border-collapse overflow-hidden rounded-[var(--radius-card)] border border-line bg-surface text-tiny">
           <thead>
             <tr className="border-b border-line-subtle text-micro text-muted">
@@ -140,8 +140,8 @@ export default async function ChannelsPage({ params }: { params: Promise<{ local
           </tbody>
         </table>
 
-        <div className="mt-5 grid max-w-[1400px] grid-cols-3 items-start gap-5">
-          <section className="col-span-2 rounded-[var(--radius-card)] border border-line bg-surface p-5">
+        <div className="mt-5 grid max-w-[1400px] grid-cols-1 md:grid-cols-3 items-start gap-5">
+          <section className="col-span-1 md:col-span-2 rounded-[var(--radius-card)] border border-line bg-surface p-5">
             <div className="mb-3 flex items-baseline gap-3">
               <h2 className="text-tiny font-semibold text-ink">{t("intake.routingRules")}</h2>
               <span className="ms-auto text-micro text-muted">{t("intake.firstMatchWins")}</span>

@@ -63,7 +63,7 @@ export function FieldRow({
   return (
     <div className="mb-3.5 last:mb-0">
       <p className="mb-1 text-micro font-medium text-secondary">{label}</p>
-      <div className="grid grid-cols-2 gap-3">{children}</div>
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">{children}</div>
       {note ? <p className="mt-1 text-micro leading-relaxed text-muted">{note}</p> : null}
     </div>
   );

@@ -42,7 +42,7 @@ export const PHONE_JOBS: PhoneJob[] = [
   // 2 — At the counter, writing down a price. No email, no proforma, just a man
   // and a number. The price is marked VERBAL and stays unconfirmed until a
   // document backs it — LAW 2, on a phone.
-  { key: "price", screen: 74, href: "/prices/new", built: false, phase: 4 },
+  { key: "price", screen: 74, href: "/prices/new", built: true, phase: null },
 
   // 3 — Approving from anywhere. Approving is a decision, not data entry, which
   // is exactly why it fits on a phone and building an offer does not.

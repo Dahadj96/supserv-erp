@@ -61,7 +61,7 @@ export default async function TenderPage({
 
   return (
     <main className="min-h-0 flex-1 overflow-auto">
-      <div className="border-b border-line-subtle bg-surface px-7 py-5">
+      <div className="border-b border-line-subtle bg-surface px-4 md:px-7 py-5">
         <h1 className="text-[19px] font-semibold text-ink">
           {tender.clientReference ?? tender.ref} — {tender.object}
         </h1>
@@ -72,7 +72,7 @@ export default async function TenderPage({
       </div>
 
       {folder.blocking.length > 0 && !tender.submittedAt ? (
-        <div className="mx-7 mt-4 flex items-start gap-3 rounded-[var(--radius-control)] border border-critical bg-critical-bg px-4 py-3">
+        <div className="mx-4 md:mx-7 mt-4 flex items-start gap-3 rounded-[var(--radius-control)] border border-critical bg-critical-bg px-4 py-3">
           <CircleAlert className="mt-px size-4 shrink-0 text-critical-ink" aria-hidden />
           <p className="max-w-[940px] text-tiny leading-relaxed text-critical-ink">
             {t("tender.banner", {
@@ -83,8 +83,8 @@ export default async function TenderPage({
         </div>
       ) : null}
 
-      <div className="grid max-w-[1400px] grid-cols-3 items-start gap-5 px-7 py-6">
-        <div className="col-span-2 flex flex-col gap-5">
+      <div className="grid max-w-[1400px] grid-cols-1 md:grid-cols-3 items-start gap-5 px-4 md:px-7 py-6">
+        <div className="col-span-1 md:col-span-2 flex flex-col gap-5">
           {folder.sections.map((section) => (
             <section
               key={section.section}

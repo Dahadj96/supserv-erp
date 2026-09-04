@@ -29,12 +29,12 @@ export default async function DuplicatesPage({ params }: { params: Promise<{ loc
 
   return (
     <main className="min-h-0 flex-1 overflow-auto">
-      <div className="border-b border-line-subtle bg-surface px-7 py-5">
+      <div className="border-b border-line-subtle bg-surface px-4 md:px-7 py-5">
         <h1 className="text-[19px] font-semibold text-ink">{t("merge.duplicatesTitle")}</h1>
         <p className="mt-1 text-tiny text-muted">{t("merge.duplicatesSubtitle")}</p>
       </div>
 
-      <div className="max-w-[1000px] px-7 py-6">
+      <div className="max-w-[1000px] px-4 md:px-7 py-6">
         {pairs.length === 0 ? (
           <div className="rounded-[var(--radius-card)] border border-line bg-card px-6 py-14 text-center">
             <h2 className="text-lead font-semibold text-ink">{t("merge.noneTitle")}</h2>

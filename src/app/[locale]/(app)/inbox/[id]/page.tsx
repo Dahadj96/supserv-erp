@@ -85,7 +85,7 @@ export default async function MessagePage({
 
   return (
     <main className="min-h-0 flex-1 overflow-auto">
-      <div className="flex items-center gap-3 border-b border-line-subtle bg-surface px-7 py-4">
+      <div className="flex items-center gap-3 border-b border-line-subtle bg-surface px-4 md:px-7 py-4">
         <Link
           href="/inbox"
           className="flex items-center gap-1.5 text-tiny text-secondary hover:text-ink"
@@ -113,7 +113,7 @@ export default async function MessagePage({
         </div>
       </div>
 
-      <div className="grid gap-6 px-7 py-6 lg:grid-cols-[minmax(0,1fr)_320px]">
+      <div className="grid gap-6 px-4 md:px-7 py-6 lg:grid-cols-[minmax(0,1fr)_320px]">
         <div className="min-w-0">
           <h1 className="text-[19px] font-semibold leading-snug text-ink">
             {message.subject || t("inbox.noSubject")}

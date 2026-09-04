@@ -65,19 +65,19 @@ export default async function NewDocumentPage({
 
   return (
     <main className="min-h-0 flex-1 overflow-auto">
-      <div className="border-b border-line-subtle bg-surface px-7 py-5">
+      <div className="border-b border-line-subtle bg-surface px-4 md:px-7 py-5">
         <h1 className="text-[19px] font-semibold text-ink">{t("newDoc.title")}</h1>
         <p className="mt-1 text-tiny text-muted">{t("newDoc.subtitle")}</p>
       </div>
 
       {error ? (
-        <p className="mx-7 mt-4 rounded-[var(--radius-control)] bg-critical-bg px-4 py-2.5 text-tiny text-critical-ink">
+        <p className="mx-4 md:mx-7 mt-4 rounded-[var(--radius-control)] bg-critical-bg px-4 py-2.5 text-tiny text-critical-ink">
           {t.has(`newDoc.error.${error}`) ? t(`newDoc.error.${error}`) : error}
         </p>
       ) : null}
 
       {setup.canIssue ? null : (
-        <div className="mx-7 mt-4 flex items-center gap-3 rounded-[var(--radius-control)] border border-warning bg-warning-bg px-4 py-3">
+        <div className="mx-4 md:mx-7 mt-4 flex items-center gap-3 rounded-[var(--radius-control)] border border-warning bg-warning-bg px-4 py-3">
           <p className="text-tiny leading-relaxed text-warning-ink">
             {t("newDoc.setupWarning", {
               missing: setup.missing.map((m) => t(`setup.step.${m}`)).join(", "),
@@ -91,13 +91,13 @@ export default async function NewDocumentPage({
         </div>
       )}
 
-      <div className="grid max-w-[1100px] grid-cols-3 items-start gap-5 px-7 py-6">
+      <div className="grid max-w-[1100px] grid-cols-1 md:grid-cols-3 items-start gap-5 px-4 md:px-7 py-6">
         {offered.length === 0 ? (
-          <section className="col-span-3 rounded-[var(--radius-card)] border border-line bg-surface p-5">
+          <section className="col-span-1 md:col-span-3 rounded-[var(--radius-card)] border border-line bg-surface p-5">
             <p className="text-tiny text-ink">{t("newDoc.error.notAllowed")}</p>
           </section>
         ) : clients.length === 0 ? (
-          <section className="col-span-3 rounded-[var(--radius-card)] border border-line bg-surface p-5">
+          <section className="col-span-1 md:col-span-3 rounded-[var(--radius-card)] border border-line bg-surface p-5">
             <p className="text-tiny text-ink">{t("newDoc.noClientsYet")}</p>
             <Link className="mt-3 inline-block" href="/companies/new">
               <Button variant="primary" size="small">
@@ -109,7 +109,7 @@ export default async function NewDocumentPage({
           <>
             <form
               action={createDraft.bind(null, locale)}
-              className="col-span-2 flex flex-col gap-5"
+              className="col-span-1 md:col-span-2 flex flex-col gap-5"
             >
               <section className="rounded-[var(--radius-card)] border border-line bg-surface p-5">
                 <h2 className="text-tiny font-semibold text-ink">{t("newDoc.whatKind")}</h2>
@@ -135,7 +135,7 @@ export default async function NewDocumentPage({
               </section>
 
               <section className="rounded-[var(--radius-card)] border border-line bg-surface p-5">
-                <div className="grid grid-cols-2 gap-4">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                   <Field htmlFor="partyId" label={t("newDoc.counterparty")} required>
                     <select id="partyId" name="partyId" required className={INPUT}>
                       <option value="">{t("newDoc.pickCounterparty")}</option>

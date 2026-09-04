@@ -67,7 +67,7 @@ export default async function DocumentTypesPage({
 
   return (
     <main className="min-h-0 flex-1 overflow-auto">
-      <div className="flex items-start gap-3 border-b border-line-subtle bg-surface px-7 py-5">
+      <div className="flex items-start gap-3 border-b border-line-subtle bg-surface px-4 md:px-7 py-5">
         <div>
           <h1 className="text-[19px] font-semibold text-ink">{t("docTypes.title")}</h1>
           <p className="mt-1 text-tiny text-muted">
@@ -81,7 +81,7 @@ export default async function DocumentTypesPage({
         </div>
       </div>
 
-      <div className="mx-7 mt-4 flex items-start gap-3 rounded-[var(--radius-control)] border border-line bg-accent-bg px-4 py-3">
+      <div className="mx-4 md:mx-7 mt-4 flex items-start gap-3 rounded-[var(--radius-control)] border border-line bg-accent-bg px-4 py-3">
         <Info className="mt-px size-4 shrink-0 text-accent-ink" aria-hidden />
         <p className="max-w-[940px] text-tiny leading-relaxed text-accent-ink">
           {t("docTypes.banner")}
@@ -89,18 +89,18 @@ export default async function DocumentTypesPage({
       </div>
 
       {written ? (
-        <p className="mx-7 mt-4 rounded-[var(--radius-control)] bg-good-bg px-4 py-2.5 text-tiny text-good-ink">
+        <p className="mx-4 md:mx-7 mt-4 rounded-[var(--radius-control)] bg-good-bg px-4 py-2.5 text-tiny text-good-ink">
           {t("docTypes.written", { count: Number(written) })}
         </p>
       ) : null}
       {error ? (
-        <p className="mx-7 mt-4 rounded-[var(--radius-control)] bg-critical-bg px-4 py-2.5 text-tiny text-critical-ink">
+        <p className="mx-4 md:mx-7 mt-4 rounded-[var(--radius-control)] bg-critical-bg px-4 py-2.5 text-tiny text-critical-ink">
           {t.has(`docTypes.error.${error}`) ? t(`docTypes.error.${error}`) : error}
         </p>
       ) : null}
 
       {types.length === 0 ? (
-        <div className="mx-7 mt-5 rounded-[var(--radius-card)] border border-line bg-surface p-6">
+        <div className="mx-4 md:mx-7 mt-5 rounded-[var(--radius-card)] border border-line bg-surface p-6">
           <p className="max-w-[720px] text-tiny leading-relaxed text-ink">{t("docTypes.empty")}</p>
           {mayEdit ? (
             <form action={seedTypesAction.bind(null, locale)} className="mt-3">
@@ -111,7 +111,7 @@ export default async function DocumentTypesPage({
           ) : null}
         </div>
       ) : (
-        <div className="flex max-w-[1400px] flex-col gap-5 px-7 py-6">
+        <div className="flex max-w-[1400px] flex-col gap-5 px-4 md:px-7 py-6">
           <p className="text-micro text-muted">
             {t("docTypes.seriesCount", { with: withSeries, total: types.length })}
           </p>
@@ -171,7 +171,7 @@ export default async function DocumentTypesPage({
 
           <section className="rounded-[var(--radius-card)] border border-line bg-surface p-5">
             <h2 className="text-tiny font-semibold text-ink">{t("docTypes.neverChange")}</h2>
-            <ul className="mt-3 grid grid-cols-2 gap-2.5">
+            <ul className="mt-3 grid grid-cols-1 sm:grid-cols-2 gap-2.5">
               {(
                 [
                   "reservedOnIssue",

@@ -60,7 +60,7 @@ export default async function CompliancePage({
 
   return (
     <main className="min-h-0 flex-1 overflow-auto">
-      <div className="flex items-start gap-3 border-b border-line-subtle bg-surface px-7 py-5">
+      <div className="flex items-start gap-3 border-b border-line-subtle bg-surface px-4 md:px-7 py-5">
         <div>
           <h1 className="text-[19px] font-semibold text-ink">{t("compliance.title")}</h1>
           <p className="mt-1 text-tiny text-muted">{t("compliance.subtitle")}</p>
@@ -72,7 +72,7 @@ export default async function CompliancePage({
         </div>
       </div>
 
-      <div className="mx-7 mt-4 flex items-start gap-3 rounded-[var(--radius-control)] border border-line bg-accent-bg px-4 py-3">
+      <div className="mx-4 md:mx-7 mt-4 flex items-start gap-3 rounded-[var(--radius-control)] border border-line bg-accent-bg px-4 py-3">
         <Info className="mt-px size-4 shrink-0 text-accent-ink" aria-hidden />
         <p className="max-w-[940px] text-tiny leading-relaxed text-accent-ink">
           {t("compliance.banner")}
@@ -80,28 +80,28 @@ export default async function CompliancePage({
       </div>
 
       {confirmed ? (
-        <p className="mx-7 mt-4 rounded-[var(--radius-control)] bg-good-bg px-4 py-2.5 text-tiny text-good-ink">
+        <p className="mx-4 md:mx-7 mt-4 rounded-[var(--radius-control)] bg-good-bg px-4 py-2.5 text-tiny text-good-ink">
           {t("compliance.nowBlocks")}
         </p>
       ) : null}
       {unconfirmed ? (
-        <p className="mx-7 mt-4 rounded-[var(--radius-control)] bg-warning-bg px-4 py-2.5 text-tiny text-warning-ink">
+        <p className="mx-4 md:mx-7 mt-4 rounded-[var(--radius-control)] bg-warning-bg px-4 py-2.5 text-tiny text-warning-ink">
           {t("compliance.nowWarns")}
         </p>
       ) : null}
       {seeded ? (
-        <p className="mx-7 mt-4 rounded-[var(--radius-control)] bg-good-bg px-4 py-2.5 text-tiny text-good-ink">
+        <p className="mx-4 md:mx-7 mt-4 rounded-[var(--radius-control)] bg-good-bg px-4 py-2.5 text-tiny text-good-ink">
           {t("compliance.seeded")}
         </p>
       ) : null}
       {error ? (
-        <p className="mx-7 mt-4 rounded-[var(--radius-control)] bg-critical-bg px-4 py-2.5 text-tiny text-critical-ink">
+        <p className="mx-4 md:mx-7 mt-4 rounded-[var(--radius-control)] bg-critical-bg px-4 py-2.5 text-tiny text-critical-ink">
           {t.has(`compliance.error.${error}`) ? t(`compliance.error.${error}`) : error}
         </p>
       ) : null}
 
-      <div className="grid max-w-[1400px] grid-cols-3 items-start gap-5 px-7 py-6">
-        <div className="col-span-2 flex flex-col gap-5">
+      <div className="grid max-w-[1400px] grid-cols-1 md:grid-cols-3 items-start gap-5 px-4 md:px-7 py-6">
+        <div className="col-span-1 md:col-span-2 flex flex-col gap-5">
           <section className="rounded-[var(--radius-card)] border border-line bg-surface">
             <div className="flex items-baseline gap-3 border-b border-line-subtle px-5 py-3.5">
               <h2 className="text-tiny font-semibold text-ink">{t("compliance.activeProfile")}</h2>
@@ -164,7 +164,7 @@ export default async function CompliancePage({
                         className="mt-3 flex flex-wrap items-end gap-2"
                       >
                         <input type="hidden" name="code" value={rule.code} />
-                        <label className="flex-1">
+                        <label className="flex-1 basis-[240px]">
                           <span className="text-micro text-secondary">
                             {t("compliance.whyTakeItBack")}
                           </span>
@@ -184,7 +184,7 @@ export default async function CompliancePage({
                         className="mt-3 flex flex-wrap items-end gap-2 rounded-[var(--radius-control)] bg-plane p-3"
                       >
                         <input type="hidden" name="code" value={rule.code} />
-                        <label className="flex-1">
+                        <label className="flex-1 basis-[240px]">
                           <span className="text-micro text-secondary">
                             {t("compliance.whoSaidSo")}
                           </span>

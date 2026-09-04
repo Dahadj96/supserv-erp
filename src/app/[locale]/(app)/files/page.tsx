@@ -97,7 +97,7 @@ export default async function FilesPage({
 
   return (
     <main className="flex min-h-0 flex-1 flex-col">
-      <div className="shrink-0 border-b border-line-subtle bg-surface px-7 py-5">
+      <div className="shrink-0 border-b border-line-subtle bg-surface px-4 md:px-7 py-5">
         <div className="flex items-baseline gap-3">
           <h1 className="text-[19px] font-semibold text-ink">{t("nav.files")}</h1>
           <Link
@@ -110,7 +110,7 @@ export default async function FilesPage({
         <p className="mt-1 text-tiny text-muted">{t("files.subtitle")}</p>
       </div>
 
-      <div className="flex shrink-0 flex-wrap items-center gap-2 border-b border-line-subtle bg-surface px-7 py-2.5">
+      <div className="flex shrink-0 flex-wrap items-center gap-2 border-b border-line-subtle bg-surface px-4 md:px-7 py-2.5">
         {facets.map((facet) => (
           <Link
             key={facet.key}
@@ -144,7 +144,7 @@ export default async function FilesPage({
           <table className="w-full border-collapse text-tiny">
             <thead>
               <tr className="border-b border-line-subtle bg-plane text-start">
-                <th className="px-7 py-2 text-start font-medium text-muted">
+                <th className="px-4 md:px-7 py-2 text-start font-medium text-muted">
                   {t("files.column.name")}
                 </th>
                 <th className="px-4 py-2 text-start font-medium text-muted">
@@ -156,7 +156,7 @@ export default async function FilesPage({
                 <th className="px-4 py-2 text-start font-medium text-muted">
                   {t("files.column.when")}
                 </th>
-                <th className="px-7 py-2 text-end font-medium text-muted">
+                <th className="px-4 md:px-7 py-2 text-end font-medium text-muted">
                   {t("files.column.bytes")}
                 </th>
               </tr>
@@ -166,7 +166,7 @@ export default async function FilesPage({
                 const Icon = ICON[row.kind];
                 return (
                   <tr key={row.id} className="border-b border-line-subtle hover:bg-plane">
-                    <td className="px-7 py-2.5">
+                    <td className="px-4 md:px-7 py-2.5">
                       <div className="flex items-center gap-2">
                         <Icon className="size-3.5 shrink-0 text-muted" aria-hidden />
                         <span className="truncate text-ink">{row.filename}</span>
@@ -188,7 +188,7 @@ export default async function FilesPage({
                       {size(row.bytes) ?? <span className="text-muted">—</span>}
                     </td>
                     <td className="px-4 py-2.5 text-secondary">{day(row.at)}</td>
-                    <td className="px-7 py-2.5 text-end">
+                    <td className="px-4 md:px-7 py-2.5 text-end">
                       {row.state === "stored" ? (
                         <a
                           href={`/api/files/${encodeURIComponent(row.id)}`}

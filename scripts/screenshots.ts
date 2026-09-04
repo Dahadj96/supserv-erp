@@ -35,6 +35,10 @@ const NOWHERE = "00000000-0000-4000-8000-000000000000";
 const ACTOR_NAME = "Screenshot Walk";
 
 const VIEWPORTS = [
+  // The phone the Gérant actually carries. Screen 86 designed four routes at
+  // 390; every OTHER route is still opened on one, and this viewport is how we
+  // find out whether "still readable" was true or just asserted.
+  { name: "phone-390x844", width: 390, height: 844 },
   { name: "laptop-1366x768", width: 1366, height: 768 },
   { name: "desktop-1920x1080", width: 1920, height: 1080 },
 ];
@@ -110,13 +114,27 @@ const MEASURE = `(() => {
     }
   }
 
+  // Content inside a box that scrolls sideways is not spilling — it is content
+  // you slide to, which is exactly what a wide table on a phone is meant to do.
+  // Without this the harness reported every cell of every list as a defect and
+  // the real ones drowned.
+  const insideAScroller = (el) => {
+    for (let p = el.parentElement; p && p !== document.body; p = p.parentElement) {
+      const o = getComputedStyle(p).overflowX;
+      if (o === 'auto' || o === 'scroll') return true;
+    }
+    return false;
+  };
+
   const spilling = [];
   const clipped = [];
   let smallTargets = 0;
   for (const el of document.body.querySelectorAll('*')) {
     if (!visible(el)) continue;
     const r = el.getBoundingClientRect();
-    if (r.right > vw + 1 && r.left < vw && spilling.length < 8) spilling.push(label(el));
+    if (r.right > vw + 1 && r.left < vw && spilling.length < 8 && !insideAScroller(el)) {
+      spilling.push(label(el));
+    }
     const s = getComputedStyle(el);
     if (
       (s.overflowX === 'hidden' || s.overflow === 'hidden') &&

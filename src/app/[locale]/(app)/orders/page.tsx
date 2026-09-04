@@ -49,12 +49,12 @@ export default async function OrdersPage({
 
   return (
     <main className="flex min-h-0 flex-1 flex-col">
-      <div className="shrink-0 border-b border-line-subtle bg-surface px-7 py-5">
+      <div className="shrink-0 border-b border-line-subtle bg-surface px-4 md:px-7 py-5">
         <h1 className="text-[19px] font-semibold text-ink">{t("nav.orders")}</h1>
         <p className="mt-1 text-tiny text-muted">{t("orders.subtitle")}</p>
       </div>
 
-      <div className="flex shrink-0 flex-wrap items-center gap-2 border-b border-line-subtle bg-surface px-7 py-2.5">
+      <div className="flex shrink-0 flex-wrap items-center gap-2 border-b border-line-subtle bg-surface px-4 md:px-7 py-2.5">
         {facets.map((facet) => (
           <Link
             key={facet.key}
@@ -87,7 +87,7 @@ export default async function OrdersPage({
           <table className="w-full border-collapse text-tiny">
             <thead>
               <tr className="border-b border-line-subtle bg-plane">
-                <th className="px-7 py-2 text-start font-medium text-muted">
+                <th className="px-4 md:px-7 py-2 text-start font-medium text-muted">
                   {t("orders.column.number")}
                 </th>
                 <th className="px-4 py-2 text-start font-medium text-muted">
@@ -102,7 +102,7 @@ export default async function OrdersPage({
                 <th className="px-4 py-2 text-start font-medium text-muted">
                   {t("orders.column.issued")}
                 </th>
-                <th className="px-7 py-2 text-end font-medium text-muted">
+                <th className="px-4 md:px-7 py-2 text-end font-medium text-muted">
                   {t("orders.column.delivered")}
                 </th>
               </tr>
@@ -110,7 +110,7 @@ export default async function OrdersPage({
             <tbody>
               {rows.map((row) => (
                 <tr key={row.id} className="border-b border-line-subtle hover:bg-plane">
-                  <td className="px-7 py-2.5">
+                  <td className="px-4 md:px-7 py-2.5">
                     {/* A purchase order has a screen of its own — screen 68,
                         with the goods received and the three-way match against
                         the supplier's invoice. A client order does not: the
@@ -135,7 +135,7 @@ export default async function OrdersPage({
                     {money(row.total)} {row.currency}
                   </td>
                   <td className="px-4 py-2.5 text-secondary">{row.issuedOn ?? "—"}</td>
-                  <td className="px-7 py-2.5 text-end">
+                  <td className="px-4 md:px-7 py-2.5 text-end">
                     {row.number === null ? (
                       <span className="text-micro text-muted">—</span>
                     ) : row.delivered > 0 ? (

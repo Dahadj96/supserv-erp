@@ -34,12 +34,12 @@ export default async function BankPage({
 
   return (
     <main className="min-h-0 flex-1 overflow-auto">
-      <div className="border-b border-line-subtle bg-surface px-7 py-5">
+      <div className="border-b border-line-subtle bg-surface px-4 md:px-7 py-5">
         <h1 className="text-[19px] font-semibold text-ink">{t("setup.bankTitle")}</h1>
         <p className="mt-1 text-tiny text-muted">{t("setup.bankSubtitle")}</p>
       </div>
 
-      <div className="max-w-[860px] px-7 py-6">
+      <div className="max-w-[860px] px-4 md:px-7 py-6">
         {error ? (
           <p className="mb-4 rounded-[var(--radius-control)] bg-critical-bg px-3 py-2 text-micro text-critical-ink">
             {t(`setup.error.${error}`)}
@@ -87,14 +87,14 @@ export default async function BankPage({
         <section className="mt-5 rounded-[var(--radius-card)] border border-line bg-surface p-5">
           <h2 className="text-tiny font-semibold text-ink">{t("setup.addAccount")}</h2>
           <form action={saveBank.bind(null, locale)} className="mt-3">
-            <div className="grid grid-cols-2 gap-4">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <Field htmlFor="bankName" label={t("setup.f.bankName")} required>
                 <input id="bankName" name="bankName" required className={INPUT} />
               </Field>
               <Field htmlFor="agency" label={t("setup.f.agency")}>
                 <input id="agency" name="agency" className={INPUT} />
               </Field>
-              <div className="col-span-2">
+              <div className="col-span-1 md:col-span-2">
                 <Field htmlFor="rib" label="RIB" hint={t("setup.h.rib")} required>
                   <input
                     id="rib"

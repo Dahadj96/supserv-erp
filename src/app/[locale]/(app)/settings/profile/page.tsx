@@ -27,12 +27,12 @@ export default async function ProfilePage({ params }: { params: Promise<{ locale
 
   return (
     <main className="min-h-0 flex-1 overflow-auto">
-      <div className="border-b border-line-subtle bg-surface px-7 py-5">
+      <div className="border-b border-line-subtle bg-surface px-4 md:px-7 py-5">
         <h1 className="text-[19px] font-semibold text-ink">{t("profile.title")}</h1>
         <p className="mt-1 text-tiny text-muted">{t("profile.subtitle")}</p>
       </div>
 
-      <div className="flex flex-col gap-5 px-7 py-6">
+      <div className="flex flex-col gap-5 px-4 md:px-7 py-6">
         <section className="rounded-[var(--radius-card)] border border-line bg-surface p-5">
           <h2 className="text-tiny font-semibold text-ink">{t("profile.interfaceLanguage")}</h2>
           <p className="mt-1 max-w-[560px] text-micro leading-relaxed text-secondary">

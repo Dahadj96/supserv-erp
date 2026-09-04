@@ -145,7 +145,7 @@ export default async function AgeingPage({
         </p>
       ) : null}
 
-      <div className="grid grid-cols-2 gap-3 px-4 py-5 md:grid-cols-5 md:px-7">
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 px-4 py-5 md:grid-cols-5 md:px-7">
         <div className="rounded-[var(--radius-card)] border border-line bg-surface p-4">
           <p className="text-micro text-secondary">{t("ageing.totalOutstanding")}</p>
           <p className="mt-1 text-[22px] font-semibold tabular-nums text-ink">

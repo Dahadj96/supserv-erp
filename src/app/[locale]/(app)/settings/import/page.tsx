@@ -56,35 +56,35 @@ export default async function ImportPage({
 
   return (
     <main className="min-h-0 flex-1 overflow-auto">
-      <div className="flex items-start gap-3 border-b border-line-subtle bg-surface px-7 py-5">
+      <div className="flex items-start gap-3 border-b border-line-subtle bg-surface px-4 md:px-7 py-5">
         <div>
           <h1 className="text-[19px] font-semibold text-ink">{t("moveIn.title")}</h1>
           <p className="mt-1 text-tiny text-muted">{t("moveIn.subtitle")}</p>
         </div>
       </div>
 
-      <div className="mx-7 mt-5 flex items-start gap-3 rounded-[var(--radius-control)] border border-good bg-good-bg px-4 py-3">
+      <div className="mx-4 md:mx-7 mt-5 flex items-start gap-3 rounded-[var(--radius-control)] border border-good bg-good-bg px-4 py-3">
         <Info className="mt-px size-4 shrink-0 text-good-ink" aria-hidden />
         <p className="text-tiny leading-relaxed text-good-ink">{t("moveIn.filesStay")}</p>
       </div>
 
       {error ? (
-        <p className="mx-7 mt-4 rounded-[var(--radius-control)] bg-critical-bg px-4 py-2.5 text-tiny text-critical-ink">
+        <p className="mx-4 md:mx-7 mt-4 rounded-[var(--radius-control)] bg-critical-bg px-4 py-2.5 text-tiny text-critical-ink">
           {t(`moveIn.error.${error}`)}
         </p>
       ) : null}
       {imported ? (
-        <p className="mx-7 mt-4 rounded-[var(--radius-control)] bg-good-bg px-4 py-2.5 text-tiny text-good-ink">
+        <p className="mx-4 md:mx-7 mt-4 rounded-[var(--radius-control)] bg-good-bg px-4 py-2.5 text-tiny text-good-ink">
           {t("moveIn.imported", { count: Number(imported), days: UNDO_DAYS })}
         </p>
       ) : null}
       {undone ? (
-        <p className="mx-7 mt-4 rounded-[var(--radius-control)] bg-good-bg px-4 py-2.5 text-tiny text-good-ink">
+        <p className="mx-4 md:mx-7 mt-4 rounded-[var(--radius-control)] bg-good-bg px-4 py-2.5 text-tiny text-good-ink">
           {t("moveIn.undone", { count: Number(undone), kept: Number(kept ?? 0) })}
         </p>
       ) : null}
 
-      <div className="flex items-center gap-2 px-7 pt-5">
+      <div className="flex items-center gap-2 px-4 md:px-7 pt-5">
         {[1, 2, 3, 4].map((n) => (
           <span
             key={n}
@@ -100,8 +100,8 @@ export default async function ImportPage({
         ))}
       </div>
 
-      <div className="grid max-w-[1400px] grid-cols-3 items-start gap-5 px-7 py-6">
-        <div className="col-span-2 flex flex-col gap-5">
+      <div className="grid max-w-[1400px] grid-cols-1 md:grid-cols-3 items-start gap-5 px-4 md:px-7 py-6">
+        <div className="col-span-1 md:col-span-2 flex flex-col gap-5">
           {!batch ? (
             <section className="rounded-[var(--radius-card)] border border-line bg-surface p-5">
               <h2 className="text-tiny font-semibold text-ink">{t("moveIn.chooseTitle")}</h2>
@@ -145,7 +145,7 @@ export default async function ImportPage({
                   </span>
                 </div>
 
-                <div className="grid grid-cols-2 gap-x-8">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-8">
                   {batch.headers.map((header) => {
                     const target = batch.mapping[header];
                     return (

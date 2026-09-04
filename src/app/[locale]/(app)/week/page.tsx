@@ -127,7 +127,7 @@ export default async function WeekPage({
         </div>
       </div>
 
-      <div className="grid grid-cols-2 gap-2 px-4 py-5 md:grid-cols-7 md:px-7">
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 px-4 py-5 md:grid-cols-7 md:px-7">
         {view.days.map((day) => (
           <div
             key={day.date.toISOString()}

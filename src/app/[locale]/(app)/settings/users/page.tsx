@@ -63,7 +63,7 @@ export default async function UsersPage({
 
   return (
     <main className="min-h-0 flex-1 overflow-auto">
-      <div className="flex items-start gap-3 border-b border-line-subtle bg-surface px-7 py-5">
+      <div className="flex items-start gap-3 border-b border-line-subtle bg-surface px-4 md:px-7 py-5">
         <div>
           <h1 className="text-[19px] font-semibold text-ink">{t("users.title")}</h1>
           <p className="mt-1 text-tiny text-muted">
@@ -78,24 +78,24 @@ export default async function UsersPage({
       </div>
 
       {saved ? (
-        <p className="mx-7 mt-4 rounded-[var(--radius-control)] bg-good-bg px-4 py-2.5 text-tiny text-good-ink">
+        <p className="mx-4 md:mx-7 mt-4 rounded-[var(--radius-control)] bg-good-bg px-4 py-2.5 text-tiny text-good-ink">
           {t("users.saved")}
         </p>
       ) : null}
 
       {error ? (
-        <p className="mx-7 mt-4 rounded-[var(--radius-control)] bg-critical-bg px-4 py-2.5 text-tiny text-critical-ink">
+        <p className="mx-4 md:mx-7 mt-4 rounded-[var(--radius-control)] bg-critical-bg px-4 py-2.5 text-tiny text-critical-ink">
           {t.has(`users.error.${error}`) ? t(`users.error.${error}`) : error}
         </p>
       ) : null}
 
       {withoutRole > 0 ? (
-        <p className="mx-7 mt-4 rounded-[var(--radius-control)] border border-warning bg-warning-bg px-4 py-3 text-tiny leading-relaxed text-warning-ink">
+        <p className="mx-4 md:mx-7 mt-4 rounded-[var(--radius-control)] border border-warning bg-warning-bg px-4 py-3 text-tiny leading-relaxed text-warning-ink">
           {t("users.withoutRole", { count: withoutRole })}
         </p>
       ) : null}
 
-      <div className="flex max-w-[1400px] flex-col gap-5 px-7 py-6">
+      <div className="flex max-w-[1400px] flex-col gap-5 px-4 md:px-7 py-6">
         <section className="rounded-[var(--radius-card)] border border-line bg-surface">
           <div className="flex items-baseline gap-3 border-b border-line-subtle px-5 py-3.5">
             <h2 className="text-tiny font-semibold text-ink">{t("users.people")}</h2>

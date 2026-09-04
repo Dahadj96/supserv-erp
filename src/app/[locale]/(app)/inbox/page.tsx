@@ -45,10 +45,10 @@ export default async function InboxPage({
   if (!session?.role || !can(session.role, "inbox.view")) {
     return (
       <main className="min-h-0 flex-1 overflow-auto">
-        <div className="border-b border-line-subtle bg-surface px-7 py-5">
+        <div className="border-b border-line-subtle bg-surface px-4 md:px-7 py-5">
           <h1 className="text-[19px] font-semibold text-ink">{t("nav.inbox")}</h1>
         </div>
-        <div className="mx-7 mt-5 flex max-w-[720px] items-start gap-3 rounded-[var(--radius-control)] border border-line bg-surface px-4 py-3">
+        <div className="mx-4 md:mx-7 mt-5 flex max-w-[720px] items-start gap-3 rounded-[var(--radius-control)] border border-line bg-surface px-4 py-3">
           <CircleHelp className="mt-px size-4 shrink-0 text-muted" aria-hidden />
           {/* Says which role would have it, because "no" without "who" sends
               somebody to ask the Gérant a question he cannot answer either. */}
@@ -80,7 +80,7 @@ export default async function InboxPage({
 
   return (
     <main className="min-h-0 flex-1 overflow-auto">
-      <div className="flex items-start gap-3 border-b border-line-subtle bg-surface px-7 py-5">
+      <div className="flex items-start gap-3 border-b border-line-subtle bg-surface px-4 md:px-7 py-5">
         <div>
           <h1 className="text-[19px] font-semibold text-ink">{t("nav.inbox")}</h1>
           <p className="mt-1 text-tiny text-muted">
@@ -100,7 +100,7 @@ export default async function InboxPage({
       </div>
 
       {error ? (
-        <div className="mx-7 mt-5 flex items-start gap-3 rounded-[var(--radius-control)] border border-critical bg-critical-bg px-4 py-3">
+        <div className="mx-4 md:mx-7 mt-5 flex items-start gap-3 rounded-[var(--radius-control)] border border-critical bg-critical-bg px-4 py-3">
           <CircleAlert className="mt-px size-4 shrink-0 text-critical-ink" aria-hidden />
           <p className="max-w-[860px] text-tiny leading-relaxed text-critical-ink">
             {t(`inbox.error.${error}`)}{" "}
@@ -112,13 +112,13 @@ export default async function InboxPage({
       ) : null}
 
       {synced ? (
-        <p className="mx-7 mt-5 rounded-[var(--radius-control)] bg-good-bg px-4 py-2.5 text-tiny text-good-ink">
+        <p className="mx-4 md:mx-7 mt-5 rounded-[var(--radius-control)] bg-good-bg px-4 py-2.5 text-tiny text-good-ink">
           {t("inbox.synced", { count: Number(synced) })}
         </p>
       ) : null}
 
       {expiring.length > 0 ? (
-        <div className="mx-7 mt-5 flex items-center gap-3 rounded-[var(--radius-control)] border border-critical bg-critical-bg px-4 py-3">
+        <div className="mx-4 md:mx-7 mt-5 flex items-center gap-3 rounded-[var(--radius-control)] border border-critical bg-critical-bg px-4 py-3">
           <CircleAlert className="size-4 shrink-0 text-critical-ink" aria-hidden />
           <p className="text-tiny leading-relaxed text-critical-ink">
             {t("inbox.expiringBanner", { count: counts.expiringSoon })}{" "}
@@ -134,7 +134,7 @@ export default async function InboxPage({
         </div>
       ) : null}
 
-      <div className="flex flex-wrap items-center gap-2 px-7 pt-5">
+      <div className="flex flex-wrap items-center gap-2 px-4 md:px-7 pt-5">
         {INBOX_FACETS.map((key) => {
           const active = key === facet;
           return (
@@ -167,7 +167,7 @@ export default async function InboxPage({
         </div>
       </div>
 
-      <div className="px-7 py-6">
+      <div className="px-4 md:px-7 py-6">
         {rows.length === 0 ? (
           <div className="rounded-[var(--radius-card)] border border-line bg-card px-6 py-14 text-center">
             <h2 className="text-lead font-semibold text-ink">{t("inbox.emptyTitle")}</h2>
