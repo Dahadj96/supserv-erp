@@ -68,6 +68,7 @@ const SAMPLE: RenderedDocument = {
     { label: "totalVat", value: "13 443,70" },
   ],
   amountInWords: "quatre-vingt-quatre mille deux cents dinars algériens et zéro centime",
+  situation: null,
   findings: [],
   template: "SUPSERV invoice — FR v1",
 };

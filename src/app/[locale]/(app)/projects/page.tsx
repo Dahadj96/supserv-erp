@@ -3,6 +3,7 @@ import { redirect as hardRedirect } from "next/navigation";
 import { getFormatter, getTranslations, setRequestLocale } from "next-intl/server";
 import { getSession } from "@/auth/session";
 import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
 import { WAITING_TOO_LONG_DAYS } from "@/domain/project/progress";
 import { listProjects, projectCounts } from "@/domain/project/store";
 import { Link } from "@/i18n/navigation";
@@ -58,15 +59,22 @@ export default async function ProjectsPage({
 
   return (
     <main className="flex min-h-0 flex-1 flex-col">
-      <div className="shrink-0 border-b border-line-subtle bg-surface px-7 py-5">
-        <h1 className="text-[19px] font-semibold text-ink">{t("nav.projects")}</h1>
-        <p className="mt-1 text-tiny text-muted">
-          {t("projects.summary", {
-            active: counts.active,
-            warranty: counts.warranty,
-            retention: money(counts.retentionHeld, "DZD"),
-          })}
-        </p>
+      <div className="flex shrink-0 flex-wrap items-start gap-3 border-b border-line-subtle bg-surface px-7 py-5">
+        <div className="min-w-0">
+          <h1 className="text-[19px] font-semibold text-ink">{t("nav.projects")}</h1>
+          <p className="mt-1 text-tiny text-muted">
+            {t("projects.summary", {
+              active: counts.active,
+              warranty: counts.warranty,
+              retention: money(counts.retentionHeld, "DZD"),
+            })}
+          </p>
+        </div>
+        <div className="ms-auto">
+          <Link href="/projects/new">
+            <Button variant="primary">{t("projectNew.title")}</Button>
+          </Link>
+        </div>
       </div>
 
       <div className="min-h-0 flex-1 overflow-auto">

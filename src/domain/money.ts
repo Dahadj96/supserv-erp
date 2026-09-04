@@ -19,6 +19,10 @@ export type Line = {
   isOption?: boolean;
 };
 
+/** What a retenue de garantie is taken on: the HT or the TTC of the document. */
+export const RETENTION_BASES = ["excl", "incl"] as const;
+export type RetentionBase = (typeof RETENTION_BASES)[number];
+
 export type Totals = {
   totalExcl: string;
   discountTotal: string;
@@ -28,6 +32,11 @@ export type Totals = {
   totalIncl: string;
   /** Already invoiced on an advance invoice, and deducted from what is due. */
   advanceDeducted: string;
+  /**
+   * Retenue de garantie withheld from THIS document. Zero unless the caller
+   * said what it is taken on — see `retentionBase` on `computeTotals`.
+   */
+  retention: string;
   /** What the client actually has to pay on this document. */
   dueNow: string;
   /** Shown, never subtracted — see the note on `computeTotals`. */
@@ -56,6 +65,16 @@ export function computeTotals(
     stampDuty?: string | number;
     /** Screen 47 — "Advance already invoiced". Deducted from what is due. */
     advanceDeducted?: string | number;
+    /**
+     * Retenue de garantie, in percent, and WHAT IT IS TAKEN ON. Nothing is
+     * withheld unless both are given: the percentage alone is printed on
+     * offers and orders as a term of the contract, and only a situation —
+     * whose project has read the CCAP and said `excl` or `incl` — asks for the
+     * arithmetic. `incl` is the sum including VAT and excluding the droit de
+     * timbre, which is a tax on the payment and not part of the work.
+     */
+    retentionPct?: string | number;
+    retentionBase?: RetentionBase | null;
   } = {},
 ): Totals {
   let subtotal = new Decimal(0);
@@ -101,13 +120,21 @@ export function computeTotals(
   // comes off the total INCLUDING VAT, not off the base. `totalIncl` stays the
   // value of the work; `dueNow` is what the client pays on this piece of paper.
   const advanceDeducted = D(opts.advanceDeducted).toDecimalPlaces(2);
-  const dueNow = totalIncl.minus(advanceDeducted).toDecimalPlaces(2);
 
-  // Retenue de garantie is deliberately absent. Whether it comes off the base or
-  // off the total, and whether VAT is computed before or after it, is one of the
-  // four questions waiting on the accountant — see the compliance profile. The
-  // percentage is stored on the document and printed; it is not arithmetic this
-  // file is entitled to perform yet.
+  // Retenue de garantie is a WITHHOLDING, not a discount. The client owes the
+  // whole sum and keeps part of it back until the warranty runs out, so it
+  // never reduces the VAT base and comes off what is due on this paper only —
+  // the same place an advance already invoiced comes off. Which sum the
+  // percentage is applied to is the contract's fact (see `retentionBase`),
+  // and this file computes nothing until a person has said which.
+  const retention =
+    opts.retentionBase && D(opts.retentionPct).greaterThan(0)
+      ? (opts.retentionBase === "incl" ? totalExcl.plus(totalVat) : totalExcl)
+          .times(D(opts.retentionPct).div(100))
+          .toDecimalPlaces(2)
+      : new Decimal(0);
+
+  const dueNow = totalIncl.minus(advanceDeducted).minus(retention).toDecimalPlaces(2);
 
   return {
     totalExcl: totalExcl.toFixed(2),
@@ -117,6 +144,7 @@ export function computeTotals(
     stampDuty: stampDuty.toFixed(2),
     totalIncl: totalIncl.toFixed(2),
     advanceDeducted: advanceDeducted.toFixed(2),
+    retention: retention.toFixed(2),
     dueNow: dueNow.toFixed(2),
     optionsExcl: optionsExcl.toFixed(2),
   };

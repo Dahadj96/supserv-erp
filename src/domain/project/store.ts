@@ -6,6 +6,7 @@ import { document } from "@/db/schema/document";
 import { paymentAllocation } from "@/db/schema/money";
 import { party, person, personCertification } from "@/db/schema/party";
 import { project, projectCaution, projectCrew, situationDetail } from "@/db/schema/project";
+import { RETENTION_BASES, type RetentionBase } from "@/domain/money";
 import {
   type Caution,
   type CautionInput,
@@ -41,6 +42,22 @@ export class ProjectRefused extends Error {
   }
 }
 
+function asRetentionBase(value: string | null | undefined): RetentionBase | null {
+  return (RETENTION_BASES as readonly string[]).includes(value ?? "")
+    ? (value as RetentionBase)
+    : null;
+}
+
+/** The project opened on an enquiry, if one was. An enquiry has at most one. */
+export async function projectForDeal(dealId: string): Promise<{ id: string; code: string } | null> {
+  const [row] = await db
+    .select({ id: project.id, code: project.code })
+    .from(project)
+    .where(and(eq(project.dealId, dealId), isNull(project.deletedAt)))
+    .limit(1);
+  return row ?? null;
+}
+
 /** PRJ-2026-004, allocated in the transaction that uses it. */
 export async function nextProjectCode(tx: typeof db, when: Date): Promise<string> {
   const year = when.getUTCFullYear();
@@ -60,12 +77,25 @@ export async function createProject(opts: {
   startedOn?: string | null;
   contractualEnd?: string | null;
   retentionPct?: string;
+  retentionBase?: string | null;
   warrantyMonths?: number | null;
+  /** The issued order or offer whose lines are the DQE contractuel. */
+  contractDocumentId?: string | null;
   actorId: string;
 }): Promise<string> {
   const [found] = await db.select().from(deal).where(eq(deal.id, opts.dealId)).limit(1);
   if (!found) throw new ProjectRefused("noSuchDeal");
   if (!opts.object.trim()) throw new ProjectRefused("objectRequired");
+  const retentionBase = asRetentionBase(opts.retentionBase);
+  if (opts.retentionBase && !retentionBase) throw new ProjectRefused("badRetentionBase");
+  if (opts.contractDocumentId) {
+    const [contract] = await db
+      .select({ status: document.status, dealId: document.dealId })
+      .from(document)
+      .where(eq(document.id, opts.contractDocumentId))
+      .limit(1);
+    if (contract?.status !== "issued") throw new ProjectRefused("contractNotIssued");
+  }
 
   return db.transaction(async (tx) => {
     // Same cast `createDeal` uses: a Drizzle transaction has the same query
@@ -85,7 +115,9 @@ export async function createProject(opts: {
         startedOn: opts.startedOn ?? null,
         contractualEnd: opts.contractualEnd ?? null,
         retentionPct: opts.retentionPct ?? "0",
+        retentionBase,
         warrantyMonths: opts.warrantyMonths ?? null,
+        contractDocumentId: opts.contractDocumentId ?? null,
         createdBy: opts.actorId,
       })
       .returning({ id: project.id });
@@ -249,6 +281,8 @@ export type ProjectDetail = ProjectRow & {
   /** Days from today to the contractual end. Negative means late. */
   daysLeft: number | null;
   retentionPct: string;
+  retentionBase: RetentionBase | null;
+  contractDocumentId: string | null;
   warrantyMonths: number | null;
   pvProvisoireOn: string | null;
   pvProvisoirePlanned: string | null;
@@ -269,6 +303,8 @@ export async function getProject(id: string, now = new Date()): Promise<ProjectD
       amountExcl: project.amountExcl,
       contractRef: project.contractRef,
       retentionPct: project.retentionPct,
+      retentionBase: project.retentionBase,
+      contractDocumentId: project.contractDocumentId,
       warrantyMonths: project.warrantyMonths,
       physicalPercent: project.physicalPercent,
       startedOn: project.startedOn,
@@ -348,6 +384,8 @@ export async function getProject(id: string, now = new Date()): Promise<ProjectD
     contractualEnd: row.contractualEnd,
     daysLeft,
     retentionPct: row.retentionPct,
+    retentionBase: asRetentionBase(row.retentionBase),
+    contractDocumentId: row.contractDocumentId,
     warrantyMonths: row.warrantyMonths,
     pvProvisoireOn: row.pvProvisoireOn,
     pvProvisoirePlanned: row.pvProvisoirePlanned,
@@ -520,4 +558,117 @@ export async function releaseCaution(opts: {
     .update(projectCaution)
     .set({ releasedOn: opts.on })
     .where(eq(projectCaution.id, opts.cautionId));
+}
+
+/**
+ * The contract's terms, as a person read them off the marché.
+ *
+ * Every field is optional and only the ones given are written, so the form
+ * that fixes the retention base does not have to know the contractual end.
+ * `retentionPct` and `retentionBase` change how the NEXT situation is
+ * computed and nothing about the issued ones (LAW 5).
+ */
+export async function updateProjectTerms(opts: {
+  projectId: string;
+  contractRef?: string | null;
+  wilaya?: string | null;
+  amountExcl?: string | null;
+  startedOn?: string | null;
+  contractualEnd?: string | null;
+  retentionPct?: string;
+  retentionBase?: string | null;
+  warrantyMonths?: number | null;
+  contractDocumentId?: string | null;
+  actorId: string;
+}): Promise<void> {
+  const patch: Partial<typeof project.$inferInsert> = {};
+  if (opts.contractRef !== undefined) patch.contractRef = opts.contractRef;
+  if (opts.wilaya !== undefined) patch.wilaya = opts.wilaya;
+  if (opts.amountExcl !== undefined) patch.amountExcl = opts.amountExcl;
+  if (opts.startedOn !== undefined) patch.startedOn = opts.startedOn;
+  if (opts.contractualEnd !== undefined) patch.contractualEnd = opts.contractualEnd;
+  if (opts.retentionPct !== undefined) patch.retentionPct = opts.retentionPct;
+  if (opts.warrantyMonths !== undefined) patch.warrantyMonths = opts.warrantyMonths;
+  if (opts.retentionBase !== undefined) {
+    const base = asRetentionBase(opts.retentionBase);
+    if (opts.retentionBase && !base) throw new ProjectRefused("badRetentionBase");
+    patch.retentionBase = base;
+  }
+  if (opts.contractDocumentId !== undefined) {
+    if (opts.contractDocumentId) {
+      const [contract] = await db
+        .select({ status: document.status })
+        .from(document)
+        .where(eq(document.id, opts.contractDocumentId))
+        .limit(1);
+      if (contract?.status !== "issued") throw new ProjectRefused("contractNotIssued");
+    }
+    patch.contractDocumentId = opts.contractDocumentId;
+  }
+  if (Object.keys(patch).length === 0) return;
+
+  await db.transaction(async (tx) => {
+    await tx.update(project).set(patch).where(eq(project.id, opts.projectId));
+    await tx.insert(auditEntry).values({
+      entity: "project",
+      entityId: opts.projectId,
+      action: "update",
+      actorId: opts.actorId,
+      actorKind: "user",
+      sourceScreen: "16",
+      after: patch,
+    });
+  });
+}
+
+/**
+ * The réceptions — three dates about two signed papers.
+ *
+ * `pvProvisoirePlanned` is a forecast and may be moved; the two `On` dates are
+ * facts and are written once. The definitive one is refused before the
+ * provisional exists, because a project cannot be finally accepted before it
+ * is provisionally accepted, and the retention's release date hangs on that
+ * order.
+ */
+export async function recordReception(opts: {
+  projectId: string;
+  pvProvisoirePlanned?: string | null;
+  pvProvisoireOn?: string | null;
+  pvDefinitiveOn?: string | null;
+  actorId: string;
+}): Promise<void> {
+  const [row] = await db
+    .select({ provisoire: project.pvProvisoireOn, definitive: project.pvDefinitiveOn })
+    .from(project)
+    .where(eq(project.id, opts.projectId))
+    .limit(1);
+  if (!row) throw new ProjectRefused("noSuchProject");
+
+  const patch: Partial<typeof project.$inferInsert> = {};
+  if (opts.pvProvisoirePlanned !== undefined) patch.pvProvisoirePlanned = opts.pvProvisoirePlanned;
+  if (opts.pvProvisoireOn) {
+    if (row.provisoire) throw new ProjectRefused("alreadyReceived");
+    patch.pvProvisoireOn = opts.pvProvisoireOn;
+  }
+  if (opts.pvDefinitiveOn) {
+    if (row.definitive) throw new ProjectRefused("alreadyReceived");
+    const provisoire = patch.pvProvisoireOn ?? row.provisoire;
+    if (!provisoire) throw new ProjectRefused("provisoireFirst");
+    if (opts.pvDefinitiveOn < provisoire) throw new ProjectRefused("definitiveBeforeProvisoire");
+    patch.pvDefinitiveOn = opts.pvDefinitiveOn;
+  }
+  if (Object.keys(patch).length === 0) return;
+
+  await db.transaction(async (tx) => {
+    await tx.update(project).set(patch).where(eq(project.id, opts.projectId));
+    await tx.insert(auditEntry).values({
+      entity: "project",
+      entityId: opts.projectId,
+      action: "update",
+      actorId: opts.actorId,
+      actorKind: "user",
+      sourceScreen: "16",
+      after: patch,
+    });
+  });
 }

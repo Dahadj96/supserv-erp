@@ -68,8 +68,29 @@ export const project = pgTable("project", {
   physicalBy: text("physical_by"),
   physicalAt: timestamp("physical_at", { withTimezone: true }),
 
+  /**
+   * THE DQE CONTRACTUEL — the issued document whose lines are the contract's
+   * bordereau: the client's order when they sent one, otherwise the offer they
+   * accepted. Every situation's lines point at this document's lines
+   * (`document_line.source_line_id`), which is what makes "quantité marché ·
+   * cumul précédent · période · cumul à ce jour" arithmetic instead of typing.
+   *
+   * A person chose it when the project was opened. Null on projects opened
+   * before this column existed, and `contractOf` then falls back to the deal's
+   * latest issued order or offer without writing the guess down.
+   */
+  contractDocumentId: uuid("contract_document_id").references(() => document.id),
+
   /** Retenue de garantie — the percentage the client holds back per situation. */
   retentionPct: numeric("retention_pct", { precision: 6, scale: 3 }).notNull().default("0"),
+  /**
+   * WHAT THE RETENTION IS TAKEN ON — `excl` (the HT of the situation) or `incl`
+   * (the TTC). Both are seen on Algerian décomptes and the CCAP of the marché
+   * says which; it is the contract's fact, not a company setting, which is why
+   * it is here and not on screen 85. Null means nobody has read the CCAP yet,
+   * and a situation with a retention cannot be raised until somebody has.
+   */
+  retentionBase: text("retention_base"),
   /** How long after the PV définitif the retention is held. Usually twelve. */
   warrantyMonths: integer("warranty_months"),
 

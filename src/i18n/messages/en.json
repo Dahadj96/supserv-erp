@@ -131,7 +131,13 @@
     "stageIsDerived": "stage is computed from the documents, outcome is read from the offer",
     "stageDerivedLabel": "Stage — derived",
     "newEnquiry": "New enquiry",
-    "recordOrder": "Record their order"
+    "recordOrder": "Record their order",
+    "project": {
+      "title": "The works",
+      "opened": "The project is open:",
+      "why": "Once the client has said yes, the site lives on its own page — situations, retention, cautions, who is on site.",
+      "open": "Open the project"
+    }
   },
   "search": {
     "title": "Search",
@@ -1051,13 +1057,26 @@
       "setupIncomplete": "Day one is not finished, so nothing can be issued yet.",
       "alreadyIssued": "That document has already been issued.",
       "blocked": "A confirmed rule refused this document",
-      "complianceBlocked": "A confirmed rule refused this document."
+      "complianceBlocked": "A confirmed rule refused this document.",
+      "previousSituationNotIssued": "The previous situation is still a draft. Issue it first — the cumul précédent depends on it."
     },
     "edit": "Edit",
     "convert": "Convert",
     "convertedOk": "Created from the document it was converted from, which is untouched and still on file. Read this one before issuing it.",
     "recordDelivery": "Record a delivery",
-    "invoiceDelivered": "Invoice what is delivered"
+    "invoiceDelivered": "Invoice what is delivered",
+    "situation": {
+      "title": "Situation n° {n}",
+      "toProject": "The project",
+      "project": "Project",
+      "contract": "Marché n°",
+      "period": "Period",
+      "cumul": "Cumulative (excl. VAT)",
+      "percent": "Of the contract",
+      "submitted": "Submitted",
+      "approved": "Approved",
+      "why": "Submitted and approved are recorded on the project page, the day the paper moves."
+    }
   },
   "checklist": {
     "title": "Before issuing",
@@ -1738,7 +1757,8 @@
       "notAllowed": "Your role may not edit this kind of document.",
       "alreadyIssued": "That document is issued. A correction is a new document.",
       "noLines": "A document needs at least one line with a description and a quantity.",
-      "noSuchDocument": "That document no longer exists."
+      "noSuchDocument": "That document no longer exists.",
+      "situationHasItsOwnScreen": "A situation is edited against the marché on the project page, not here."
     },
     "settlement": "Payment method",
     "settlementUnsaid": "Not stated",
@@ -4232,7 +4252,16 @@
       "expiresBeforeAcceptance": "The {kind} guarantee expires {on} — before provisional acceptance. Renew it or the client can call it in.",
       "lapsed": "The {kind} guarantee lapsed on {on}. Until it is renewed the client is holding an unsecured contract.",
       "expiring": "The {kind} guarantee expires {on}. A bank takes about six weeks to renew one."
-    }
+    },
+    "continueSituation": "Continue situation n° {n}",
+    "nextSituation": "Situation n° {n}",
+    "openedOk": "Project {code} is open.",
+    "issueFirst": "Issue it first",
+    "submittedOn": "Submitted",
+    "approvedBy": "Signed by",
+    "approvedOn": "Approved",
+    "approvedOnBy": "Approved {on}",
+    "approvedByHint": "M. Kaddour, subdivisionnaire"
   },
   "candidates": {
     "title": "Candidates",
@@ -4562,5 +4591,150 @@
       "offerAlreadyIssued": "An offer has already gone out against the previous bordereau. Tick the box to apply the erratum knowing that.",
       "reasonRequired": "A reason is required."
     }
+  },
+  "projectNew": {
+    "title": "Open the project",
+    "lead": "Most of this is already known and is here to be checked. What has to be read off the marché is the contract value, the dates and the retenue de garantie — with what it is taken on.",
+    "section": {
+      "site": "The site",
+      "contract": "The contract",
+      "contractWhy": "The document named here is the DQE contractuel: every situation's lines point at its lines, which is what makes 'quantité marché · cumul précédent · période · cumul' arithmetic instead of typing.",
+      "retention": "Retenue de garantie",
+      "retentionWhy": "The CCAP says what the percentage is taken on — the HT of each situation or its TTC. Both are seen on Algerian décomptes. No situation with a retention can be raised until this is read off the contract."
+    },
+    "f": {
+      "object": "Object of the works",
+      "contractRef": "Marché n° (the client's reference)",
+      "wilaya": "Wilaya",
+      "wilayaHint": "Free text; the 58 wilayas are offered as you type.",
+      "contract": "DQE contractuel",
+      "contractNone": "No issued order or offer on this enquiry yet — name it later from the project page.",
+      "contractLater": "Name it later",
+      "amountExcl": "Contract value (excl. VAT)",
+      "startedOn": "ODS / start",
+      "contractualEnd": "Contractual end",
+      "retentionPct": "Retention %",
+      "retentionBase": "Taken on",
+      "warrantyMonths": "Warranty (months)"
+    },
+    "retentionBase": {
+      "unsaid": "Not read off the CCAP yet",
+      "excl": "the HT of the situation",
+      "incl": "the TTC of the situation"
+    },
+    "footnote": "Opening a project allocates its code. Everything else can be corrected on the project page.",
+    "go": "Open the project",
+    "error": {
+      "notAllowed": "Your role cannot open a project.",
+      "noSuchDeal": "That enquiry does not exist.",
+      "objectRequired": "The object of the works is required.",
+      "badRetentionBase": "The retention is taken on the HT or on the TTC — nothing else.",
+      "contractNotIssued": "The DQE must be an issued document."
+    },
+    "whichEnquiry": "On which enquiry? Listed: those where the client has an issued order or offer in hand and no project exists yet.",
+    "noCandidates": "No enquiry is waiting for a project. Issue an offer or record a client's order first."
+  },
+  "projectRecord": {
+    "record": "Record",
+    "ok": {
+      "submitted": "Recorded: the situation has been submitted.",
+      "approved": "Recorded: the client approved the situation.",
+      "physical": "Recorded: physical progress.",
+      "reception": "Recorded: the réception.",
+      "terms": "The contract's terms are saved.",
+      "caution": "Recorded: the caution.",
+      "released": "Recorded: the caution was given back."
+    },
+    "error": {
+      "notAllowed": "Your role cannot record this.",
+      "notIssued": "Issue the situation first — a draft has been nowhere.",
+      "notSubmitted": "Record the submission first; approval comes after.",
+      "noSuchSituation": "That situation does not exist.",
+      "percentOutOfRange": "Progress is between 0 and 100.",
+      "alreadyReceived": "That réception is already recorded. An issued fact is not rewritten.",
+      "provisoireFirst": "The réception définitive comes after the provisoire.",
+      "definitiveBeforeProvisoire": "The définitive cannot be earlier than the provisoire.",
+      "badRetentionBase": "The retention is taken on the HT or on the TTC — nothing else.",
+      "contractNotIssued": "The DQE must be an issued document.",
+      "kindRequired": "Say which caution it is.",
+      "noSuchCaution": "That caution does not exist.",
+      "noSuchProject": "That project does not exist."
+    },
+    "physical": {
+      "title": "Physical progress",
+      "why": "What the chef de chantier says, with their name and the date. Never derived.",
+      "percent": "Done, in %"
+    },
+    "reception": {
+      "title": "Réceptions",
+      "which": "Which",
+      "planned": "Provisoire — planned date",
+      "on": "On",
+      "why": "Two signed papers. The definitive one plus the warranty is when the retention comes back."
+    },
+    "terms": {
+      "title": "The contract's terms",
+      "why": "As the marché says them. Changing the retention changes the next situation, never an issued one."
+    },
+    "caution": {
+      "title": "Cautions",
+      "kind": "Kind",
+      "amount": "Amount",
+      "pct": "%",
+      "bank": "Bank",
+      "reference": "Reference",
+      "issuedOn": "Issued on",
+      "expiresOn": "Expires on",
+      "add": "Record the caution",
+      "released": "Given back by the client"
+    }
+  },
+  "situation": {
+    "title": "Situation n° {n}",
+    "lead": "Type this period's quantities against the marché's bordereau. The cumulative columns, the retention and the net à payer are arithmetic on the draft.",
+    "editingDraft": "This situation is still a draft — its quantities can be changed until it is issued.",
+    "error": {
+      "noContract": "Name the DQE contractuel on the project first.",
+      "retentionBaseRequired": "Say what the retention is taken on first — it is on the CCAP.",
+      "previousNotIssued": "The previous situation is still a draft. Issue it first.",
+      "nothingClaimed": "Nothing was claimed. Type at least one quantity.",
+      "lineNotOnContract": "One of the lines is not on the marché.",
+      "noSuchProject": "That project does not exist."
+    },
+    "blocked": {
+      "noContract": "No DQE contractuel is named on this project, so there is nothing to claim against.",
+      "retentionBaseRequired": "The retention's base has not been read off the CCAP. A situation with a retention cannot be raised until it is.",
+      "previousNotIssued": "The previous situation is still a draft; its quantities would be missing from the cumul précédent."
+    },
+    "fixTerms": "Fix the terms",
+    "bordereau": "The bordereau",
+    "against": "Against {doc}",
+    "noContractYet": "No contract named",
+    "noLines": "The named contract has no priced lines.",
+    "column": {
+      "designation": "Designation",
+      "contract": "Qty marché",
+      "unitPrice": "Unit price",
+      "previous": "Already claimed",
+      "remaining": "Remaining",
+      "period": "This period"
+    },
+    "previouslyCertified": "Previously certified: {amount}.",
+    "overContractHint": "A quantity past the marché's is not refused — it is flagged on the form, and it is what an avenant is for.",
+    "period": "The period",
+    "f": {
+      "from": "From",
+      "to": "To",
+      "workDone": "Work done",
+      "workDoneHint": "Fouilles et pose du câble, tronçon 1",
+      "issuedOn": "Date on the paper",
+      "advance": "Advance recovered this period",
+      "advanceHint": "Remboursement d'avance forfaitaire ou sur approvisionnement, as the CCAP schedules it. Comes off the net à payer."
+    },
+    "deductions": "Deductions",
+    "retention": "Retenue de garantie",
+    "createsADraft": "Creates a draft you will read before issuing.",
+    "saveDraft": "Save the draft",
+    "go": "Prepare the situation"
   }
 }

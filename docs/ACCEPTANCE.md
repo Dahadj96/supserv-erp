@@ -241,6 +241,24 @@ winning the work and the last invoice being paid is most of the year:
 - `tests/integration/project.test.ts` :: "brings the SOONEST-expiring certification through, not the latest"
 - `tests/integration/project.test.ts` :: "is stored with a name against it, and shows the gap"
 
+On 4 September the module stopped being read-only: a project is opened on the
+enquiry the client said yes to, and the situations are raised against its
+bordereau in the wilaya's own "partie co-contractant" layout — see
+`docs/DECISIONS/2026-09-04-the-situation-is-the-invoice.md`:
+
+- `tests/unit/situation.test.ts` :: "adds the period to what the earlier situations claimed, line by line"
+- `tests/unit/situation.test.ts` :: "flags a cumulative quantity past the marché's rather than refusing it"
+- `tests/unit/situation.test.ts` :: "withholds nothing until somebody has said what it is taken on"
+- `tests/unit/situation.test.ts` :: "takes 5 % of the HT when the CCAP says so, without touching the VAT"
+- `tests/unit/situation.test.ts` :: "takes it on the TTC when the CCAP says that instead"
+- `tests/unit/wilayas.test.ts` :: "are fifty-eight, numbered 01 to 58 without a gap or a repeat"
+- `tests/integration/situation-flow.test.ts` :: "is a draft whose lines point at the marché's and whose retention is 5 % of the HT"
+- `tests/integration/situation-flow.test.ts` :: "is edited on its own screen, not in the builder"
+- `tests/integration/situation-flow.test.ts` :: "is issued with a number of ours, then submitted, then approved — in that order"
+- `tests/integration/situation-flow.test.ts` :: "carries n° 1's quantities as cumul précédent"
+- `tests/integration/situation-flow.test.ts` :: "refuses to issue a situation whose predecessor is still a draft"
+- `tests/integration/situation-flow.test.ts` :: "records the provisoire, then the définitive, and never the other way round"
+
 And screens 24, 25 and 26 — `/personnel-requests` was the third dead link in
 the rail, and a certification that lapses before a man is due on site is the
 same rule for the third time:
@@ -395,3 +413,13 @@ tells you what you want to hear.
    rows with TTC payments — "safe to pay" came out short by the VAT. Screen 67
    has "Order from them"; screen 68 has the three forms.
 
+13. ~~**Projects could be read and not driven.**~~ **Closed on 4
+   September** by `tests/integration/situation-flow.test.ts`: the project is
+   opened on the client's order (`/projects/new?deal=`), the situations are
+   raised against its bordereau (`/projects/[id]/situation`), issued in
+   order under `SIT-{YYYY}-{###}`, submitted and approved with a name, the
+   réceptions recorded; the PDF is the wilaya's "partie co-contractant"
+   form with the cumulative columns, the retenue de garantie on the base the
+   CCAP names, and the net à payer in words. Still open on the public-works
+   chain, each waiting on a text and a person to confirm it: avenants,
+   révision des prix, pénalités de retard, DGD.

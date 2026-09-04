@@ -13,6 +13,7 @@ import { requestsForDeal } from "@/domain/deal/sourcing-store";
 import { badgeMessageKey, DEADLINE_WARNING_HOURS } from "@/domain/deal/stage";
 import { formatMoney } from "@/domain/money";
 import { offersForDeal } from "@/domain/offer/store";
+import { projectForDeal } from "@/domain/project/store";
 import { Link } from "@/i18n/navigation";
 import { decideAction, lostAction, reopenAction } from "./actions";
 import { askSuppliersAction } from "./ask-actions";
@@ -61,7 +62,7 @@ export default async function EnquiryPage({
 
   const { deal: row, clientName, lines, facts, badge, open, deadline } = found;
 
-  const [suppliers, requests, offers] = await Promise.all([
+  const [suppliers, requests, offers, projectOpened] = await Promise.all([
     db
       .selectDistinct({ id: party.id, legalName: party.legalName, tradeName: party.tradeName })
       .from(party)
@@ -70,6 +71,7 @@ export default async function EnquiryPage({
       .orderBy(party.legalName),
     requestsForDeal(id),
     offersForDeal(id),
+    projectForDeal(id),
   ]);
 
   const when = new Intl.DateTimeFormat(locale === "fr" ? "fr-DZ" : "en-GB", {
@@ -486,6 +488,38 @@ export default async function EnquiryPage({
                   ))}
                 </ul>
               ) : null}
+            </section>
+          ) : null}
+
+          {/*
+            The works. Once the client has said yes — an order recorded, or at
+            least an offer out — the enquiry becomes a site with situations,
+            retention and cautions, and that lives on screen 16. One project
+            per enquiry: the link goes to it once it exists.
+          */}
+          {projectOpened || facts.ordersReceived > 0 || facts.offersIssued > 0 ? (
+            <section className="rounded-[var(--radius-card)] border border-line bg-surface p-5">
+              <h2 className="text-tiny font-semibold text-ink">{t("deals.project.title")}</h2>
+              {projectOpened ? (
+                <p className="mt-2 text-tiny leading-relaxed text-secondary">
+                  {t("deals.project.opened")}{" "}
+                  <Link
+                    href={`/projects/${projectOpened.id}`}
+                    className="font-medium text-accent-ink hover:underline"
+                  >
+                    {projectOpened.code}
+                  </Link>
+                </p>
+              ) : (
+                <>
+                  <p className="mt-2 text-micro leading-relaxed text-muted">
+                    {t("deals.project.why")}
+                  </p>
+                  <Link href={`/projects/new?deal=${id}`} className="mt-3 inline-block">
+                    <Button variant="secondary">{t("deals.project.open")}</Button>
+                  </Link>
+                </>
+              )}
             </section>
           ) : null}
 

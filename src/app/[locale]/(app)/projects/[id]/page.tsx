@@ -1,13 +1,20 @@
 import { CircleAlert } from "lucide-react";
 import { redirect as hardRedirect, notFound } from "next/navigation";
 import { getFormatter, getTranslations, setRequestLocale } from "next-intl/server";
+import { Fragment } from "react";
+import { INPUT } from "@/app/[locale]/(app)/setup/field";
+import { can, canAny } from "@/auth/can";
 import { getSession } from "@/auth/session";
 import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
 import type { CautionState, CrewState } from "@/domain/project/cautions";
 import { needsAttention } from "@/domain/project/cautions";
 import type { SituationState } from "@/domain/project/progress";
+import { contractCandidates } from "@/domain/project/situations";
 import { getProject } from "@/domain/project/store";
 import { Link } from "@/i18n/navigation";
+import { situationApprovedAction, situationSubmittedAction } from "./actions";
+import { RecordPanels } from "./record";
 
 /**
  * Screen 16 — the project.
@@ -49,10 +56,13 @@ const CREW_TONE: Record<CrewState, "good" | "warning" | "critical" | "neutral" |
 
 export default async function ProjectPage({
   params,
+  searchParams,
 }: {
   params: Promise<{ locale: string; id: string }>;
+  searchParams: Promise<{ opened?: string; recorded?: string; error?: string }>;
 }) {
   const { locale, id } = await params;
+  const { opened, recorded, error } = await searchParams;
   setRequestLocale(locale);
   const t = await getTranslations();
 
@@ -61,25 +71,62 @@ export default async function ProjectPage({
 
   const p = await getProject(id);
   if (!p) notFound();
+  const contracts = await contractCandidates(p.dealId);
 
   const format = await getFormatter({ locale });
   const money = (value: string) =>
     `${format.number(Number(value), { maximumFractionDigits: 0 })} ${p.currency}`;
 
   const urgent = p.cautions.filter((c) => needsAttention(c.state));
+  const siteWrite = can(session.role, "works.issue");
+  const datesWrite = canAny(session.role, ["works.issue", "invoices.issue"]);
+  const openDraft = p.progress.situations.find((s) => s.number === null);
+  const today = new Date().toISOString().slice(0, 10);
 
   return (
     <main className="min-h-0 flex-1 overflow-auto">
-      <div className="border-b border-line-subtle bg-surface px-7 py-5">
-        <h1 className="text-[19px] font-semibold text-ink">
-          {p.code} — {p.object}
-        </h1>
-        <p className="mt-1 text-tiny text-muted">
-          {p.client}
-          {p.wilaya ? ` · ${p.wilaya}` : ""}
-          {p.startedOn ? ` · ${t("project.startedOn", { on: p.startedOn })}` : ""}
-        </p>
+      <div className="flex flex-wrap items-start gap-3 border-b border-line-subtle bg-surface px-7 py-5">
+        <div className="min-w-0">
+          <h1 className="text-[19px] font-semibold text-ink">
+            {p.code} — {p.object}
+          </h1>
+          <p className="mt-1 text-tiny text-muted">
+            {p.client}
+            {p.wilaya ? ` · ${p.wilaya}` : ""}
+            {p.startedOn ? ` · ${t("project.startedOn", { on: p.startedOn })}` : ""}
+          </p>
+        </div>
+        <div className="ms-auto flex items-center gap-2">
+          {/* One draft at a time: the button continues it when there is one,
+              and opens the next number when there is not. */}
+          <Link href={`/projects/${id}/situation`}>
+            <Button
+              variant="primary"
+              disabledReason={siteWrite ? undefined : t("documents.notAllowed")}
+            >
+              {openDraft
+                ? t("project.continueSituation", { n: openDraft.sequence })
+                : t("project.nextSituation", { n: p.situationsTotal + 1 })}
+            </Button>
+          </Link>
+        </div>
       </div>
+
+      {opened ? (
+        <p className="mx-7 mt-4 rounded-[var(--radius-control)] bg-good-bg px-4 py-2.5 text-tiny text-good-ink">
+          {t("project.openedOk", { code: p.code })}
+        </p>
+      ) : null}
+      {recorded ? (
+        <p className="mx-7 mt-4 rounded-[var(--radius-control)] bg-good-bg px-4 py-2.5 text-tiny text-good-ink">
+          {t.has(`projectRecord.ok.${recorded}`) ? t(`projectRecord.ok.${recorded}`) : recorded}
+        </p>
+      ) : null}
+      {error ? (
+        <p className="mx-7 mt-4 rounded-[var(--radius-control)] bg-critical-bg px-4 py-2.5 text-tiny text-critical-ink">
+          {t.has(`projectRecord.error.${error}`) ? t(`projectRecord.error.${error}`) : error}
+        </p>
+      ) : null}
 
       {urgent.length > 0 ? (
         <div className="mx-7 mt-4 flex items-start gap-3 rounded-[var(--radius-control)] border border-critical bg-critical-bg px-4 py-3">
@@ -130,37 +177,134 @@ export default async function ProjectPage({
                   </tr>
                 </thead>
                 <tbody>
-                  {p.progress.situations.map((s) => (
-                    <tr key={s.documentId} className="border-b border-line-subtle last:border-0">
-                      <td className="px-5 py-2.5 text-muted">{s.sequence}</td>
-                      <td className="px-3 py-2.5">
-                        <Link
-                          href={`/documents/${s.documentId}`}
-                          className="text-ink hover:underline"
-                        >
-                          {s.number ?? t("project.draft")}
-                        </Link>
-                      </td>
-                      <td className="px-3 py-2.5 text-end tabular-nums text-ink">
-                        {money(s.amountExcl)}
-                      </td>
-                      <td className="px-3 py-2.5 text-end tabular-nums text-secondary">
-                        {money(s.retention)}
-                      </td>
-                      <td className="px-3 py-2.5 text-secondary">{s.submittedOn ?? "—"}</td>
-                      <td className="px-5 py-2.5">
-                        {s.waitingDays !== null ? (
-                          <Badge tone="warning">
-                            {t("project.waitingDays", { days: s.waitingDays })}
-                          </Badge>
-                        ) : (
-                          <Badge tone={SITUATION_TONE[s.state]}>
-                            {t(`project.situation.${s.state}`)}
-                          </Badge>
-                        )}
-                      </td>
-                    </tr>
-                  ))}
+                  {p.progress.situations.map((s) => {
+                    /*
+                      The two dates the client controls, recorded the day the
+                      paper moves. A draft has been nowhere; an issued one is
+                      submitted, then approved by a named engineer. The form
+                      sits on its own row under the situation, full width,
+                      because seven columns on a 12-inch panel leave no room
+                      for a name.
+                    */
+                    const followUp =
+                      s.number === null
+                        ? null
+                        : !s.submittedOn
+                          ? "submit"
+                          : !s.approvedOn
+                            ? "approve"
+                            : null;
+                    return (
+                      <Fragment key={s.documentId}>
+                        <tr className={followUp ? "" : "border-b border-line-subtle last:border-0"}>
+                          <td className="px-5 py-2.5 text-muted">{s.sequence}</td>
+                          <td className="px-3 py-2.5">
+                            <Link
+                              href={`/documents/${s.documentId}`}
+                              className="text-ink hover:underline"
+                            >
+                              {s.number ?? t("project.draft")}
+                            </Link>
+                          </td>
+                          <td className="px-3 py-2.5 text-end tabular-nums text-ink">
+                            {money(s.amountExcl)}
+                          </td>
+                          <td className="px-3 py-2.5 text-end tabular-nums text-secondary">
+                            {money(s.retention)}
+                          </td>
+                          <td className="px-3 py-2.5 text-secondary">{s.submittedOn ?? "—"}</td>
+                          <td className="px-5 py-2.5">
+                            {s.waitingDays !== null ? (
+                              <Badge tone="warning">
+                                {t("project.waitingDays", { days: s.waitingDays })}
+                              </Badge>
+                            ) : (
+                              <Badge tone={SITUATION_TONE[s.state]}>
+                                {t(`project.situation.${s.state}`)}
+                              </Badge>
+                            )}
+                            {s.approvedOn ? (
+                              <span className="ms-2 text-micro text-muted">
+                                {t("project.approvedOnBy", { on: s.approvedOn })}
+                              </span>
+                            ) : null}
+                          </td>
+                        </tr>
+                        {followUp === "submit" ? (
+                          <tr className="border-b border-line-subtle last:border-0">
+                            <td colSpan={6} className="px-5 pb-2.5">
+                              <form
+                                action={situationSubmittedAction.bind(null, locale, id)}
+                                className="flex flex-wrap items-center justify-end gap-2"
+                              >
+                                <input type="hidden" name="documentId" value={s.documentId} />
+                                <span className="text-micro text-secondary">
+                                  {t("project.submittedOn")}
+                                </span>
+                                <input
+                                  type="date"
+                                  name="on"
+                                  defaultValue={today}
+                                  aria-label={t("project.submittedOn")}
+                                  className={`${INPUT} h-[28px] w-[150px]`}
+                                />
+                                <Button
+                                  type="submit"
+                                  variant="secondary"
+                                  size="small"
+                                  disabledReason={
+                                    datesWrite ? undefined : t("documents.notAllowed")
+                                  }
+                                >
+                                  {t("projectRecord.record")}
+                                </Button>
+                              </form>
+                            </td>
+                          </tr>
+                        ) : followUp === "approve" ? (
+                          <tr className="border-b border-line-subtle last:border-0">
+                            <td colSpan={6} className="px-5 pb-2.5">
+                              <form
+                                action={situationApprovedAction.bind(null, locale, id)}
+                                className="flex flex-wrap items-center justify-end gap-2"
+                              >
+                                <input type="hidden" name="documentId" value={s.documentId} />
+                                <span className="text-micro text-secondary">
+                                  {t("project.approvedOn")}
+                                </span>
+                                <input
+                                  type="date"
+                                  name="on"
+                                  defaultValue={today}
+                                  aria-label={t("project.approvedOn")}
+                                  className={`${INPUT} h-[28px] w-[150px]`}
+                                />
+                                <span className="text-micro text-secondary">
+                                  {t("project.approvedBy")}
+                                </span>
+                                <input
+                                  name="by"
+                                  placeholder={t("project.approvedByHint")}
+                                  aria-label={t("project.approvedBy")}
+                                  className={`${INPUT} h-[28px] w-[220px]`}
+                                />
+                                <Button
+                                  type="submit"
+                                  variant="secondary"
+                                  size="small"
+                                  disabledReason={
+                                    datesWrite ? undefined : t("documents.notAllowed")
+                                  }
+                                >
+                                  {t("projectRecord.record")}
+                                </Button>
+                              </form>
+                            </td>
+                          </tr>
+                        ) : null}
+                      </Fragment>
+                    );
+                  })}
                 </tbody>
               </table>
             )}
@@ -411,6 +555,8 @@ export default async function ProjectPage({
               </p>
             </section>
           ) : null}
+
+          <RecordPanels locale={locale} p={p} contracts={contracts} canWrite={siteWrite} />
 
           <section className="rounded-[var(--radius-card)] border border-line bg-surface p-5">
             <h2 className="text-tiny font-semibold text-ink">{t("project.fromEnquiry")}</h2>

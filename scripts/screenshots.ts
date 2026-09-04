@@ -190,6 +190,7 @@ async function main() {
       if (route.startsWith("/documents")) return ids.invoiceId;
       if (route.startsWith("/offers")) return ids.offerId;
       if (route.startsWith("/purchase-orders")) return ids.purchaseOrderId ?? NOWHERE;
+      if (route.startsWith("/projects")) return ids.projectId;
       return NOWHERE;
     };
 

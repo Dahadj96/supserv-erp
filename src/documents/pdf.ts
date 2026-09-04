@@ -1,5 +1,5 @@
 import { PDFDocument, type PDFFont, type PDFPage, rgb, StandardFonts } from "pdf-lib";
-import type { RenderedDocument } from "./engine";
+import type { RenderedDocument, RenderedSituation } from "./engine";
 import { percent } from "./format";
 
 /**
@@ -46,6 +46,10 @@ const LOOKALIKES: Record<string, string> = {
   "\u2082": "2",
   "\u2083": "3",
   "\u221E": "inf",
+  // Superscripts are in WinAnsi on paper and not in every embedded set;
+  // "mm2" reads, a dropped glyph does not.
+  "\u00B2": "2",
+  "\u00B3": "3",
 };
 
 /**
@@ -149,6 +153,81 @@ const TITLES: Record<string, { fr: string; en: string }> = {
   offer: { fr: "OFFRE COMMERCIALE", en: "COMMERCIAL OFFER" },
   delivery_note: { fr: "BON DE LIVRAISON", en: "DELIVERY NOTE" },
   credit_note: { fr: "AVOIR", en: "CREDIT NOTE" },
+  situation: { fr: "SITUATION DE TRAVAUX", en: "PROGRESS STATEMENT" },
+};
+
+/**
+ * The words on the wilaya's "partie co-contractant" form. French is the
+ * language the form exists in; the English is for a foreign client who has
+ * asked for one and is a courtesy translation of the same columns.
+ */
+const SITUATION_WORDS = {
+  fr: {
+    subtitle: "Partie co-contractant",
+    number: "Situation n°",
+    owner: "Maître de l'ouvrage",
+    contractor: "Le co-contractant",
+    operation: "Opération",
+    contract: "Marché n°",
+    ourRef: "Notre réf.",
+    wilaya: "Wilaya",
+    period: "Période",
+    work: "Travaux",
+    columns: {
+      n: "N°",
+      designation: "Désignation des travaux",
+      unit: "U",
+      qtyContract: "Qté marché",
+      unitPrice: "P.U. HT",
+      qtyPrevious: "Qté précéd.",
+      qtyPeriod: "Qté période",
+      qtyCumul: "Qté cumulée",
+      amountCumul: "Montant cumulé HT",
+    },
+    cumulExcl: "Montant des travaux cumulés à ce jour (HT)",
+    previouslyCertified: "Travaux précédemment certifiés (HT)",
+    periodExcl: "Montant de la présente situation (HT)",
+    percent: "Avancement financier",
+    overContract: "* quantité cumulée supérieure à la quantité du marché",
+    inWords: "Arrêtée la présente situation à la somme nette de :",
+    signContractor: "Le co-contractant",
+    signOwner: "Le service contractant",
+    signEngineer: "Vu et vérifié, l'ingénieur chargé du suivi",
+    continued: "suite",
+  },
+  en: {
+    subtitle: "Contractor's statement",
+    number: "Statement no.",
+    owner: "Client",
+    contractor: "Contractor",
+    operation: "Works",
+    contract: "Contract no.",
+    ourRef: "Our ref.",
+    wilaya: "Wilaya",
+    period: "Period",
+    work: "Work done",
+    columns: {
+      n: "No.",
+      designation: "Description of works",
+      unit: "U",
+      qtyContract: "Contract qty",
+      unitPrice: "Unit price",
+      qtyPrevious: "Previous qty",
+      qtyPeriod: "Period qty",
+      qtyCumul: "Cumulative qty",
+      amountCumul: "Cumulative amount",
+    },
+    cumulExcl: "Cumulative value of works to date (excl. VAT)",
+    previouslyCertified: "Previously certified works (excl. VAT)",
+    periodExcl: "Value of this statement (excl. VAT)",
+    percent: "Financial progress",
+    overContract: "* cumulative quantity exceeds the contract quantity",
+    inWords: "This statement is settled at the net sum of:",
+    signContractor: "The contractor",
+    signOwner: "The client",
+    signEngineer: "Checked by the supervising engineer",
+    continued: "continued",
+  },
 };
 
 const WORDS = {
@@ -171,6 +250,7 @@ const WORDS = {
       totalIncl: "Total TTC",
       stampDuty: "Droit de timbre",
       advanceDeducted: "Avance déduite",
+      retention: "Retenue de garantie",
       discountTotal: "Remise",
       dueNow: "Net à payer",
       optionsExcl: "Options non comprises (HT)",
@@ -195,6 +275,7 @@ const WORDS = {
       totalIncl: "Total incl. VAT",
       stampDuty: "Stamp duty",
       advanceDeducted: "Advance deducted",
+      retention: "Retention",
       discountTotal: "Discount",
       dueNow: "Net payable",
       optionsExcl: "Options not included (excl. VAT)",
@@ -204,10 +285,17 @@ const WORDS = {
 
 export async function toPdf(doc: RenderedDocument): Promise<Buffer> {
   const pdf = await PDFDocument.create();
-  const page = pdf.addPage([A4.width, A4.height]);
   const regular = await pdf.embedFont(StandardFonts.Helvetica);
   const bold = await pdf.embedFont(StandardFonts.HelveticaBold);
 
+  // A situation de travaux is drawn in the wilaya's own layout — the form a
+  // public client's engineer signs — and not as an invoice with extra columns.
+  if (doc.situation) {
+    situationPages(pdf, doc, doc.situation, regular, bold);
+    return Buffer.from(await pdf.save());
+  }
+
+  const page = pdf.addPage([A4.width, A4.height]);
   const w = doc.locale === "en" ? WORDS.en : WORDS.fr;
   const edge = A4.width - MARGIN;
   const ctx: Ctx = { page, regular, bold, y: A4.height - MARGIN };
@@ -310,9 +398,10 @@ export async function toPdf(doc: RenderedDocument): Promise<Buffer> {
     "discountTotal",
     "vat",
     "totalVat",
-    "advanceDeducted",
     "stampDuty",
     "totalIncl",
+    "retention",
+    "advanceDeducted",
     "dueNow",
     "optionsExcl",
   ];
@@ -375,4 +464,276 @@ export async function toPdf(doc: RenderedDocument): Promise<Buffer> {
   text(ctx, ours.join("   ") || "—", { size: 7.5, color: MUTED });
 
   return Buffer.from(await pdf.save());
+}
+
+/* ───────────────────────────────────────────────────────────────────────── */
+/* Situation de travaux — partie co-contractant                              */
+/* ───────────────────────────────────────────────────────────────────────── */
+
+/** The form's own margin: nine columns need the width. */
+const FORM_MARGIN = 34;
+/** Below this the table stops and continues on the next page. */
+const FORM_FLOOR = 70;
+
+/**
+ * Where each column ENDS (numbers are right-aligned) or STARTS (text).
+ * Widths add up to the A4 width less two form margins.
+ */
+const FORM_COL = {
+  n: FORM_MARGIN,
+  des: FORM_MARGIN + 24,
+  unit: 210,
+  qtyContract: 270,
+  price: 330,
+  qtyPrevious: 380,
+  qtyPeriod: 430,
+  qtyCumul: 480,
+  amount: A4.width - FORM_MARGIN,
+};
+
+function formHeaderRow(ctx: Ctx, c: (typeof SITUATION_WORDS)["fr"]["columns"]) {
+  rule(ctx, FORM_MARGIN, A4.width - FORM_MARGIN);
+  ctx.y -= 11;
+  text(ctx, c.n, { x: FORM_COL.n, size: 6.5, color: MUTED });
+  text(ctx, c.designation, { x: FORM_COL.des, size: 6.5, color: MUTED });
+  text(ctx, c.unit, { x: FORM_COL.unit, size: 6.5, color: MUTED });
+  right(ctx, c.qtyContract, FORM_COL.qtyContract, 6.5);
+  right(ctx, c.unitPrice, FORM_COL.price, 6.5);
+  right(ctx, c.qtyPrevious, FORM_COL.qtyPrevious, 6.5);
+  right(ctx, c.qtyPeriod, FORM_COL.qtyPeriod, 6.5);
+  right(ctx, c.qtyCumul, FORM_COL.qtyCumul, 6.5);
+  right(ctx, c.amountCumul, FORM_COL.amount, 6.5);
+  ctx.y -= 5;
+  rule(ctx, FORM_MARGIN, A4.width - FORM_MARGIN);
+  ctx.y -= 12;
+}
+
+function situationPages(
+  pdf: PDFDocument,
+  doc: RenderedDocument,
+  s: RenderedSituation,
+  regular: PDFFont,
+  bold: PDFFont,
+) {
+  const fr = doc.locale !== "en";
+  const w = fr ? WORDS.fr : WORDS.en;
+  const f = fr ? SITUATION_WORDS.fr : SITUATION_WORDS.en;
+  const edge = A4.width - FORM_MARGIN;
+  const title = TITLES.situation?.[fr ? "fr" : "en"] ?? "SITUATION";
+
+  const ctx: Ctx = {
+    page: pdf.addPage([A4.width, A4.height]),
+    regular,
+    bold,
+    y: A4.height - FORM_MARGIN,
+  };
+
+  /* ── who we are · what this is ───────────────────────────────────────── */
+  text(ctx, doc.company.legalName || "—", { x: FORM_MARGIN, size: 12, bold: true });
+  right(ctx, `${title} N° ${s.sequence}`, edge, 12, true);
+  ctx.y -= 13;
+  text(ctx, doc.company.address || "", { x: FORM_MARGIN, size: 8, color: MUTED });
+  right(ctx, f.subtitle, edge, 8.5);
+  ctx.y -= 11;
+  const ours = [
+    doc.company.rc ? `RC ${doc.company.rc}` : null,
+    doc.company.nif ? `NIF ${doc.company.nif}` : null,
+    doc.company.nis ? `NIS ${doc.company.nis}` : null,
+    doc.company.ai ? `AI ${doc.company.ai}` : null,
+  ]
+    .filter(Boolean)
+    .join("   ");
+  text(ctx, ours, { x: FORM_MARGIN, size: 7.5, color: MUTED });
+  right(ctx, doc.number ?? w.draft, edge, 9.5, true);
+  ctx.y -= 11;
+  if (doc.bank) {
+    text(ctx, `${w.domiciliation} — ${doc.bank.bankName}   RIB ${doc.bank.rib}`, {
+      x: FORM_MARGIN,
+      size: 7.5,
+      color: MUTED,
+    });
+  }
+  right(ctx, doc.dateline, edge, 8);
+
+  /* ── the marché ──────────────────────────────────────────────────────── */
+  ctx.y -= 24;
+  rule(ctx, FORM_MARGIN, edge);
+  ctx.y -= 13;
+
+  const facts: [string, string | null][] = [
+    [f.owner, doc.counterparty.legalName],
+    [f.operation, s.object],
+    [f.contract, s.contractRef],
+    [f.ourRef, s.contractNumber ? `${s.projectCode} · ${s.contractNumber}` : s.projectCode],
+    [f.wilaya, s.wilaya],
+    [f.period, s.period],
+    [f.work, s.workDone],
+  ];
+  const theirs = [
+    doc.counterparty.nif ? `NIF ${doc.counterparty.nif}` : null,
+    doc.counterparty.address,
+  ]
+    .filter(Boolean)
+    .join(" · ");
+
+  for (const [label, value] of facts) {
+    if (!value) continue;
+    text(ctx, label, { x: FORM_MARGIN, size: 7.5, color: MUTED });
+    text(ctx, value, { x: FORM_MARGIN + 92, size: 8.5, bold: label === f.owner, maxWidth: 420 });
+    ctx.y -= 12;
+    if (label === f.owner && theirs) {
+      text(ctx, theirs, { x: FORM_MARGIN + 92, size: 7.5, color: MUTED, maxWidth: 420 });
+      ctx.y -= 12;
+    }
+  }
+
+  /* ── the bordereau, cumulative ───────────────────────────────────────── */
+  ctx.y -= 6;
+  formHeaderRow(ctx, f.columns);
+
+  let flagged = false;
+  for (const row of s.rows) {
+    if (ctx.y < FORM_FLOOR) {
+      ctx.page = pdf.addPage([A4.width, A4.height]);
+      ctx.y = A4.height - FORM_MARGIN;
+      text(ctx, `${title} N° ${s.sequence} — ${f.continued}`, {
+        x: FORM_MARGIN,
+        size: 9,
+        bold: true,
+      });
+      right(ctx, doc.number ?? w.draft, edge, 8.5);
+      ctx.y -= 16;
+      formHeaderRow(ctx, f.columns);
+    }
+
+    const claimed = Number(row.qtyPeriod.replace(/[^\d.,-]/g, "").replace(",", ".")) !== 0;
+    const tone = claimed ? INK : MUTED;
+    text(ctx, row.reference ?? String(row.position), { x: FORM_COL.n, size: 7.5, color: MUTED });
+    text(ctx, row.overContract ? `${row.designation} *` : row.designation, {
+      x: FORM_COL.des,
+      size: 7.5,
+      maxWidth: FORM_COL.unit - FORM_COL.des - 6,
+      color: tone,
+    });
+    if (row.overContract) flagged = true;
+    if (row.unit) text(ctx, row.unit, { x: FORM_COL.unit, size: 7.5, color: MUTED });
+    right(ctx, row.qtyContract, FORM_COL.qtyContract, 7.5);
+    right(ctx, row.unitPrice, FORM_COL.price, 7.5);
+    right(ctx, row.qtyPrevious, FORM_COL.qtyPrevious, 7.5);
+    right(ctx, row.qtyPeriod, FORM_COL.qtyPeriod, 7.5, claimed);
+    right(ctx, row.qtyCumul, FORM_COL.qtyCumul, 7.5);
+    right(ctx, row.amountCumul, FORM_COL.amount, 7.5);
+    ctx.y -= 13;
+  }
+
+  ctx.y -= 2;
+  rule(ctx, FORM_MARGIN, edge);
+
+  /* ── the décompte ────────────────────────────────────────────────────── */
+  // The summary and the signatures stay together: a signature block on a page
+  // of its own is a page a client can lose.
+  if (ctx.y < 300) {
+    ctx.page = pdf.addPage([A4.width, A4.height]);
+    ctx.y = A4.height - FORM_MARGIN;
+    text(ctx, `${title} N° ${s.sequence} — ${f.continued}`, {
+      x: FORM_MARGIN,
+      size: 9,
+      bold: true,
+    });
+    right(ctx, doc.number ?? w.draft, edge, 8.5);
+    ctx.y -= 10;
+  }
+
+  ctx.y -= 14;
+  const labelX = 250;
+  const line = (label: string, value: string, opts: { bold?: boolean; size?: number } = {}) => {
+    const size = opts.size ?? 8.5;
+    text(ctx, label, { x: labelX, size, bold: opts.bold, color: opts.bold ? INK : MUTED });
+    right(ctx, value, edge, size, opts.bold);
+    ctx.y -= opts.bold ? 15 : 13;
+  };
+
+  line(f.cumulExcl, s.cumulExcl);
+  line(f.previouslyCertified, `- ${s.previouslyCertifiedExcl}`);
+  line(f.periodExcl, s.periodExcl, { bold: true });
+
+  // The VAT block and what comes off — the engine's rows, in the order a
+  // reader subtracts in. `totalExcl` is dropped because the line above already
+  // says it, in the form's own words.
+  const order = [
+    "vat",
+    "totalVat",
+    "stampDuty",
+    "totalIncl",
+    "retention",
+    "advanceDeducted",
+    "dueNow",
+  ];
+  const rank = (label: string) => {
+    const at = order.indexOf(label.startsWith("vat:") ? "vat" : label);
+    return at === -1 ? order.length : at;
+  };
+  const rows = doc.totals
+    .filter((t) => t.label !== "totalExcl" && t.label !== "optionsExcl")
+    .sort((a, b) => rank(a.label) - rank(b.label));
+  for (const total of rows) {
+    const label = total.label.startsWith("vat:")
+      ? `${w.totals.totalVat} ${percent(Number(total.label.slice(4)), doc.locale)}`
+      : total.label === "retention"
+        ? `${w.totals.retention} ${percent(Number(s.retentionPct), doc.locale)}`
+        : (w.totals[total.label] ?? total.label);
+    const deducts = total.label === "retention" || total.label === "advanceDeducted";
+    const strong = total.label === "dueNow" || total.label === "totalIncl";
+    line(label, deducts ? `- ${total.value}` : total.value, {
+      bold: strong,
+      size: total.label === "dueNow" ? 9.5 : 8.5,
+    });
+  }
+
+  if (s.percentOfContract !== null) {
+    text(ctx, `${f.percent} : ${s.percentOfContract} %`, {
+      x: FORM_MARGIN,
+      size: 7.5,
+      color: MUTED,
+    });
+  }
+  if (flagged) {
+    ctx.y -= 11;
+    text(ctx, f.overContract, { x: FORM_MARGIN, size: 7, color: MUTED });
+  }
+
+  /* ── in words, then the three signatures the form carries ────────────── */
+  ctx.y -= 16;
+  text(ctx, f.inWords, { x: FORM_MARGIN, size: 8, color: MUTED });
+  ctx.y -= 12;
+  text(ctx, doc.amountInWords, {
+    x: FORM_MARGIN,
+    size: 9,
+    bold: true,
+    maxWidth: edge - FORM_MARGIN,
+  });
+
+  ctx.y -= 34;
+  const third = (edge - FORM_MARGIN) / 3;
+  const boxes = [f.signContractor, f.signEngineer, f.signOwner];
+  boxes.forEach((label, i) => {
+    const x = FORM_MARGIN + third * i;
+    text(ctx, label, { x, size: 7.5, color: MUTED, maxWidth: third - 8 });
+  });
+  ctx.y -= 52;
+  boxes.forEach((_, i) => {
+    const x = FORM_MARGIN + third * i;
+    ctx.page.drawLine({
+      start: { x, y: ctx.y },
+      end: { x: x + third - 12, y: ctx.y },
+      thickness: 0.5,
+      color: LINE,
+    });
+  });
+
+  /* ── the footer décret 05-468 requires ──────────────────────────────── */
+  ctx.y = FORM_MARGIN + 14;
+  rule(ctx, FORM_MARGIN, edge);
+  ctx.y -= 11;
+  text(ctx, `${doc.company.legalName}   ${ours}`, { x: FORM_MARGIN, size: 7, color: MUTED });
 }

@@ -420,6 +420,13 @@ Six roles out of the box; permissions are the unit, roles are bundles.
 | `records.delete` | ✓ | own drafts | own drafts | — | — | — |
 | `merge.execute` | ✓ | ✓ | ✓ | — | — | — |
 
+`works.issue` also opens a project, raises a situation as a draft, and
+records the site's facts — physical progress, réceptions, cautions, the
+marché's terms. Issuing the situation is `invoices.issue`, because a
+situation is the invoice. Recording that a situation was submitted or
+approved takes either: the signed paper reaches the office as often as the
+site.
+
 Three rules that are not negotiable:
 
 - The assistant holds **exactly** the caller’s permissions. No elevation, ever.

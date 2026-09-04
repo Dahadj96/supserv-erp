@@ -131,7 +131,13 @@
     "stageIsDerived": "l’étape est calculée d’après les documents, l’issue est lue sur l’offre",
     "stageDerivedLabel": "Étape — calculée",
     "newEnquiry": "Nouvelle consultation",
-    "recordOrder": "Enregistrer leur commande"
+    "recordOrder": "Enregistrer leur commande",
+    "project": {
+      "title": "Les travaux",
+      "opened": "Le projet est ouvert :",
+      "why": "Une fois que le client a dit oui, le chantier vit sur sa propre page — situations, retenue, cautions, qui est sur site.",
+      "open": "Ouvrir le projet"
+    }
   },
   "search": {
     "title": "Recherche",
@@ -1051,13 +1057,26 @@
       "setupIncomplete": "Le premier jour n'est pas terminé : rien ne peut encore être émis.",
       "alreadyIssued": "Ce document a déjà été émis.",
       "blocked": "Une règle confirmée a refusé ce document",
-      "complianceBlocked": "Une règle confirmée a refusé ce document."
+      "complianceBlocked": "Une règle confirmée a refusé ce document.",
+      "previousSituationNotIssued": "La situation précédente est encore un brouillon. Émettez-la d'abord — le cumul précédent en dépend."
     },
     "edit": "Modifier",
     "convert": "Convertir",
     "convertedOk": "Créé à partir du document d’origine, qui reste intact au dossier. À relire avant de l’émettre.",
     "recordDelivery": "Enregistrer une livraison",
-    "invoiceDelivered": "Facturer ce qui est livré"
+    "invoiceDelivered": "Facturer ce qui est livré",
+    "situation": {
+      "title": "Situation n° {n}",
+      "toProject": "Le projet",
+      "project": "Projet",
+      "contract": "Marché n°",
+      "period": "Période",
+      "cumul": "Cumul (HT)",
+      "percent": "Du marché",
+      "submitted": "Déposée",
+      "approved": "Approuvée",
+      "why": "Dépôt et approbation s'enregistrent sur la page du projet, le jour où le papier bouge."
+    }
   },
   "checklist": {
     "title": "Avant d'émettre",
@@ -1738,7 +1757,8 @@
       "notAllowed": "Votre rôle ne permet pas de modifier ce type de document.",
       "alreadyIssued": "Ce document est émis. Une correction est un nouveau document.",
       "noLines": "Un document demande au moins une ligne avec une désignation et une quantité.",
-      "noSuchDocument": "Ce document n'existe plus."
+      "noSuchDocument": "Ce document n'existe plus.",
+      "situationHasItsOwnScreen": "Une situation se modifie face au marché, sur la page du projet, pas ici."
     },
     "settlement": "Mode de règlement",
     "settlementUnsaid": "Non précisé",
@@ -4232,7 +4252,16 @@
       "expiresBeforeAcceptance": "La caution {kind} expire le {on} — avant la réception provisoire. Renouvelez-la ou le client peut l'appeler.",
       "lapsed": "La caution {kind} a expiré le {on}. Tant qu'elle n'est pas renouvelée, le client détient un marché non garanti.",
       "expiring": "La caution {kind} expire le {on}. Une banque met environ six semaines à en renouveler une."
-    }
+    },
+    "continueSituation": "Reprendre la situation n° {n}",
+    "nextSituation": "Situation n° {n}",
+    "openedOk": "Le projet {code} est ouvert.",
+    "issueFirst": "À émettre d'abord",
+    "submittedOn": "Déposée",
+    "approvedBy": "Signée par",
+    "approvedOn": "Approuvée",
+    "approvedOnBy": "Approuvée le {on}",
+    "approvedByHint": "M. Kaddour, subdivisionnaire"
   },
   "candidates": {
     "title": "Candidats",
@@ -4562,5 +4591,150 @@
       "offerAlreadyIssued": "Une offre est déjà partie contre l'ancien bordereau. Cochez la case pour appliquer l'erratum en le sachant.",
       "reasonRequired": "Un motif est obligatoire."
     }
+  },
+  "projectNew": {
+    "title": "Ouvrir le projet",
+    "lead": "L'essentiel est déjà connu et n'est là que pour être vérifié. Ce qu'il faut lire sur le marché : le montant, les dates et la retenue de garantie — avec sa base de calcul.",
+    "section": {
+      "site": "Le chantier",
+      "contract": "Le marché",
+      "contractWhy": "Le document désigné ici est le DQE contractuel : chaque ligne de situation pointe sur une de ses lignes, ce qui fait de « quantité marché · cumul précédent · période · cumul » de l'arithmétique et non de la saisie.",
+      "retention": "Retenue de garantie",
+      "retentionWhy": "Le CCAP dit sur quoi le pourcentage s'applique — le HT de chaque situation ou son TTC. Les deux se voient sur les décomptes algériens. Aucune situation avec retenue ne peut être établie tant que ce n'est pas lu sur le contrat."
+    },
+    "f": {
+      "object": "Objet des travaux",
+      "contractRef": "Marché n° (référence du client)",
+      "wilaya": "Wilaya",
+      "wilayaHint": "Texte libre ; les 58 wilayas sont proposées à la frappe.",
+      "contract": "DQE contractuel",
+      "contractNone": "Aucune commande ni offre émise sur cette affaire pour l'instant — à désigner plus tard depuis la page du projet.",
+      "contractLater": "Désigner plus tard",
+      "amountExcl": "Montant du marché (HT)",
+      "startedOn": "ODS / démarrage",
+      "contractualEnd": "Fin contractuelle",
+      "retentionPct": "Retenue %",
+      "retentionBase": "Calculée sur",
+      "warrantyMonths": "Garantie (mois)"
+    },
+    "retentionBase": {
+      "unsaid": "Pas encore lu sur le CCAP",
+      "excl": "le HT de la situation",
+      "incl": "le TTC de la situation"
+    },
+    "footnote": "Ouvrir un projet lui attribue son code. Tout le reste se corrige sur la page du projet.",
+    "go": "Ouvrir le projet",
+    "error": {
+      "notAllowed": "Votre rôle ne peut pas ouvrir de projet.",
+      "noSuchDeal": "Cette affaire n'existe pas.",
+      "objectRequired": "L'objet des travaux est obligatoire.",
+      "badRetentionBase": "La retenue se calcule sur le HT ou sur le TTC — rien d'autre.",
+      "contractNotIssued": "Le DQE doit être un document émis."
+    },
+    "whichEnquiry": "Sur quelle affaire ? Sont listées celles où le client tient une commande ou une offre émise et où aucun projet n'existe encore.",
+    "noCandidates": "Aucune affaire n'attend de projet. Émettez une offre ou enregistrez une commande client d'abord."
+  },
+  "projectRecord": {
+    "record": "Enregistrer",
+    "ok": {
+      "submitted": "Enregistré : la situation a été déposée.",
+      "approved": "Enregistré : le client a approuvé la situation.",
+      "physical": "Enregistré : l'avancement physique.",
+      "reception": "Enregistré : la réception.",
+      "terms": "Les termes du marché sont enregistrés.",
+      "caution": "Enregistré : la caution.",
+      "released": "Enregistré : la caution a été restituée."
+    },
+    "error": {
+      "notAllowed": "Votre rôle ne peut pas enregistrer ceci.",
+      "notIssued": "Émettez d'abord la situation — un brouillon n'est allé nulle part.",
+      "notSubmitted": "Enregistrez d'abord le dépôt ; l'approbation vient après.",
+      "noSuchSituation": "Cette situation n'existe pas.",
+      "percentOutOfRange": "L'avancement est entre 0 et 100.",
+      "alreadyReceived": "Cette réception est déjà enregistrée. Un fait acté ne se réécrit pas.",
+      "provisoireFirst": "La réception définitive vient après la provisoire.",
+      "definitiveBeforeProvisoire": "La définitive ne peut pas précéder la provisoire.",
+      "badRetentionBase": "La retenue se calcule sur le HT ou sur le TTC — rien d'autre.",
+      "contractNotIssued": "Le DQE doit être un document émis.",
+      "kindRequired": "Précisez de quelle caution il s'agit.",
+      "noSuchCaution": "Cette caution n'existe pas.",
+      "noSuchProject": "Ce projet n'existe pas."
+    },
+    "physical": {
+      "title": "Avancement physique",
+      "why": "Ce que dit le chef de chantier, avec son nom et la date. Jamais déduit.",
+      "percent": "Réalisé, en %"
+    },
+    "reception": {
+      "title": "Réceptions",
+      "which": "Laquelle",
+      "planned": "Provisoire — date prévue",
+      "on": "Le",
+      "why": "Deux papiers signés. La définitive plus la garantie, c'est la date où la retenue revient."
+    },
+    "terms": {
+      "title": "Les termes du marché",
+      "why": "Tels que le marché les dit. Changer la retenue change la prochaine situation, jamais une situation émise."
+    },
+    "caution": {
+      "title": "Cautions",
+      "kind": "Nature",
+      "amount": "Montant",
+      "pct": "%",
+      "bank": "Banque",
+      "reference": "Référence",
+      "issuedOn": "Émise le",
+      "expiresOn": "Expire le",
+      "add": "Enregistrer la caution",
+      "released": "Restituée par le client"
+    }
+  },
+  "situation": {
+    "title": "Situation n° {n}",
+    "lead": "Saisissez les quantités de la période face au bordereau du marché. Les colonnes cumulées, la retenue et le net à payer sont de l'arithmétique sur le brouillon.",
+    "editingDraft": "Cette situation est encore un brouillon — ses quantités se modifient jusqu'à l'émission.",
+    "error": {
+      "noContract": "Désignez d'abord le DQE contractuel sur le projet.",
+      "retentionBaseRequired": "Dites d'abord sur quoi la retenue se calcule — c'est dans le CCAP.",
+      "previousNotIssued": "La situation précédente est encore un brouillon. Émettez-la d'abord.",
+      "nothingClaimed": "Rien n'est réclamé. Saisissez au moins une quantité.",
+      "lineNotOnContract": "Une des lignes n'est pas au marché.",
+      "noSuchProject": "Ce projet n'existe pas."
+    },
+    "blocked": {
+      "noContract": "Aucun DQE contractuel n'est désigné sur ce projet ; il n'y a rien contre quoi réclamer.",
+      "retentionBaseRequired": "La base de la retenue n'a pas été lue sur le CCAP. Aucune situation avec retenue ne peut être établie avant.",
+      "previousNotIssued": "La situation précédente est encore un brouillon ; ses quantités manqueraient au cumul précédent."
+    },
+    "fixTerms": "Corriger les termes",
+    "bordereau": "Le bordereau",
+    "against": "Sur {doc}",
+    "noContractYet": "Aucun marché désigné",
+    "noLines": "Le marché désigné n'a pas de ligne chiffrée.",
+    "column": {
+      "designation": "Désignation",
+      "contract": "Qté marché",
+      "unitPrice": "P.U.",
+      "previous": "Déjà réclamé",
+      "remaining": "Reste",
+      "period": "Cette période"
+    },
+    "previouslyCertified": "Précédemment certifié : {amount}.",
+    "overContractHint": "Une quantité au-delà du marché n'est pas refusée — elle est signalée sur l'imprimé, et c'est à cela que sert un avenant.",
+    "period": "La période",
+    "f": {
+      "from": "Du",
+      "to": "Au",
+      "workDone": "Travaux réalisés",
+      "workDoneHint": "Fouilles et pose du câble, tronçon 1",
+      "issuedOn": "Date sur le papier",
+      "advance": "Avance remboursée cette période",
+      "advanceHint": "Remboursement d'avance forfaitaire ou sur approvisionnement, selon l'échéancier du CCAP. Vient en déduction du net à payer."
+    },
+    "deductions": "Déductions",
+    "retention": "Retenue de garantie",
+    "createsADraft": "Crée un brouillon à relire avant émission.",
+    "saveDraft": "Enregistrer le brouillon",
+    "go": "Préparer la situation"
   }
 }

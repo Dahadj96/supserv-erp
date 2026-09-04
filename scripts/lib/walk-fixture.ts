@@ -20,7 +20,10 @@ import { recordPayment } from "../../src/domain/money/store";
 import { buildOffer } from "../../src/domain/offer/build";
 import { markSubmitted } from "../../src/domain/offer/store";
 import { createParty } from "../../src/domain/party";
+import { recordSituationSubmitted, saveSituation } from "../../src/domain/project/situations";
+import { createProject } from "../../src/domain/project/store";
 import { orderFromAnswer, receiveGoods, recordSupplierInvoice } from "../../src/domain/purchase/store";
+import { project, situationDetail } from "../../src/db/schema/project";
 import { sourcingRequest, sourcingResponse } from "../../src/db/schema/sourcing";
 
 /**
@@ -43,6 +46,8 @@ export type WalkIds = {
   invoiceId: string;
   draftInvoiceId: string;
   purchaseOrderId: string | null;
+  projectId: string;
+  situationId: string;
 };
 
 export async function seedWalk(actorId: string): Promise<WalkIds> {
@@ -54,6 +59,7 @@ export async function seedWalk(actorId: string): Promise<WalkIds> {
     ["invoice", "FA-{YYYY}-{####}"],
     ["purchase_order", "PO-{YYYY}-{####}"],
     ["goods_receipt", "BR-{YYYY}-{####}"],
+    ["situation", "SIT-{YYYY}-{###}"],
   ] as const) {
     const [existing] = await db.select().from(numberingSeries).where(eq(numberingSeries.kind, kind));
     if (!existing) await db.insert(numberingSeries).values({ kind, pattern, reset: "yearly" });
@@ -275,6 +281,39 @@ export async function seedWalk(actorId: string): Promise<WalkIds> {
     actorId,
   });
 
+  // The works side of the same enquiry: a project on the client's order, a
+  // first situation issued and submitted, so screens 15, 16 and the
+  // co-contractant form have something real on them.
+  const projectId = await createProject({
+    dealId,
+    object: "Fourniture et pose de galets, convoyeur 2",
+    contractRef: "BC 2026/0457",
+    wilaya: "Adrar",
+    amountExcl: "49500",
+    startedOn: "2026-09-08",
+    contractualEnd: "2026-12-08",
+    retentionPct: "5",
+    retentionBase: "excl",
+    warrantyMonths: 12,
+    contractDocumentId: orderId,
+    actorId,
+  });
+  const situationId = await saveSituation({
+    projectId,
+    // The transport line, which no facture has claimed: the galets are
+    // already billed on FA-… and a situation claiming them again would show
+    // the order over-invoiced on screen 72.
+    quantities: { [transport]: "1" },
+    periodFrom: "2026-09-08",
+    periodTo: "2026-09-30",
+    workDone: "Transport des galets sur la base",
+    advanceRecovered: "0",
+    issuedOn: "2026-10-01",
+    actorId,
+  });
+  await render({ documentId: situationId, purpose: "issue", actorId });
+  await recordSituationSubmitted({ documentId: situationId, on: "2026-10-02", actorId });
+
   return {
     clientId: client.id,
     supplierId: supplier?.id ?? null,
@@ -285,6 +324,8 @@ export async function seedWalk(actorId: string): Promise<WalkIds> {
     invoiceId,
     draftInvoiceId,
     purchaseOrderId,
+    projectId,
+    situationId,
   };
 }
 
@@ -307,6 +348,21 @@ export async function teardownWalk(actorId: string): Promise<void> {
       ),
     );
     await db.delete(payment).where(inArray(payment.partyId, partyIds));
+    const deals = await db.select({ id: deal.id }).from(deal).where(inArray(deal.partyId, partyIds));
+    const dealIds = deals.map((d) => d.id);
+    // The project before its documents: situation_detail cascades from the
+    // document, but project.contract_document_id points the other way.
+    if (dealIds.length > 0) {
+      const projects = await db
+        .select({ id: project.id })
+        .from(project)
+        .where(inArray(project.dealId, dealIds));
+      const projectIds = projects.map((p) => p.id);
+      if (projectIds.length > 0) {
+        await db.delete(situationDetail).where(inArray(situationDetail.projectId, projectIds));
+        await db.delete(project).where(inArray(project.id, projectIds));
+      }
+    }
     if (docIds.length > 0) {
       await db.delete(deliveryDetail).where(inArray(deliveryDetail.documentId, docIds));
       await db.delete(documentLink).where(inArray(documentLink.fromDocument, docIds));
@@ -314,8 +370,6 @@ export async function teardownWalk(actorId: string): Promise<void> {
       await db.delete(documentLine).where(inArray(documentLine.documentId, docIds));
       await db.delete(document).where(inArray(document.id, docIds));
     }
-    const deals = await db.select({ id: deal.id }).from(deal).where(inArray(deal.partyId, partyIds));
-    const dealIds = deals.map((d) => d.id);
     if (dealIds.length > 0) {
       await db.delete(sourcingRequest).where(inArray(sourcingRequest.dealId, dealIds));
       await db.delete(priceQuote).where(inArray(priceQuote.dealId, dealIds));

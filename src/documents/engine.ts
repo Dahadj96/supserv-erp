@@ -7,11 +7,12 @@ import { party } from "@/db/schema/party";
 import { assertTransition, IllegalTransition } from "@/domain/control/transitions";
 import { issuingRules } from "@/domain/document-types";
 import type { Totals } from "@/domain/money";
+import { earlierSituationUnissued, situationOf } from "@/domain/project/situations";
 import { assertCanIssue } from "@/domain/setup";
 import { storageFor } from "@/storage";
 import { amountInWords } from "./amount-in-words";
 import { Blocked, check, type Finding } from "./compliance";
-import { dateline, money, percent, settlementLabel, shortDate } from "./format";
+import { dateline, money, percent, quantity, settlementLabel, shortDate } from "./format";
 import { reserveNumber } from "./numbering";
 import { currentTemplate } from "./templates";
 
@@ -101,9 +102,54 @@ export type RenderedDocument = {
   totals: { label: string; value: string }[];
   amountInWords: string;
 
+  /**
+   * A situation de travaux carries the wilaya's own form on top of the
+   * ordinary lines: the marché, the period, and the cumulative columns that
+   * are arithmetic over the situations issued before it. Null on every other
+   * kind, and `toPdf` draws the ordinary layout.
+   */
+  situation: RenderedSituation | null;
+
   findings: Finding[];
   /** Which template produced this. Screen 70 wants it in the audit entry. */
   template: string;
+};
+
+export type RenderedSituation = {
+  sequence: number;
+  projectId: string;
+  projectCode: string;
+  submittedOn: string | null;
+  approvedOn: string | null;
+  approvedBy: string | null;
+  /** "Raccordement BT lot 4, Adrar centre" — the opération, as the marché names it. */
+  object: string;
+  /** The client's own contract reference: MAR/2026/018. */
+  contractRef: string | null;
+  contractNumber: string | null;
+  wilaya: string | null;
+  /** "du 01/08/2026 au 31/08/2026", already in the document language. */
+  period: string | null;
+  workDone: string | null;
+  retentionPct: string;
+  /** Formatted, in the document language. */
+  rows: {
+    position: number;
+    reference: string | null;
+    designation: string;
+    unit: string | null;
+    qtyContract: string;
+    unitPrice: string;
+    qtyPrevious: string;
+    qtyPeriod: string;
+    qtyCumul: string;
+    amountCumul: string;
+    overContract: boolean;
+  }[];
+  cumulExcl: string;
+  previouslyCertifiedExcl: string;
+  periodExcl: string;
+  percentOfContract: number | null;
 };
 
 export class NotRenderable extends Error {
@@ -237,6 +283,12 @@ export async function render(request: RenderRequest): Promise<RenderedDocument> 
 
   if (purpose === "issue") {
     if (rules && !rules.active) throw new NotRenderable("typeIsOff");
+    // A situation's cumulative columns are a sum over the situations issued
+    // before it. Issuing n°3 while n°2 is still a draft would certify a
+    // "cumul précédent" that changes the day n°2 goes out.
+    if (record.kind === "situation" && (await earlierSituationUnissued(record.id))) {
+      throw new NotRenderable("previousSituationNotIssued");
+    }
     // Everything on screen 85's first four rows, plus every confirmed rule.
     await assertCanIssue();
     const blocking = findings.filter((f) => f.severity === "block");
@@ -336,8 +388,19 @@ export async function render(request: RenderRequest): Promise<RenderedDocument> 
 
     totals: totalRows(record.totals, locale),
 
+    situation: record.kind === "situation" ? await renderSituation(record.id, locale) : null,
+
     /* 6 ── Amount in words, in the document language ----------------------- */
-    amountInWords: amountInWords(grandTotal, locale, record.currency),
+    // A situation is settled at its net à payer — the sum after the retention
+    // and the advance — because that is the figure the client's accountant
+    // pays and the one the wilaya's form writes out in words.
+    amountInWords: amountInWords(
+      record.kind === "situation" && totals.dueNow !== undefined
+        ? Number(totals.dueNow)
+        : grandTotal,
+      locale,
+      record.currency,
+    ),
 
     findings,
     template,
@@ -364,6 +427,55 @@ export async function render(request: RenderRequest): Promise<RenderedDocument> 
   }
 
   return rendered;
+}
+
+/**
+ * The wilaya's form, formatted. Null when the situation has no project behind
+ * it — a `situation` row written before screen 16 existed renders as an
+ * ordinary invoice rather than refusing.
+ */
+async function renderSituation(documentId: string, locale: string) {
+  const view = await situationOf(documentId);
+  if (!view) return null;
+
+  const qty = (value: string) => quantity(Number(value), locale);
+  const from = view.periodFrom ? shortDate(new Date(view.periodFrom), locale) : null;
+  const to = view.periodTo ? shortDate(new Date(view.periodTo), locale) : null;
+  const period =
+    from && to ? (locale === "en" ? `from ${from} to ${to}` : `du ${from} au ${to}`) : (to ?? from);
+
+  return {
+    sequence: view.sequence,
+    projectId: view.projectId,
+    projectCode: view.projectCode,
+    submittedOn: view.submittedOn,
+    approvedOn: view.approvedOn,
+    approvedBy: view.approvedBy,
+    object: view.object,
+    contractRef: view.contractRef,
+    contractNumber: view.contract.number,
+    wilaya: view.wilaya,
+    period,
+    workDone: view.workDone,
+    retentionPct: view.retentionPct,
+    rows: view.rows.map((row) => ({
+      position: row.position,
+      reference: row.reference,
+      designation: row.designation ?? "",
+      unit: row.unit,
+      qtyContract: qty(row.qty),
+      unitPrice: money(Number(row.unitPrice), locale),
+      qtyPrevious: qty(row.qtyPrevious),
+      qtyPeriod: qty(row.qtyPeriod),
+      qtyCumul: qty(row.qtyCumul),
+      amountCumul: money(Number(row.amountCumul), locale),
+      overContract: row.overContract,
+    })),
+    cumulExcl: money(Number(view.cumulative.cumulExcl), locale),
+    previouslyCertifiedExcl: money(Number(view.cumulative.previouslyCertifiedExcl), locale),
+    periodExcl: money(Number(view.cumulative.periodExcl), locale),
+    percentOfContract: view.cumulative.percentOfContract,
+  };
 }
 
 /**
@@ -402,13 +514,19 @@ export function totalRows(stored: unknown, locale: string): { label: string; val
   // A record written before vatByRate existed still has a flat totalVat.
   if (Object.keys(byRate).length === 0) push("totalVat", totals.totalVat);
 
-  push("advanceDeducted", totals.advanceDeducted);
   push("stampDuty", totals.stampDuty);
   push("totalIncl", totals.totalIncl, true);
+  // What is held back or already paid comes AFTER the total, because that is
+  // the order a reader subtracts in: the value of the work, then what comes
+  // off it, then what is due.
+  push("retention", totals.retention);
+  push("advanceDeducted", totals.advanceDeducted);
 
-  // Only when an advance actually moved the figure. "Net à payer" repeated
+  // Only when something actually moved the figure. "Net à payer" repeated
   // under an identical total is a line that teaches people to skim.
-  if (Number(totals.advanceDeducted ?? 0) !== 0) push("dueNow", totals.dueNow, true);
+  if (Number(totals.advanceDeducted ?? 0) !== 0 || Number(totals.retention ?? 0) !== 0) {
+    push("dueNow", totals.dueNow, true);
+  }
 
   // Last, and outside the arithmetic above: what the client did NOT buy.
   push("optionsExcl", totals.optionsExcl);

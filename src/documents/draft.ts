@@ -3,6 +3,7 @@ import { db } from "@/db";
 import { auditEntry } from "@/db/schema/control";
 import { document, documentLine } from "@/db/schema/document";
 import { blockingRule } from "@/db/schema/interface";
+import { situationDetail } from "@/db/schema/project";
 import { issuingRules } from "@/domain/document-types";
 import { computeTotals, lineTotalExcl } from "@/domain/money";
 import { isInstrument, STAMP_DUTY_RULE } from "@/domain/money/instruments";
@@ -56,7 +57,9 @@ export type DraftPatch = {
 };
 
 export class DraftRefused extends Error {
-  constructor(readonly reason: "noSuchDocument" | "alreadyIssued" | "noLines") {
+  constructor(
+    readonly reason: "noSuchDocument" | "alreadyIssued" | "noLines" | "situationHasItsOwnScreen",
+  ) {
     super(reason);
   }
 }
@@ -112,6 +115,18 @@ export async function saveDraft(
   // from the day it arrives and is still a draft until somebody records it.
   if (record.lockedAt || record.status !== "draft") {
     throw new DraftRefused("alreadyIssued");
+  }
+
+  // A situation's lines each point at a line of the marché, and the builder
+  // rewrites lines wholesale without that link. Its quantities are edited on
+  // the project's own screen, which keeps the arithmetic honest.
+  if (record.kind === "situation") {
+    const [detail] = await db
+      .select({ projectId: situationDetail.projectId })
+      .from(situationDetail)
+      .where(eq(situationDetail.documentId, documentId))
+      .limit(1);
+    if (detail) throw new DraftRefused("situationHasItsOwnScreen");
   }
 
   const lines = keepable(patch.lines);

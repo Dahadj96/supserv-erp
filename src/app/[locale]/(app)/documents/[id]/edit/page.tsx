@@ -9,6 +9,7 @@ import { db } from "@/db";
 import { document, documentLine } from "@/db/schema/document";
 import { blockingRule } from "@/db/schema/interface";
 import { party } from "@/db/schema/party";
+import { situationDetail } from "@/db/schema/project";
 import type { LineKind } from "@/documents/draft";
 import { issuingRules, listTypes } from "@/domain/document-types";
 import { STAMP_DUTY_RULE } from "@/domain/money/instruments";
@@ -48,6 +49,16 @@ export default async function EditDocumentPage({
   // carries their number while still a draft of ours.
   if (record.lockedAt || record.status !== "draft") {
     hardRedirect(`/${locale}/documents/${id}?error=alreadyIssued`);
+  }
+  // A situation's lines each point at a line of the marché; its quantities
+  // are edited against that bordereau on the project's screen, not here.
+  if (record.kind === "situation") {
+    const [detail] = await db
+      .select({ projectId: situationDetail.projectId })
+      .from(situationDetail)
+      .where(eq(situationDetail.documentId, id))
+      .limit(1);
+    if (detail) hardRedirect(`/${locale}/projects/${detail.projectId}/situation`);
   }
   const rules = await issuingRules(record.kind);
   const carriesTheirNumber = !(rules?.reservesNumber ?? true);

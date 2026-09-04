@@ -100,20 +100,28 @@ export default async function DocumentPage({
           {/* A draft can still be changed; an issued document cannot, and the
               way to say so is not to offer the door. */}
           {doc.issued ? null : (
-            <Link href={`/documents/${id}/edit`}>
+            <Link
+              href={
+                // A situation's quantities are edited against the marché on
+                // the project's own screen; the builder would lose the link.
+                doc.situation
+                  ? `/projects/${doc.situation.projectId}/situation`
+                  : `/documents/${id}/edit`
+              }
+            >
               <Button variant="secondary">{t("documents.edit")}</Button>
             </Link>
           )}
           {/* Screen 48. Offered only on an issued document that may become
               something else — converting a draft is just editing it. */}
-          {doc.issued && targetsFor(doc.kind).length > 0 ? (
+          {doc.issued && !doc.situation && targetsFor(doc.kind).length > 0 ? (
             <Link href={`/documents/${id}/convert`}>
               <Button variant="secondary">{t("documents.convert")}</Button>
             </Link>
           ) : null}
           {/* Screen 49. Goods can only be delivered against something the
               client has actually agreed to, and a BL cannot deliver a BL. */}
-          {doc.issued && DELIVERABLE.includes(doc.kind) ? (
+          {doc.issued && !doc.situation && DELIVERABLE.includes(doc.kind) ? (
             <Link href={`/deliveries/new?source=${id}`}>
               <Button variant="secondary">{t("documents.recordDelivery")}</Button>
             </Link>
@@ -200,6 +208,7 @@ export default async function DocumentPage({
         </section>
 
         <div className="flex flex-col gap-5">
+          {doc.situation ? <SituationPanel s={doc.situation} t={t} /> : null}
           <BeforeIssuing rows={rows} summary={summary} t={t} />
           <Output doc={doc} t={t} />
         </div>
@@ -209,6 +218,58 @@ export default async function DocumentPage({
 }
 
 type T = Awaited<ReturnType<typeof getTranslations>>;
+
+/**
+ * Where a situation stands with the client. The document says what was
+ * claimed; the project says whether the paper has gone and come back signed,
+ * and those two dates are recorded on screen 16.
+ */
+function SituationPanel({
+  s,
+  t,
+}: {
+  s: NonNullable<Awaited<ReturnType<typeof render>>["situation"]>;
+  t: T;
+}) {
+  const rows: [string, string][] = [
+    ["project", `${s.projectCode} — ${s.object}`],
+    ["contract", s.contractRef ?? "—"],
+    ["period", s.period ?? "—"],
+    ["cumul", s.cumulExcl],
+    ["percent", s.percentOfContract === null ? "—" : `${s.percentOfContract} %`],
+    ["submitted", s.submittedOn ?? "—"],
+    ["approved", s.approvedOn ? `${s.approvedOn}${s.approvedBy ? ` · ${s.approvedBy}` : ""}` : "—"],
+  ];
+  return (
+    <section className="rounded-[var(--radius-card)] border border-line bg-surface p-5">
+      <div className="flex items-baseline gap-3">
+        <h2 className="text-tiny font-semibold text-ink">
+          {t("documents.situation.title", { n: s.sequence })}
+        </h2>
+        <Link
+          href={`/projects/${s.projectId}`}
+          className="ms-auto text-micro text-accent-ink hover:underline"
+        >
+          {t("documents.situation.toProject")}
+        </Link>
+      </div>
+      <dl className="mt-3">
+        {rows.map(([key, value]) => (
+          <div
+            key={key}
+            className="flex items-baseline gap-3 border-b border-line-subtle py-1.5 last:border-0"
+          >
+            <dt className="shrink-0 text-micro text-secondary">
+              {t(`documents.situation.${key}`)}
+            </dt>
+            <dd className="ms-auto text-end text-tiny text-ink">{value}</dd>
+          </div>
+        ))}
+      </dl>
+      <p className="mt-2 text-micro leading-relaxed text-muted">{t("documents.situation.why")}</p>
+    </section>
+  );
+}
 
 /** The row's own words. A rule that fails says why; a fact says what we hold. */
 function rowLabel(t: T, row: ChecklistRow): string {
