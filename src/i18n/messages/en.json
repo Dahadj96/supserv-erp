@@ -2350,7 +2350,16 @@
       "existing": "Offers on this enquiry"
     },
     "openDocument": "Preview, PDF and issue",
-    "editLines": "Edit the lines in the builder"
+    "editLines": "Edit the lines in the builder",
+    "lastTime": {
+      "sold": "Last sold at {price} to {client}, {on}",
+      "bought": "last bought at {price} from {supplier}, {on}",
+      "us": "our own costing",
+      "verbal": "verbal"
+    },
+    "costSource": {
+      "previous_offer": "cost carried from a previous offer"
+    }
   },
   "technical": {
     "title": "Technical file — {ref}",

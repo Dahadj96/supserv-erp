@@ -1,6 +1,7 @@
 import { getTranslations } from "next-intl/server";
 import type { ReactNode } from "react";
 import { Button } from "@/components/ui/button";
+import { WILAYA_LIST_ID, WilayaList } from "@/components/ui/wilaya-list";
 import { PARTY_ROLES } from "@/domain/party";
 
 type Values = {
@@ -160,7 +161,14 @@ export async function CompanyForm({
             />
           </Field>
           <Field htmlFor="wilaya" label={t("companies.wilaya")}>
-            <input id="wilaya" name="wilaya" defaultValue={values.wilaya ?? ""} className={input} />
+            <input
+              id="wilaya"
+              name="wilaya"
+              list={WILAYA_LIST_ID}
+              defaultValue={values.wilaya ?? ""}
+              className={input}
+            />
+            <WilayaList />
           </Field>
         </div>
       </section>

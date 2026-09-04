@@ -1,6 +1,7 @@
 import { getTranslations } from "next-intl/server";
 import type { ReactNode } from "react";
 import { Button } from "@/components/ui/button";
+import { WILAYA_LIST_ID, WilayaList } from "@/components/ui/wilaya-list";
 import { PERSON_RELATIONSHIPS } from "@/domain/people";
 import { addPerson } from "./actions";
 
@@ -96,7 +97,14 @@ export async function AddPerson({
           </Field>
 
           <Field htmlFor="wilaya" label={t("people.wilaya")}>
-            <input id="wilaya" name="wilaya" placeholder={t("common.optional")} className={INPUT} />
+            <input
+              id="wilaya"
+              name="wilaya"
+              list={WILAYA_LIST_ID}
+              placeholder={t("common.optional")}
+              className={INPUT}
+            />
+            <WilayaList />
           </Field>
 
           <Field htmlFor="relationship" label={t("people.relationship")}>

@@ -6,6 +6,7 @@ import { can } from "@/auth/can";
 import { getSession } from "@/auth/session";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import { priceHistory } from "@/domain/deal/price-history";
 import { formatMoney } from "@/domain/money";
 import { marginPct } from "@/domain/offer/margin";
 import { getOffer } from "@/domain/offer/store";
@@ -51,6 +52,24 @@ export default async function OfferBuilderPage({
 
   const seesMargin = can(session.role, "offers.margin.view");
   const issued = Boolean(offer.document.number);
+
+  // "Last time": the newest issued line of ours with the same wording, and
+  // the newest supplier price captured for it. One row each, per line — the
+  // figure a person compares against before changing the price, and the
+  // thing this screen used to leave to memory.
+  const lastTime = new Map<string, Awaited<ReturnType<typeof priceHistory>>>();
+  for (const line of offer.lines) {
+    if (line.lineKind !== "item" || !line.designation) continue;
+    lastTime.set(
+      line.id,
+      await priceHistory(line.designation, {
+        partyId: offer.clientId,
+        excludeDocumentId: id,
+        limit: 1,
+      }),
+    );
+  }
+  const day = new Intl.DateTimeFormat(locale === "fr" ? "fr-DZ" : "en-GB", { dateStyle: "medium" });
   const counts = countChecks(offer.checks);
   const ready = canSubmit(offer.checks);
 
@@ -172,6 +191,40 @@ export default async function OfferBuilderPage({
                               {line.reference}
                             </span>
                           ) : null}
+                          {(() => {
+                            const h = lastTime.get(line.id);
+                            const sold = h?.sold[0];
+                            const bought = h?.bought[0];
+                            if (!sold && !bought) return null;
+                            return (
+                              <span className="mt-0.5 block text-micro leading-relaxed text-muted">
+                                {sold ? (
+                                  <Link
+                                    href={`/documents/${sold.documentId}`}
+                                    className={
+                                      sold.sameClient
+                                        ? "text-accent-ink hover:underline"
+                                        : "hover:underline"
+                                    }
+                                  >
+                                    {t("offer.lastTime.sold", {
+                                      price: money(sold.unitPrice),
+                                      client: sold.client,
+                                      on: sold.issuedOn ? day.format(new Date(sold.issuedOn)) : "—",
+                                    })}
+                                  </Link>
+                                ) : null}
+                                {sold && bought && seesMargin ? " · " : null}
+                                {bought && seesMargin
+                                  ? t("offer.lastTime.bought", {
+                                      price: money(bought.price),
+                                      supplier: bought.supplier ?? t("offer.lastTime.us"),
+                                      on: day.format(bought.capturedAt),
+                                    }) + (bought.isVerbal ? ` (${t("offer.lastTime.verbal")})` : "")
+                                  : null}
+                              </span>
+                            );
+                          })()}
                         </td>
                         <td className="py-2.5 pe-4 text-end tabular-nums text-muted">
                           {Number(line.qty ?? 0)}
@@ -180,6 +233,13 @@ export default async function OfferBuilderPage({
                           <>
                             <td className="py-2.5 pe-4 text-end tabular-nums text-secondary">
                               {line.unitCost ? money(line.unitCost) : "—"}
+                              {/* A cost from June is a cost from June: say so
+                                  where the figure is, not in a tooltip. */}
+                              {line.costSource === "previous_offer" ? (
+                                <span className="block text-micro text-warning-ink">
+                                  {t("offer.costSource.previous_offer")}
+                                </span>
+                              ) : null}
                             </td>
                             <td className="py-2.5 pe-4 text-end">
                               {pct === null ? (

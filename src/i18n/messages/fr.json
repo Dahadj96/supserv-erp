@@ -2350,7 +2350,16 @@
       "existing": "Offres sur cette consultation"
     },
     "openDocument": "Aperçu, PDF et émission",
-    "editLines": "Modifier les lignes dans le constructeur"
+    "editLines": "Modifier les lignes dans le constructeur",
+    "lastTime": {
+      "sold": "Vendu {price} à {client} le {on}",
+      "bought": "acheté {price} chez {supplier} le {on}",
+      "us": "notre chiffrage",
+      "verbal": "verbal"
+    },
+    "costSource": {
+      "previous_offer": "coût repris d'une offre précédente"
+    }
   },
   "technical": {
     "title": "Dossier technique — {ref}",

@@ -6,6 +6,7 @@ import { document, documentLine } from "@/db/schema/document";
 import { party } from "@/db/schema/party";
 import { sourcingLine, sourcingRequest, sourcingResponse } from "@/db/schema/sourcing";
 import { recomputeTotals } from "@/documents/totals";
+import { priceHistory } from "@/domain/deal/price-history";
 import { priceFromMargin } from "./margin";
 
 /**
@@ -59,6 +60,13 @@ type ChosenCost = {
 export function chooseCost(opts: {
   sourced: { unitPrice: string; supplierName: string }[];
   quoted: { id: string; price: string; supplierName: string | null; isVerbal: boolean }[];
+  /**
+   * What the same wording cost us on an offer already issued, newest first.
+   * Third choice, after anything gathered for THIS enquiry: a cost from June
+   * is a cost from June, and screen 12 says "previous offer" beside it so
+   * the person knows to look again before signing.
+   */
+  previous?: { unitCost: string | null; number: string | null }[];
 }): ChosenCost | null {
   const cheapestSourced = opts.sourced.reduce<{ unitPrice: string; supplierName: string } | null>(
     (best, row) => (!best || Number(row.unitPrice) < Number(best.unitPrice) ? row : best),
@@ -83,6 +91,19 @@ export function chooseCost(opts: {
       costSource: "supplier_quote",
       costQuoteId: cheapestQuote.id,
       supplierName: cheapestQuote.supplierName,
+    };
+  }
+
+  // The newest previous offer that carried a cost — not the cheapest: what
+  // it cost last time is the fact, and the cheapest of three old figures is
+  // a number nobody was ever quoted.
+  const last = (opts.previous ?? []).find((row) => row.unitCost && Number(row.unitCost) > 0);
+  if (last?.unitCost) {
+    return {
+      unitCost: last.unitCost,
+      costSource: "previous_offer",
+      costQuoteId: null,
+      supplierName: last.number,
     };
   }
 
@@ -167,6 +188,21 @@ export async function buildOffer(opts: {
   const margin = opts.defaultMarginPct ?? "20";
   const vatRate = opts.vatRate ?? "19";
 
+  // What the same wording cost on an earlier offer — looked up only for the
+  // lines nothing was gathered for, because a price captured for THIS
+  // enquiry always wins and the lookup is a word search over every document.
+  const previousByLine = new Map<string, { unitCost: string | null; number: string | null }[]>();
+  for (const line of lines) {
+    const hasOwn =
+      sourced.some((s) => s.dealLineId === line.id) || quotes.some((q) => q.dealLineId === line.id);
+    if (hasOwn || !line.designation) continue;
+    const history = await priceHistory(line.designation, { partyId: row.partyId, limit: 3 });
+    previousByLine.set(
+      line.id,
+      history.sold.map((s) => ({ unitCost: s.unitCost, number: s.number })),
+    );
+  }
+
   const documentId = await db.transaction(async (tx) => {
     const [created] = await tx
       .insert(document)
@@ -205,6 +241,7 @@ export async function buildOffer(opts: {
             supplierName: q.tradeName?.trim() || q.legalName,
             isVerbal: q.isVerbal,
           })),
+        previous: previousByLine.get(line.id) ?? [],
       });
       if (cost) costed += 1;
 

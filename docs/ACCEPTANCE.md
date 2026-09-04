@@ -423,3 +423,12 @@ tells you what you want to hear.
    CCAP names, and the net à payer in words. Still open on the public-works
    chain, each waiting on a text and a person to confirm it: avenants,
    révision des prix, pénalités de retard, DGD.
+14. ~~**"What did this cost last time?" was answered from memory.**~~
+   **Closed on 4 September** by `tests/integration/price-history.test.ts`:
+   June's offer sold galets at 4 800 on a supplier's 4 000; September's
+   enquiry for the same wording, with nobody asked yet, builds with June's
+   cost carried as `previous_offer` — said so in orange on screen 12 — and
+   the line shows "vendu 4 800 à ENAGEO le …" under its designation. The key
+   is the wording (`significantWords`, all of them, unaccented), because the
+   item catalogue is empty; the day lines are matched to items it becomes a
+   join.

@@ -1,5 +1,6 @@
 import { getTranslations, setRequestLocale } from "next-intl/server";
 import { Button } from "@/components/ui/button";
+import { WILAYA_LIST_ID, WilayaList } from "@/components/ui/wilaya-list";
 import { getIdentity } from "@/domain/company";
 import { Link } from "@/i18n/navigation";
 import { saveCompanyIdentity } from "../actions";
@@ -149,9 +150,11 @@ export default async function IdentityPage({
               <input
                 id="wilaya"
                 name="wilaya"
+                list={WILAYA_LIST_ID}
                 defaultValue={identity?.wilaya ?? ""}
                 className={INPUT}
               />
+              <WilayaList />
             </Field>
             <Field htmlFor="phone" label={t("setup.f.phone")}>
               <input
