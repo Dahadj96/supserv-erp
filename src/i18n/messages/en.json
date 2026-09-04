@@ -2965,7 +2965,8 @@
       "document": {
         "create": "Created a document",
         "update": "Edited a document",
-        "issue": "Issued a document"
+        "issue": "Issued a document",
+        "edit": "Edited a document"
       },
       "relance": {
         "create": "Drafted a relance",
@@ -2981,6 +2982,13 @@
       "party": {
         "create": "Added a company",
         "update": "Updated a company"
+      },
+      "project": {
+        "create": "Opened a project",
+        "update": "Recorded something on a project"
+      },
+      "price_quote": {
+        "create": "Wrote down a price"
       }
     }
   },

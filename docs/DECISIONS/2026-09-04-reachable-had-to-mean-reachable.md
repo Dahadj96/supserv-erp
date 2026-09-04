@@ -92,9 +92,26 @@ cell of every list as a defect, which is how a measurement stops being read.
 
 After: **0 pages with horizontal overflow, at 390, on all 86 routes.**
 
-## Still open
+## Touch targets
 
-Touch targets. The harness counts interactive elements under 24px tall and
-finds them in the hundreds on the list screens — table row checkboxes and
-inline links drawn for a mouse. They are legible and they work; they are not
-comfortable. Named here so the next pass has somewhere to start.
+The harness counts interactive elements under 24px tall. On the first phone
+pass there were **670** across the 87 routes. Two thirds of them were one of
+four things, and all four were fixed where they are defined rather than where
+they appear:
+
+- the tick box — 15px, in every list, 160 of them — is 24px on a phone and its
+  drawn 15px from `md` up;
+- the search field's input was 18px inside a 34px frame, so the half of the box
+  above and below the words focused nothing;
+- the row's own name in `DataTable` is now a block filling its cell, which is
+  what people already expect of a list;
+- two hand-rolled tick boxes and two pill toggles that never went through the
+  shared components.
+
+Two of the counts were the harness being wrong rather than the interface, and
+those were fixed too: a `sr-only` input driven by a visible label is not a
+small target, and a link wrapped around a button is as big as the button.
+
+**670 → 86.** What is left is 74 links inside sentences and 12 buttons; a link
+inside a sentence cannot be 36px tall without the sentence looking broken, so
+that is where this stops.

@@ -68,14 +68,20 @@ export default async function OffersPage({ params }: { params: Promise<{ locale:
               {rows.map((row) => (
                 <tr key={row.id} className="border-t border-line-subtle">
                   <td className="py-2.5">
-                    <Link className="text-ink hover:underline" href={`/offers/${row.id}/build`}>
+                    <Link
+                      className="inline-flex min-h-9 items-center md:min-h-0 text-ink hover:underline"
+                      href={`/offers/${row.id}/build`}
+                    >
                       {row.number ?? t("offer.noNumberYet")}
                     </Link>
                   </td>
                   <td className="py-2.5 pe-4 text-secondary">{row.clientName}</td>
                   <td className="py-2.5 pe-4 text-muted">
                     {row.dealId ? (
-                      <Link className="hover:underline" href={`/deals/${row.dealId}`}>
+                      <Link
+                        className="inline-flex min-h-9 items-center md:min-h-0 hover:underline"
+                        href={`/deals/${row.dealId}`}
+                      >
                         {row.dealRef}
                       </Link>
                     ) : (

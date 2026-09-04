@@ -123,11 +123,11 @@ export default async function CapturePricePage({
           */}
           <div className="flex flex-col gap-2 rounded-[var(--radius-control)] bg-plane p-3">
             <label className="flex min-h-[36px] items-center gap-3">
-              <input name="incl" type="checkbox" defaultChecked className="size-5 accent-ink" />
+              <input name="incl" type="checkbox" defaultChecked className="size-6 accent-ink" />
               <span className="text-tiny text-ink">{t("counterPrice.f.incl")}</span>
             </label>
             <label className="flex min-h-[36px] items-center gap-3">
-              <input name="written" type="checkbox" className="size-5 accent-ink" />
+              <input name="written" type="checkbox" className="size-6 accent-ink" />
               <span className="text-tiny text-ink">{t("counterPrice.f.written")}</span>
             </label>
             <p className="text-micro leading-relaxed text-muted">{t("counterPrice.f.verbalWhy")}</p>

@@ -202,7 +202,7 @@ export default async function NotificationsPage({
                         type="checkbox"
                         name="on"
                         defaultChecked={!muted.has(kind)}
-                        className="size-3.5 accent-[var(--ink)]"
+                        className="size-6 accent-[var(--ink)] md:size-3.5"
                       />
                       <span className="min-w-0 flex-1 truncate">{t(`notify.kind.${kind}`)}</span>
                       <Button type="submit" variant="ghost" size="small">

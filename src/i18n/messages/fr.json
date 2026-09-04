@@ -2965,7 +2965,8 @@
       "document": {
         "create": "Document créé",
         "update": "Document modifié",
-        "issue": "Document émis"
+        "issue": "Document émis",
+        "edit": "Modifié un document"
       },
       "relance": {
         "create": "Relance rédigée",
@@ -2981,6 +2982,13 @@
       "party": {
         "create": "Société ajoutée",
         "update": "Société mise à jour"
+      },
+      "project": {
+        "create": "Ouvert un chantier",
+        "update": "Enregistré quelque chose sur un chantier"
+      },
+      "price_quote": {
+        "create": "Noté un prix"
       }
     }
   },

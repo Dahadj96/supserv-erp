@@ -66,6 +66,9 @@ type Measure = {
   clipped: string[];
   /** Interactive targets under 24 px tall. */
   smallTargets: number;
+  /** …by element, and five examples: a count cannot be acted on. */
+  smallTargetKinds: Record<string, number>;
+  smallTargetSamples: string[];
 };
 
 function routes(): string[] {
@@ -129,6 +132,8 @@ const MEASURE = `(() => {
   const spilling = [];
   const clipped = [];
   let smallTargets = 0;
+  const smallTargetKinds = {};
+  const smallTargetSamples = [];
   for (const el of document.body.querySelectorAll('*')) {
     if (!visible(el)) continue;
     const r = el.getBoundingClientRect();
@@ -143,8 +148,27 @@ const MEASURE = `(() => {
       el.children.length === 0 &&
       clipped.length < 8
     ) clipped.push(label(el));
-    if ((el.matches('a[href], button, input, select, textarea, [role=button]')) && r.height > 0 && r.height < 24) {
+    // Below 4px it is a visually-hidden input driven by a label you can see —
+    // the label is the target, and counting the input calls a working control
+    // a defect.
+    if ((el.matches('a[href], button, input, select, textarea, [role=button]')) && r.height >= 4 && r.height < 24) {
+      // A link wrapped around a button IS the button: its own line box is
+      // 18px, but everything inside it is clickable, so the thing a thumb
+      // lands on is as tall as the child. Counting the wrapper reports a
+      // 34px button as a defect.
+      let coveredByChild = false;
+      for (const child of el.children) {
+        if (child.getBoundingClientRect().height >= 24) { coveredByChild = true; break; }
+      }
+      if (coveredByChild) continue;
       smallTargets += 1;
+      // A count alone cannot be acted on: "95 small targets" is a number, and
+      // "the row links in the table" is a thing to fix.
+      const kind = el.tagName.toLowerCase() + (el.type ? '[' + el.type + ']' : '');
+      smallTargetKinds[kind] = (smallTargetKinds[kind] || 0) + 1;
+      if (smallTargetSamples.length < 5) {
+        smallTargetSamples.push(Math.round(r.height) + 'px ' + label(el));
+      }
     }
   }
 
@@ -169,6 +193,8 @@ const MEASURE = `(() => {
     spilling,
     clipped,
     smallTargets,
+    smallTargetKinds,
+    smallTargetSamples,
   };
 })()`;
 

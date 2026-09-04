@@ -209,7 +209,7 @@ export default async function EnquiryPage({
                         name="decision"
                         value={choice}
                         defaultChecked={row.decision === choice}
-                        className="mt-0.5"
+                        className="mt-0.5 size-5 accent-ink md:size-4"
                       />
                       <span>
                         <span className="block text-tiny font-medium text-ink">

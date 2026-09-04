@@ -54,14 +54,18 @@ export function Topbar({
       {/* Below `md` the rail is gone; this is the door to the same list. */}
       <PhoneMenu displayName={displayName} roleLabel={t(`auth.roles.${role}`)} />
 
-      <nav aria-label="Breadcrumb" className="min-w-0 text-tiny text-muted">
-        {/* On a phone the company name is on the drawer's header and in the
-            page above; the crumb keeps the part that says where you are. */}
-        <span className="hidden sm:inline">SUPSERV</span>
+      {/*
+        Hidden below `sm`. Every page states its own name in an h1 an inch
+        lower, so on a phone the crumb is a second copy of it — and there is
+        only room for "Aujour…", which reads as something broken rather than
+        as a place. The menu button is where you are and where you can go.
+      */}
+      <nav aria-label="Breadcrumb" className="hidden min-w-0 text-tiny text-muted sm:block">
+        <span>SUPSERV</span>
         {entry ? (
           <>
-            <span className="hidden px-2 sm:inline">/</span>
-            <span className="block truncate text-secondary">{tNav(entry.messageKey)}</span>
+            <span className="px-2">/</span>
+            <span className="text-secondary">{tNav(entry.messageKey)}</span>
           </>
         ) : null}
       </nav>
@@ -80,7 +84,10 @@ export function Topbar({
             name="q"
             defaultValue={query}
             placeholder={t("common.search")}
-            className="w-full bg-transparent text-tiny text-ink outline-none placeholder:text-muted"
+            // `h-full`: the box is 34px, but the input inside it was as tall as
+            // its own text — 18px — so the half of the box above and below the
+            // words did not focus anything. A frame you can miss is not a frame.
+            className="h-full w-full bg-transparent text-tiny text-ink outline-none placeholder:text-muted"
           />
         </form>
 

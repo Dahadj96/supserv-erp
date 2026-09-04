@@ -182,7 +182,14 @@ export function DataTable<Row extends { id: string }>({
                       className={`px-3 py-2.5 text-ink ${column.align === "end" ? "text-end" : "text-start"}`}
                     >
                       {getRowHref && column === shownColumns[0] ? (
-                        <a href={getRowHref(row)} className="font-medium hover:underline">
+                        // The row's own link, drawn as a block so it fills the
+                        // cell: the text line is 18px and a thumb is not, and
+                        // the whole first cell reading as one target is what
+                        // people already expect of a list.
+                        <a
+                          href={getRowHref(row)}
+                          className="-my-2.5 block py-2.5 font-medium hover:underline"
+                        >
                           {column.render(row)}
                         </a>
                       ) : (

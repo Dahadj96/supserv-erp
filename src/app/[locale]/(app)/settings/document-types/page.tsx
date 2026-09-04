@@ -257,7 +257,7 @@ function Row({
             <input type="hidden" name="active" value={String(!row.active)} />
             <button
               type="submit"
-              className={`rounded-[var(--radius-pill)] px-2 py-0.5 text-micro font-semibold ${
+              className={`inline-flex min-h-6 items-center rounded-[var(--radius-pill)] px-2 py-0.5 text-micro font-semibold ${
                 row.active
                   ? "bg-good-bg text-good-ink hover:brightness-95"
                   : "bg-chip text-secondary hover:bg-sunken"

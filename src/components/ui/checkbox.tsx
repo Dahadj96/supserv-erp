@@ -22,15 +22,21 @@ export function Checkbox({
     <span
       className={`inline-flex items-center gap-2 ${props.disabled ? "text-disabled" : "text-ink"} ${className}`}
     >
-      <span className="relative inline-flex size-[15px] items-center justify-center">
+      {/*
+        24px under a thumb, the drawn 15px under a mouse. A tick box is the
+        smallest thing anybody is asked to hit in a list of twenty-five rows,
+        and 15px is about a third of a fingertip — the same reasoning as the
+        nav rows, which are 40px on a phone and 30 on a laptop.
+      */}
+      <span className="relative inline-flex size-6 items-center justify-center md:size-[15px]">
         <input
           id={inputId}
           type="checkbox"
           {...props}
-          className="peer size-[15px] appearance-none rounded-[4px] border border-line-strong bg-surface checked:border-ink checked:bg-ink disabled:border-line disabled:bg-inactive"
+          className="peer size-6 appearance-none rounded-[4px] border border-line-strong bg-surface checked:border-ink checked:bg-ink disabled:border-line disabled:bg-inactive md:size-[15px]"
         />
         <Check
-          className="pointer-events-none absolute size-2.5 text-on-ink opacity-0 peer-checked:opacity-100"
+          className="pointer-events-none absolute size-4 text-on-ink opacity-0 peer-checked:opacity-100 md:size-2.5"
           aria-hidden
         />
       </span>

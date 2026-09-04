@@ -252,7 +252,7 @@ export default async function AuditPage({
                             {row.changes.length > shown.length ? (
                               <Link
                                 href={keep({ row: row.id })}
-                                className="mt-1 inline-block text-micro text-accent-ink hover:underline"
+                                className="mt-1 inline-flex min-h-9 items-center md:min-h-0 text-micro text-accent-ink hover:underline"
                               >
                                 {t("audit.andMore", { count: row.changes.length - shown.length })}
                               </Link>

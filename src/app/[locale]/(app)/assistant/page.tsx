@@ -63,7 +63,7 @@ export default async function AssistantPage({ params }: { params: Promise<{ loca
           <h1 className="text-[19px] font-semibold text-ink">{t("assistantPage.title")}</h1>
           <Link
             href="/settings/assistant"
-            className="ms-auto text-tiny text-accent-ink hover:underline"
+            className="ms-auto inline-flex min-h-9 items-center md:min-h-0 text-tiny text-accent-ink hover:underline"
           >
             {t("assistantPage.whatICanDo", { count: tools.length })}
           </Link>
@@ -121,7 +121,7 @@ export default async function AssistantPage({ params }: { params: Promise<{ loca
                       </div>
                       <Link
                         href={thing.citation}
-                        className="ms-auto inline-flex shrink-0 items-center gap-1 text-micro text-accent-ink hover:underline"
+                        className="ms-auto inline-flex min-h-9 items-center md:min-h-0 shrink-0 gap-1 text-micro text-accent-ink hover:underline"
                       >
                         <ExternalLink className="size-3" aria-hidden />
                         {t("assistantPage.see")}

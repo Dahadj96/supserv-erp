@@ -101,7 +101,7 @@ export async function CompanyForm({
                   name="roles"
                   value={role}
                   defaultChecked={roles.includes(role)}
-                  className="size-[15px] appearance-none rounded-[4px] border border-line-strong bg-surface checked:border-ink checked:bg-ink"
+                  className="size-6 appearance-none rounded-[4px] border border-line-strong bg-surface checked:border-ink checked:bg-ink md:size-[15px]"
                 />
                 {t(`company.role.${role}`)}
               </label>

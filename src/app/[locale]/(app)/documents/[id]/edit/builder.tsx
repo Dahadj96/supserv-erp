@@ -336,7 +336,7 @@ export function Builder({
                               title={t("builder.option")}
                               aria-pressed={row.isOption}
                               onClick={() => set(row.key, "isOption", !row.isOption)}
-                              className={`rounded-[var(--radius-pill)] px-1.5 py-0.5 text-micro font-semibold ${
+                              className={`inline-flex min-h-6 items-center rounded-[var(--radius-pill)] px-1.5 py-0.5 text-micro font-semibold ${
                                 row.isOption ? "bg-warning-bg text-warning-ink" : "text-muted"
                               }`}
                             >

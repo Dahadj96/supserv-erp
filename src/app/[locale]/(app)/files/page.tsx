@@ -102,7 +102,7 @@ export default async function FilesPage({
           <h1 className="text-[19px] font-semibold text-ink">{t("nav.files")}</h1>
           <Link
             href="/settings/storage"
-            className="ms-auto text-tiny text-accent-ink hover:underline"
+            className="ms-auto inline-flex min-h-9 items-center md:min-h-0 text-tiny text-accent-ink hover:underline"
           >
             {t("files.whereTheyLive")}
           </Link>
@@ -192,7 +192,7 @@ export default async function FilesPage({
                       {row.state === "stored" ? (
                         <a
                           href={`/api/files/${encodeURIComponent(row.id)}`}
-                          className="inline-flex items-center gap-1.5 text-accent-ink hover:underline"
+                          className="inline-flex min-h-9 items-center md:min-h-0 gap-1.5 text-accent-ink hover:underline"
                         >
                           <Download className="size-3.5" aria-hidden />
                           {t("files.open")}
