@@ -14,11 +14,22 @@ import { markSubmitted, OfferRefused } from "@/domain/offer/store";
 /**
  * Screen 12's actions.
  *
- * `applyMargin` and the per-line price edit both refuse for anyone without
- * `offers.margin.view`. Not because the write is dangerous, but because setting
- * a price FROM a cost requires seeing the cost — and a screen that hides the
- * cost column while letting somebody reprice against it is a screen that lies
- * about what it is doing.
+ * TWO permissions, and they are not the same question.
+ *
+ * Writing a price onto an offer is `offers.issue` — building the offer is what
+ * the Commercial and the Gérant do. Setting a price FROM a cost additionally
+ * needs `offers.margin.view`, because a screen that hides the cost column
+ * while letting somebody reprice against it is a screen that lies about what
+ * it is doing.
+ *
+ * These used to be one check, `offers.margin.view`, on the theory that pricing
+ * needs the cost. It was wrong twice. Compta holds `margin.view` and does not
+ * build offers, so accounting could reprice a commercial's work; and worse,
+ * `setLine`'s "type a price" branch reached the write with no check at all —
+ * every role including `lecture`, which is read-only, could rewrite the price
+ * of any line on any draft offer by sending `unitPrice` instead of
+ * `marginPct`. `pnpm audit:actions` passed it because the function contains a
+ * `can(...)` somewhere; a permission on the wrong branch is not a permission.
  */
 
 function back(locale: string, id: string, query = ""): never {
@@ -29,6 +40,8 @@ function back(locale: string, id: string, query = ""): never {
 export async function applyMarginAction(locale: string, id: string, form: FormData): Promise<void> {
   const session = await getSession();
   if (!session?.role) redirect(`/${locale}/sign-in`);
+  // Writing to the offer, and reading the cost it is priced from.
+  if (!can(session.role, "offers.issue")) back(locale, id, "?error=notAllowed");
   if (!can(session.role, "offers.margin.view")) back(locale, id, "?error=notAllowed");
 
   const pct = String(form.get("marginPct") ?? "").trim();
@@ -66,6 +79,8 @@ export async function applyMarginAction(locale: string, id: string, form: FormDa
 export async function setLineAction(locale: string, id: string, form: FormData): Promise<void> {
   const session = await getSession();
   if (!session?.role) redirect(`/${locale}/sign-in`);
+  // Before either branch: writing a price onto an offer is building the offer.
+  if (!can(session.role, "offers.issue")) back(locale, id, "?error=notAllowed");
 
   const lineId = String(form.get("lineId") ?? "");
   const price = String(form.get("unitPrice") ?? "").trim();

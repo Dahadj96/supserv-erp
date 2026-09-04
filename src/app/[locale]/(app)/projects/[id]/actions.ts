@@ -41,10 +41,16 @@ function back(locale: string, id: string, query = ""): never {
   redirect(`/${locale}/projects/${id}${query}`);
 }
 
-async function siteSession(locale: string, id: string, permission = "works.issue" as const) {
+/**
+ * The site's permission, named here and nowhere else. It used to be a
+ * parameter with a default, which meant `siteSession(locale, id)` at eight
+ * call sites said nothing about what it was enforcing — and a permission you
+ * cannot see at the call site is one nobody re-reads.
+ */
+async function siteSession(locale: string, id: string) {
   const session = await getSession();
   if (!session) redirect(`/${locale}/sign-in`);
-  if (!can(session.role, permission)) back(locale, id, "?error=notAllowed");
+  if (!can(session.role, "works.issue")) back(locale, id, "?error=notAllowed");
   return session;
 }
 

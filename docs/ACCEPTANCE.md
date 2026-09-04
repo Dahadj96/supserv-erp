@@ -385,12 +385,28 @@ tells you what you want to hear.
    from any screen. `tests/unit/issue-permission.test.ts` pins every kind in
    the catalogue to a permission.
 10. ~~**The actions themselves are not tested.**~~ **Half closed on 2
-   September.** `pnpm audit:actions` reads every server action and refuses
-   the build if one does not check the session and a permission (or say, in
-   words the script accepts, that it writes only the caller's own rows). It
-   found 39 that checked the session and nothing else; all 39 now do, and
-   `lecture` — read-only — can no longer add a note, a contact or a line
-   anywhere. What it cannot do is prove a check is the RIGHT one.
+   September**, closed on 4 September. `pnpm audit:actions` reads every server
+   action and refuses the build if one does not check the session and a
+   permission (or say, in words the script accepts, that it writes only the
+   caller's own rows). It found 39 that checked the session and nothing else;
+   all 39 now do, and `lecture` — read-only — can no longer add a note, a
+   contact or a line anywhere.
+
+   What it could not do was prove a check is the RIGHT one, and that gap had a
+   hole in it. `tests/unit/action-permissions.test.ts` now reads the permission
+   each of the 100 actions actually names and holds the list against a table
+   with a reason on every line. Writing it down found two:
+
+   - **`lecture` could rewrite the price of any line on any draft offer.**
+     `setLineAction` guarded its margin branch and let the "type a price"
+     branch reach the write with no check at all. The audit script passed it
+     because the function contains a `can(...)` somewhere.
+   - **Compta could reprice a commercial's offer and import a tender's BPU.**
+     Seven actions across screens 12 and 42 were guarded by
+     `offers.margin.view` — a permission that says a person may SEE cost.
+     Writing to an offer is `offers.issue`; both are now required, and a
+     fourth assertion refuses any action guarded by a see-this permission
+     alone.
 11. ~~**Nobody has looked at a screen on the laptop it runs on.**~~ **Closed on
    2 September** by `pnpm shots`: every screen, at 1366 × 768 and 1920 × 1080,
    photographed with a full enquiry on it and measured — text under 11.5px,

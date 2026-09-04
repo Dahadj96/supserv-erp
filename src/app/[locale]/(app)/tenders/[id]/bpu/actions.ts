@@ -31,9 +31,13 @@ function back(locale: string, id: string, query = ""): never {
 async function requirePricer(locale: string, id: string) {
   const session = await getSession();
   if (!session?.role) redirect(`/${locale}/sign-in`);
-  // Pricing a bordereau is reading costs. The permission is the one that guards
-  // the cost column, because doing this without seeing costs is not something
-  // the screen can offer honestly.
+  // Two permissions, as on screen 12. Pricing a bordereau is reading costs, so
+  // it needs the permission that guards the cost column; but uploading a BPU,
+  // confirming a mapping and applying an erratum all WRITE to the tender, and
+  // writing is `offers.issue`. Guarding only the read half let Compta — who
+  // holds `margin.view` and does not build offers — import a bordereau and
+  // price it.
+  if (!can(session.role, "offers.issue")) back(locale, id, "?error=notAllowed");
   if (!can(session.role, "offers.margin.view")) back(locale, id, "?error=notAllowed");
   return session;
 }

@@ -1,14 +1,18 @@
 "use server";
 
 import { revalidatePath } from "next/cache";
+import { canWrite } from "@/auth/can";
 import { getSession } from "@/auth/session";
 import { addAlias, createParty, type PartyInput, partyInput, updateParty } from "@/domain/party";
 import { redirect } from "@/i18n/navigation";
 
 /**
  * Lecture seule means read-only. PLAN §5 lists no "create a record" permission
- * because every role except that one has it — so this reads the role's name
- * rather than inventing a permission the plan does not have.
+ * because every role except that one has it.
+ *
+ * This used to test `session.role === "lecture"` itself, which was the same
+ * rule written down twice — `canWrite` is where "who may write" is decided,
+ * and a second copy of it is a second thing to remember when a role is added.
  */
 async function requireWriter(locale: string) {
   const session = await getSession();
@@ -16,7 +20,7 @@ async function requireWriter(locale: string) {
     redirect({ href: "/sign-in", locale });
     throw new Error("unreachable");
   }
-  if (!session.role || session.role === "lecture") {
+  if (!canWrite(session.role)) {
     throw new Error("readOnly");
   }
   return session;
