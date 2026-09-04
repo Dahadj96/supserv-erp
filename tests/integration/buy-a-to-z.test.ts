@@ -54,7 +54,7 @@ const ACTOR = "test-buy-a-to-z-actor";
 const SERIES = ["purchase_order", "goods_receipt"] as const;
 
 const IDENTITY = {
-  legalName: "SARL SUP SERV",
+  legalName: "SARL SUPSERV",
   tradeName: "SUPSERV",
   legalForm: "SARL",
   capital: "6 000 000,00 DA",

@@ -86,7 +86,7 @@ describe("the capital is read the way it is written on the letterhead", () => {
    * of day one, found by rehearsing day one against the test database.
    */
   const base = {
-    legalName: "SARL SUP SERV",
+    legalName: "SARL SUPSERV",
     rc: "01/00-0883062 B19",
     nif: "001901088306288",
     nis: "001901010000282",

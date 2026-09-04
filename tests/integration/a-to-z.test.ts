@@ -55,7 +55,7 @@ const SERIES = ["proforma", "delivery_note", "invoice"] as const;
 
 /** The letterhead, as day one filled it in. */
 const IDENTITY = {
-  legalName: "SARL SUP SERV",
+  legalName: "SARL SUPSERV",
   tradeName: "SUPSERV",
   legalForm: "SARL",
   capital: "6 000 000,00 DA",
@@ -326,7 +326,7 @@ describe("A to Z — enquiry to cash, the way a person walks it", () => {
     expect(out.number).toMatch(/^AZPF-\d{4}-0001$/);
     expect(out.issued).toBe(true);
     const text = await pdfText(await toPdf(out));
-    expect(text).toContain("SARL SUP SERV");
+    expect(text).toContain("SARL SUPSERV");
     expect(text).toContain("59 262,00");
     expect(text).toContain("cinquante-neuf mille deux cent soixante-deux dinars");
     expect(text).not.toContain("BROUILLON");

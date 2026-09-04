@@ -34,8 +34,10 @@ async function main() {
   // ── 1. Identity — décret 05-468 ────────────────────────────────────────
   await saveIdentity(
     {
-      // Profil d'Entreprise, June 2026: "Raison Sociale : SARL SUP SERV".
-      legalName: "SARL SUP SERV",
+      // "SARL SUPSERV" — confirmed by the Gérant on 2 September 2026 against the
+      // RC. The June 2026 company profile wrote it with a space ("SUP SERV"),
+      // and that spelling went onto the first day-one run.
+      legalName: "SARL SUPSERV",
       tradeName: "SUPSERV",
       legalForm: "SARL",
       // FACTURE PROFORMA SUPSERV 2025.xlsx: "Capital : 6 000 000,00 DA".
