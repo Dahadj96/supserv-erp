@@ -3,6 +3,7 @@ import { INPUT } from "@/app/[locale]/(app)/setup/field";
 import { Button } from "@/components/ui/button";
 import { WILAYA_LIST_ID, WilayaList } from "@/components/ui/wilaya-list";
 import { RETENTION_BASES } from "@/domain/money";
+import { CAUTION_KINDS } from "@/domain/project/cautions";
 import type { ContractCandidate } from "@/domain/project/situations";
 import type { ProjectDetail } from "@/domain/project/store";
 import {
@@ -12,8 +13,6 @@ import {
   releaseCautionAction,
   termsAction,
 } from "./actions";
-
-const CAUTION_KINDS = ["bonne_execution", "restitution_avance", "retenue_garantie", "soumission"];
 
 /**
  * Screen 16's forms — the facts a site produces, each small enough to fill
@@ -130,7 +129,7 @@ export async function RecordPanels({
               ))}
             </select>
           </label>
-          <div className="grid grid-cols-2 gap-3">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
             <label>
               <span className="text-micro text-secondary">{t("projectNew.f.contractRef")}</span>
               <input
@@ -230,7 +229,7 @@ export async function RecordPanels({
               ))}
             </select>
           </label>
-          <div className="grid grid-cols-2 gap-3">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
             <label>
               <span className="text-micro text-secondary">{t("projectRecord.caution.amount")}</span>
               <input
@@ -293,7 +292,12 @@ export async function RecordPanels({
                   </option>
                 ))}
               </select>
-              <input type="date" name="on" defaultValue={today} className={`${INPUT} w-[150px]`} />
+              <input
+                type="date"
+                name="on"
+                defaultValue={today}
+                className={`${INPUT.replace("w-full ", "")} w-[150px]`}
+              />
               <Button type="submit" variant="secondary" disabledReason={disabled}>
                 {t("projectRecord.record")}
               </Button>

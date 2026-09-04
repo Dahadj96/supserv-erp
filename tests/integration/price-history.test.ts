@@ -22,7 +22,13 @@ import { createParty } from "@/domain/party";
  * and screen 12 must be able to show June's price beside it.
  */
 const ACTOR = "test-price-history-actor";
-const GALET = "Galet de convoyeur Ø89 × 315 mm";
+/**
+ * The wording this fixture owns. "lot PH7" is not decoration: matching is by
+ * every significant word, so a galet another enquiry sold cannot answer for
+ * this one — which lets the assertions below be exact figures rather than
+ * "something was found".
+ */
+const GALET = "Galet de convoyeur Ø89 × 315 mm — lot PH7";
 
 let clientId = "";
 let juneDealId = "";
@@ -165,9 +171,15 @@ afterAll(async () => {
   await db.delete(auditEntry).where(eq(auditEntry.actorId, ACTOR));
 });
 
+/**
+ * These read the WHOLE register — every issued document, whoever it was for.
+ * That is the feature, and it is why the fixture owns its wording: the
+ * assertions can then be exact without asserting that the database is empty
+ * of everything else.
+ */
 describe("priceHistory", () => {
   it("finds June's sale and June's supplier price from the wording alone", async () => {
-    const h = await priceHistory(GALET, { partyId: clientId });
+    const h = await priceHistory(GALET, { partyId: clientId, limit: 50 });
     expect(h.sold).toHaveLength(1);
     expect(h.sold[0]).toMatchObject({
       documentId: juneOfferId,
@@ -177,22 +189,24 @@ describe("priceHistory", () => {
       sameClient: true,
     });
     expect(h.sold[0]?.number).toMatch(/^PF-|^AZPF-/);
+
     expect(h.bought).toHaveLength(1);
     expect(h.bought[0]).toMatchObject({ price: "4000.0000", isVerbal: false });
     expect(h.bought[0]?.supplier).toContain("FOURNISSEUR ROULEMENTS");
   });
 
   it("finds it with the wording typed differently — no accents, no Ø", async () => {
-    const h = await priceHistory("galet convoyeur 89 315");
+    const h = await priceHistory("galet convoyeur 89 315 lot ph7", { limit: 50 });
     expect(h.sold.map((s) => s.documentId)).toContain(juneOfferId);
   });
 
   it("does not confuse the galet with the bague, and leaves the offer being priced out", async () => {
-    const bague = await priceHistory("Bague d'étanchéité 40x62x8");
-    // June's bague had no cost and therefore no price: nothing sold.
-    expect(bague.sold).toHaveLength(0);
-    const excluded = await priceHistory(GALET, { excludeDocumentId: juneOfferId });
-    expect(excluded.sold).toHaveLength(0);
+    const bague = await priceHistory("Bague d'étanchéité 40x62x8", { limit: 50 });
+    // June's bague had no cost and therefore no price: it is not a sale.
+    expect(bague.sold.map((s) => s.documentId)).not.toContain(juneOfferId);
+
+    const excluded = await priceHistory(GALET, { excludeDocumentId: juneOfferId, limit: 50 });
+    expect(excluded.sold.map((s) => s.documentId)).not.toContain(juneOfferId);
   });
 });
 

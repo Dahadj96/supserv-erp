@@ -10,11 +10,13 @@ import {
   saveSituation,
 } from "@/domain/project/situations";
 import {
+  addCrew,
   ProjectRefused,
   recordReception,
   releaseCaution,
   saveCaution,
   setPhysicalProgress,
+  updateCrew,
   updateProjectTerms,
 } from "@/domain/project/store";
 
@@ -215,4 +217,40 @@ export async function releaseCautionAction(
   if (!cautionId) back(locale, id, "?error=noSuchCaution");
   await releaseCaution({ cautionId, on: str(form, "on") || today(), actorId: session.userId });
   back(locale, id, "?recorded=released");
+}
+
+export async function crewAction(locale: string, id: string, form: FormData): Promise<void> {
+  const session = await siteSession(locale, id);
+  const personId = str(form, "personId");
+  if (!personId) back(locale, id, "?error=personRequired");
+  try {
+    await addCrew({
+      projectId: id,
+      personId,
+      role: orNull(str(form, "role")),
+      onSiteSince: orNull(str(form, "onSiteSince")),
+      actorId: session.userId,
+    });
+  } catch (error) {
+    if (error instanceof ProjectRefused) back(locale, id, `?error=${error.reason}`);
+    throw error;
+  }
+  back(locale, id, "?recorded=crew");
+}
+
+export async function crewUpdateAction(locale: string, id: string, form: FormData): Promise<void> {
+  const session = await siteSession(locale, id);
+  const which = str(form, "which");
+  try {
+    await updateCrew({
+      crewId: str(form, "crewId"),
+      onSiteSince: which === "arrived" ? str(form, "on") || today() : undefined,
+      leftOn: which === "left" ? str(form, "on") || today() : undefined,
+      actorId: session.userId,
+    });
+  } catch (error) {
+    if (error instanceof ProjectRefused) back(locale, id, `?error=${error.reason}`);
+    throw error;
+  }
+  back(locale, id, "?recorded=crew");
 }

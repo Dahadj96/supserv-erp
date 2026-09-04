@@ -9,6 +9,7 @@ import { deliveryDetail } from "@/db/schema/delivery";
 import { document, documentLine, documentLink, numberingSeries } from "@/db/schema/document";
 import { payment, paymentAllocation } from "@/db/schema/money";
 import { party, partyAlias, partyRole } from "@/db/schema/party";
+import { project, situationDetail } from "@/db/schema/project";
 import { billable, billFrom, CannotBill } from "@/documents/bill";
 import { ensureRulesExist } from "@/documents/compliance";
 import { CannotConvert, convertDocument } from "@/documents/convert";
@@ -141,6 +142,32 @@ afterAll(async () => {
         ),
       );
     await db.delete(payment).where(inArray(payment.partyId, partyIds));
+
+    // Projects BEFORE documents. `project.contract_document_id` points at the
+    // issued order a project bills against, so a document cannot be deleted
+    // while a project names it — and `scripts/lib/walk-fixture.ts` seeds a
+    // project on parties with these same names, into this same database.
+    const walkDeals = await db
+      .select({ id: deal.id })
+      .from(deal)
+      .where(inArray(deal.partyId, partyIds));
+    if (walkDeals.length > 0) {
+      const projects = await db
+        .select({ id: project.id })
+        .from(project)
+        .where(
+          inArray(
+            project.dealId,
+            walkDeals.map((d) => d.id),
+          ),
+        );
+      if (projects.length > 0) {
+        const ids = projects.map((p) => p.id);
+        await db.delete(situationDetail).where(inArray(situationDetail.projectId, ids));
+        await db.delete(project).where(inArray(project.id, ids));
+      }
+    }
+
     if (docIds.length > 0) {
       await db.delete(deliveryDetail).where(inArray(deliveryDetail.documentId, docIds));
       await db.delete(documentLink).where(inArray(documentLink.fromDocument, docIds));

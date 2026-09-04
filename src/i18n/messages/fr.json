@@ -28,7 +28,8 @@
     "settings": "Paramètres",
     "notifications": "Notifications",
     "scan": "Numérisation",
-    "capture": "Saisie rapide"
+    "capture": "Saisie rapide",
+    "menu": "Menu"
   },
   "auth": {
     "signIn": "Connexion",
@@ -72,7 +73,8 @@
     "showing": "{shown} sur {total}",
     "rowsHidden": "{count} lignes masquées — {permission}",
     "optional": "facultatif",
-    "yes": "Oui"
+    "yes": "Oui",
+    "close": "Fermer"
   },
   "list": {
     "applied": "Appliqué",
@@ -4652,7 +4654,8 @@
       "reception": "Enregistré : la réception.",
       "terms": "Les termes du marché sont enregistrés.",
       "caution": "Enregistré : la caution.",
-      "released": "Enregistré : la caution a été restituée."
+      "released": "Enregistré : la caution a été restituée.",
+      "crew": "Enregistré : l'équipe."
     },
     "error": {
       "notAllowed": "Votre rôle ne peut pas enregistrer ceci.",
@@ -4667,7 +4670,12 @@
       "contractNotIssued": "Le DQE doit être un document émis.",
       "kindRequired": "Précisez de quelle caution il s'agit.",
       "noSuchCaution": "Cette caution n'existe pas.",
-      "noSuchProject": "Ce projet n'existe pas."
+      "noSuchProject": "Ce projet n'existe pas.",
+      "personRequired": "Choisissez d'abord une personne.",
+      "alreadyOnSite": "Cette personne est déjà sur ce chantier.",
+      "noSuchCrew": "Cette ligne d'équipe n'existe pas.",
+      "alreadyLeft": "Cette personne est déjà partie.",
+      "leftBeforeArrival": "Personne ne part avant d'être arrivé."
     },
     "physical": {
       "title": "Avancement physique",
@@ -4696,6 +4704,16 @@
       "expiresOn": "Expire le",
       "add": "Enregistrer la caution",
       "released": "Restituée par le client"
+    },
+    "crew": {
+      "person": "Qui",
+      "pick": "Choisir une personne",
+      "role": "Rôle sur ce chantier",
+      "onSiteSince": "Sur site depuis",
+      "add": "Mettre sur site",
+      "hint": "Laissez la date vide pour proposer la personne sans l'envoyer encore. Ses habilitations suivent depuis l'écran 51.",
+      "arrived": "Arrivé",
+      "left": "Parti"
     }
   },
   "situation": {
@@ -4745,5 +4763,38 @@
     "createsADraft": "Crée un brouillon à relire avant émission.",
     "saveDraft": "Enregistrer le brouillon",
     "go": "Préparer la situation"
+  },
+  "counterPrice": {
+    "title": "Un prix au comptoir",
+    "lead": "Ce qu'un magasin demande, noté là où vous êtes. Sans affaire ouverte — il répondra à « combien ça coûtait la dernière fois » sur toutes les offres suivantes.",
+    "saved": "Enregistré. Le prix est au registre.",
+    "go": "Enregistrer le prix",
+    "more": "Où, qui, jusqu'à quand",
+    "recent": "Les derniers que vous avez notés",
+    "footnote": "Ce sont des prix catalogue : ils n'appartiennent à aucune affaire et servent toutes. Un prix verbal reste marqué non confirmé tant qu'un document ne l'appuie pas.",
+    "ht": "HT",
+    "ttc": "TTC",
+    "verbal": "verbal",
+    "f": {
+      "designation": "C'est quoi",
+      "designationHint": "Galet de convoyeur Ø89 × 315 mm",
+      "price": "Prix",
+      "supplier": "Quel magasin",
+      "supplierHint": "Ets Chergui",
+      "incl": "Le prix est TTC",
+      "written": "Je l'ai par écrit",
+      "verbalWhy": "Non coché, le prix est enregistré comme verbal, et toute offre bâtie dessus le dit tant qu'un document ne l'appuie pas.",
+      "place": "Où",
+      "placeHint": "Ets Chergui, Adrar",
+      "from": "Qui l'a dit",
+      "fromHint": "M. Chergui",
+      "validUntil": "Valable jusqu'au"
+    },
+    "error": {
+      "notAllowed": "Votre rôle ne peut pas enregistrer de prix.",
+      "noSubject": "Dites à quoi correspond le prix.",
+      "noPrice": "Un prix est un nombre supérieur à zéro.",
+      "supplierRequired": "Dites quel magasin."
+    }
   }
 }

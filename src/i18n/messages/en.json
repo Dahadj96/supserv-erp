@@ -28,7 +28,8 @@
     "settings": "Settings",
     "notifications": "Notifications",
     "scan": "Scan station",
-    "capture": "Quick capture"
+    "capture": "Quick capture",
+    "menu": "Menu"
   },
   "auth": {
     "signIn": "Sign in",
@@ -72,7 +73,8 @@
     "showing": "{shown} of {total}",
     "rowsHidden": "{count} rows hidden — {permission}",
     "optional": "optional",
-    "yes": "Yes"
+    "yes": "Yes",
+    "close": "Close"
   },
   "list": {
     "applied": "Applied",
@@ -4652,7 +4654,8 @@
       "reception": "Recorded: the réception.",
       "terms": "The contract's terms are saved.",
       "caution": "Recorded: the caution.",
-      "released": "Recorded: the caution was given back."
+      "released": "Recorded: the caution was given back.",
+      "crew": "Recorded: the crew."
     },
     "error": {
       "notAllowed": "Your role cannot record this.",
@@ -4667,7 +4670,12 @@
       "contractNotIssued": "The DQE must be an issued document.",
       "kindRequired": "Say which caution it is.",
       "noSuchCaution": "That caution does not exist.",
-      "noSuchProject": "That project does not exist."
+      "noSuchProject": "That project does not exist.",
+      "personRequired": "Pick a person first.",
+      "alreadyOnSite": "They are already on this site.",
+      "noSuchCrew": "That crew row does not exist.",
+      "alreadyLeft": "They have already left.",
+      "leftBeforeArrival": "Nobody leaves before they arrive."
     },
     "physical": {
       "title": "Physical progress",
@@ -4696,6 +4704,16 @@
       "expiresOn": "Expires on",
       "add": "Record the caution",
       "released": "Given back by the client"
+    },
+    "crew": {
+      "person": "Who",
+      "pick": "Pick a person",
+      "role": "Role on this site",
+      "onSiteSince": "On site since",
+      "add": "Put on site",
+      "hint": "Leave the date empty to propose them without sending them yet. Their certifications follow from screen 51.",
+      "arrived": "Arrived",
+      "left": "Left"
     }
   },
   "situation": {
@@ -4745,5 +4763,38 @@
     "createsADraft": "Creates a draft you will read before issuing.",
     "saveDraft": "Save the draft",
     "go": "Prepare the situation"
+  },
+  "counterPrice": {
+    "title": "A price at the counter",
+    "lead": "What a shop charges, written down where you are standing. No enquiry needed — it answers \"what did this cost last time\" on every offer built afterwards.",
+    "saved": "Recorded. The price is in the register.",
+    "go": "Record the price",
+    "more": "Where, who, until when",
+    "recent": "The last ones you wrote down",
+    "footnote": "These are catalogue prices: they belong to no enquiry and serve them all. A verbal one stays marked unconfirmed until a document backs it.",
+    "ht": "excl. VAT",
+    "ttc": "incl. VAT",
+    "verbal": "verbal",
+    "f": {
+      "designation": "What is it",
+      "designationHint": "Galet de convoyeur Ø89 × 315 mm",
+      "price": "Price",
+      "supplier": "Which shop",
+      "supplierHint": "Ets Chergui",
+      "incl": "The price includes VAT",
+      "written": "I have it in writing",
+      "verbalWhy": "Left unticked the price is recorded as verbal, and every offer built on it says so until a document backs it.",
+      "place": "Where",
+      "placeHint": "Ets Chergui, Adrar",
+      "from": "Who said it",
+      "fromHint": "M. Chergui",
+      "validUntil": "Good until"
+    },
+    "error": {
+      "notAllowed": "Your role cannot record a price.",
+      "noSubject": "Say what the price is for.",
+      "noPrice": "A price is a number greater than nought.",
+      "supplierRequired": "Say which shop."
+    }
   }
 }

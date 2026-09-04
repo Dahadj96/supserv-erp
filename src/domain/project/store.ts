@@ -672,3 +672,43 @@ export async function recordReception(opts: {
     });
   });
 }
+
+/**
+ * Somebody left the site, or a proposed man actually arrived. Two facts about
+ * the same row; a proposed welder is not a welder, and a man who left in
+ * August is not on the crew in September however long his ticket runs.
+ */
+export async function updateCrew(opts: {
+  crewId: string;
+  onSiteSince?: string | null;
+  leftOn?: string | null;
+  actorId: string;
+}): Promise<void> {
+  const [row] = await db.select().from(projectCrew).where(eq(projectCrew.id, opts.crewId)).limit(1);
+  if (!row) throw new ProjectRefused("noSuchCrew");
+  const patch: Partial<typeof projectCrew.$inferInsert> = {};
+  if (opts.onSiteSince) {
+    if (row.onSiteSince) throw new ProjectRefused("alreadyOnSite");
+    patch.onSiteSince = opts.onSiteSince;
+  }
+  if (opts.leftOn) {
+    if (row.leftOn) throw new ProjectRefused("alreadyLeft");
+    const since = patch.onSiteSince ?? row.onSiteSince;
+    if (since && opts.leftOn < since) throw new ProjectRefused("leftBeforeArrival");
+    patch.leftOn = opts.leftOn;
+  }
+  if (Object.keys(patch).length === 0) return;
+
+  await db.transaction(async (tx) => {
+    await tx.update(projectCrew).set(patch).where(eq(projectCrew.id, opts.crewId));
+    await tx.insert(auditEntry).values({
+      entity: "project",
+      entityId: row.projectId,
+      action: "update",
+      actorId: opts.actorId,
+      actorKind: "user",
+      sourceScreen: "16",
+      after: { crew: opts.crewId, ...patch },
+    });
+  });
+}

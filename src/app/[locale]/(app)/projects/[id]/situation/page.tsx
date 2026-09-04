@@ -48,7 +48,7 @@ export default async function NextSituationPage({
 
   return (
     <main className="min-h-0 flex-1 overflow-auto">
-      <div className="border-b border-line-subtle bg-surface px-7 py-5">
+      <div className="border-b border-line-subtle bg-surface px-4 md:px-7 py-5">
         <p className="text-micro text-muted">
           <Link href={`/projects/${id}`} className="hover:underline">
             {p.code}
@@ -64,13 +64,13 @@ export default async function NextSituationPage({
       </div>
 
       {error ? (
-        <p className="mx-7 mt-4 rounded-[var(--radius-control)] bg-critical-bg px-4 py-2.5 text-tiny text-critical-ink">
+        <p className="mx-4 md:mx-7 mt-4 rounded-[var(--radius-control)] bg-critical-bg px-4 py-2.5 text-tiny text-critical-ink">
           {t.has(`situation.error.${error}`) ? t(`situation.error.${error}`) : error}
         </p>
       ) : null}
 
       {next.blocked ? (
-        <div className="mx-7 mt-4 flex items-start gap-3 rounded-[var(--radius-control)] border border-warning bg-warning-bg px-4 py-3">
+        <div className="mx-4 md:mx-7 mt-4 flex items-start gap-3 rounded-[var(--radius-control)] border border-warning bg-warning-bg px-4 py-3">
           <CircleAlert className="mt-px size-4 shrink-0 text-warning-ink" aria-hidden />
           <p className="max-w-[900px] text-tiny leading-relaxed text-warning-ink">
             {t(`situation.blocked.${next.blocked}`)}
@@ -85,7 +85,7 @@ export default async function NextSituationPage({
 
       <form
         action={saveSituationAction.bind(null, locale, id)}
-        className="grid max-w-[1400px] grid-cols-1 items-start gap-5 px-7 py-6 2xl:grid-cols-3"
+        className="grid max-w-[1400px] grid-cols-1 items-start gap-5 px-4 md:px-7 py-6 2xl:grid-cols-3"
       >
         <section className="rounded-[var(--radius-card)] border border-line bg-surface 2xl:col-span-2">
           <div className="flex items-baseline gap-3 border-b border-line-subtle px-5 py-3.5">
@@ -182,7 +182,7 @@ export default async function NextSituationPage({
         <div className="flex flex-col gap-5">
           <section className="rounded-[var(--radius-card)] border border-line bg-surface p-5">
             <h2 className="text-tiny font-semibold text-ink">{t("situation.period")}</h2>
-            <div className="mt-3 grid grid-cols-2 gap-3">
+            <div className="mt-3 grid grid-cols-1 sm:grid-cols-2 gap-3">
               <label>
                 <span className="text-micro text-secondary">{t("situation.f.from")}</span>
                 <input

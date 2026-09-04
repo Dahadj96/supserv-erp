@@ -7,13 +7,19 @@ import { can, canAny } from "@/auth/can";
 import { getSession } from "@/auth/session";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import { listPeople } from "@/domain/people";
 import type { CautionState, CrewState } from "@/domain/project/cautions";
 import { needsAttention } from "@/domain/project/cautions";
 import type { SituationState } from "@/domain/project/progress";
 import { contractCandidates } from "@/domain/project/situations";
 import { getProject } from "@/domain/project/store";
 import { Link } from "@/i18n/navigation";
-import { situationApprovedAction, situationSubmittedAction } from "./actions";
+import {
+  crewAction,
+  crewUpdateAction,
+  situationApprovedAction,
+  situationSubmittedAction,
+} from "./actions";
 import { RecordPanels } from "./record";
 
 /**
@@ -71,7 +77,10 @@ export default async function ProjectPage({
 
   const p = await getProject(id);
   if (!p) notFound();
-  const contracts = await contractCandidates(p.dealId);
+  const [contracts, people] = await Promise.all([
+    contractCandidates(p.dealId),
+    listPeople("all", 300),
+  ]);
 
   const format = await getFormatter({ locale });
   const money = (value: string) =>
@@ -82,10 +91,13 @@ export default async function ProjectPage({
   const datesWrite = canAny(session.role, ["works.issue", "invoices.issue"]);
   const openDraft = p.progress.situations.find((s) => s.number === null);
   const today = new Date().toISOString().slice(0, 10);
+  // The inline inputs on a table row: INPUT without its w-full, so a width
+  // class is the width.
+  const COMPACT = INPUT.replace("w-full ", "");
 
   return (
     <main className="min-h-0 flex-1 overflow-auto">
-      <div className="flex flex-wrap items-start gap-3 border-b border-line-subtle bg-surface px-7 py-5">
+      <div className="flex flex-wrap items-start gap-3 border-b border-line-subtle bg-surface px-4 md:px-7 py-5">
         <div className="min-w-0">
           <h1 className="text-[19px] font-semibold text-ink">
             {p.code} — {p.object}
@@ -113,23 +125,23 @@ export default async function ProjectPage({
       </div>
 
       {opened ? (
-        <p className="mx-7 mt-4 rounded-[var(--radius-control)] bg-good-bg px-4 py-2.5 text-tiny text-good-ink">
+        <p className="mx-4 md:mx-7 mt-4 rounded-[var(--radius-control)] bg-good-bg px-4 py-2.5 text-tiny text-good-ink">
           {t("project.openedOk", { code: p.code })}
         </p>
       ) : null}
       {recorded ? (
-        <p className="mx-7 mt-4 rounded-[var(--radius-control)] bg-good-bg px-4 py-2.5 text-tiny text-good-ink">
+        <p className="mx-4 md:mx-7 mt-4 rounded-[var(--radius-control)] bg-good-bg px-4 py-2.5 text-tiny text-good-ink">
           {t.has(`projectRecord.ok.${recorded}`) ? t(`projectRecord.ok.${recorded}`) : recorded}
         </p>
       ) : null}
       {error ? (
-        <p className="mx-7 mt-4 rounded-[var(--radius-control)] bg-critical-bg px-4 py-2.5 text-tiny text-critical-ink">
+        <p className="mx-4 md:mx-7 mt-4 rounded-[var(--radius-control)] bg-critical-bg px-4 py-2.5 text-tiny text-critical-ink">
           {t.has(`projectRecord.error.${error}`) ? t(`projectRecord.error.${error}`) : error}
         </p>
       ) : null}
 
       {urgent.length > 0 ? (
-        <div className="mx-7 mt-4 flex items-start gap-3 rounded-[var(--radius-control)] border border-critical bg-critical-bg px-4 py-3">
+        <div className="mx-4 md:mx-7 mt-4 flex items-start gap-3 rounded-[var(--radius-control)] border border-critical bg-critical-bg px-4 py-3">
           <CircleAlert className="mt-px size-4 shrink-0 text-critical-ink" aria-hidden />
           <p className="max-w-[940px] text-tiny leading-relaxed text-critical-ink">
             {t(`project.cautionBanner.${urgent[0]?.state}`, {
@@ -140,8 +152,8 @@ export default async function ProjectPage({
         </div>
       ) : null}
 
-      <div className="grid max-w-[1400px] grid-cols-3 items-start gap-5 px-7 py-6">
-        <div className="col-span-2 flex flex-col gap-5">
+      <div className="grid max-w-[1400px] grid-cols-1 md:grid-cols-3 items-start gap-5 px-4 md:px-7 py-6">
+        <div className="col-span-1 md:col-span-2 flex flex-col gap-5">
           <section className="rounded-[var(--radius-card)] border border-line bg-surface">
             <div className="flex items-baseline gap-3 border-b border-line-subtle px-5 py-3.5">
               <h2 className="text-tiny font-semibold text-ink">{t("project.situations.title")}</h2>
@@ -246,7 +258,7 @@ export default async function ProjectPage({
                                   name="on"
                                   defaultValue={today}
                                   aria-label={t("project.submittedOn")}
-                                  className={`${INPUT} h-[28px] w-[150px]`}
+                                  className={`${COMPACT} h-[28px] w-[150px]`}
                                 />
                                 <Button
                                   type="submit"
@@ -277,7 +289,7 @@ export default async function ProjectPage({
                                   name="on"
                                   defaultValue={today}
                                   aria-label={t("project.approvedOn")}
-                                  className={`${INPUT} h-[28px] w-[150px]`}
+                                  className={`${COMPACT} h-[28px] w-[150px]`}
                                 />
                                 <span className="text-micro text-secondary">
                                   {t("project.approvedBy")}
@@ -286,7 +298,7 @@ export default async function ProjectPage({
                                   name="by"
                                   placeholder={t("project.approvedByHint")}
                                   aria-label={t("project.approvedBy")}
-                                  className={`${INPUT} h-[28px] w-[220px]`}
+                                  className={`${COMPACT} h-[28px] w-[220px]`}
                                 />
                                 <Button
                                   type="submit"
@@ -359,15 +371,94 @@ export default async function ProjectPage({
                       </td>
                       <td className="px-3 py-2.5 text-secondary">{member.onSiteSince ?? "—"}</td>
                       <td className="px-5 py-2.5">
-                        <Badge tone={CREW_TONE[member.state]}>
-                          {t(`project.crewState.${member.state}`)}
-                        </Badge>
+                        <span className="flex flex-wrap items-center gap-2">
+                          <Badge tone={CREW_TONE[member.state]}>
+                            {t(`project.crewState.${member.state}`)}
+                          </Badge>
+                          {/* A proposed man arrives; a man on site leaves.
+                              One date each, recorded the day it happens. */}
+                          {member.state !== "left" ? (
+                            <form
+                              action={crewUpdateAction.bind(null, locale, id)}
+                              className="flex items-center gap-1.5"
+                            >
+                              <input type="hidden" name="crewId" value={member.id} />
+                              <input
+                                type="hidden"
+                                name="which"
+                                value={member.state === "proposed" ? "arrived" : "left"}
+                              />
+                              <input
+                                type="date"
+                                name="on"
+                                defaultValue={today}
+                                aria-label={
+                                  member.state === "proposed"
+                                    ? t("projectRecord.crew.arrived")
+                                    : t("projectRecord.crew.left")
+                                }
+                                className={`${COMPACT} h-[28px] w-[150px]`}
+                              />
+                              <Button
+                                type="submit"
+                                variant="ghost"
+                                size="small"
+                                disabledReason={siteWrite ? undefined : t("documents.notAllowed")}
+                              >
+                                {member.state === "proposed"
+                                  ? t("projectRecord.crew.arrived")
+                                  : t("projectRecord.crew.left")}
+                              </Button>
+                            </form>
+                          ) : null}
+                        </span>
                       </td>
                     </tr>
                   ))}
                 </tbody>
               </table>
             )}
+
+            {/* Who goes on site next. From screen 51's people, with their
+                tickets following them — the row above shows the soonest
+                expiry the moment they are added. */}
+            <form
+              action={crewAction.bind(null, locale, id)}
+              className="flex flex-wrap items-end gap-2 border-t border-line-subtle px-5 py-3.5"
+            >
+              <label className="min-w-[220px] flex-1">
+                <span className="text-micro text-secondary">{t("projectRecord.crew.person")}</span>
+                <select name="personId" className={`${INPUT} mt-1`} defaultValue="">
+                  <option value="">{t("projectRecord.crew.pick")}</option>
+                  {people.map((person) => (
+                    <option key={person.id} value={person.id}>
+                      {person.fullName}
+                      {person.trade ? ` · ${person.trade}` : ""}
+                    </option>
+                  ))}
+                </select>
+              </label>
+              <label className="w-[160px]">
+                <span className="text-micro text-secondary">{t("projectRecord.crew.role")}</span>
+                <input name="role" className={`${INPUT} mt-1`} />
+              </label>
+              <label className="w-[160px]">
+                <span className="text-micro text-secondary">
+                  {t("projectRecord.crew.onSiteSince")}
+                </span>
+                <input type="date" name="onSiteSince" className={`${INPUT} mt-1`} />
+              </label>
+              <Button
+                type="submit"
+                variant="secondary"
+                disabledReason={siteWrite ? undefined : t("documents.notAllowed")}
+              >
+                {t("projectRecord.crew.add")}
+              </Button>
+              <span className="basis-full text-micro leading-relaxed text-muted">
+                {t("projectRecord.crew.hint")}
+              </span>
+            </form>
           </section>
         </div>
 

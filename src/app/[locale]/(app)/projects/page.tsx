@@ -59,7 +59,7 @@ export default async function ProjectsPage({
 
   return (
     <main className="flex min-h-0 flex-1 flex-col">
-      <div className="flex shrink-0 flex-wrap items-start gap-3 border-b border-line-subtle bg-surface px-7 py-5">
+      <div className="flex shrink-0 flex-wrap items-start gap-3 border-b border-line-subtle bg-surface px-4 md:px-7 py-5">
         <div className="min-w-0">
           <h1 className="text-[19px] font-semibold text-ink">{t("nav.projects")}</h1>
           <p className="mt-1 text-tiny text-muted">
@@ -78,7 +78,7 @@ export default async function ProjectsPage({
       </div>
 
       <div className="min-h-0 flex-1 overflow-auto">
-        <div className="grid grid-cols-4 gap-4 px-7 pt-5">
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-4 px-4 md:px-7 pt-5">
           {[
             { key: "active", value: String(counts.active) },
             { key: "waiting", value: String(counts.waiting) },
@@ -96,7 +96,7 @@ export default async function ProjectsPage({
         </div>
 
         {worst?.wait && (worst.wait.waitingDays ?? 0) >= WAITING_TOO_LONG_DAYS ? (
-          <div className="mx-7 mt-4 flex items-start gap-3 rounded-[var(--radius-control)] border border-warning bg-warning-bg px-4 py-3">
+          <div className="mx-4 md:mx-7 mt-4 flex items-start gap-3 rounded-[var(--radius-control)] border border-warning bg-warning-bg px-4 py-3">
             <TriangleAlert className="mt-px size-4 shrink-0 text-warning-ink" aria-hidden />
             <p className="max-w-[940px] text-tiny leading-relaxed text-warning-ink">
               {t("projects.waitingBanner", {
@@ -115,7 +115,7 @@ export default async function ProjectsPage({
           </div>
         ) : null}
 
-        <div className="flex flex-wrap items-center gap-2 px-7 pt-4">
+        <div className="flex flex-wrap items-center gap-2 px-4 md:px-7 pt-4">
           {FACETS.map((facet) => (
             <Link
               key={facet}
@@ -143,7 +143,9 @@ export default async function ProjectsPage({
           <table className="mt-4 w-full border-collapse text-tiny">
             <thead>
               <tr className="border-b border-line-subtle bg-plane text-micro text-muted">
-                <th className="px-7 py-2 text-start font-medium">{t("projects.column.code")}</th>
+                <th className="px-4 md:px-7 py-2 text-start font-medium">
+                  {t("projects.column.code")}
+                </th>
                 <th className="px-4 py-2 text-start font-medium">{t("projects.column.client")}</th>
                 <th className="px-4 py-2 text-start font-medium">{t("projects.column.object")}</th>
                 <th className="px-4 py-2 text-start font-medium">{t("projects.column.wilaya")}</th>
@@ -154,13 +156,15 @@ export default async function ProjectsPage({
                   {t("projects.column.situations")}
                 </th>
                 <th className="px-4 py-2 text-end font-medium">{t("projects.column.retention")}</th>
-                <th className="px-7 py-2 text-start font-medium">{t("projects.column.status")}</th>
+                <th className="px-4 md:px-7 py-2 text-start font-medium">
+                  {t("projects.column.status")}
+                </th>
               </tr>
             </thead>
             <tbody>
               {rows.map((row) => (
                 <tr key={row.id} className="border-b border-line-subtle hover:bg-plane">
-                  <td className="px-7 py-2.5">
+                  <td className="px-4 md:px-7 py-2.5">
                     <Link href={`/projects/${row.id}`} className="text-ink hover:underline">
                       {row.code}
                     </Link>
@@ -198,7 +202,7 @@ export default async function ProjectsPage({
                         })
                       : "—"}
                   </td>
-                  <td className="px-7 py-2.5">
+                  <td className="px-4 md:px-7 py-2.5">
                     <div className="flex items-center gap-1.5">
                       <Badge tone={STATE_TONE[row.state]}>{t(`projects.state.${row.state}`)}</Badge>
                       {row.cautionsNeedingAttention > 0 ? (

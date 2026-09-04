@@ -17,6 +17,7 @@ import {
   projectCounts,
   saveCaution,
   setPhysicalProgress,
+  updateCrew,
 } from "@/domain/project/store";
 
 /**
@@ -329,5 +330,40 @@ describe("the list", () => {
     const counts = await projectCounts(NOW);
     expect(Number(counts.retentionHeld)).toBeGreaterThanOrEqual(67000);
     expect(counts.waiting).toBeGreaterThan(0);
+  });
+});
+
+describe("who is on site", () => {
+  it("records that the man left, and refuses a departure before his arrival", async () => {
+    const p = await getProject(projectId, NOW);
+    const ferhat = p?.crew.find((c) => c.personId === welderId);
+    expect(ferhat?.state).not.toBe("left");
+
+    await expect(
+      updateCrew({ crewId: ferhat?.id as string, leftOn: "2026-05-01", actorId: ACTOR }),
+    ).rejects.toMatchObject({ reason: "leftBeforeArrival" });
+
+    await updateCrew({ crewId: ferhat?.id as string, leftOn: "2026-08-20", actorId: ACTOR });
+    const after = await getProject(projectId, NOW);
+    expect(after?.crew.find((c) => c.personId === welderId)?.state).toBe("left");
+
+    await expect(
+      updateCrew({ crewId: ferhat?.id as string, leftOn: "2026-08-21", actorId: ACTOR }),
+    ).rejects.toMatchObject({ reason: "alreadyLeft" });
+  });
+
+  it("lets a man proposed without a date arrive later, and only once", async () => {
+    await addCrew({ projectId, personId: welderId, role: "Soudeur", actorId: ACTOR });
+    const p = await getProject(projectId, NOW);
+    const proposed = p?.crew.find((c) => c.personId === welderId && c.state === "proposed");
+    expect(proposed).toBeDefined();
+
+    await updateCrew({ crewId: proposed?.id as string, onSiteSince: "2026-08-22", actorId: ACTOR });
+    const after = await getProject(projectId, NOW);
+    expect(after?.crew.find((c) => c.id === proposed?.id)?.state).not.toBe("proposed");
+
+    await expect(
+      updateCrew({ crewId: proposed?.id as string, onSiteSince: "2026-08-23", actorId: ACTOR }),
+    ).rejects.toMatchObject({ reason: "alreadyOnSite" });
   });
 });

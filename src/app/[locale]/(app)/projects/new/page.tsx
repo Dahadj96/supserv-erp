@@ -46,13 +46,13 @@ export default async function NewProjectPage({
     const candidates = await projectCandidates();
     return (
       <main className="min-h-0 flex-1 overflow-auto">
-        <div className="border-b border-line-subtle bg-surface px-7 py-5">
+        <div className="border-b border-line-subtle bg-surface px-4 md:px-7 py-5">
           <h1 className="text-[19px] font-semibold text-ink">{t("projectNew.title")}</h1>
           <p className="mt-1 max-w-[760px] text-tiny leading-relaxed text-muted">
             {t("projectNew.whichEnquiry")}
           </p>
         </div>
-        <section className="mx-7 my-6 max-w-[860px] rounded-[var(--radius-card)] border border-line bg-surface">
+        <section className="mx-4 md:mx-7 my-6 max-w-[860px] rounded-[var(--radius-card)] border border-line bg-surface">
           {candidates.length === 0 ? (
             <p className="px-5 py-4 text-tiny leading-relaxed text-secondary">
               {t("projectNew.noCandidates")}
@@ -111,7 +111,7 @@ export default async function NewProjectPage({
 
   return (
     <main className="min-h-0 flex-1 overflow-auto">
-      <div className="border-b border-line-subtle bg-surface px-7 py-5">
+      <div className="border-b border-line-subtle bg-surface px-4 md:px-7 py-5">
         <p className="text-micro text-muted">
           <Link href={`/deals/${dealId}`} className="hover:underline">
             {deal.ref}
@@ -125,12 +125,15 @@ export default async function NewProjectPage({
       </div>
 
       {error ? (
-        <p className="mx-7 mt-4 rounded-[var(--radius-control)] bg-critical-bg px-4 py-2.5 text-tiny text-critical-ink">
+        <p className="mx-4 md:mx-7 mt-4 rounded-[var(--radius-control)] bg-critical-bg px-4 py-2.5 text-tiny text-critical-ink">
           {t.has(`projectNew.error.${error}`) ? t(`projectNew.error.${error}`) : error}
         </p>
       ) : null}
 
-      <form action={openProjectAction.bind(null, locale)} className="max-w-[860px] px-7 py-6">
+      <form
+        action={openProjectAction.bind(null, locale)}
+        className="max-w-[860px] px-4 md:px-7 py-6"
+      >
         <input type="hidden" name="dealId" value={dealId} />
         <WilayaList />
 
