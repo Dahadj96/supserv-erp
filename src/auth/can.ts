@@ -128,7 +128,10 @@ export const ISSUE_PERMISSION: Record<string, Permission> = {
   // What we send a client to win the work, and their answer.
   quotation: "offers.issue",
   proforma: "offers.issue",
-  offer: "offers.issue",
+  // There was an `offer` here and this ERP has no such kind — the catalogue
+  // calls a devis `quotation`. Exhaustive means exactly the kinds that exist:
+  // a line for one that does not is a line nobody will ever reach, sitting in
+  // the file a reviewer reads to find out who may issue what.
   client_order: "offers.issue",
   // An avenant changes what the client committed to, which is the same act as
   // recording the commitment: the Commercial's.

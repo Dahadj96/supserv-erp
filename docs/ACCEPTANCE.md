@@ -971,3 +971,39 @@ tells you what you want to hear.
    - `tests/integration/document-types.test.ts` :: "corrects a row when the catalogue changes its mind, and leaves what is switched on alone"
    - `tests/integration/document-types.test.ts` :: "is idempotent — pressing the button twice writes nothing the second time"
    - `tests/integration/document-types.test.ts` :: "only ever converts into a kind that exists"
+
+29. ~~**A document kind called `offer`, which this ERP does not have.**~~ **Found and closed on 5 September.**
+   The catalogue calls a devis `quotation` and has since the day it was
+   written. The word `offer` was in the source five times anyway: day one's
+   numbering dropdown (closed as item 26), `ISSUE_PERMISSION` in
+   `src/auth/can.ts` — the map whose own comment calls it "deliberately
+   exhaustive" — screen 28's offers chart, `SOLD_KINDS` in the price history,
+   and a merge test fixture.
+
+   **None of them threw.** `WHERE kind = 'offer'` matches no rows and returns
+   an empty result; a permission nobody can reach looks like a decision
+   somebody made; a sixth name in a list of six reads as one of the six.
+
+   Screen 28 is the one that mattered. It has said **"Aucune offre émise"**
+   since it was built, to a company that issues them every week. A report that
+   is confidently wrong is worse than one that is missing, because somebody
+   acts on it. An offer is a devis OR a proforma — the company sends whichever
+   the client asked for — and `domain/deal/deal.ts` had already reached that
+   answer for the pipeline, so the report agrees with it rather than inventing
+   a third. `issuedByMonth` takes kinds, plural: the single-kind signature is
+   what made the bug expressible.
+   See `docs/DECISIONS/2026-09-05-a-kind-called-offer.md`.
+
+   The general fix is a scan. Every `.ts` and `.tsx` under `src` is read for
+   arrays of nothing but lowercase quoted words; any with two or more real
+   kinds in it is taken as a list of kinds, and a member the catalogue does not
+   have fails the build. `CHAIN` is the one named exception — `payment` is a
+   step in screen 48's chain and not a document this system issues — written
+   into the test so a second exception is a decision somebody makes in writing.
+   `ISSUE_PERMISSION` is checked in both directions: a kind with no entry
+   fails, and an entry for a kind that does not exist fails.
+
+   - `tests/unit/document-kinds.test.ts` :: "names no kind the catalogue does not have"
+   - `tests/unit/document-kinds.test.ts` :: "says who may issue every kind, and nobody who may issue one that is not there"
+   - `tests/unit/document-kinds.test.ts` :: "finds the lists it is meant to find"
+   - `tests/unit/document-kinds.test.ts` :: "read the source at all — a scanner that found no files would pass everything"

@@ -21,8 +21,15 @@ import { party } from "@/db/schema/party";
  * exist, and the day items are matched it becomes a join instead.
  */
 
-/** Kinds on which a unit price is OURS, offered to a client. */
-const SOLD_KINDS = ["quotation", "proforma", "offer", "client_order", "invoice", "situation"];
+/**
+ * Kinds on which a unit price is OURS, offered to a client.
+ *
+ * `"offer"` was in this list and is not a kind this ERP has — the catalogue
+ * calls a devis `quotation`. It matched nothing, which is the quiet sort of
+ * wrong: the list still worked, and nobody could tell by reading it that one
+ * of its six entries was doing nothing.
+ */
+export const SOLD_KINDS = ["quotation", "proforma", "client_order", "invoice", "situation"];
 
 const STOP = new Set([
   "de",

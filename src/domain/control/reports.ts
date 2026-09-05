@@ -1,4 +1,4 @@
-import { and, desc, eq, isNotNull, sql } from "drizzle-orm";
+import { and, desc, eq, inArray, isNotNull, sql } from "drizzle-orm";
 import { db } from "@/db";
 import { deal } from "@/db/schema/deal";
 import { document } from "@/db/schema/document";
@@ -25,8 +25,21 @@ import { owings } from "@/domain/money/store";
 
 export type MonthRow = { month: string; count: number; total: string };
 
-/** Issued documents by month and kind. Drafts are not sales. */
-export async function issuedByMonth(kind: string, months = 12): Promise<MonthRow[]> {
+/** What screen 28's two charts count. Exported so a test can hold them against
+ *  the catalogue: a kind that does not exist draws a flat line for ever. */
+export const INVOICED_KINDS = ["invoice"];
+export const OFFER_KINDS = ["quotation", "proforma"];
+
+/**
+ * Issued documents by month, over one or more kinds. Drafts are not sales.
+ *
+ * KINDS, plural, and it took one. The offers chart asked for kind `"offer"` —
+ * a kind this ERP does not have; the catalogue calls a devis `quotation` — so
+ * the query matched nothing and screen 28 said *Aucune offre émise* to a
+ * company that had issued them all year. A figure that is always zero is worse
+ * than no figure: it is read as an answer.
+ */
+export async function issuedByMonth(kinds: string[], months = 12): Promise<MonthRow[]> {
   const rows = await db
     .select({
       month: sql<string>`to_char(date_trunc('month', ${document.issuedOn}::date), 'YYYY-MM')`,
@@ -36,7 +49,7 @@ export async function issuedByMonth(kind: string, months = 12): Promise<MonthRow
     .from(document)
     .where(
       and(
-        eq(document.kind, kind),
+        inArray(document.kind, kinds),
         isNotNull(document.number),
         isNotNull(document.issuedOn),
         sql`${document.issuedOn}::date > current_date - make_interval(months => ${months})`,
@@ -112,8 +125,18 @@ export type Report = {
 
 export async function report(today = new Date()): Promise<Report> {
   const [invoices, offers, kinds, deals, owed] = await Promise.all([
-    issuedByMonth("invoice"),
-    issuedByMonth("offer"),
+    issuedByMonth(INVOICED_KINDS),
+    /*
+      AN OFFER IS A DEVIS OR A PROFORMA. Both, because both are sent to a
+      client to win work and the company uses whichever the client asked for —
+      a proforma for somebody who has to pay against it, a devis for a tender.
+
+      A devis converted to a proforma for the same job counts twice, and the
+      screen says what it counted rather than hiding that: two offers did leave
+      the building. Picking one of the two kinds instead would show nothing at
+      all for half the company's work.
+    */
+    issuedByMonth(OFFER_KINDS),
     byKind(),
     dealOutcomes(),
     owings(),

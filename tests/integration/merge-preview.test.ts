@@ -72,7 +72,8 @@ beforeAll(async () => {
     { kind: "invoice", partyId: aId, locale: "fr", status: "draft", totals: {} },
     { kind: "invoice", partyId: aId, locale: "fr", status: "draft", totals: {} },
     { kind: "invoice", partyId: bId, locale: "fr", status: "draft", totals: {} },
-    { kind: "offer", partyId: bId, locale: "fr", status: "draft", totals: {} },
+    // A real kind. It said "offer", which this ERP does not have.
+    { kind: "quotation", partyId: bId, locale: "fr", status: "draft", totals: {} },
   ]);
 });
 
@@ -102,7 +103,7 @@ describe("screen 84 — before anything is decided", () => {
     const by = Object.fromEntries((preview?.moves ?? []).map((m) => [m.key, m]));
 
     expect(by["document.invoice"]).toMatchObject({ kept: 2, retired: 1, after: 3 });
-    expect(by["document.offer"]).toMatchObject({ kept: 0, retired: 1, after: 1 });
+    expect(by["document.quotation"]).toMatchObject({ kept: 0, retired: 1, after: 1 });
   });
 
   it("shows no row for a kind neither record has", async () => {
