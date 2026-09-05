@@ -44,6 +44,14 @@ export async function RecordPanels({
   const today = new Date().toISOString().slice(0, 10);
   const disabled = canWrite ? undefined : t("documents.notAllowed");
   const live = p.cautions.filter((c) => c.state !== "released");
+  /**
+   * `numeric(6,3)` comes back as "5.000", and a field that reads 5.000 in a
+   * French form is a number a person has to stop and parse — 1.000‰ is one
+   * per mille or a thousand, depending on how you were taught. So a rate is
+   * shown the way it was typed.
+   */
+  const rate = (value: string | null | undefined) =>
+    value === null || value === undefined || value === "" ? "" : String(Number(value));
   const amount = (value: string) =>
     Number(value).toLocaleString(locale === "fr" ? "fr-DZ" : "en-GB", {
       maximumFractionDigits: 0,
@@ -250,7 +258,7 @@ export async function RecordPanels({
               <input
                 name="retentionPct"
                 inputMode="decimal"
-                defaultValue={p.retentionPct}
+                defaultValue={rate(p.retentionPct)}
                 className={`${INPUT} mt-1 text-end tabular-nums`}
               />
             </label>
@@ -279,7 +287,7 @@ export async function RecordPanels({
               <input
                 name="penaltyPerMille"
                 inputMode="decimal"
-                defaultValue={p.penaltyPerMille ?? ""}
+                defaultValue={rate(p.penaltyPerMille)}
                 placeholder="1"
                 className={`${INPUT} mt-1 text-end tabular-nums`}
               />
@@ -289,7 +297,7 @@ export async function RecordPanels({
               <input
                 name="penaltyCapPct"
                 inputMode="decimal"
-                defaultValue={p.penaltyCapPct ?? ""}
+                defaultValue={rate(p.penaltyCapPct)}
                 placeholder="10"
                 className={`${INPUT} mt-1 text-end tabular-nums`}
               />

@@ -174,7 +174,9 @@ export default async function EditDocumentPage({
           issuedOn={record.issuedOn ?? new Date().toISOString().slice(0, 10)}
           globalDiscountPct={record.globalDiscountPct ?? "0"}
           advanceDeducted={record.advanceDeducted ?? "0"}
-          retentionPct={record.retentionPct ?? "0"}
+          // `numeric(6,3)` reads back "5.000", and a number input showing
+          // 5.000 is a rate somebody has to stop and parse.
+          retentionPct={String(Number(record.retentionPct ?? "0"))}
           settlement={record.settlement ?? ""}
           stampDutyConfirmed={stampDutyConfirmed}
           theirNumber={record.number ?? ""}

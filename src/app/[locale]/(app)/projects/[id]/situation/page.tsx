@@ -223,7 +223,9 @@ export default async function NextSituationPage({
               <div className="flex items-baseline gap-3">
                 <dt className="text-secondary">{t("situation.retention")}</dt>
                 <dd className="ms-auto tabular-nums text-ink">
-                  {next.retentionPct} %
+                  {/* `numeric(6,3)` reads back "5.000", which in French is
+                      five thousand to anybody skimming. */}
+                  {String(Number(next.retentionPct))} %
                   {next.retentionBase
                     ? ` · ${t(`projectNew.retentionBase.${next.retentionBase}`)}`
                     : ""}

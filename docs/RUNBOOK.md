@@ -445,6 +445,30 @@ engine's fallback is "we allocate the number". On a kind the counterparty
 numbers — a client's order, an **avenant** — that would print a reference of
 ours over theirs, on paper the client files by their own.
 
+### And whether a person can actually drive it
+
+```powershell
+# the same spare copy on the TEST database, on port 3100, then
+$env:DATABASE_URL = "postgres://supserv:devpassword@localhost:5432/supserv_test"
+pnpm walk --base http://127.0.0.1:3100
+```
+
+Every other check proves one layer: the integration suite proves the domain,
+`audit:forms` proves a field's name reaches the action, `smoke:in` proves a
+route answers, `shots` proves it looks right. None of them proves the four
+together — that a person can open screen 16, type into a form, press the
+button, and land somewhere with what they typed on it.
+
+This does, against a real build, over HTTP, with a real session cookie: the
+CCAP's penalty clause typed into the terms, an avenant written from the
+marché's own bordereau, the draft reopened with the number still in it, the
+décompte refusing and saying which fact is missing, and a situation raised.
+Eighteen checks; it seeds the A-to-Z enquiry and removes it afterwards, and
+refuses any database whose name does not end in `_test`.
+
+It has already earned itself: it found the retention and penalty rates printing
+as "5.000" and "1.000‰", which in French reads as five thousand.
+
 ### And whether every button asks who is pressing it
 
 ```

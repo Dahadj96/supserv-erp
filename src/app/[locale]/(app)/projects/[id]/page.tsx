@@ -93,6 +93,8 @@ export default async function ProjectPage({
   const format = await getFormatter({ locale });
   const money = (value: string) =>
     `${format.number(Number(value), { maximumFractionDigits: 0 })} ${p.currency}`;
+  /** A rate, as it was typed. `numeric(6,3)` reads back "1.000". */
+  const rate = (value: string | null) => (value === null ? "—" : String(Number(value)));
 
   const urgent = p.cautions.filter((c) => needsAttention(c.state));
   const siteWrite = can(session.role, "works.issue");
@@ -624,7 +626,9 @@ export default async function ProjectPage({
             <dl className="mt-3">
               <div className="flex items-baseline gap-3 border-b border-line-subtle py-2">
                 <dt className="text-tiny text-secondary">{t("project.retention.rate")}</dt>
-                <dd className="ms-auto text-tiny tabular-nums text-ink">{p.retentionPct} %</dd>
+                <dd className="ms-auto text-tiny tabular-nums text-ink">
+                  {rate(p.retentionPct)} %
+                </dd>
               </div>
               <div className="flex items-baseline gap-3 border-b border-line-subtle py-2">
                 <dt className="text-tiny text-secondary">{t("project.retention.held")}</dt>
@@ -722,9 +726,12 @@ export default async function ProjectPage({
                     },
                     {
                       key: "rate",
+                      // `numeric(6,3)` reads back "1.000", and "1.000‰" in a
+                      // French sentence is a thousand per mille to half the
+                      // people who see it.
                       value: t("penalty.rateReads", {
-                        perMille: p.penaltyPerMille ?? "—",
-                        capPct: p.penaltyCapPct ?? "—",
+                        perMille: rate(p.penaltyPerMille),
+                        capPct: rate(p.penaltyCapPct),
                       }),
                     },
                     {

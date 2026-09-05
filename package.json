@@ -27,7 +27,8 @@
     "db:studio": "drizzle-kit studio",
     "worker": "tsx src/jobs/worker.ts",
     "catalogue": "tsx --env-file=.env scripts/seed-catalogue.ts",
-    "audit:forms": "node scripts/audit-forms.mjs"
+    "audit:forms": "node scripts/audit-forms.mjs",
+    "walk": "tsx --env-file=.env scripts/click-the-marche.ts"
   },
   "dependencies": {
     "@dnd-kit/core": "6.3.1",
