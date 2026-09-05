@@ -13,22 +13,30 @@ import {
 /**
  * Screen 81. The interface follows the PERSON. This table is where LAW 4's first
  * axis actually lives — without it the French/English mix comes straight back.
+ *
+ * ONE COLUMN, and it was nine. `date_format`, `number_format`, `week_starts_on`,
+ * `time_zone`, `landing_page`, `signature_fr`, `signature_en`, `away_until` and
+ * `cover_user_id` were dropped on 5 September 2026: nothing wrote them, nothing
+ * read them, and screen 81's own comment said so — "writes `ui_locale` and
+ * nothing else".
+ *
+ * Each had an answer that made it unnecessary rather than unbuilt. Dates and
+ * numbers are formatted from the locale, which is this column. The company is
+ * in Adrar and the week starts on Sunday for all of it. Nobody has asked to
+ * land somewhere other than Aujourd'hui. And a relance is DRAFTED here and sent
+ * from somebody's own mail client — which already has their signature — so a
+ * signature stored here would be a second one, out of date.
+ *
+ * Absence cover was the one with a real workflow behind it, and it is a
+ * notification-routing feature nobody has designed. When it is designed, the
+ * column comes back with the code that reads it. That is the rule
+ * `pnpm audit:schema` exists to hold.
  */
 export const userPreference = pgTable("user_preference", {
   // text, not uuid: this keys on Better Auth's `user.id`, which is a generated
   // string. Every user-scoped table below follows the same rule.
   userId: text("user_id").primaryKey(),
   uiLocale: text("ui_locale").notNull().default("fr"),
-  dateFormat: text("date_format").default("dd/MM/yyyy"),
-  numberFormat: text("number_format").default("fr-DZ"),
-  weekStartsOn: integer("week_starts_on").default(0), // Sunday — the working week in Algeria
-  timeZone: text("time_zone").default("Africa/Algiers"),
-  landingPage: text("landing_page").default("today"),
-  /** The signature follows the EMAIL's language, not the person's interface. */
-  signatureFr: text("signature_fr"),
-  signatureEn: text("signature_en"),
-  awayUntil: date("away_until"),
-  coverUserId: text("cover_user_id"),
 });
 
 export const notificationPref = pgTable(

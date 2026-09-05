@@ -57,8 +57,11 @@ import { readCorpus, readSchemaColumns } from "./lib/schema-columns.mjs";
  *        as its own list rather than counted. What is left is the two classes
  *        that have each cost this ERP a feature — a column nothing mentions,
  *        and a column something reads that nothing can write.
+ *   17 — 5 September 2026, `user_preference`: nine of its ten columns dropped.
+ *        Nothing wrote them, nothing read them, and screen 81's own comment
+ *        said as much. Dropping is a fix — the rule is "wired up or dropped".
  */
-const CEILING = 26;
+const CEILING = 17;
 
 /**
  * Tables that are SOMEBODY ELSE'S to write and read.

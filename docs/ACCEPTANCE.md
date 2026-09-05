@@ -729,3 +729,21 @@ tells you what you want to hear.
    and raw correspondence is not a record. So "any session" is the right answer
    for the PDF route, and "the permission that owns the file" is the right
    answer for the file route, which is what it does.
+
+22. **`user_preference` had ten columns and one of them worked.** Ratchet
+   **26 → 17**, by dropping the nine. Nothing wrote them, nothing read them,
+   and screen 81's own comment already said so: it "writes `ui_locale` and
+   nothing else".
+
+   Each had an answer that made it unnecessary rather than unbuilt. Dates and
+   numbers are formatted from the locale, which is the column that stayed. The
+   company is in Adrar and the week starts on Sunday for all of it. Nobody has
+   asked to land anywhere other than Aujourd'hui. And a relance is DRAFTED here
+   and sent from somebody's own mail client — `markRelanceSent` says it in one
+   line, "recorded, not performed" — so a signature stored here would be a
+   second one, going out of date from the day it was typed.
+
+   Absence cover (`away_until`, `cover_user_id`) was the one with a real
+   workflow behind it, and it is notification routing that nobody has designed.
+   When it is designed the columns come back with the code that reads them,
+   which is the whole rule: **wired up or dropped**.
