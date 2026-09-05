@@ -780,3 +780,52 @@ tells you what you want to hear.
    its callers: nothing here can attach a file to a captured price, and what a
    price has to say for itself is `is_verbal`, `captured_from` and
    `captured_place`.
+
+24. ~~**Thirteen columns nothing was joined to.**~~ **Found and closed on 5 September.**
+   Ratchet **13 → 0 — the audit is a gate now, not a ceiling.** A column this
+   ERP adds and does not use fails the build the day it is added.
+
+   Nine of the thirteen were one table. `saved_view` described screen 79's
+   saved views in a shape they do not have: `SavedViews` renders them,
+   `DataTable` takes them, and the deals list defines two — *Closing this
+   week*, *Nothing sent yet* — in code, with translated names, because they
+   ship with the application. What no screen offers is **saving** one, so
+   nothing ever wrote the table or read it. It comes back the day a list has a
+   "save this question" control, with the code that writes it.
+
+   The other four were decisions nobody had written down.
+   `numbering_series.reserve_on` held `'issue'` on every row: LAW 5 is not a
+   per-series setting, and `document_type.numbering` already says which kinds
+   take a number of ours. `import_batch.source_kind` offered `onedrive`, which
+   needs a Graph permission the app registration does not have and nothing here
+   proposes asking for. `intake_attachment.sha256` waits on a fetcher that is
+   not built — `storageFor().put()` already returns the digest, so it is one
+   line on the day that fetcher lands. `payment.bank_account_id` asked which of
+   our accounts a payment landed in, and there is one. `party.country` was
+   `'DZ'` on every row and no address in this ERP is assembled from parts.
+   `tender_piece.provided_at` restated `file_id` — a piece is provided when it
+   HAS a file, LAW 1. `delivery_detail.departs_at` recorded an hour nobody
+   signed for, and `.site_contact_id` demanded that the man taking delivery at
+   In Salah be an address-book record first, which is how `site_contact_name`
+   beside it ends up blank.
+
+   One went the other way. `merge_log.field_choices` was written on every merge
+   and read by nothing, which made *who decided this?* — the reason the column
+   exists — a question only answerable with psql. The undo banner on screen 82
+   names them now: "TOUATGAZ was merged in" and "TOUATGAZ was merged in and
+   took the payment terms" are different things to be told when you are
+   deciding whether to put it back.
+   See `docs/DECISIONS/2026-09-05-the-last-thirteen.md`.
+
+   - `tests/integration/merge.test.ts` :: "names the fields the merge took, not just that there was one"
+   - `tests/unit/schema-columns.test.ts` :: "finds the columns at all — a parser that found none would pass everything"
+   - `tests/unit/schema-columns.test.ts` :: "does not mistake a column's options for columns of their own"
+   - `tests/unit/schema-columns.test.ts` :: "keeps each column's own declaration, so a database default can be seen"
+   - `tests/unit/schema-columns.test.ts` :: "looks at the application and not at the tests"
+   - `pnpm audit:schema` :: 550 columns across 48 tables, **0 disconnected, ceiling 0**
+
+   The second list that audit prints — thirty-four columns *recorded on the row
+   and shown on no screen* — is deliberately outside the gate. `decided_by`,
+   `confirmed_at`, `delete_reason` are written and never displayed, and that is
+   correct: they are what makes an answer defensible six months later, not what
+   a screen shows today.

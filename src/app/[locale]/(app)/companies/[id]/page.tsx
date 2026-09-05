@@ -135,6 +135,17 @@ export default async function CompanyPage({
                 locale === "fr" ? "fr-DZ" : "en-GB",
               ),
             })}
+            {/* Which fields it took — the answer `field_choices` was written
+                to give and nothing read. "It was merged in" and "it was merged
+                in and took the payment terms" are different things to be told
+                while deciding whether to put it back. */}
+            {reversible.took.length > 0
+              ? ` ${t("merge.tookFields", {
+                  fields: reversible.took
+                    .map((f) => (t.has(`merge.field.${f}`) ? t(`merge.field.${f}`) : f))
+                    .join(", "),
+                })}`
+              : ` ${t("merge.tookNothing")}`}
           </p>
           <form action={unmergeCompanies.bind(null, locale, reversible.mergeLogId, id)}>
             <Button type="submit" variant="secondary">

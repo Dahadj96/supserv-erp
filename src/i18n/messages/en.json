@@ -279,6 +279,8 @@
     "keepThisOne": "keep this one",
     "mergeIn": "merge in",
     "reversible": "{code} — {name} was merged into this record by {who} on {on}. The merge can be put back until {until}: the fields it took return to what they were, and the company becomes a record of its own again.",
+    "tookFields": "Fields taken from the merged record: {fields}.",
+    "tookNothing": "No field was taken: the kept record kept everything.",
     "undo": "Put the merge back",
     "undone": "Merge reversed: the company is a record of its own again and the fields it took have gone back to what they were.",
     "someone": "a user since removed",

@@ -344,6 +344,13 @@
       "when": 1788583645965,
       "tag": "0048_lumpy_tyger_tiger",
       "breakpoints": true
+    },
+    {
+      "idx": 49,
+      "version": "7",
+      "when": 1788584897045,
+      "tag": "0049_curly_genesis",
+      "breakpoints": true
     }
   ]
 }

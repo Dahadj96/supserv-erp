@@ -16,8 +16,13 @@ export const importBatch = pgTable("import_batch", {
 
   filename: text("filename").notNull(),
   sheetName: text("sheet_name"),
-  /** upload | onedrive. OneDrive discovery needs Graph Files.Read — see below. */
-  sourceKind: text("source_kind").notNull().default("upload"),
+  /*
+    There was a `source_kind` here — `upload | onedrive` — `'upload'` on every
+    row and read by nothing. OneDrive discovery needs Graph `Files.Read`, which
+    is not granted and not asked for; every import in this ERP is a file
+    somebody chose. It comes back with that permission and the screen that uses
+    it. Dropped 5 September 2026.
+  */
 
   /**
    * What the sheet becomes: party | contact | person | deal_line | bpu_erratum.

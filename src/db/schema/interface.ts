@@ -7,7 +7,6 @@ import {
   primaryKey,
   text,
   time,
-  uuid,
 } from "drizzle-orm/pg-core";
 
 /**
@@ -53,18 +52,23 @@ export const notificationPref = pgTable(
   (t) => [primaryKey({ columns: [t.userId, t.event] })],
 );
 
-/** Screen 79 — a saved view is a named question, not a query. */
-export const savedView = pgTable("saved_view", {
-  id: uuid("id").primaryKey().defaultRandom(),
-  entity: text("entity").notNull(),
-  name: text("name").notNull(),
-  filter: jsonb("filter").notNull(),
-  sort: jsonb("sort"),
-  columns: jsonb("columns"),
-  ownerId: text("owner_id"),
-  shared: boolean("shared").notNull().default(false),
-  isDefaultFor: text("is_default_for"),
-});
+/*
+  THERE WAS A `saved_view` TABLE HERE, and screen 79's saved views are built
+  without it.
+
+  `SavedViews` renders them, `DataTable` takes them, and the deals list defines
+  two — "Closing this week", "Nothing sent yet" — in code, with translated names
+  because they ship with the app. What no screen offers is SAVING one: nothing
+  ever wrote this table or read it, so its nine columns described a feature that
+  exists in a different shape.
+
+  Dropped 5 September 2026. It comes back the day a list has a "save this
+  question" control, together with the code that writes it — which is the rule
+  `pnpm audit:schema` holds: wired up or dropped. LAW 4 note for that day: a
+  view a person types keeps the language they typed it in and is never
+  auto-translated, which is why the seeded two carry keys and a saved one would
+  carry a name.
+*/
 
 export const tablePreference = pgTable(
   "table_preference",

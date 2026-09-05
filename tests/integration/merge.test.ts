@@ -217,6 +217,15 @@ describe("screen 82 — a merge can be put back", () => {
     expect(offer?.reversibleUntil).toBeTruthy();
   });
 
+  it("names the fields the merge took, not just that there was one", async () => {
+    // `field_choices` was written on every merge and read by nothing. Only the
+    // fields the RETIRED row won are named: a field the kept row already held
+    // was not taken from anywhere, and listing it would say the merge changed
+    // something it did not.
+    const offer = await reversibleMerge(keptId);
+    expect(offer?.took).toEqual(["paymentTerms"]);
+  });
+
   it("says nothing once the thirty days are up", async () => {
     const row = await log();
     const until = row?.reversibleUntil as Date;

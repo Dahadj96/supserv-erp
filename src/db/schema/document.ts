@@ -22,8 +22,14 @@ export const numberingSeries = pgTable("numbering_series", {
   pattern: text("pattern").notNull(), // SUP/{YYYY}/{####}
   reset: text("reset").notNull().default("yearly"),
   nextValue: integer("next_value").notNull().default(1),
-  /** LAW 5 — a number is allocated at ISSUE. Never on a draft. */
-  reserveOn: text("reserve_on").notNull().default("issue"),
+  /*
+    There was a `reserve_on` here, `'issue'` on every row and read by nothing.
+    LAW 5 is not a per-series setting: a number is allocated at ISSUE, full
+    stop, and `document_type.numbering` already says which kinds take one of
+    ours at all (`reservedOnIssue`) and which carry the counterparty's. A column
+    offering a second answer to a question the catalogue has already answered is
+    a column that can disagree with it. Dropped 5 September 2026.
+  */
 });
 
 /**

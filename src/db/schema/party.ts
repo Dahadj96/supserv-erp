@@ -21,9 +21,16 @@ export const party = pgTable("party", {
   email: text("email"),
   phone: text("phone"),
 
+  /*
+    ONE FREE-TEXT ADDRESS, and a wilaya beside it because that is the axis the
+    screens actually use — who is near In Salah, which DRE issued the marché.
+
+    There was a `country` column here, `'DZ'` on every row and read by nothing:
+    no address is ever assembled from parts, and a foreign supplier's country
+    is written in the address like everything else. Dropped 5 September 2026.
+  */
   address: text("address"),
   wilaya: text("wilaya"),
-  country: text("country").default("DZ").notNull(),
 
   // LAW 4 — documents follow the counterparty, not the person typing
   docLocale: text("doc_locale").notNull().default("fr"),

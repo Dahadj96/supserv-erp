@@ -202,12 +202,21 @@ describe("screen 62 — bring what you already have", () => {
     // Four companies plus the one contact that had a name.
     expect(imported).toBe(5);
 
-    const rows = await db.select().from(party).where(like(party.legalName, "TEST IMPORT %"));
+    // Sorted by code, which nextCode allocates in sheet order. TOUATGAZ is in
+    // the sheet twice and only the first row carries a NIF, so an unsorted
+    // find() reads whichever copy the database happens to hand back first.
+    const rows = (await db.select().from(party).where(like(party.legalName, "TEST IMPORT %"))).sort(
+      (a, b) => a.code.localeCompare(b.code),
+    );
     expect(rows).toHaveLength(4);
     expect(rows.every((r) => /^CL-\d{4}$/.test(r.code))).toBe(true);
 
-    const touatgaz = rows.find((r) => r.legalName === "TEST IMPORT TOUATGAZ");
+    const both = rows.filter((r) => r.legalName === "TEST IMPORT TOUATGAZ");
+    expect(both, "the duplicate came in as its own company, flagged not dropped").toHaveLength(2);
+
+    const touatgaz = both[0];
     expect(touatgaz?.nif, "fifteen digits, kept").toBe("000116001234567");
+    expect(both[1]?.nif, "the second line had none and none was invented").toBeNull();
 
     const gcb = rows.find((r) => r.legalName === "TEST IMPORT GCB");
     expect(gcb?.nif, "ten digits — imported blank, never stored wrong").toBeNull();

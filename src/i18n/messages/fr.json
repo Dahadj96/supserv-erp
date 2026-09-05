@@ -279,6 +279,8 @@
     "keepThisOne": "conserver celle-ci",
     "mergeIn": "à fusionner",
     "reversible": "{code} — {name} a été fusionnée dans cette fiche par {who} le {on}. La fusion peut être annulée jusqu'au {until} : les champs repris reviennent à ce qu'ils étaient et la société redevient une fiche à part entière.",
+    "tookFields": "Champs repris de la fiche fusionnée : {fields}.",
+    "tookNothing": "Aucun champ n'a été repris : la fiche conservée a tout gardé.",
     "undo": "Annuler la fusion",
     "undone": "Fusion annulée : la société a été rétablie et les champs repris sont revenus à ce qu'ils étaient.",
     "someone": "un utilisateur retiré depuis",

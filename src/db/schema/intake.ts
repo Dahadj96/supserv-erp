@@ -122,8 +122,7 @@ export const intakeMessage = pgTable("intake_message", {
 
 /**
  * A file that arrived with a message. The bytes live in storage; this row is
- * how the system knows the file exists, and the sha256 is how it knows the same
- * attachment forwarded twice is the same attachment.
+ * how the system knows the file exists.
  */
 export const intakeAttachment = pgTable("intake_attachment", {
   id: uuid("id").primaryKey().defaultRandom(),
@@ -135,7 +134,13 @@ export const intakeAttachment = pgTable("intake_attachment", {
   sizeBytes: integer("size_bytes"),
   /** Where the bytes are. Null while the file is still being fetched. */
   storagePath: text("storage_path"),
-  sha256: text("sha256"),
+  /*
+    There was a `sha256` here and nothing wrote it, because the fetcher that
+    would — the one that pulls an attachment out of Outlook — is not built.
+    `storageFor().put()` already returns the digest, so the column is one line
+    on the day that fetcher lands, and it lands with the code that fills it.
+    Dropped 5 September 2026.
+  */
   /** cv | quote | invoice | delivery_note | tender_dossier | unknown */
   looksLike: text("looks_like"),
   createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),

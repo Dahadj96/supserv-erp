@@ -32,8 +32,9 @@ import { readCorpus, readSchemaColumns } from "./lib/schema-columns.mjs";
  *
  * A RATCHET, not a target. The same discipline as the query budgets: the
  * number is what was measured, it fails the build when it grows, and every
- * commit that lowers it lowers this line too. When it reaches nought this
- * script joins `pnpm check` as a gate rather than a ceiling.
+ * commit that lowers it lowers this line too. It reached nought in a day, so
+ * it is a gate now — but the log below stays, because the number going up is
+ * the thing worth noticing and the log is what makes that legible.
  *
  *   56 — 5 September 2026, the day it was written
  *   54 — 5 September 2026, `project.physical_by` and `physical_at`: who gave
@@ -65,8 +66,23 @@ import { readCorpus, readSchemaColumns } from "./lib/schema-columns.mjs";
  *        will never exist. It owns its bytes now and screen 77 can attach one.
  *        `price_quote.evidence_file_id`, written as `null` by both callers,
  *        dropped in the same commit.
+ *    0 — 5 September 2026. The last thirteen, in one commit: `saved_view` (a
+ *        table, a message key and no screen), `numbering_series.reserve_on`
+ *        (`'issue'` on every row — LAW 5 is not a per-series setting),
+ *        `import_batch.source_kind` (OneDrive discovery needs a Graph
+ *        permission nobody has asked for), `intake_attachment.sha256` (the
+ *        fetcher that would write it is not built), `payment.bank_account_id`
+ *        (one account), `party.country` (`'DZ'`, and no address is assembled
+ *        from parts), `tender_piece.provided_at` (a piece is provided when it
+ *        HAS a file), `delivery_detail.departs_at` and `.site_contact_id`.
+ *        And `merge_log.field_choices` was wired up rather than dropped: the
+ *        banner names the fields a merge took, which is the question that
+ *        column was written to answer.
+ *
+ * THE CEILING IS NOUGHT, so this is a gate now and not a ratchet: any column
+ * this ERP adds and does not use fails the build the day it is added.
  */
-const CEILING = 13;
+const CEILING = 0;
 
 /**
  * Tables that are SOMEBODY ELSE'S to write and read.

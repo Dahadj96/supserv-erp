@@ -56,8 +56,14 @@ export const payment = pgTable("payment", {
    * verbatim and never tidied.
    */
   bankRef: text("bank_ref"),
-  /** Which of our accounts it landed in. */
-  bankAccountId: uuid("bank_account_id"),
+  /*
+    There was a `bank_account_id` here — "which of our accounts it landed in" —
+    mentioned nowhere in the application. `/setup/bank` holds the company's
+    account and screen 48 records a payment against a client, not against one of
+    ours. It comes back the day there are two accounts and somebody has to
+    reconcile them separately; today it would be a column with one possible
+    value that nothing fills in. Dropped 5 September 2026.
+  */
 
   note: text("note"),
 

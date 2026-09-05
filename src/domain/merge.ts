@@ -289,6 +289,16 @@ export type ReversibleMerge = {
   mergedAt: Date;
   reversibleUntil: Date | null;
   mergedByName: string | null;
+  /**
+   * The fields the merge TOOK from the retired record, by name.
+   *
+   * `field_choices` was written on every merge and read by nothing, which made
+   * "who decided this?" — the reason the column exists — a question only
+   * answerable with psql. The banner names them, because "TOUATGAZ was merged
+   * in" and "TOUATGAZ was merged in and took the payment terms" are different
+   * things to be told when you are deciding whether to put it back.
+   */
+  took: string[];
 };
 
 /**
@@ -317,6 +327,7 @@ export async function reversibleMerge(
       mergedAt: mergeLog.mergedAt,
       reversibleUntil: mergeLog.reversibleUntil,
       mergedByName: user.name,
+      fieldChoices: mergeLog.fieldChoices,
     })
     .from(mergeLog)
     .innerJoin(party, eq(party.id, mergeLog.keptId))
@@ -336,7 +347,15 @@ export async function reversibleMerge(
 
   if (!row) return null;
   if (row.reversibleUntil && row.reversibleUntil.getTime() < now.getTime()) return null;
-  return row;
+
+  const { fieldChoices, ...rest } = row;
+  const choices = (fieldChoices ?? {}) as FieldChoices;
+  return {
+    ...rest,
+    took: Object.entries(choices)
+      .filter(([, winner]) => winner === "retired")
+      .map(([field]) => field),
+  };
 }
 
 /**

@@ -156,9 +156,14 @@ export const tenderPiece = pgTable("tender_piece", {
    */
   credentialKey: text("credential_key"),
 
-  /** For the tender-specific ones: the file that satisfies it. */
+  /**
+   * For the tender-specific ones: the file that satisfies it.
+   *
+   * There was a `provided_at` beside it, mentioned nowhere in the application
+   * and dropped on 5 September 2026. A piece is provided when it HAS a file —
+   * one fact, computed, and `added_at` already says when the row appeared.
+   */
   fileId: text("file_id"),
-  providedAt: timestamp("provided_at", { withTimezone: true }),
 
   note: text("note"),
   addedBy: text("added_by"),

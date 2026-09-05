@@ -1,6 +1,5 @@
 import { date, integer, numeric, pgTable, text, timestamp, uuid } from "drizzle-orm/pg-core";
 import { document } from "./document";
-import { person } from "./party";
 
 /**
  * Screens 49 and 14 — the bon de livraison.
@@ -38,12 +37,23 @@ export const deliveryDetail = pgTable("delivery_detail", {
   carrier: text("carrier"),
   vehicle: text("vehicle"),
   driver: text("driver"),
-  departsAt: timestamp("departs_at", { withTimezone: true }),
+  /*
+    There was a `departs_at` here, mentioned nowhere in the application. The BL
+    carries a date — the document's own `issued_on` — and the hour a lorry left
+    Adrar is not a fact anybody signed for. It comes back if a screen ever asks
+    for it. Dropped 5 September 2026.
+  */
 
   /* ---- Where it goes, and who takes it. ---- */
   deliveryAddress: text("delivery_address"),
-  siteContactId: uuid("site_contact_id").references(() => person.id),
-  /** Kept verbatim when the person on site is not in the address book. */
+  /**
+   * The person on site, IN WORDS, and only in words.
+   *
+   * There was a `site_contact_id` beside this pointing at the address book,
+   * mentioned nowhere. The man who takes delivery at In Salah is whoever is
+   * standing there, and requiring him to be a record first is how the field
+   * ends up blank. `receivedBy` below is what he actually wrote.
+   */
   siteContactName: text("site_contact_name"),
 
   /**
