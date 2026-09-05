@@ -1,13 +1,4 @@
-import {
-  boolean,
-  date,
-  numeric,
-  pgTable,
-  primaryKey,
-  text,
-  timestamp,
-  uuid,
-} from "drizzle-orm/pg-core";
+import { date, numeric, pgTable, primaryKey, text, timestamp, uuid } from "drizzle-orm/pg-core";
 
 /**
  * One table for every organisation we deal with. A company that is both a client
@@ -161,6 +152,13 @@ export const person = pgTable("person", {
   createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
 });
 
+/**
+ * A man's tickets — habilitation électrique B1V, soudage arc, permis CACES.
+ *
+ * The substance of screen 25 and the reason screen 16's crew panel can say
+ * whether somebody may work tomorrow. Two facts, and they are separate:
+ * what the paper SAYS, and whether anybody has looked at the original.
+ */
 export const personCertification = pgTable("person_certification", {
   id: uuid("id").primaryKey().defaultRandom(),
   personId: uuid("person_id")
@@ -171,5 +169,21 @@ export const personCertification = pgTable("person_certification", {
   issuedBy: text("issued_by"),
   issuedOn: date("issued_on"),
   expiresOn: date("expires_on"),
-  isVerified: boolean("is_verified").notNull().default(false),
+
+  /**
+   * WHO CHECKED IT, AND WHEN — not a boolean.
+   *
+   * This was `is_verified boolean not null default false`, and every screen in
+   * the ERP showed "Non contrôlée" for ever, because nothing anywhere could
+   * set it. LAW 2: a fact needs a confirmer, and "checked" is exactly the kind
+   * of claim that needs one — a photocopy somebody filed is not a ticket
+   * anybody has seen, and the site that turns a man away does not care which
+   * of the two it was. Verified is computed: `verifiedAt !== null`.
+   */
+  verifiedBy: text("verified_by"),
+  verifiedAt: timestamp("verified_at", { withTimezone: true }),
+
+  /** Who typed the ticket in, and when. */
+  recordedBy: text("recorded_by"),
+  createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
 });

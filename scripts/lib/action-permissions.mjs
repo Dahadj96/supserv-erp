@@ -50,7 +50,10 @@ function permissionsIn(body) {
 }
 
 export function readActionPermissions() {
-  const files = execSync('git grep -l "\\"use server\\"" -- src')
+  // `--untracked`: a brand-new action file is exactly the one most worth
+  // auditing, and without this it is invisible until somebody stages it —
+  // which is after the review, not before.
+  const files = execSync('git grep -l --untracked "\\"use server\\"" -- src')
     .toString()
     .trim()
     .split(/\r?\n/)

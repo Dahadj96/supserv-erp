@@ -616,3 +616,40 @@ tells you what you want to hear.
    for. Two checks reported green on the sign-in screen before a `page.fill`
    timed out on a form that was never going to be there. It now refuses to keep
    walking when it is signed out.
+
+   **50 today.** The audit's second catch, and a bigger one:
+   `person_certification` was read by four screens and written by nothing in
+   the application. See item 19.
+
+19. ~~**A man's tickets could not be typed in.**~~ **Found and closed on 5
+   September**, by the audit above. `person_certification` is read by screen
+   25's table, by screen 51's list (the soonest-expiring ticket on every row),
+   by screens 24/26 (a confirmed welder stops counting when his habilitation
+   lapses before the start date) and by screen 16's crew panel (whether a man
+   may work tomorrow). There was **no insert anywhere in `src/`** — every write
+   in the repository was a test fixture. Four screens read a table nothing
+   could fill.
+
+   And `is_verified` was a `boolean not null default false` rendered as a badge
+   that nothing could set, so every habilitation in the company read "Non
+   contrôlée" for ever. A signal that never changes is worse than no signal: it
+   teaches people to stop reading it. It is now `verified_by` + `verified_at`,
+   and "checked" is computed — LAW 2, a fact with a confirmer against it — with
+   the check withdrawable, because one given in error with no way back is how a
+   wrong fact becomes permanent. While a ticket is unchecked the row says who
+   typed it in, which is the one moment that answers a question somebody has:
+   who do I ask for the original. See
+   `docs/DECISIONS/2026-09-05-a-mans-tickets.md`.
+
+   - `tests/integration/recruitment.test.ts` :: "records one against the person, with who typed it"
+   - `tests/integration/recruitment.test.ts` :: "takes a ticket with no expiry, because a diploma does not have one"
+   - `tests/integration/recruitment.test.ts` :: "refuses a ticket that expired before it was issued"
+   - `tests/integration/recruitment.test.ts` :: "is not checked until somebody says they have seen the original"
+   - `tests/integration/recruitment.test.ts` :: "lets a check be withdrawn, because one given in error must not be permanent"
+   - `tests/integration/recruitment.test.ts` :: "refuses to check a ticket that does not exist"
+
+   It also found a hole in the action audits. `pnpm audit:actions` and
+   `tests/unit/action-permissions.test.ts` share one reader, and it listed the
+   files with `git grep -l` — **tracked files only**. Both new server actions
+   were invisible to both until somebody staged them, which is after the review
+   and not before. The reader now passes `--untracked`.

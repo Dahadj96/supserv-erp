@@ -184,3 +184,122 @@ export async function createPerson(input: PersonInput, actorId: string) {
 
   return created?.id as string;
 }
+
+/* ── A man's tickets ─────────────────────────────────────────────────────── */
+
+/**
+ * Screen 25's certifications, which nothing in this ERP could write.
+ *
+ * `person_certification` has been read since screen 25 was built — the table on
+ * the candidate, the soonest-expiring ticket on every row of screen 51, and the
+ * crew panel on screen 16 that says whether a man may work tomorrow. There was
+ * no insert anywhere in the application. Every one of those reads was against a
+ * table only a test fixture had ever written to, which is to say: the company's
+ * welders had habilitations and the ERP had nowhere to type them.
+ */
+export class CertificationRefused extends Error {
+  constructor(readonly reason: "noSuchCertification" | "expiresBeforeIssued") {
+    super(reason);
+    this.name = "CertificationRefused";
+  }
+}
+
+export const certificationInput = z.object({
+  kind: z.string().trim().min(2, "kindRequired"),
+  number: z.string().trim().optional().or(z.literal("")),
+  issuedBy: z.string().trim().optional().or(z.literal("")),
+  issuedOn: z.string().trim().optional().or(z.literal("")),
+  /**
+   * Blank is allowed and MEANS SOMETHING: a diploma does not expire. Screen 25
+   * says "n'expire pas" for it rather than leaving the cell empty, because an
+   * empty cell reads as a date nobody has typed yet.
+   */
+  expiresOn: z.string().trim().optional().or(z.literal("")),
+});
+
+export type CertificationInput = z.infer<typeof certificationInput>;
+
+export async function saveCertification(
+  personId: string,
+  input: CertificationInput,
+  actorId: string,
+): Promise<string> {
+  const data = certificationInput.parse(input);
+  const issuedOn = blank(data.issuedOn);
+  const expiresOn = blank(data.expiresOn);
+
+  // A ticket that expired before it was issued is a typo, and one the screen
+  // would otherwise render as a man permanently barred from site.
+  if (issuedOn && expiresOn && expiresOn < issuedOn) {
+    throw new CertificationRefused("expiresBeforeIssued");
+  }
+
+  const [created] = await db
+    .insert(personCertification)
+    .values({
+      personId,
+      kind: data.kind,
+      number: blank(data.number),
+      issuedBy: blank(data.issuedBy),
+      issuedOn,
+      expiresOn,
+      recordedBy: actorId,
+    })
+    .returning({ id: personCertification.id });
+
+  await db.insert(auditEntry).values({
+    actorId,
+    actorKind: "user",
+    entity: "person_certification",
+    entityId: created?.id ?? "",
+    action: "create",
+    after: { personId, kind: data.kind, number: blank(data.number), expiresOn },
+    sourceScreen: "25",
+  });
+
+  return created?.id as string;
+}
+
+/**
+ * "I have seen the original." — or the withdrawal of it.
+ *
+ * Not a boolean somebody sets: the row keeps who said so and when, and the
+ * screen computes "checked" from the date. Withdrawable, because a confirmation
+ * given in error with no way back is how a wrong fact becomes permanent — and
+ * both directions are in the audit trail.
+ */
+export async function setCertificationVerified(opts: {
+  certificationId: string;
+  verified: boolean;
+  actorId: string;
+  now?: Date;
+}): Promise<void> {
+  const [before] = await db
+    .select({ id: personCertification.id, verifiedAt: personCertification.verifiedAt })
+    .from(personCertification)
+    .where(eq(personCertification.id, opts.certificationId))
+    .limit(1);
+  if (!before) throw new CertificationRefused("noSuchCertification");
+
+  await db.transaction(async (tx) => {
+    await tx
+      .update(personCertification)
+      .set(
+        opts.verified
+          ? { verifiedBy: opts.actorId, verifiedAt: opts.now ?? new Date() }
+          : { verifiedBy: null, verifiedAt: null },
+      )
+      .where(eq(personCertification.id, opts.certificationId));
+
+    await tx.insert(auditEntry).values({
+      actorId: opts.actorId,
+      actorKind: "user",
+      entity: "person_certification",
+      entityId: opts.certificationId,
+      action: "update",
+      before: { verifiedAt: before.verifiedAt?.toISOString() ?? null },
+      after: { verified: opts.verified },
+      sourceScreen: "25",
+    });
+  });
+}

@@ -3563,6 +3563,7 @@
       "party": "Société",
       "payment": "Paiement",
       "person": "Personne",
+      "person_certification": "Habilitation",
       "price_quote": "Prix relevé",
       "relance": "Relance",
       "sourcing_request": "Consultation fournisseur",
@@ -4371,6 +4372,30 @@
       "email": "E-mail",
       "employer": "Employeur",
       "received": "Reçu le"
+    },
+    "sawIt": "J'ai vu l'original",
+    "unsee": "Retirer le contrôle",
+    "checkedBy": "Contrôlée par {who}, le {on}.",
+    "typedBy": "Saisie par {who}, le {on} — personne n'a encore vu l'original.",
+    "someone": "un utilisateur retiré depuis",
+    "f": {
+      "kind": "Habilitation",
+      "kindPlaceholder": "Habilitation électrique B1V, soudage arc, CACES…",
+      "issuedOn": "Délivrée le",
+      "expiresOn": "Expire le",
+      "why": "Laisser la date d'expiration vide veut dire que le titre n'expire pas — un diplôme. La saisir engage l'écran 16 : un homme dont l'habilitation expire avant la fin du chantier y apparaît en avertissement.",
+      "add": "Ajouter l'habilitation"
+    },
+    "recorded": {
+      "certification": "Enregistré : l'habilitation.",
+      "checked": "Enregistré : le contrôle du titre."
+    },
+    "error": {
+      "notAllowed": "Votre rôle ne peut pas enregistrer ceci.",
+      "kindRequired": "Dites de quelle habilitation il s'agit.",
+      "expiresBeforeIssued": "Une habilitation ne peut pas expirer avant d'avoir été délivrée.",
+      "noSuchCertification": "Cette habilitation n'existe plus.",
+      "invalid": "Cette saisie n'est pas valide."
     }
   },
   "requests": {

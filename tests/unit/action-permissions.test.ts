@@ -58,6 +58,10 @@ const EXPECTED: Record<string, string[]> = {
   "deals/[id]/timeline/actions.ts:addNoteAction": ["*write"],
   "deals/new/actions.ts:createAction": ["*write"],
   "people/actions.ts:addPerson": ["*write"],
+  // A man's tickets, for the same reason his name is: a chef de chantier who
+  // has just been handed a welder's habilitation must be able to write it down.
+  "candidates/[id]/actions.ts:saveCertificationAction": ["*write"],
+  "candidates/[id]/actions.ts:verifyCertificationAction": ["*write"],
   // Screen 74, on a phone: writing down what a shop charges is a note anybody
   // who works here may take. It is marked verbal and confirms nothing.
   "prices/new/actions.ts:capturePriceAction": ["*write"],

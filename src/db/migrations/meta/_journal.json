@@ -295,6 +295,20 @@
       "when": 1788566914255,
       "tag": "0041_penalty_base",
       "breakpoints": true
+    },
+    {
+      "idx": 42,
+      "version": "7",
+      "when": 1788578175351,
+      "tag": "0042_material_leopardon",
+      "breakpoints": true
+    },
+    {
+      "idx": 43,
+      "version": "7",
+      "when": 1788578191607,
+      "tag": "0043_productive_imperial_guard",
+      "breakpoints": true
     }
   ]
 }

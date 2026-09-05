@@ -1,5 +1,7 @@
 import { and, asc, desc, eq, inArray, isNull, ne, sql } from "drizzle-orm";
+import { alias } from "drizzle-orm/pg-core";
 import { db } from "@/db";
+import { user } from "@/db/schema/auth";
 import { auditEntry } from "@/db/schema/control";
 import { party, person, personCertification } from "@/db/schema/party";
 import { project } from "@/db/schema/project";
@@ -531,6 +533,9 @@ export async function cancelRequest(opts: {
   });
 }
 
+/** Two different people touch one ticket: whoever typed it, whoever saw it. */
+const recorder = alias(user, "recorder");
+
 /** Screen 25 — one candidate, with what they are being considered for. */
 export async function getCandidate(id: string, now = new Date()) {
   const [row] = await db
@@ -558,9 +563,32 @@ export async function getCandidate(id: string, now = new Date()) {
 
   if (!row) return null;
 
+  /*
+    "Checked" is a person having seen the original, so the row carries who and
+    when and the screen computes the rest. It was `is_verified boolean` with
+    nothing anywhere able to set it, so every ticket in the company read "Non
+    contrôlée" for ever. LEFT on the user, like the audit trail: a check made by
+    somebody who has since left is still a check that was made.
+  */
   const certifications = await db
-    .select()
+    .select({
+      id: personCertification.id,
+      kind: personCertification.kind,
+      number: personCertification.number,
+      issuedBy: personCertification.issuedBy,
+      issuedOn: personCertification.issuedOn,
+      expiresOn: personCertification.expiresOn,
+      verifiedAt: personCertification.verifiedAt,
+      verifiedByName: user.name,
+      // Who typed it in. Shown only while the ticket is UNCHECKED, because
+      // that is the one moment it answers a question somebody actually has:
+      // who do I ask for the original.
+      recordedByName: recorder.name,
+      recordedAt: personCertification.createdAt,
+    })
     .from(personCertification)
+    .leftJoin(user, eq(user.id, personCertification.verifiedBy))
+    .leftJoin(recorder, eq(recorder.id, personCertification.recordedBy))
     .where(eq(personCertification.personId, id))
     .orderBy(asc(personCertification.expiresOn));
 
@@ -587,6 +615,10 @@ export async function getCandidate(id: string, now = new Date()) {
     certifications: certifications.map((c) => ({
       ...c,
       daysLeft: daysUntil(c.expiresOn, now),
+      /** Computed, never stored. A date is the fact; this is how it reads. */
+      verified: c.verifiedAt !== null,
+      verifiedOn: c.verifiedAt ? c.verifiedAt.toISOString().slice(0, 10) : null,
+      recordedOn: c.recordedAt ? c.recordedAt.toISOString().slice(0, 10) : null,
     })),
     considered,
   };

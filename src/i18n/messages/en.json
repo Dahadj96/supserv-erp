@@ -3563,6 +3563,7 @@
       "party": "Company",
       "payment": "Payment",
       "person": "Person",
+      "person_certification": "Certification",
       "price_quote": "Captured price",
       "relance": "Reminder",
       "sourcing_request": "Sourcing request",
@@ -4371,6 +4372,30 @@
       "email": "Email",
       "employer": "Employer",
       "received": "Received"
+    },
+    "sawIt": "I have seen the original",
+    "unsee": "Withdraw the check",
+    "checkedBy": "Checked by {who} on {on}.",
+    "typedBy": "Typed in by {who} on {on} — nobody has seen the original yet.",
+    "someone": "a user since removed",
+    "f": {
+      "kind": "Certification",
+      "kindPlaceholder": "Habilitation électrique B1V, arc welding, CACES…",
+      "issuedOn": "Issued on",
+      "expiresOn": "Expires on",
+      "why": "Leaving the expiry blank means the ticket does not expire — a diploma. Filling it in reaches screen 16: a man whose certification lapses before the site finishes shows there as a warning.",
+      "add": "Add the certification"
+    },
+    "recorded": {
+      "certification": "Recorded: the certification.",
+      "checked": "Recorded: the check on the ticket."
+    },
+    "error": {
+      "notAllowed": "Your role may not record this.",
+      "kindRequired": "Say which certification this is.",
+      "expiresBeforeIssued": "A certification cannot expire before it was issued.",
+      "noSuchCertification": "That certification no longer exists.",
+      "invalid": "That entry is not valid."
     }
   },
   "requests": {

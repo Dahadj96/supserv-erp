@@ -1,9 +1,13 @@
 import { redirect as hardRedirect, notFound } from "next/navigation";
 import { getFormatter, getTranslations, setRequestLocale } from "next-intl/server";
+import { INPUT } from "@/app/[locale]/(app)/setup/field";
+import { canWrite } from "@/auth/can";
 import { getSession } from "@/auth/session";
 import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
 import { getCandidate } from "@/domain/recruitment/store";
 import { Link } from "@/i18n/navigation";
+import { saveCertificationAction, verifyCertificationAction } from "./actions";
 
 /**
  * Screen 25 — one candidate.
@@ -20,10 +24,13 @@ export const dynamic = "force-dynamic";
 
 export default async function CandidatePage({
   params,
+  searchParams,
 }: {
   params: Promise<{ locale: string; id: string }>;
+  searchParams: Promise<{ recorded?: string; error?: string }>;
 }) {
   const { locale, id } = await params;
+  const { recorded, error } = await searchParams;
   setRequestLocale(locale);
   const t = await getTranslations();
 
@@ -52,6 +59,17 @@ export default async function CandidatePage({
           {` · ${t("candidate.arrivedBy", { source: t(`people.source.${candidate.source}`) })}`}
         </p>
       </div>
+
+      {recorded ? (
+        <p className="mx-4 md:mx-7 mt-4 rounded-[var(--radius-control)] bg-good-bg px-4 py-2.5 text-tiny text-good-ink">
+          {t(`candidate.recorded.${recorded}`)}
+        </p>
+      ) : null}
+      {error ? (
+        <p className="mx-4 md:mx-7 mt-4 rounded-[var(--radius-control)] bg-critical-bg px-4 py-2.5 text-tiny text-critical-ink">
+          {t(`candidate.error.${error}`)}
+        </p>
+      ) : null}
 
       <div className="grid max-w-[1200px] grid-cols-1 md:grid-cols-3 items-start gap-5 px-4 md:px-7 py-6">
         <div className="col-span-1 md:col-span-2 flex flex-col gap-5">
@@ -117,16 +135,106 @@ export default async function CandidatePage({
                       <td className="px-5 py-2.5">
                         {/* LAW 2. A ticket somebody photocopied is not a ticket
                             anybody has checked, and a site that turns a man
-                            away does not care which of the two it was. */}
-                        <Badge tone={cert.isVerified ? "good" : "warning"}>
-                          {t(cert.isVerified ? "candidate.verified" : "candidate.unverified")}
-                        </Badge>
+                            away does not care which of the two it was.
+
+                            The badge said "Non contrôlée" on every ticket in
+                            the company for as long as this screen existed:
+                            `is_verified` was a boolean nothing could set. It is
+                            now a person and a date, and the button below is how
+                            they get there. */}
+                        <form
+                          action={verifyCertificationAction.bind(null, locale, candidate.id)}
+                          className="flex flex-wrap items-center gap-2"
+                        >
+                          <input type="hidden" name="certificationId" value={cert.id} />
+                          <input
+                            type="hidden"
+                            name="verified"
+                            value={cert.verified ? "no" : "yes"}
+                          />
+                          <Badge tone={cert.verified ? "good" : "warning"}>
+                            {t(cert.verified ? "candidate.verified" : "candidate.unverified")}
+                          </Badge>
+                          <Button
+                            type="submit"
+                            variant="ghost"
+                            disabledReason={
+                              canWrite(session.role) ? undefined : t("documents.notAllowed")
+                            }
+                          >
+                            {t(cert.verified ? "candidate.unsee" : "candidate.sawIt")}
+                          </Button>
+                          <span className="basis-full text-micro text-muted">
+                            {cert.verified
+                              ? t("candidate.checkedBy", {
+                                  who: cert.verifiedByName ?? t("candidate.someone"),
+                                  on: cert.verifiedOn ?? "",
+                                })
+                              : /* Unchecked: who to go and ask for the paper. */
+                                t("candidate.typedBy", {
+                                  who: cert.recordedByName ?? t("candidate.someone"),
+                                  on: cert.recordedOn ?? "",
+                                })}
+                          </span>
+                        </form>
                       </td>
                     </tr>
                   ))}
                 </tbody>
               </table>
             )}
+
+            {/*
+              THE TABLE ABOVE COULD ONLY EVER BE EMPTY. Screen 25 read
+              `person_certification` from the day it was built, screen 51 puts
+              the soonest-expiring ticket on every row, and screen 16's crew
+              panel decides off it whether a man may work tomorrow — and there
+              was no insert anywhere in the application. This is it.
+            */}
+            <form
+              action={saveCertificationAction.bind(null, locale, candidate.id)}
+              className="grid grid-cols-1 sm:grid-cols-2 gap-3 border-t border-line-subtle px-5 py-4"
+            >
+              <label className="sm:col-span-2">
+                <span className="text-micro text-secondary">{t("candidate.f.kind")}</span>
+                <input
+                  name="kind"
+                  required
+                  placeholder={t("candidate.f.kindPlaceholder")}
+                  className={`${INPUT} mt-1`}
+                />
+              </label>
+              <label>
+                <span className="text-micro text-secondary">{t("candidate.column.number")}</span>
+                <input name="number" className={`${INPUT} mt-1`} />
+              </label>
+              <label>
+                <span className="text-micro text-secondary">{t("candidate.column.issuedBy")}</span>
+                <input name="issuedBy" className={`${INPUT} mt-1`} />
+              </label>
+              <label>
+                <span className="text-micro text-secondary">{t("candidate.f.issuedOn")}</span>
+                <input type="date" name="issuedOn" className={`${INPUT} mt-1`} />
+              </label>
+              <label>
+                <span className="text-micro text-secondary">{t("candidate.f.expiresOn")}</span>
+                <input type="date" name="expiresOn" className={`${INPUT} mt-1`} />
+              </label>
+              <p className="sm:col-span-2 text-micro leading-relaxed text-muted">
+                {t("candidate.f.why")}
+              </p>
+              <div className="sm:col-span-2 flex">
+                <div className="ms-auto">
+                  <Button
+                    type="submit"
+                    variant="secondary"
+                    disabledReason={canWrite(session.role) ? undefined : t("documents.notAllowed")}
+                  >
+                    {t("candidate.f.add")}
+                  </Button>
+                </div>
+              </div>
+            </form>
           </section>
 
           <section className="rounded-[var(--radius-card)] border border-line bg-surface">

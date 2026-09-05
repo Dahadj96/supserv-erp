@@ -1,9 +1,10 @@
-import { eq, inArray } from "drizzle-orm";
+import { asc, eq, inArray } from "drizzle-orm";
 import { afterAll, beforeAll, describe, expect, it } from "vitest";
 import { db } from "@/db";
 import { auditEntry } from "@/db/schema/control";
 import { person, personCertification } from "@/db/schema/party";
 import { personnelCandidate, personnelRequest } from "@/db/schema/recruitment";
+import { CertificationRefused, saveCertification, setCertificationVerified } from "@/domain/people";
 import {
   candidateCounts,
   createRequest,
@@ -271,5 +272,114 @@ describe("a candidate is a person", () => {
     const mine = rows.find((r) => r.id === labourer);
     expect(mine?.certification).toBeNull();
     expect(mine?.daysLeft).toBeNull();
+  });
+});
+
+/**
+ * The tickets, written down.
+ *
+ * Screen 25 read `person_certification` from the day it was built, screen 51
+ * puts the soonest-expiring one on every row, and screen 16's crew panel
+ * decides off it whether a man may work tomorrow. Nothing in the application
+ * could write one: the only inserts in the repository were in files like this
+ * one. The company's welders held habilitations and the ERP had nowhere to
+ * type them.
+ */
+describe("writing a man's tickets down", () => {
+  it("records one against the person, with who typed it", async () => {
+    const id = await saveCertification(
+      labourer,
+      {
+        kind: "CACES R482 cat. A",
+        number: "CAC/2026/119",
+        issuedBy: "CFPA Adrar",
+        issuedOn: "2026-02-10",
+        expiresOn: "2031-02-10",
+      },
+      ACTOR,
+    );
+
+    const c = (await getCandidate(labourer, NOW))?.certifications.find((x) => x.id === id);
+    expect(c?.kind).toBe("CACES R482 cat. A");
+    expect(c?.number).toBe("CAC/2026/119");
+    expect(c?.issuedBy).toBe("CFPA Adrar");
+    // And it reaches the OTHER screens, which is the whole point.
+    expect((await listCandidates(NOW)).find((r) => r.id === labourer)?.certification).toBe(
+      "CACES R482 cat. A",
+    );
+  });
+
+  it("takes a ticket with no expiry, because a diploma does not have one", async () => {
+    const id = await saveCertification(labourer, { kind: "CAP électricité" }, ACTOR);
+    const c = (await getCandidate(labourer, NOW))?.certifications.find((x) => x.id === id);
+    expect(c?.expiresOn).toBeNull();
+    // Null, not a nought or a date this system chose. Screen 25 says
+    // "n'expire pas" for it.
+    expect(c?.daysLeft).toBeNull();
+  });
+
+  it("refuses a ticket that expired before it was issued", async () => {
+    // A typo the screen would otherwise draw as a man permanently barred.
+    await expect(
+      saveCertification(
+        labourer,
+        { kind: "Habilitation B1V", issuedOn: "2026-05-01", expiresOn: "2025-05-01" },
+        ACTOR,
+      ),
+    ).rejects.toBeInstanceOf(CertificationRefused);
+  });
+
+  it("is not checked until somebody says they have seen the original", async () => {
+    const id = await saveCertification(labourer, { kind: "Habilitation B0" }, ACTOR);
+    const before = (await getCandidate(labourer, NOW))?.certifications.find((x) => x.id === id);
+    // The badge said this on every ticket in the company for as long as the
+    // screen existed, because `is_verified` was a boolean nothing could set.
+    expect(before?.verified).toBe(false);
+
+    await setCertificationVerified({
+      certificationId: id,
+      verified: true,
+      actorId: ACTOR,
+      now: new Date("2026-08-18T11:00:00Z"),
+    });
+
+    const after = (await getCandidate(labourer, NOW))?.certifications.find((x) => x.id === id);
+    expect(after?.verified).toBe(true);
+    expect(after?.verifiedOn).toBe("2026-08-18");
+    // The actor here is a test string and not a user row: LEFT join, so a check
+    // made by somebody who has since left is still a check that was made.
+    expect(after?.verifiedByName).toBeNull();
+  });
+
+  it("lets a check be withdrawn, because one given in error must not be permanent", async () => {
+    const id = await saveCertification(labourer, { kind: "Habilitation H0" }, ACTOR);
+    await setCertificationVerified({ certificationId: id, verified: true, actorId: ACTOR });
+    await setCertificationVerified({ certificationId: id, verified: false, actorId: ACTOR });
+
+    const c = (await getCandidate(labourer, NOW))?.certifications.find((x) => x.id === id);
+    expect(c?.verified).toBe(false);
+    expect(c?.verifiedOn).toBeNull();
+
+    // Both directions are in the audit trail: the withdrawal is a fact too.
+    const trail = await db
+      .select()
+      .from(auditEntry)
+      .where(eq(auditEntry.entityId, id))
+      .orderBy(asc(auditEntry.at));
+    expect(trail.map((e) => (e.after as { verified?: boolean }).verified)).toEqual([
+      undefined,
+      true,
+      false,
+    ]);
+  });
+
+  it("refuses to check a ticket that does not exist", async () => {
+    await expect(
+      setCertificationVerified({
+        certificationId: "00000000-0000-4000-8000-000000000000",
+        verified: true,
+        actorId: ACTOR,
+      }),
+    ).rejects.toBeInstanceOf(CertificationRefused);
   });
 });

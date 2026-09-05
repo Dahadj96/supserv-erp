@@ -40,8 +40,12 @@ import { readCorpus, readSchemaColumns } from "./lib/schema-columns.mjs";
  *        the estimate and when, recorded since the table was written and shown
  *        on no screen, which turned one man's guess into something the system
  *        appeared to assert
+ *   50 — 5 September 2026, `person_certification`: nothing in the application
+ *        could write a man's tickets at all, and `is_verified` was a boolean no
+ *        screen could set, so every habilitation in the company read "Non
+ *        contrôlée" for ever
  */
-const CEILING = 54;
+const CEILING = 50;
 
 /**
  * Columns that are deliberately one-way, with the reason.
