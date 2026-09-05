@@ -187,6 +187,13 @@ export type RenderedAmendment = {
   incidenceNegative: boolean;
   changed: number;
   added: number;
+  /**
+   * The délai as this avenant leaves it, and why it was raised. An avenant de
+   * prolongation is nothing but these two, and its total is zero — printing
+   * only the money would print an empty page.
+   */
+  newContractualEnd: string | null;
+  reason: string | null;
 };
 
 export class NotRenderable extends Error {
@@ -537,6 +544,10 @@ async function renderAmendment(
     incidenceNegative: Number(impact.incidenceExcl) < 0,
     changed: impact.changed,
     added: impact.added,
+    newContractualEnd: impact.newContractualEnd
+      ? shortDate(new Date(impact.newContractualEnd), locale)
+      : null,
+    reason: impact.reason,
   };
 }
 

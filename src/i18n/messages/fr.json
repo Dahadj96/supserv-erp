@@ -4697,7 +4697,8 @@
       "noSuchCrew": "Cette ligne d'équipe n'existe pas.",
       "alreadyLeft": "Cette personne est déjà partie.",
       "leftBeforeArrival": "Personne ne part avant d'être arrivé.",
-      "noContract": "Désignez d'abord le DQE contractuel sur le projet."
+      "noContract": "Désignez d'abord le DQE contractuel sur le projet.",
+      "badPenaltyBase": "Les pénalités se calculent sur le HT ou sur le TTC — le CCAP dit lequel."
     },
     "physical": {
       "title": "Avancement physique",
@@ -4862,6 +4863,43 @@
       "additionNeedsPrice": "Un prix nouveau a besoin d'une quantité et d'un prix unitaire, tous deux supérieurs à zéro.",
       "notAllowed": "Votre rôle ne peut pas modifier un marché.",
       "noSuchProject": "Ce projet n'existe pas."
+    },
+    "delai": "Le délai",
+    "newDeadline": "Nouveau délai contractuel",
+    "newDeadlineWhy": "Seulement si cet avenant le déplace. Un avenant de prolongation ne porte aucun prix et n'est que cette date — c'est pourquoi un avenant sans ligne reste un avenant.",
+    "deadlineNow": "Délai contractuel à ce jour",
+    "reason": "Motif",
+    "reasonHint": "Quantités supplémentaires, terrain rocheux",
+    "wasDeadline": "marché {date}"
+  },
+  "penalty": {
+    "title": "Pénalités de retard",
+    "atTheCap": "au plafond",
+    "running": "en cours",
+    "readTheCcap": "Lire la clause sur le CCAP →",
+    "why": "C'est ce que la clause autorise le CLIENT à appliquer. Rien ici n'est retenu par nous, déduit d'une situation ou imprimé sur un document que nous émettons : une wilaya applique ses pénalités sur le décompte général, et un montant que ce système retiendrait de lui-même serait une dette que personne n'a réclamée.",
+    "toReception": "jusqu'à la réception provisoire, le {date}",
+    "toToday": "jusqu'à aujourd'hui, le {date} — les travaux ne sont pas réceptionnés",
+    "rateReads": "{perMille}‰ par jour, plafonné à {capPct} %",
+    "row": {
+      "deadline": "Délai contractuel en vigueur",
+      "countedTo": "Décompté",
+      "daysLate": "Jours de retard",
+      "basis": "Assiette",
+      "rate": "La clause",
+      "cap": "Le plafond",
+      "amount": "Ce que la clause donne"
+    },
+    "blocked": {
+      "noClause": "Personne n'a encore relevé la clause de pénalités sur le CCAP : le taux, le plafond et l'assiette sur laquelle elles se calculent.",
+      "noDeadline": "Ce projet n'a pas de délai contractuel : il n'y a rien par rapport à quoi être en retard.",
+      "noAmount": "Ce projet n'a pas de montant de marché : il n'y a rien dont prendre un pourcentage."
+    },
+    "f": {
+      "perMille": "Pénalité ‰ par jour",
+      "capPct": "Plafond, % du marché",
+      "base": "Pénalités calculées sur",
+      "theirWords": "Le CCAP dit : {text}"
     }
   }
 }

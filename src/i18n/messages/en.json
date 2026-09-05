@@ -4697,7 +4697,8 @@
       "noSuchCrew": "That crew row does not exist.",
       "alreadyLeft": "They have already left.",
       "leftBeforeArrival": "Nobody leaves before they arrive.",
-      "noContract": "Name the DQE contractuel on the project first."
+      "noContract": "Name the DQE contractuel on the project first.",
+      "badPenaltyBase": "Penalties are taken on the HT or on the TTC — the CCAP says which."
     },
     "physical": {
       "title": "Physical progress",
@@ -4862,6 +4863,43 @@
       "additionNeedsPrice": "A new price needs a quantity and a unit price, both above zero.",
       "notAllowed": "Your role cannot amend a marché.",
       "noSuchProject": "That project does not exist."
+    },
+    "delai": "The délai",
+    "newDeadline": "New contractual end",
+    "newDeadlineWhy": "Only when this avenant moves it. An avenant de prolongation carries no price at all and is nothing but this date — which is why an avenant with no line is still an avenant.",
+    "deadlineNow": "Contractual end today",
+    "reason": "Reason",
+    "reasonHint": "Extra quantities, rock encountered",
+    "wasDeadline": "marché {date}"
+  },
+  "penalty": {
+    "title": "Late penalties",
+    "atTheCap": "at the ceiling",
+    "running": "still running",
+    "readTheCcap": "Read the clause off the CCAP →",
+    "why": "This is what the clause allows the CLIENT to apply. Nothing here is withheld by us, deducted from a situation or printed on a document we issue: a wilaya applies its penalties on the décompte général, and a figure this system withheld on its own would be a debt nobody claimed.",
+    "toReception": "to the réception provisoire, {date}",
+    "toToday": "to today, {date} — the work has not been accepted",
+    "rateReads": "{perMille}‰ per day, capped at {capPct} %",
+    "row": {
+      "deadline": "Contractual end in force",
+      "countedTo": "Counted",
+      "daysLate": "Days late",
+      "basis": "Taken on",
+      "rate": "The clause",
+      "cap": "The ceiling",
+      "amount": "What the clause comes to"
+    },
+    "blocked": {
+      "noClause": "Nobody has read the penalty clause off the CCAP yet — the rate, the ceiling and which amount they are taken on.",
+      "noDeadline": "This project has no contractual end, so there is nothing to be late against.",
+      "noAmount": "This project has no contract value, so there is nothing to take a percentage of."
+    },
+    "f": {
+      "perMille": "Penalty ‰ per day",
+      "capPct": "Ceiling, % of the marché",
+      "base": "Penalties taken on",
+      "theirWords": "The CCAP says: {text}"
     }
   }
 }

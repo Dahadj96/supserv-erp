@@ -498,7 +498,19 @@ export default async function ProjectPage({
                     : "—",
                 },
                 { key: "started", value: p.startedOn ?? "—" },
-                { key: "end", value: p.contractualEnd ?? "—" },
+                {
+                  key: "end",
+                  // The délai in force, with the signed one beside it when an
+                  // avenant de prolongation has moved it. Penalties run from
+                  // the first of those two and arguments start over the second.
+                  value: p.deadline
+                    ? p.deadline === p.contractualEnd
+                      ? p.deadline
+                      : `${p.deadline} (${t("amendment.wasDeadline", {
+                          date: p.contractualEnd ?? "—",
+                        })})`
+                    : "—",
+                },
               ].map((row) => (
                 <div
                   key={row.key}
@@ -662,6 +674,91 @@ export default async function ProjectPage({
               </p>
             </section>
           ) : null}
+
+          {/*
+            PÉNALITÉS DE RETARD — a figure the CLIENT may apply, never one this
+            system withholds. It shows nothing at all until somebody has read
+            the rate, the ceiling and the base off the CCAP, and it says which
+            of the three is missing rather than showing a reassuring zero.
+          */}
+          <section className="rounded-[var(--radius-card)] border border-line bg-surface p-5">
+            <div className="flex items-baseline gap-3">
+              <h2 className="text-tiny font-semibold text-ink">{t("penalty.title")}</h2>
+              {p.penalty.capped ? (
+                <Badge tone="warning">{t("penalty.atTheCap")}</Badge>
+              ) : p.penalty.stillRunning ? (
+                <Badge tone="warning">{t("penalty.running")}</Badge>
+              ) : null}
+            </div>
+
+            {p.penalty.blocked ? (
+              <p className="mt-2 text-micro leading-relaxed text-muted">
+                {t(`penalty.blocked.${p.penalty.blocked}`)}{" "}
+                <a href="#terms" className="text-accent-ink hover:underline">
+                  {t("penalty.readTheCcap")}
+                </a>
+              </p>
+            ) : (
+              <>
+                <dl className="mt-3">
+                  {[
+                    { key: "deadline", value: p.deadline ?? "—" },
+                    {
+                      key: "countedTo",
+                      value: p.pvProvisoireOn
+                        ? t("penalty.toReception", { date: p.pvProvisoireOn })
+                        : t("penalty.toToday", { date: p.penalty.countedTo ?? "—" }),
+                    },
+                    { key: "daysLate", value: String(p.penalty.daysLate) },
+                    {
+                      key: "basis",
+                      value: `${money(p.penalty.basis as string)} ${p.currency} ${t(
+                        `projectNew.retentionBase.${p.penaltyBase ?? "excl"}`,
+                      )}`,
+                    },
+                    {
+                      key: "rate",
+                      value: t("penalty.rateReads", {
+                        perMille: p.penaltyPerMille ?? "—",
+                        capPct: p.penaltyCapPct ?? "—",
+                      }),
+                    },
+                    {
+                      key: "cap",
+                      value: `${money(p.penalty.cap as string)} ${p.currency}`,
+                    },
+                  ].map((row) => (
+                    <div
+                      key={row.key}
+                      className="flex items-baseline gap-3 border-b border-line-subtle py-2 last:border-0"
+                    >
+                      <dt className="shrink-0 text-tiny text-secondary">
+                        {t(`penalty.row.${row.key}`)}
+                      </dt>
+                      <dd className="ms-auto text-end text-tiny text-ink">{row.value}</dd>
+                    </div>
+                  ))}
+                </dl>
+                <div className="mt-3 flex items-baseline gap-3 border-t border-line pt-3">
+                  <span className="text-tiny font-semibold text-ink">
+                    {t("penalty.row.amount")}
+                  </span>
+                  <span className="ms-auto text-[15px] font-semibold tabular-nums text-ink">
+                    {money(p.penalty.amount as string)} {p.currency}
+                  </span>
+                </div>
+              </>
+            )}
+
+            <p className="mt-3 border-t border-line-subtle pt-3 text-micro leading-relaxed text-muted">
+              {t("penalty.why")}
+            </p>
+            {p.latePenaltyText ? (
+              <p className="mt-2 text-micro leading-relaxed text-secondary">
+                {t("penalty.f.theirWords", { text: p.latePenaltyText })}
+              </p>
+            ) : null}
+          </section>
 
           <RecordPanels
             locale={locale}

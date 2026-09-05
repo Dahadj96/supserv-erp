@@ -257,6 +257,8 @@ const WORDS = {
       added: "prix nouveaux",
       inWords: "Incidence du présent avenant arrêtée à la somme de :",
       inWordsLess: "Incidence du présent avenant, EN MOINS, arrêtée à la somme de :",
+      newDeadline: "Nouveau délai contractuel",
+      reason: "Motif",
     },
     totals: {
       totalExcl: "Total HT",
@@ -293,6 +295,8 @@ const WORDS = {
       added: "new prices",
       inWords: "The effect of this amendment is set at the sum of:",
       inWordsLess: "The effect of this amendment, AS A REDUCTION, is set at the sum of:",
+      newDeadline: "New contractual end",
+      reason: "Reason",
     },
     totals: {
       totalExcl: "Total excl. VAT",
@@ -382,6 +386,9 @@ export async function toPdf(doc: RenderedDocument): Promise<Buffer> {
   }
 
   /* ── the lines ──────────────────────────────────────────────────────── */
+  // An avenant de prolongation states no price at all. A column head with
+  // nothing under it is a table a reader stops to make sense of.
+  const hasLines = doc.lines.length > 0;
   ctx.y -= 26;
   rule(ctx);
   ctx.y -= 12;
@@ -396,17 +403,19 @@ export async function toPdf(doc: RenderedDocument): Promise<Buffer> {
     amount: edge,
   };
 
-  text(ctx, "#", { x: col.n, size: 7.5, color: MUTED });
-  text(ctx, w.designation, { x: col.des, size: 7.5, color: MUTED });
-  right(ctx, w.qty, col.qty, 7.5);
-  text(ctx, w.unit, { x: col.unit, size: 7.5, color: MUTED });
-  right(ctx, w.unitPrice, col.price, 7.5);
-  right(ctx, w.vat, col.vat, 7.5);
-  right(ctx, w.amount, col.amount, 7.5);
+  if (hasLines) {
+    text(ctx, "#", { x: col.n, size: 7.5, color: MUTED });
+    text(ctx, w.designation, { x: col.des, size: 7.5, color: MUTED });
+    right(ctx, w.qty, col.qty, 7.5);
+    text(ctx, w.unit, { x: col.unit, size: 7.5, color: MUTED });
+    right(ctx, w.unitPrice, col.price, 7.5);
+    right(ctx, w.vat, col.vat, 7.5);
+    right(ctx, w.amount, col.amount, 7.5);
 
-  ctx.y -= 6;
-  rule(ctx);
-  ctx.y -= 14;
+    ctx.y -= 6;
+    rule(ctx);
+    ctx.y -= 14;
+  }
 
   for (const line of doc.lines) {
     text(ctx, String(line.position), { x: col.n, size: 8.5, color: MUTED });
@@ -426,8 +435,10 @@ export async function toPdf(doc: RenderedDocument): Promise<Buffer> {
     if (ctx.y < 200) break; // one page for now; pagination arrives with long offers
   }
 
-  ctx.y -= 4;
-  rule(ctx);
+  if (hasLines) {
+    ctx.y -= 4;
+    rule(ctx);
+  }
 
   /* ── the money ──────────────────────────────────────────────────────── */
   ctx.y -= 16;
@@ -501,6 +512,20 @@ export async function toPdf(doc: RenderedDocument): Promise<Buffer> {
     if (tally) {
       text(ctx, tally, { x: 300, size: 8, color: MUTED });
       ctx.y -= 12;
+    }
+
+    // What an avenant does that has no line: it moves the délai, and it says
+    // why. On an avenant de prolongation these are the whole document.
+    if (a.newContractualEnd) {
+      ctx.y -= 4;
+      text(ctx, w.amendment.newDeadline, { size: 8.5, color: MUTED });
+      text(ctx, a.newContractualEnd, { x: 220, size: 9.5, bold: true });
+      ctx.y -= 14;
+    }
+    if (a.reason) {
+      text(ctx, w.amendment.reason, { size: 8.5, color: MUTED });
+      text(ctx, a.reason, { x: 220, size: 9, maxWidth: 320 });
+      ctx.y -= 14;
     }
   }
 

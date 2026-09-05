@@ -17,6 +17,7 @@ import {
   readCautions,
   readCrew,
 } from "./cautions";
+import { asPenaltyBase, type PenaltyBase, type PenaltyView, penaltyOf } from "./penalty";
 import {
   type Progress,
   type ProjectState,
@@ -25,7 +26,7 @@ import {
   retentionRelease,
   type SituationInput,
 } from "./progress";
-import { amendmentDeltas } from "./situations";
+import { amendmentDeltas, contractVatRatio, deadlineOf } from "./situations";
 
 /**
  * Screens 15 and 16, against the database.
@@ -290,11 +291,24 @@ export type ProjectDetail = ProjectRow & {
   contractRef: string | null;
   amountExcl: string | null;
   startedOn: string | null;
+  /** The délai the marché was signed with. Never moves — see `deadline`. */
   contractualEnd: string | null;
-  /** Days from today to the contractual end. Negative means late. */
+  /** The délai as the issued avenants left it: what everything is judged by. */
+  deadline: string | null;
+  /** Days from today to the délai in force. Negative means late. */
   daysLeft: number | null;
   retentionPct: string;
   retentionBase: RetentionBase | null;
+  penaltyPerMille: string | null;
+  penaltyCapPct: string | null;
+  penaltyBase: PenaltyBase | null;
+  /**
+   * What the CCAP's clause comes to — a figure the CLIENT may apply, never one
+   * this system withholds. Blocked until somebody has read the clause.
+   */
+  penalty: PenaltyView;
+  /** The clause in the client's own words, from the enquiry. The authority. */
+  latePenaltyText: string | null;
   contractDocumentId: string | null;
   warrantyMonths: number | null;
   pvProvisoireOn: string | null;
@@ -317,6 +331,9 @@ export async function getProject(id: string, now = new Date()): Promise<ProjectD
       contractRef: project.contractRef,
       retentionPct: project.retentionPct,
       retentionBase: project.retentionBase,
+      penaltyPerMille: project.penaltyPerMille,
+      penaltyCapPct: project.penaltyCapPct,
+      penaltyBase: project.penaltyBase,
       contractDocumentId: project.contractDocumentId,
       warrantyMonths: project.warrantyMonths,
       physicalPercent: project.physicalPercent,
@@ -328,6 +345,7 @@ export async function getProject(id: string, now = new Date()): Promise<ProjectD
       closedAt: project.closedAt,
       dealId: project.dealId,
       dealRef: deal.ref,
+      latePenalty: deal.latePenalty,
       client: sql<string>`coalesce(nullif(trim(${party.tradeName}), ''), ${party.legalName})`,
     })
     .from(project)
@@ -340,10 +358,12 @@ export async function getProject(id: string, now = new Date()): Promise<ProjectD
 
   const situations = await situationsFor([id]);
   const deltas = await amendmentDeltas([id]);
+  // Under contract today — the marché as signed, plus its avenants. One
+  // figure, read by the progress, the penalty and the page.
+  const contractExcl = underContract(row.amountExcl, deltas.get(id));
   const progress = progressOf({
     situations: situations.get(id) ?? [],
-    // Under contract today — the marché as signed, plus its avenants.
-    contract: underContract(row.amountExcl, deltas.get(id)),
+    contract: contractExcl,
     retentionPct: row.retentionPct,
     physicalPercent: row.physicalPercent,
     now,
@@ -365,13 +385,30 @@ export async function getProject(id: string, now = new Date()): Promise<ProjectD
 
   const crew = readCrew({ crew: await crewFor(id), now });
 
-  const daysLeft = row.contractualEnd
-    ? Math.round(
-        (new Date(`${row.contractualEnd}T00:00:00Z`).getTime() -
-          Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), now.getUTCDate())) /
-          86_400_000,
-      )
+  // The délai in force — the marché's, as its avenants left it. Everything
+  // that judges lateness reads this and not the signed date.
+  const deadline = await deadlineOf(id, row.contractualEnd);
+  const today = new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), now.getUTCDate()));
+
+  const daysLeft = deadline
+    ? Math.round((new Date(`${deadline}T00:00:00Z`).getTime() - today.getTime()) / 86_400_000)
     : null;
+
+  const penalty = penaltyOf({
+    perMille: row.penaltyPerMille,
+    capPct: row.penaltyCapPct,
+    base: asPenaltyBase(row.penaltyBase),
+    contractExcl,
+    // The marché's HT with the bordereau's own VAT on it — never a rate this
+    // system chose. See `contractVatRatio`.
+    contractIncl:
+      row.penaltyBase === "incl" && contractExcl
+        ? new Decimal(contractExcl).times(await contractVatRatio(id)).toFixed(2)
+        : null,
+    deadline,
+    receivedOn: row.pvProvisoireOn,
+    on: today.toISOString().slice(0, 10),
+  });
 
   return {
     id: row.id,
@@ -397,9 +434,15 @@ export async function getProject(id: string, now = new Date()): Promise<ProjectD
     amountExcl: row.amountExcl,
     startedOn: row.startedOn,
     contractualEnd: row.contractualEnd,
+    deadline,
     daysLeft,
     retentionPct: row.retentionPct,
     retentionBase: asRetentionBase(row.retentionBase),
+    penaltyPerMille: row.penaltyPerMille,
+    penaltyCapPct: row.penaltyCapPct,
+    penaltyBase: asPenaltyBase(row.penaltyBase),
+    penalty,
+    latePenaltyText: row.latePenalty,
     contractDocumentId: row.contractDocumentId,
     warrantyMonths: row.warrantyMonths,
     pvProvisoireOn: row.pvProvisoireOn,
@@ -592,6 +635,9 @@ export async function updateProjectTerms(opts: {
   contractualEnd?: string | null;
   retentionPct?: string;
   retentionBase?: string | null;
+  penaltyPerMille?: string | null;
+  penaltyCapPct?: string | null;
+  penaltyBase?: string | null;
   warrantyMonths?: number | null;
   contractDocumentId?: string | null;
   actorId: string;
@@ -608,6 +654,13 @@ export async function updateProjectTerms(opts: {
     const base = asRetentionBase(opts.retentionBase);
     if (opts.retentionBase && !base) throw new ProjectRefused("badRetentionBase");
     patch.retentionBase = base;
+  }
+  if (opts.penaltyPerMille !== undefined) patch.penaltyPerMille = opts.penaltyPerMille;
+  if (opts.penaltyCapPct !== undefined) patch.penaltyCapPct = opts.penaltyCapPct;
+  if (opts.penaltyBase !== undefined) {
+    const base = asPenaltyBase(opts.penaltyBase);
+    if (opts.penaltyBase && !base) throw new ProjectRefused("badPenaltyBase");
+    patch.penaltyBase = base;
   }
   if (opts.contractDocumentId !== undefined) {
     if (opts.contractDocumentId) {

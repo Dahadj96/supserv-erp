@@ -1,10 +1,10 @@
 import Decimal from "decimal.js";
-import { and, asc, desc, eq, inArray, lt, lte, sql } from "drizzle-orm";
+import { and, asc, desc, eq, inArray, isNotNull, lt, lte, sql } from "drizzle-orm";
 import { db } from "@/db";
 import { auditEntry } from "@/db/schema/control";
 import { document, documentLine, documentLink } from "@/db/schema/document";
 import { party } from "@/db/schema/party";
-import { project, situationDetail } from "@/db/schema/project";
+import { amendmentDetail, project, situationDetail } from "@/db/schema/project";
 import { computeTotals, lineTotalExcl, RETENTION_BASES, type RetentionBase } from "@/domain/money";
 import {
   type ContractLine,
@@ -836,11 +836,20 @@ export type NextAmendment = {
   projectId: string;
   contract: Contract | null;
   /** The avenant still open, which the screen edits instead of opening a second. */
-  draft: { documentId: string; theirNumber: string | null; signedOn: string | null } | null;
+  draft: {
+    documentId: string;
+    theirNumber: string | null;
+    signedOn: string | null;
+    /** What this avenant makes of the délai, when it touches it. */
+    newContractualEnd: string | null;
+    reason: string | null;
+  } | null;
   rows: AmendmentRow[];
   additions: AmendmentAddition[];
   /** The marché as its issued avenants left it — what this one starts from. */
   contractExcl: string;
+  /** The délai as they left it, which this one may move again. */
+  deadline: string | null;
   blocked: "noContract" | null;
 };
 
@@ -854,11 +863,13 @@ export type NextAmendment = {
  */
 export async function nextAmendment(projectId: string): Promise<NextAmendment | null> {
   const [exists] = await db
-    .select({ id: project.id })
+    .select({ id: project.id, contractualEnd: project.contractualEnd })
     .from(project)
     .where(eq(project.id, projectId))
     .limit(1);
   if (!exists) return null;
+
+  const deadline = await deadlineOf(projectId, exists.contractualEnd);
 
   const contract = await contractOf(projectId);
   if (!contract) {
@@ -869,6 +880,7 @@ export async function nextAmendment(projectId: string): Promise<NextAmendment | 
       rows: [],
       additions: [],
       contractExcl: "0",
+      deadline,
       blocked: "noContract",
     };
   }
@@ -895,6 +907,14 @@ export async function nextAmendment(projectId: string): Promise<NextAmendment | 
         .from(documentLine)
         .where(and(eq(documentLine.documentId, open.id), eq(documentLine.lineKind, "item")))
         .orderBy(asc(documentLine.position))
+    : [];
+
+  const [openDetail] = open
+    ? await db
+        .select()
+        .from(amendmentDetail)
+        .where(eq(amendmentDetail.documentId, open.id))
+        .limit(1)
     : [];
 
   const rows: AmendmentRow[] = contract.lines.map((line) => {
@@ -928,9 +948,18 @@ export async function nextAmendment(projectId: string): Promise<NextAmendment | 
   return {
     projectId,
     contract,
-    draft: open ? { documentId: open.id, theirNumber: open.number, signedOn: open.issuedOn } : null,
+    draft: open
+      ? {
+          documentId: open.id,
+          theirNumber: open.number,
+          signedOn: open.issuedOn,
+          newContractualEnd: openDetail?.newContractualEnd ?? null,
+          reason: openDetail?.reason ?? null,
+        }
+      : null,
     rows,
     additions,
+    deadline,
     contractExcl: amountOf(contract.lines).toFixed(2),
     blocked: null,
   };
@@ -956,6 +985,14 @@ export type AmendmentInput = {
   theirNumber: string | null;
   /** The date on the signature. */
   signedOn: string | null;
+  /**
+   * The délai as this avenant leaves it. Blank when it does not touch it —
+   * and an avenant de prolongation is nothing BUT this, which is why an
+   * avenant carrying no line at all is still an avenant.
+   */
+  newContractualEnd: string | null;
+  /** "Quantités supplémentaires, terrain rocheux" — why, in their words. */
+  reason: string | null;
   actorId: string;
 };
 
@@ -1011,7 +1048,13 @@ export async function saveAmendment(input: AmendmentInput): Promise<string> {
     }
   }
 
-  if (touched.length === 0 && additions.length === 0) throw new ProjectRefused("nothingAmended");
+  // An avenant de prolongation de délai carries no price at all: a new date is
+  // as much a change as a quantity, and refusing it would be the ERP saying
+  // the paper in somebody's hand does not exist.
+  const movesTheDeadline = Boolean(input.newContractualEnd?.trim());
+  if (touched.length === 0 && additions.length === 0 && !movesTheDeadline) {
+    throw new ProjectRefused("nothingAmended");
+  }
 
   const [row] = await db
     .select({ partyId: project.partyId, dealId: project.dealId, currency: project.currency })
@@ -1059,9 +1102,19 @@ export async function saveAmendment(input: AmendmentInput): Promise<string> {
   // The avenant's own money is the value of the prices it states. What it adds
   // to the marché — the incidence financière — is arithmetic against the
   // bordereau, computed where the marché is composed rather than typed here.
-  const totals = computeTotals(
-    stated.map((line) => ({ qty: line.qty, unitPrice: line.unitPrice, vatRate: line.vatRate })),
-  );
+  // An avenant de prolongation states no price. `{}` rather than a computed
+  // block of noughts, for the reason a bon de livraison stores `{}`: a total
+  // of zero reads as a bill for nothing, and this paper is not a bill at all.
+  const totals =
+    stated.length === 0
+      ? {}
+      : computeTotals(
+          stated.map((line) => ({
+            qty: line.qty,
+            unitPrice: line.unitPrice,
+            vatRate: line.vatRate,
+          })),
+        );
 
   const lines = stated.map((line, index) => ({
     ...line,
@@ -1111,7 +1164,27 @@ export async function saveAmendment(input: AmendmentInput): Promise<string> {
       });
     }
 
-    await tx.insert(documentLine).values(lines.map((line) => ({ ...line, documentId })));
+    // An avenant de prolongation states no price, and inserting an empty list
+    // is an error rather than a no-op.
+    if (lines.length > 0) {
+      await tx.insert(documentLine).values(lines.map((line) => ({ ...line, documentId })));
+    }
+
+    // The two things an avenant does that have no line: it moves the délai,
+    // and it gives a reason.
+    const detail = {
+      documentId,
+      projectId: input.projectId,
+      newContractualEnd: input.newContractualEnd?.trim() || null,
+      reason: input.reason?.trim() || null,
+    };
+    await tx
+      .insert(amendmentDetail)
+      .values(detail)
+      .onConflictDoUpdate({
+        target: amendmentDetail.documentId,
+        set: { newContractualEnd: detail.newContractualEnd, reason: detail.reason },
+      });
 
     await tx.insert(auditEntry).values({
       actorId: input.actorId,
@@ -1125,6 +1198,7 @@ export async function saveAmendment(input: AmendmentInput): Promise<string> {
         amends: contract.documentId,
         changed: touched.length,
         added: additions.length,
+        newContractualEnd: detail.newContractualEnd,
         alreadyAmendedBy: contract.amendments.length,
       },
       sourceScreen: "16",
@@ -1184,6 +1258,9 @@ export type AmendmentImpact = {
   afterExcl: string;
   changed: number;
   added: number;
+  /** The délai as this avenant leaves it, and why. Null when it says nothing. */
+  newContractualEnd: string | null;
+  reason: string | null;
 };
 
 /**
@@ -1233,15 +1310,25 @@ export async function amendmentImpact(documentId: string): Promise<AmendmentImpa
   const afterExcl = amountOf(after.lines);
   const tally = after.perAmendment.get(documentId) ?? { changed: 0, added: 0 };
 
-  const [owner] = me.dealId
-    ? await db
-        .select({ id: project.id })
-        .from(project)
-        .where(eq(project.dealId, me.dealId))
-        .limit(1)
-    : [];
+  const [detail] = await db
+    .select()
+    .from(amendmentDetail)
+    .where(eq(amendmentDetail.documentId, documentId))
+    .limit(1);
+
+  const [owner] = detail
+    ? [{ id: detail.projectId }]
+    : me.dealId
+      ? await db
+          .select({ id: project.id })
+          .from(project)
+          .where(eq(project.dealId, me.dealId))
+          .limit(1)
+      : [];
 
   return {
+    newContractualEnd: detail?.newContractualEnd ?? null,
+    reason: detail?.reason ?? null,
     projectId: owner?.id ?? null,
     contractDocumentId: link.contractDocumentId,
     contractNumber: marche?.number ?? null,
@@ -1251,4 +1338,65 @@ export async function amendmentImpact(documentId: string): Promise<AmendmentImpa
     changed: tally.changed,
     added: tally.added,
   };
+}
+
+/**
+ * The délai as the issued avenants left it.
+ *
+ * `project.contractual_end` is what the signed marché said and never changes,
+ * for the reason an issued document never changes. An avenant de prolongation
+ * moves the date, and the LAST one issued is the one in force — a wilaya that
+ * extends twice extends from wherever the second avenant says, not from the
+ * first.
+ *
+ * `asOf` reads the délai as it stood on that date, the way `contractOf` reads
+ * the bordereau: a penalty computed today against a marché received in August
+ * is counted against the deadline that was in force in August.
+ */
+export async function deadlineOf(
+  projectId: string,
+  contractualEnd: string | null,
+  asOf?: string | null,
+): Promise<string | null> {
+  const rows = await db
+    .select({ newEnd: amendmentDetail.newContractualEnd })
+    .from(amendmentDetail)
+    .innerJoin(document, eq(document.id, amendmentDetail.documentId))
+    .where(
+      and(
+        eq(amendmentDetail.projectId, projectId),
+        eq(document.status, "issued"),
+        isNotNull(amendmentDetail.newContractualEnd),
+        asOf ? lte(document.issuedOn, asOf) : undefined,
+      ),
+    )
+    .orderBy(asc(document.issuedOn), asc(document.createdAt));
+
+  return rows.at(-1)?.newEnd ?? contractualEnd;
+}
+
+/**
+ * The VAT the marché's own bordereau carries, as a multiplier on its HT.
+ *
+ * "1.19" on a marché entirely at 19 %, and something between on one that
+ * mixes rates. It exists because a CCAP that takes the pénalités on "le
+ * montant du marché" TTC needs a TTC, and the project carries only the HT the
+ * person typed — so the TTC is that figure with the bordereau's own VAT on it,
+ * rather than a rate this system chose.
+ *
+ * "1" when the bordereau is empty or carries no VAT: no rate is invented.
+ */
+export async function contractVatRatio(projectId: string): Promise<string> {
+  const contract = await contractOf(projectId);
+  if (!contract || contract.lines.length === 0) return "1";
+  const totals = computeTotals(
+    contract.lines.map((line) => ({
+      qty: line.qty,
+      unitPrice: line.unitPrice,
+      vatRate: line.vatRate,
+    })),
+  );
+  const excl = new Decimal(totals.totalExcl);
+  if (excl.lessThanOrEqualTo(0)) return "1";
+  return new Decimal(totals.totalIncl).div(excl).toDecimalPlaces(6).toFixed();
 }

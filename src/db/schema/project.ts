@@ -49,8 +49,39 @@ export const project = pgTable("project", {
   currency: text("currency").notNull().default("DZD"),
 
   startedOn: date("started_on"),
-  /** The contractual end. Late penalties run from it — see deal.latePenalty. */
+  /**
+   * The contractual end AS THE MARCHÉ WAS SIGNED. Late penalties run from it —
+   * see `deal.latePenalty` for the clause in the client's own words.
+   *
+   * An avenant de prolongation moves it; that new date lives on the avenant
+   * (`amendment_detail.new_contractual_end`) and not here, for the reason an
+   * avenant's quantities do not overwrite the marché's: this column is what
+   * the signed contract said, and `deadlineOf` composes the rest.
+   */
   contractualEnd: date("contractual_end"),
+
+  /**
+   * PÉNALITÉS DE RETARD, as the CCAP of this marché states them.
+   *
+   * Per mille of the marché per day of delay, capped at a percentage of it —
+   * "1‰ par jour, plafonné à 10 %" is the common wording, and the wording
+   * itself is kept verbatim on the deal. These two are the arithmetic, read
+   * off the CCAP by a person, the same act as reading the retention off it.
+   *
+   * Null means nobody has read the clause yet, and NOTHING is computed: a
+   * penalty this system invented would be a legal claim with no authority
+   * behind it, which is the one thing it does not do.
+   */
+  penaltyPerMille: numeric("penalty_per_mille", { precision: 6, scale: 3 }),
+  penaltyCapPct: numeric("penalty_cap_pct", { precision: 6, scale: 3 }),
+  /**
+   * WHAT THE PENALTY IS TAKEN ON — `excl` or `incl`, the same two words the
+   * retention uses and for the same reason. A marché is signed TTC on the
+   * acte d'engagement and billed HT on the bordereau, so "du montant du
+   * marché" is two different figures depending on which paper you are holding,
+   * and only the CCAP says which one the clause means.
+   */
+  penaltyBase: text("penalty_base"),
 
   /**
    * PHYSICAL PROGRESS IS A PERSON'S ESTIMATE, and it is stored for exactly that
@@ -143,6 +174,40 @@ export const situationDetail = pgTable("situation_detail", {
    */
   approvedOn: date("approved_on"),
   approvedBy: text("approved_by"),
+});
+
+/**
+ * What an avenant is, beyond being a document.
+ *
+ * Its lines already say what it does to the bordereau — each one pointing at
+ * the line of the marché it replaces, or at nothing, which adds a price. What
+ * they cannot say is the two things an avenant does that have no line at all:
+ * it moves the délai, and it gives a reason.
+ *
+ * An avenant de prolongation de délai is common and carries no prices at all.
+ * Without this row such an avenant could not be recorded, and the deadline the
+ * penalties run from would still be the one on the signed marché — which is
+ * how a company computes a penalty against itself that nobody is owed.
+ *
+ * Same shape as `situation_detail`, for the same reason.
+ */
+export const amendmentDetail = pgTable("amendment_detail", {
+  documentId: uuid("document_id")
+    .primaryKey()
+    .references(() => document.id, { onDelete: "cascade" }),
+  projectId: uuid("project_id")
+    .notNull()
+    .references(() => project.id, { onDelete: "cascade" }),
+
+  /**
+   * The délai as this avenant leaves it. Null when it does not touch it —
+   * most avenants only move quantities, and a date repeated from the marché
+   * would read as a decision somebody made.
+   */
+  newContractualEnd: date("new_contractual_end"),
+
+  /** "Quantités supplémentaires, terrain rocheux" — why, in their words. */
+  reason: text("reason"),
 });
 
 /**

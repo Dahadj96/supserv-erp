@@ -298,6 +298,15 @@ export default async function AmendmentPage({
                 className={`${INPUT} mt-1`}
               />
             </label>
+            <label className="mt-3 block">
+              <span className="text-micro text-secondary">{t("amendment.reason")}</span>
+              <input
+                name="reason"
+                defaultValue={next.draft?.reason ?? ""}
+                placeholder={t("amendment.reasonHint")}
+                className={`${INPUT} mt-1`}
+              />
+            </label>
             <dl className="mt-4 flex flex-col gap-1.5 border-t border-line-subtle pt-3 text-tiny">
               <div className="flex items-baseline gap-3">
                 <dt className="text-secondary">{t("amendment.contractNow")}</dt>
@@ -305,7 +314,32 @@ export default async function AmendmentPage({
                   {money(next.contractExcl)} {p.currency}
                 </dd>
               </div>
+              <div className="flex items-baseline gap-3">
+                <dt className="text-secondary">{t("amendment.deadlineNow")}</dt>
+                <dd className="ms-auto tabular-nums text-ink">{next.deadline ?? "—"}</dd>
+              </div>
             </dl>
+          </section>
+
+          {/*
+            An avenant de prolongation de délai carries no price at all, which
+            is why this is its own card and not a line in the table: it is the
+            whole of some avenants and absent from most.
+          */}
+          <section className="rounded-[var(--radius-card)] border border-line bg-surface p-5">
+            <h2 className="text-tiny font-semibold text-ink">{t("amendment.delai")}</h2>
+            <label className="mt-3 block">
+              <span className="text-micro text-secondary">{t("amendment.newDeadline")}</span>
+              <input
+                type="date"
+                name="newContractualEnd"
+                defaultValue={next.draft?.newContractualEnd ?? ""}
+                className={`${INPUT} mt-1`}
+              />
+            </label>
+            <p className="mt-2 text-micro leading-relaxed text-muted">
+              {t("amendment.newDeadlineWhy")}
+            </p>
           </section>
 
           <div className="flex items-center gap-3">

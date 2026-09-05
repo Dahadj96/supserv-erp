@@ -4,6 +4,7 @@ import { Button } from "@/components/ui/button";
 import { WILAYA_LIST_ID, WilayaList } from "@/components/ui/wilaya-list";
 import { RETENTION_BASES } from "@/domain/money";
 import { CAUTION_KINDS } from "@/domain/project/cautions";
+import { PENALTY_BASES } from "@/domain/project/penalty";
 import type { Contract, ContractCandidate } from "@/domain/project/situations";
 import type { ProjectDetail } from "@/domain/project/store";
 import { Link } from "@/i18n/navigation";
@@ -267,6 +268,51 @@ export async function RecordPanels({
                   </option>
                 ))}
               </select>
+            </label>
+            {/*
+              The pénalités clause, in three numbers read off the CCAP. Nothing
+              is computed until all three are here, and the client's own
+              wording sits above them as the authority.
+            */}
+            <label>
+              <span className="text-micro text-secondary">{t("penalty.f.perMille")}</span>
+              <input
+                name="penaltyPerMille"
+                inputMode="decimal"
+                defaultValue={p.penaltyPerMille ?? ""}
+                placeholder="1"
+                className={`${INPUT} mt-1 text-end tabular-nums`}
+              />
+            </label>
+            <label>
+              <span className="text-micro text-secondary">{t("penalty.f.capPct")}</span>
+              <input
+                name="penaltyCapPct"
+                inputMode="decimal"
+                defaultValue={p.penaltyCapPct ?? ""}
+                placeholder="10"
+                className={`${INPUT} mt-1 text-end tabular-nums`}
+              />
+            </label>
+            <label className="sm:col-span-2">
+              <span className="text-micro text-secondary">{t("penalty.f.base")}</span>
+              <select
+                name="penaltyBase"
+                defaultValue={p.penaltyBase ?? ""}
+                className={`${INPUT} mt-1`}
+              >
+                <option value="">{t("projectNew.retentionBase.unsaid")}</option>
+                {PENALTY_BASES.map((base) => (
+                  <option key={base} value={base}>
+                    {t(`projectNew.retentionBase.${base}`)}
+                  </option>
+                ))}
+              </select>
+              {p.latePenaltyText ? (
+                <span className="mt-1 block text-micro leading-relaxed text-muted">
+                  {t("penalty.f.theirWords", { text: p.latePenaltyText })}
+                </span>
+              ) : null}
             </label>
           </div>
           <div className="ms-auto">

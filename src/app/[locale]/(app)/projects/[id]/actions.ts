@@ -185,6 +185,11 @@ export async function termsAction(locale: string, id: string, form: FormData): P
       contractualEnd: orNull(str(form, "contractualEnd")),
       retentionPct: num(form, "retentionPct") || "0",
       retentionBase: orNull(str(form, "retentionBase")),
+      // The pénalités clause. Blank stays blank: a rate this system invented
+      // would be a claim against the company with nothing behind it.
+      penaltyPerMille: orNull(num(form, "penaltyPerMille")),
+      penaltyCapPct: orNull(num(form, "penaltyCapPct")),
+      penaltyBase: orNull(str(form, "penaltyBase")),
       warrantyMonths: warranty ? Number(warranty) : null,
       contractDocumentId: orNull(str(form, "contractDocumentId")),
       actorId: session.userId,
@@ -336,6 +341,8 @@ export async function saveAmendmentAction(
       additions: additions(form),
       theirNumber: orNull(str(form, "theirNumber")),
       signedOn: orNull(str(form, "signedOn")),
+      newContractualEnd: orNull(str(form, "newContractualEnd")),
+      reason: orNull(str(form, "reason")),
       actorId: session.userId,
     });
   } catch (error) {

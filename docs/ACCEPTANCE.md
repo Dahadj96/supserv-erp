@@ -271,6 +271,26 @@ it went out. See `docs/DECISIONS/2026-09-04-a-marche-that-changed.md`:
 - `tests/integration/situation-flow.test.ts` :: "leaves the situations already issued exactly as the client signed them"
 - `tests/integration/situation-flow.test.ts` :: "is what the next situation bills against, and what its form names"
 
+And on 5 September the rest of the marché's life: an avenant that carries no
+price at all but moves the délai, and the pénalités de retard that run from
+it — computed, never applied, and never computed at all until somebody has
+read the clause off the CCAP. See
+`docs/DECISIONS/2026-09-05-the-delai-and-what-it-costs.md`:
+
+- `tests/unit/penalty.test.ts` :: "is not computed at all — no rate, no ceiling, no base"
+- `tests/unit/penalty.test.ts` :: "says which fact is missing rather than showing zero"
+- `tests/unit/penalty.test.ts` :: "carries a penalty of zero, and says so rather than saying nothing"
+- `tests/unit/penalty.test.ts` :: "counts the days to the réception and applies the rate to the HT"
+- `tests/unit/penalty.test.ts` :: "applies it to the TTC when that is what the CCAP says"
+- `tests/unit/penalty.test.ts` :: "stops at the ceiling, and says it stopped"
+- `tests/unit/penalty.test.ts` :: "counts to today and says the figure is not settled"
+- `tests/integration/situation-flow.test.ts` :: "refuses an avenant that carries nothing at all — no price, no date"
+- `tests/integration/situation-flow.test.ts` :: "computes no penalty at all while nobody has read the CCAP"
+- `tests/integration/situation-flow.test.ts` :: "computes one against the signed délai once the clause is typed"
+- `tests/integration/situation-flow.test.ts` :: "is a date and a reason, and carries no money"
+- `tests/integration/situation-flow.test.ts` :: "moves the délai once issued, and the penalty stops with it"
+- `tests/integration/situation-flow.test.ts` :: "names both avenants on the next situation's form"
+
 And screens 24, 25 and 26 — `/personnel-requests` was the third dead link in
 the rail, and a certification that lapses before a man is due on site is the
 same rule for the third time:

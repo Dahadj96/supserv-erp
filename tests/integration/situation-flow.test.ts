@@ -488,6 +488,8 @@ describe("avenant n° 1", () => {
         additions: [{ designation: "", qty: "", unitPrice: "" }],
         theirNumber: null,
         signedOn: null,
+        newContractualEnd: null,
+        reason: null,
         actorId: ACTOR,
       }),
     ).rejects.toMatchObject({ reason: "nothingAmended" });
@@ -499,6 +501,8 @@ describe("avenant n° 1", () => {
         additions: [],
         theirNumber: null,
         signedOn: null,
+        newContractualEnd: null,
+        reason: null,
         actorId: ACTOR,
       }),
     ).rejects.toMatchObject({ reason: "lineNotOnContract" });
@@ -510,6 +514,8 @@ describe("avenant n° 1", () => {
         additions: [{ designation: "Massif béton pour poteau", qty: "4", unitPrice: "" }],
         theirNumber: null,
         signedOn: null,
+        newContractualEnd: null,
+        reason: null,
         actorId: ACTOR,
       }),
     ).rejects.toMatchObject({ reason: "additionNeedsPrice" });
@@ -531,6 +537,8 @@ describe("avenant n° 1", () => {
       ],
       theirNumber: "AV 01/2026",
       signedOn: "2026-10-15",
+      newContractualEnd: null,
+      reason: "Quantités supplémentaires, terrain rocheux",
       actorId: ACTOR,
     };
     avenant = await saveAmendment(paper);
@@ -653,6 +661,133 @@ describe("avenant n° 1", () => {
     const pdf = await toPdf(view);
     expect(pdf.subarray(0, 4).toString()).toBe("%PDF");
     writeFileSync(".logs/situation-4-avenant.pdf", pdf);
+  });
+});
+
+/**
+ * The délai, and the pénalités that run from it.
+ *
+ * An avenant de prolongation carries no price at all — it is a date and a
+ * reason — and the penalty clause is a figure the CLIENT may apply, which this
+ * system computes only once somebody has read it off the CCAP.
+ */
+describe("avenant n° 2 — the délai", () => {
+  let prolongation = "";
+  const DEC = new Date("2026-12-01T00:00:00Z");
+
+  async function situationNumbered(sequence: number): Promise<string> {
+    const [row] = await db
+      .select({ id: situationDetail.documentId })
+      .from(situationDetail)
+      .where(and(eq(situationDetail.projectId, projectId), eq(situationDetail.sequence, sequence)))
+      .limit(1);
+    return row?.id as string;
+  }
+
+  it("refuses an avenant that carries nothing at all — no price, no date", async () => {
+    await expect(
+      saveAmendment({
+        projectId,
+        changes: {},
+        additions: [],
+        theirNumber: null,
+        signedOn: null,
+        newContractualEnd: null,
+        reason: "on y pense",
+        actorId: ACTOR,
+      }),
+    ).rejects.toMatchObject({ reason: "nothingAmended" });
+  });
+
+  it("computes no penalty at all while nobody has read the CCAP", async () => {
+    const p = await getProject(projectId, DEC);
+    expect(p?.deadline).toBe("2026-11-20");
+    expect(p?.penalty.blocked).toBe("noClause");
+    expect(p?.penalty.amount).toBeNull();
+  });
+
+  it("computes one against the signed délai once the clause is typed", async () => {
+    await updateProjectTerms({
+      projectId,
+      penaltyPerMille: "1",
+      penaltyCapPct: "10",
+      penaltyBase: "excl",
+      actorId: ACTOR,
+    });
+
+    const p = await getProject(projectId, DEC);
+    expect(p?.penalty.blocked).toBeNull();
+    expect(p?.penalty.daysLate).toBe(11);
+    // The marché as avenant n° 1 left it: 4 730 000 × 1‰ × 11 days.
+    expect(p?.penalty.basis).toBe("4730000.00");
+    expect(p?.penalty.amount).toBe("52030.00");
+    expect(p?.penalty.stillRunning).toBe(true);
+    expect(p?.penalty.capped).toBe(false);
+  });
+
+  it("refuses a base that is neither the HT nor the TTC", async () => {
+    await expect(
+      updateProjectTerms({ projectId, penaltyBase: "net", actorId: ACTOR }),
+    ).rejects.toMatchObject({ reason: "badPenaltyBase" });
+  });
+
+  it("is a date and a reason, and carries no money", async () => {
+    prolongation = await saveAmendment({
+      projectId,
+      changes: {},
+      additions: [],
+      theirNumber: "AV 02/2026",
+      signedOn: "2026-11-10",
+      newContractualEnd: "2027-02-20",
+      reason: "Terrain rocheux sur le tronçon 2 — prolongation de trois mois",
+      actorId: ACTOR,
+    });
+    created.push(prolongation);
+
+    const lines = await db
+      .select()
+      .from(documentLine)
+      .where(eq(documentLine.documentId, prolongation));
+    expect(lines).toHaveLength(0);
+    const [row] = await db.select().from(document).where(eq(document.id, prolongation));
+    // `{}`, not a block of noughts: this paper is not a bill for nothing.
+    expect(row?.totals).toEqual({});
+  });
+
+  it("moves nothing while it is a draft", async () => {
+    const p = await getProject(projectId, DEC);
+    expect(p?.deadline).toBe("2026-11-20");
+    expect(p?.penalty.daysLate).toBe(11);
+  });
+
+  it("moves the délai once issued, and the penalty stops with it", async () => {
+    const out = await render({ documentId: prolongation, purpose: "issue", actorId: ACTOR });
+    expect(out.number).toBe("AV 02/2026");
+    expect(out.amendment).toMatchObject({
+      changed: 0,
+      added: 0,
+      reason: "Terrain rocheux sur le tronçon 2 — prolongation de trois mois",
+    });
+    const pdf = await toPdf(out);
+    expect(pdf.subarray(0, 4).toString()).toBe("%PDF");
+    writeFileSync(".logs/avenant-2-delai.pdf", pdf);
+
+    const p = await getProject(projectId, DEC);
+    // The signed marché still says November: an issued document never changes.
+    expect(p?.contractualEnd).toBe("2026-11-20");
+    expect(p?.deadline).toBe("2027-02-20");
+    expect(p?.daysLeft).toBe(81);
+    expect(p?.penalty.daysLate).toBe(0);
+    expect(p?.penalty.amount).toBe("0.00");
+  });
+
+  it("names both avenants on the next situation's form", async () => {
+    const view = await render({
+      documentId: await situationNumbered(4),
+      purpose: "preview",
+      actorId: ACTOR,
+    });
+    expect(view.situation?.amendmentRef).toBe("avenants n° AV 01/2026, AV 02/2026");
   });
 });
 
