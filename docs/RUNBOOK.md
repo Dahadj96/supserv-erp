@@ -40,6 +40,21 @@ Written 23 Aug 2026, the day `erp.supserv-dz.com` went live.
 > runs. Everything below is one command away from correct; the build on disk
 > passes all 85.
 >
+> **Measured again, 5 Sept.** Still not a service, still started by hand: the
+> process on port 3000 is a **3 September** build. `pnpm smoke` finds 3 of 89
+> routes answering 404 — `/prices/new`, and a marché's `situation` and
+> `amendment` screens — but that number now flatters it, because a signed-out
+> visitor is redirected before most of those pages read anything.
+>
+> What a signed-in person meets is worse. Migrations **0036–0049** have been
+> applied since that build was made, and 0049 drops columns it still asks for
+> by name: `party.country` and `numbering_series.reserve_on`. Old code
+> selecting a column the database no longer has does not degrade — it throws,
+> on the company list, on `/setup/numbering`, on anything that reads a company.
+>
+> The build on disk passes all 89, and one restart puts it in front. The
+> command below is still the fix, and it also stops this recurring.
+>
 > The process cannot be stopped from an ordinary shell — it was started from an
 > elevated one, and `Stop-Process` answers `Access is denied`. It has to be you.
 >
