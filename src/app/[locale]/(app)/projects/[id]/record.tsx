@@ -52,6 +52,8 @@ export async function RecordPanels({
    */
   const rate = (value: string | null | undefined) =>
     value === null || value === undefined || value === "" ? "" : String(Number(value));
+  /** 2026-09-05 → 05/09/2026. The way a date is written on the paperwork. */
+  const day = (iso: string) => iso.split("-").reverse().join("/");
   const amount = (value: string) =>
     Number(value).toLocaleString(locale === "fr" ? "fr-DZ" : "en-GB", {
       maximumFractionDigits: 0,
@@ -81,6 +83,34 @@ export async function RecordPanels({
             {t("projectRecord.record")}
           </Button>
         </form>
+        {/*
+          WHO SAID SO, AND WHEN. The schema has carried both since the table
+          was written and the screen printed neither, which turned one man's
+          estimate into something the system appeared to assert. It also makes
+          the page's best number honest: work done less work billed is only
+          worth acting on if both halves are from the same month.
+        */}
+        {p.physical ? (
+          <p
+            className={`mt-2 text-micro leading-relaxed ${
+              p.physical.stale ? "text-warning-ink" : "text-muted"
+            }`}
+          >
+            {p.physical.on
+              ? t("projectRecord.physical.said", {
+                  who: p.physical.by ?? t("projectRecord.physical.someone"),
+                  // 05/09/2026 on a French page. An ISO date in a sentence is
+                  // read as a code rather than as a day.
+                  on: locale === "fr" ? day(p.physical.on) : p.physical.on,
+                })
+              : t("projectRecord.physical.saidUndated", {
+                  who: p.physical.by ?? t("projectRecord.physical.someone"),
+                })}
+            {p.physical.stale
+              ? ` ${t("projectRecord.physical.stale", { days: p.physical.ageDays ?? 0 })}`
+              : ""}
+          </p>
+        ) : null}
       </section>
 
       <section className="rounded-[var(--radius-card)] border border-line bg-surface p-5">

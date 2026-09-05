@@ -577,3 +577,42 @@ tells you what you want to hear.
    `DEC` numbering series do not exist on the application database.** Screen 50
    creates each of them once, and a pattern cannot be changed after the first
    document carries it, so nobody but the Gérant should type them.
+
+18. **Nothing could see a column the application is not joined to.** The bug
+   above was found by accident. `pnpm audit:schema` — added on 5 September —
+   parses every column Drizzle declares and asks whether the application reads
+   it and whether the application writes it, deliberately not counting
+   `tests/`: a column whose only writer is a fixture is a column no screen can
+   set, which is exactly how `closed_at` passed unnoticed. See
+   `docs/DECISIONS/2026-09-05-columns-nothing-is-joined-to.md` and
+   `tests/unit/schema-columns.test.ts`, which holds the parser to finding the
+   columns at all — a reader that finds none reports a clean database.
+
+   The first run found **56 of 569 columns disconnected**. That is a ratchet,
+   not a gate: the script is in `pnpm check` and fails when the number grows,
+   and every commit that lowers it lowers the line in the file. The list is
+   printed in full on every run, so it is read rather than admired.
+
+   **54 today.** The two closed are `project.physical_by` and `physical_at`:
+   who gave the physical estimate and when, written since `setPhysicalProgress`
+   was first called and shown on no screen, while the schema's own comment said
+   screen 16 printed them. The page's best number is one subtraction — work
+   done less work billed — and a subtraction between a figure computed this
+   morning and one a chef de chantier gave in June is not a number to act on.
+   Screen 16 now names the person and the day, and says so in orange once the
+   estimate is older than a billing cycle.
+
+   - `tests/unit/project.test.ts` :: "carries the name and the day off the row"
+   - `tests/unit/project.test.ts` :: "still shows the estimate when the person has left the company"
+   - `tests/unit/project.test.ts` :: "calls an estimate stale once it is older than the billing cycle"
+   - `tests/unit/project.test.ts` :: "says the estimate is undated rather than inventing a day for it"
+   - `tests/integration/project.test.ts` :: "is stored with a name against it, and shows the gap"
+   - `tests/integration/project.test.ts` :: "says nothing at all about an estimate nobody has made"
+   - `pnpm walk` :: "the estimate carries the name of whoever made it"
+
+   The walk also stopped lying while this was being written. Signed out, every
+   route answers **200 with the sign-in page** — which carries the whole message
+   catalogue in its payload, so `content()` contains every string the walk looks
+   for. Two checks reported green on the sign-in screen before a `page.fill`
+   timed out on a form that was never going to be there. It now refuses to keep
+   walking when it is signed out.

@@ -10,7 +10,7 @@
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
-    "check": "pnpm typecheck && pnpm lint && pnpm audit:actions && pnpm audit:forms && pnpm test",
+    "check": "pnpm typecheck && pnpm lint && pnpm audit:actions && pnpm audit:forms && pnpm audit:schema && pnpm test",
     "typecheck": "tsc --noEmit",
     "lint": "biome check .",
     "audit:actions": "node scripts/audit-actions.mjs",
@@ -28,6 +28,7 @@
     "worker": "tsx src/jobs/worker.ts",
     "catalogue": "tsx --env-file=.env scripts/seed-catalogue.ts",
     "audit:forms": "node scripts/audit-forms.mjs",
+    "audit:schema": "node scripts/audit-schema.mjs",
     "walk": "tsx --env-file=.env scripts/click-the-marche.ts"
   },
   "dependencies": {

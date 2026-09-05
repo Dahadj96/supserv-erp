@@ -37,6 +37,8 @@ let projectId = "";
 let welderId = "";
 const documents: string[] = [];
 const payments: string[] = [];
+/** Projects a test opened for itself, cleaned up with the rest. */
+const others: string[] = [];
 
 async function situation(opts: {
   sequence: number;
@@ -191,6 +193,7 @@ afterAll(async () => {
   }
   if (documents.length) await db.delete(document).where(inArray(document.id, documents));
   if (projectId) await db.delete(project).where(eq(project.id, projectId));
+  if (others.length) await db.delete(project).where(inArray(project.id, others));
   if (dealId) await db.delete(deal).where(eq(deal.id, dealId));
   if (welderId) {
     await db.delete(personCertification).where(eq(personCertification.personId, welderId));
@@ -299,6 +302,28 @@ describe("physical progress is somebody's estimate", () => {
     expect(p?.progress.physicalPercent).toBe(62);
     // 62 estimated against 25 billed: 37 points of work not yet asked for.
     expect(p?.progress.aheadOfBilling).toBe(37);
+
+    // And the name against it reaches the screen, which is what this test's
+    // own title claimed for a fortnight while `physical_by` and `physical_at`
+    // were written and read by nothing.
+    expect(p?.physical?.percent).toBe(62);
+    expect(p?.physical?.on).toBe(new Date().toISOString().slice(0, 10));
+    // The actor here is a test string, not a user row: the join is LEFT, so
+    // the estimate survives an id that no longer resolves to a person.
+    expect(p?.physical?.by).toBeNull();
+  });
+
+  it("says nothing at all about an estimate nobody has made", async () => {
+    const fresh = await createProject({
+      dealId,
+      object: "Un marché sur lequel personne n'a estimé",
+      amountExcl: "100000",
+      retentionPct: "5",
+      actorId: ACTOR,
+    });
+    others.push(fresh);
+    // Not nought. Nobody having said is not the same fact as nothing done.
+    expect((await getProject(fresh, NOW))?.physical).toBeNull();
   });
 
   it("refuses a percentage that is not one", async () => {

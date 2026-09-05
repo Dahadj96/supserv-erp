@@ -1,6 +1,7 @@
 import Decimal from "decimal.js";
 import { and, asc, eq, inArray, isNull, sql } from "drizzle-orm";
 import { db } from "@/db";
+import { user } from "@/db/schema/auth";
 import { auditEntry } from "@/db/schema/control";
 import { deal } from "@/db/schema/deal";
 import { document } from "@/db/schema/document";
@@ -19,8 +20,10 @@ import {
 } from "./cautions";
 import { asPenaltyBase, type PenaltyBase, type PenaltyView, penaltyOf } from "./penalty";
 import {
+  type PhysicalEstimate,
   type Progress,
   type ProjectState,
+  physicalEstimate,
   progressOf,
   projectState,
   retentionRelease,
@@ -321,6 +324,12 @@ export type ProjectDetail = ProjectRow & {
   pvProvisoirePlanned: string | null;
   pvDefinitiveOn: string | null;
   retentionReleases: ReturnType<typeof retentionRelease>;
+  /**
+   * The physical estimate with the name and the date on it. Null until
+   * somebody has made one — and never a nought, because nobody saying is not
+   * the same fact as nobody having done anything.
+   */
+  physical: PhysicalEstimate | null;
   cautions: Caution[];
   crew: Crew[];
 };
@@ -343,6 +352,11 @@ export async function getProject(id: string, now = new Date()): Promise<ProjectD
       contractDocumentId: project.contractDocumentId,
       warrantyMonths: project.warrantyMonths,
       physicalPercent: project.physicalPercent,
+      // Who said so and when. LEFT, like the audit trail's join: an estimate
+      // made by somebody who has since left the company is still what was
+      // said on the day, and dropping the row would hide the estimate itself.
+      physicalBy: user.name,
+      physicalAt: project.physicalAt,
       startedOn: project.startedOn,
       contractualEnd: project.contractualEnd,
       pvProvisoireOn: project.pvProvisoireOn,
@@ -357,6 +371,7 @@ export async function getProject(id: string, now = new Date()): Promise<ProjectD
     .from(project)
     .leftJoin(party, eq(party.id, project.partyId))
     .leftJoin(deal, eq(deal.id, project.dealId))
+    .leftJoin(user, eq(user.id, project.physicalBy))
     .where(eq(project.id, id))
     .limit(1);
 
@@ -460,6 +475,12 @@ export async function getProject(id: string, now = new Date()): Promise<ProjectD
       pvProvisoireOn: row.pvProvisoireOn,
       pvDefinitiveOn: row.pvDefinitiveOn,
       warrantyMonths: row.warrantyMonths,
+    }),
+    physical: physicalEstimate({
+      percent: row.physicalPercent,
+      by: row.physicalBy,
+      at: row.physicalAt,
+      now,
     }),
     cautions,
     crew,

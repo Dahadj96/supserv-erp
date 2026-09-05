@@ -4715,7 +4715,11 @@
     "physical": {
       "title": "Physical progress",
       "why": "What the chef de chantier says, with their name and the date. Never derived.",
-      "percent": "Done, in %"
+      "percent": "Done, in %",
+      "said": "{who} said so on {on}.",
+      "saidUndated": "{who} said so.",
+      "someone": "a user since removed",
+      "stale": "That was {days} days ago: the gap against financial progress compares two different months."
     },
     "reception": {
       "title": "Réceptions",

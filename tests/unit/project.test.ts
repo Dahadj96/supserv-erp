@@ -10,7 +10,9 @@ import {
   readCautions,
 } from "@/domain/project/cautions";
 import {
+  PHYSICAL_STALE_DAYS,
   PROJECT_STATES,
+  physicalEstimate,
   progressOf,
   projectState,
   retentionRelease,
@@ -258,6 +260,65 @@ describe("when the retention comes back", () => {
         warrantyMonths: null,
       }),
     ).toEqual({ on: null, basis: "unknown" });
+  });
+});
+
+describe("who said the work was 62 % done, and when", () => {
+  it("says nothing at all until somebody has estimated", () => {
+    // Not nought. Nobody having said is not the same fact as nothing done.
+    expect(physicalEstimate({ percent: null, by: "Belkacem", at: NOW, now: NOW })).toBeNull();
+  });
+
+  it("carries the name and the day off the row", () => {
+    const said = physicalEstimate({
+      percent: 62,
+      by: "M. Belkacem",
+      at: new Date("2026-08-19T14:30:00Z"),
+      now: NOW,
+    });
+    expect(said).toEqual({
+      percent: 62,
+      by: "M. Belkacem",
+      on: "2026-08-19",
+      ageDays: 2,
+      stale: false,
+    });
+  });
+
+  it("still shows the estimate when the person has left the company", () => {
+    // The join is LEFT for this reason: an estimate made by somebody who has
+    // gone is still what was said on the day, and dropping it would hide the
+    // number as well as the name.
+    const said = physicalEstimate({ percent: 40, by: null, at: NOW, now: NOW });
+    expect(said?.percent).toBe(40);
+    expect(said?.by).toBeNull();
+  });
+
+  it("calls an estimate stale once it is older than the billing cycle", () => {
+    const old = physicalEstimate({
+      percent: 62,
+      by: "M. Belkacem",
+      at: new Date("2026-06-10T08:00:00Z"),
+      now: NOW,
+    });
+    expect(old?.ageDays).toBe(72);
+    expect(old?.stale).toBe(true);
+  });
+
+  it("holds the line exactly at the threshold, not a day early", () => {
+    const at = new Date(NOW);
+    at.setUTCDate(at.getUTCDate() - PHYSICAL_STALE_DAYS);
+    expect(physicalEstimate({ percent: 10, by: null, at, now: NOW })?.stale).toBe(false);
+
+    at.setUTCDate(at.getUTCDate() - 1);
+    expect(physicalEstimate({ percent: 10, by: null, at, now: NOW })?.stale).toBe(true);
+  });
+
+  it("says the estimate is undated rather than inventing a day for it", () => {
+    // Rows written before the date was recorded. An age this system guessed
+    // would be the one thing on the panel nobody said.
+    const said = physicalEstimate({ percent: 55, by: "M. Belkacem", at: null, now: NOW });
+    expect(said).toEqual({ percent: 55, by: "M. Belkacem", on: null, ageDays: null, stale: false });
   });
 });
 

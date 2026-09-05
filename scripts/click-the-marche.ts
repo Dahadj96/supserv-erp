@@ -125,6 +125,25 @@ async function main() {
     // is a thousand per mille to anybody skimming a French page.
     checkText("the clause is recorded, and reads as it was typed", await text(), "1‰ par jour");
 
+    /* ── the estimate, and whose it is ─────────────────────────────────── */
+    console.log("\nscreen 16 — physical progress");
+    await page.fill('form:has(input[name="percent"]) input[name="percent"]', "62");
+    await page.locator('form:has(input[name="percent"]) button[type="submit"]').click();
+    // `recorded=physical`, not `recorded=`: the page is already on
+    // `recorded=terms` from the step above, and a loose pattern matches the URL
+    // it is standing on and never waits for the navigation at all.
+    await page.waitForURL(/recorded=physical/, { timeout: 15_000 });
+    const afterEstimate = await text();
+    // The number was always here. The name and the date were recorded from the
+    // first day and printed nowhere, which made one man's guess look like
+    // something the system was asserting.
+    checkText("the estimate carries the name of whoever made it", afterEstimate, ACTOR_NAME);
+    checkText(
+      "and the day they made it",
+      afterEstimate,
+      new Date().toISOString().slice(0, 10).split("-").reverse().join("/"),
+    );
+
     /* ── the avenant: two numbers, and a draft ─────────────────────────── */
     console.log("\nscreen 16c — the avenant");
     check("the avenant screen opens", (await go(`/fr/projects/${ids.projectId}/amendment`)) === 200);

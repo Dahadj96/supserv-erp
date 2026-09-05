@@ -225,6 +225,60 @@ export function retentionRelease(opts: {
   return { on: at.toISOString().slice(0, 10), basis: "provisional" };
 }
 
+/**
+ * How old an estimate may be before the page says how old it is.
+ *
+ * A month, because a marché bills roughly monthly: an estimate made in the
+ * same cycle as the situation beside it is comparing like with like, and one
+ * made two cycles ago is not.
+ */
+export const PHYSICAL_STALE_DAYS = 30;
+
+export type PhysicalEstimate = {
+  percent: number;
+  /** The name if the id still resolves to a person, else null. */
+  by: string | null;
+  /** The day they said it, as a date. Null on a row written before this. */
+  on: string | null;
+  /** How many days ago. Null when nobody recorded when. */
+  ageDays: number | null;
+  stale: boolean;
+};
+
+/**
+ * Physical progress WITH ITS PROVENANCE — who said so, and when.
+ *
+ * The schema has carried `physical_by` and `physical_at` since the table was
+ * written, with a comment saying screen 16 prints the estimate next to the
+ * financial percentage. It printed the number and neither of the other two.
+ *
+ * That is not a cosmetic gap. The whole value of the page is one subtraction —
+ * work done less work billed — and a subtraction between a figure computed
+ * this morning and a figure a chef de chantier gave in June is not a number
+ * anybody should act on. It is also the ERP's own rule: a person's estimate is
+ * kept BECAUSE it is a person's, and an estimate with no name on it has
+ * quietly become a fact the system asserts.
+ */
+export function physicalEstimate(opts: {
+  percent: number | null;
+  by: string | null;
+  at: Date | null;
+  now: Date;
+}): PhysicalEstimate | null {
+  if (opts.percent === null) return null;
+
+  const on = opts.at ? opts.at.toISOString().slice(0, 10) : null;
+  const ageDays = on ? Math.max(days(on, opts.now), 0) : null;
+
+  return {
+    percent: opts.percent,
+    by: opts.by,
+    on,
+    ageDays,
+    stale: ageDays !== null && ageDays > PHYSICAL_STALE_DAYS,
+  };
+}
+
 export function projectState(opts: {
   closedAt: Date | null;
   pvProvisoireOn: string | null;

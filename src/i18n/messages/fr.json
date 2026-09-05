@@ -4715,7 +4715,11 @@
     "physical": {
       "title": "Avancement physique",
       "why": "Ce que dit le chef de chantier, avec son nom et la date. Jamais déduit.",
-      "percent": "Réalisé, en %"
+      "percent": "Réalisé, en %",
+      "said": "Estimation de {who}, le {on}.",
+      "saidUndated": "Estimation de {who}.",
+      "someone": "un utilisateur retiré depuis",
+      "stale": "Elle date de {days} jours : l'écart avec l'avancement financier compare deux mois différents."
     },
     "reception": {
       "title": "Réceptions",
