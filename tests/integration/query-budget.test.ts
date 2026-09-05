@@ -12,6 +12,7 @@ import { createDeal, listDeals } from "@/domain/deal/deal";
 import { ensureTypesExist } from "@/domain/document-types";
 import { billed, owings } from "@/domain/money/store";
 import { nextFinalAccount } from "@/domain/project/final";
+import { nextRetentionRelease } from "@/domain/project/retention";
 import {
   nextAmendment,
   nextSituation,
@@ -244,6 +245,23 @@ describe("what a screen costs", () => {
     // Five: the situations, the marché's id, the two décompte lookups, the
     // number it would take. The page reads the project once, not twice.
     expect(n, `nextFinalAccount(loaded) made ${n} queries`).toBeLessThanOrEqual(7);
+  });
+
+  it("asks for the retention back — 16e", async () => {
+    // 18, of which 11 are the project it reads for the PV définitif and the
+    // rate. It is on the same page as the décompte, so it must not read the
+    // project a second time — see the next one.
+    const n = await cost(() => nextRetentionRelease(projectId));
+    expect(n, `nextRetentionRelease made ${n} queries`).toBeLessThanOrEqual(22);
+  });
+
+  it("and charges that panel nothing twice for the project either", async () => {
+    const loaded = await getProject(projectId);
+    // Seven: what each situation withheld, the marché's id, its drafts and its
+    // issued releases, the two that ask what has come back, and the number it
+    // would take. Screen 16 reads the project once for all three panels.
+    const n = await cost(() => nextRetentionRelease(projectId, loaded));
+    expect(n, `nextRetentionRelease(loaded) made ${n} queries`).toBeLessThanOrEqual(9);
   });
 });
 

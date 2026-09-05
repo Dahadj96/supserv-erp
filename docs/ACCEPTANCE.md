@@ -537,3 +537,43 @@ tells you what you want to hear.
    measured number beside it. Screen 16: 14 → 9. Screen 15: 12 → 7, and it no
    longer grows with the number of projects. The décompte: 34 → 14, and 5 when
    the page passes the project it already has.
+
+17. ~~**No marché could ever leave WARRANTY.**~~ **Found and closed on 5
+   September.** `reception_report` has converted to `retention_release` in the
+   catalogue since the catalogue was written, and the kind did not exist — the
+   test that checks conversions carried it in a `knownGaps` set with a note
+   saying the list was meant to shrink. So nothing could record the retenue de
+   garantie coming back: `project.closedAt` was read in three places and
+   written in none, `retentionHeld` is the sum of what the issued situations
+   withheld and an issued situation cannot change, and `projectState` closed a
+   marché only when that figure reached zero. On the test marché it is 138 260
+   DZD the ERP would have drawn as outstanding for ever.
+
+   Screen 16e writes the demande de restitution — one line per situation, no
+   VAT, blocked until the PV de réception définitive — and `retention_release`
+   is in the ledger, so once issued the money ages and is chased like anything
+   else owed. The marché closes when the money ARRIVES, not when the letter
+   goes out. `knownGaps` is now empty. See
+   `docs/DECISIONS/2026-09-05-asking-for-the-retention-back.md`:
+
+   - `tests/integration/situation-flow.test.ts` :: "will not be written before the réception définitive"
+   - `tests/integration/situation-flow.test.ts` :: "is due the day the PV définitif is signed, not a year after it"
+   - `tests/integration/situation-flow.test.ts` :: "lists what each situation withheld, and charges no VAT on any of it"
+   - `tests/integration/situation-flow.test.ts` :: "cannot be edited by hand, because every figure on it is a situation's"
+   - `tests/integration/situation-flow.test.ts` :: "is issued under a number of ours and then chased like anything else owed"
+   - `tests/integration/situation-flow.test.ts` :: "leaves the marché in warranty while the demand sits unanswered"
+   - `tests/integration/situation-flow.test.ts` :: "closes the marché the day the money arrives"
+   - `tests/unit/project.test.ts` :: "closes the marché on the outstanding figure, not on the held one"
+   - `tests/unit/project.test.ts` :: "is due the day the PV définitif is signed, because that is when the warranty ended"
+   - `tests/integration/document-types.test.ts` :: "only ever converts into a kind that exists"
+
+   It also uncovered a second thing, which is why it is written here rather
+   than as a line in item 13: `retentionRelease` returned *PV définitif +
+   warranty months*. The délai de garantie runs from the réception PROVISOIRE
+   and the définitive is what ENDS it, so screen 16 put the money a second year
+   out and told the Gérant to wait on a demand he was already entitled to send.
+
+   Still open, and named here so it is not mistaken for done: the **`RG` and
+   `DEC` numbering series do not exist on the application database.** Screen 50
+   creates each of them once, and a pattern cannot be changed after the first
+   document carries it, so nobody but the Gérant should type them.

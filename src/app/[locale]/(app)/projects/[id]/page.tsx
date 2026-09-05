@@ -12,6 +12,7 @@ import type { CautionState, CrewState } from "@/domain/project/cautions";
 import { needsAttention } from "@/domain/project/cautions";
 import { nextFinalAccount } from "@/domain/project/final";
 import type { SituationState } from "@/domain/project/progress";
+import { nextRetentionRelease } from "@/domain/project/retention";
 import { contractCandidates, contractOf, withAmendments } from "@/domain/project/situations";
 import { getProject } from "@/domain/project/store";
 import { Link } from "@/i18n/navigation";
@@ -19,6 +20,7 @@ import {
   crewAction,
   crewUpdateAction,
   saveFinalAccountAction,
+  saveRetentionReleaseAction,
   situationApprovedAction,
   situationSubmittedAction,
 } from "./actions";
@@ -79,12 +81,13 @@ export default async function ProjectPage({
 
   const p = await getProject(id);
   if (!p) notFound();
-  const [contracts, people, contract, final] = await Promise.all([
+  const [contracts, people, contract, final, release] = await Promise.all([
     contractCandidates(p.dealId),
     listPeople("all", 300),
     contractOf(id),
     // The project is already in hand — see the note on `nextFinalAccount`.
     nextFinalAccount(id, p),
+    nextRetentionRelease(id, p),
   ]);
   // What is under contract TODAY: the marché the person typed, plus what each
   // avenant added. Progress against the original would read past 100%.
@@ -638,6 +641,14 @@ export default async function ProjectPage({
                   </Badge>
                 </dd>
               </div>
+              {Number(p.progress.money.retentionReleased) > 0 ? (
+                <div className="flex items-baseline gap-3 border-b border-line-subtle py-2">
+                  <dt className="text-tiny text-secondary">{t("retention.returned")}</dt>
+                  <dd className="ms-auto text-end text-tiny tabular-nums text-ink">
+                    {money(p.progress.money.retentionReleased)}
+                  </dd>
+                </div>
+              ) : null}
               <div className="flex items-baseline gap-3 py-2">
                 <dt className="text-tiny text-secondary">{t("project.retention.release")}</dt>
                 <dd className="ms-auto text-end text-tiny text-ink">
@@ -648,6 +659,71 @@ export default async function ProjectPage({
             <p className="mt-2 text-micro leading-relaxed text-muted">
               {t(`project.retention.basis.${p.retentionReleases.basis}`)}
             </p>
+
+            {/*
+              THE MONEY COMES BACK BECAUSE SOMEBODY ASKS. No client volunteers
+              the retenue de garantie, and nothing here invoices it by itself:
+              the button writes the demande, the wilaya pays it, and the marché
+              closes when the money arrives — not when the letter goes out.
+            */}
+            {release ? (
+              <div className="mt-3 border-t border-line-subtle pt-3">
+                {release.issued.length > 0 ? (
+                  <ul className="mb-3 flex flex-col gap-1.5">
+                    {release.issued.map((one) => (
+                      <li key={one.documentId} className="flex items-baseline gap-3 text-tiny">
+                        <Link
+                          href={`/documents/${one.documentId}`}
+                          className="text-accent-ink hover:underline"
+                        >
+                          {one.number ?? t("retention.theDraft")}
+                        </Link>
+                        <span className="ms-auto text-micro text-muted">{one.issuedOn ?? ""}</span>
+                      </li>
+                    ))}
+                  </ul>
+                ) : null}
+
+                {release.blocked ? (
+                  <p className="text-micro leading-relaxed text-muted">
+                    {t(`retention.blocked.${release.blocked}`)}
+                  </p>
+                ) : (
+                  <form
+                    action={saveRetentionReleaseAction.bind(null, locale, id)}
+                    className="flex flex-wrap items-end gap-2"
+                  >
+                    <label className="w-[150px]">
+                      <span className="text-micro text-secondary">{t("retention.issuedOn")}</span>
+                      <input
+                        type="date"
+                        name="issuedOn"
+                        defaultValue={release.draft?.issuedOn ?? today}
+                        className={`${INPUT} mt-1`}
+                      />
+                    </label>
+                    <Button
+                      type="submit"
+                      variant="secondary"
+                      disabledReason={
+                        !can(session.role, "invoices.issue")
+                          ? t("documents.notAllowed")
+                          : !release.nextNumber
+                            ? t("retention.blocked.noSeries")
+                            : undefined
+                      }
+                    >
+                      {release.draft ? t("retention.redraw") : t("retention.ask")}
+                    </Button>
+                    <p className="basis-full text-micro leading-relaxed text-muted">
+                      {t("retention.why", {
+                        amount: `${money(release.toAsk)}`,
+                      })}
+                    </p>
+                  </form>
+                )}
+              </div>
+            ) : null}
           </section>
 
           {p.cautions.length > 0 ? (

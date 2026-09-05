@@ -5,6 +5,7 @@ import { db } from "@/db";
 import { auditEntry } from "@/db/schema/control";
 import { deal } from "@/db/schema/deal";
 import { document, documentLine, documentLink, numberingSeries } from "@/db/schema/document";
+import { payment, paymentAllocation } from "@/db/schema/money";
 import { party, partyRole } from "@/db/schema/party";
 import { project, situationDetail } from "@/db/schema/project";
 import { DraftRefused, saveDraft } from "@/documents/draft";
@@ -13,8 +14,13 @@ import { toPdf } from "@/documents/pdf";
 import { createDeal } from "@/domain/deal/deal";
 import { ensureTypesExist } from "@/domain/document-types";
 import { balanceOf, type Owing } from "@/domain/money/ageing";
-import { owings } from "@/domain/money/store";
+import { owings, recordPayment } from "@/domain/money/store";
 import { nextFinalAccount, saveFinalAccount } from "@/domain/project/final";
+import {
+  nextRetentionRelease,
+  retentionReturned,
+  saveRetentionRelease,
+} from "@/domain/project/retention";
 import {
   amendmentDeltas,
   contractOf,
@@ -151,6 +157,10 @@ beforeAll(async () => {
 
 afterAll(async () => {
   if (projectId) await db.delete(situationDetail).where(eq(situationDetail.projectId, projectId));
+  if (created.length) {
+    await db.delete(paymentAllocation).where(inArray(paymentAllocation.documentId, created));
+  }
+  if (clientId) await db.delete(payment).where(eq(payment.partyId, clientId));
   if (created.length) {
     await db.delete(documentLink).where(inArray(documentLink.fromDocument, created));
     await db.delete(documentLink).where(inArray(documentLink.toDocument, created));
@@ -964,5 +974,140 @@ describe("the décompte final", () => {
     await expect(
       saveFinalAccount({ projectId, issuedOn: null, actorId: ACTOR }),
     ).rejects.toMatchObject({ reason: "alreadyClosed" });
+  });
+});
+
+/**
+ * The retenue de garantie coming back — screen 16e.
+ *
+ * The last money on a marché and the easiest to lose. Nothing here is
+ * automatic: the demand is written because somebody asks, and the marché
+ * closes when the money ARRIVES, not when the letter goes out.
+ */
+describe("la demande de restitution de la retenue de garantie", () => {
+  let demande = "";
+
+  it("will not be written before the réception définitive", async () => {
+    const next = await nextRetentionRelease(projectId);
+    expect(next?.held).toBe("138260.00");
+    expect(next?.blocked).toBe("noDefinitive");
+    await expect(
+      saveRetentionRelease({ projectId, issuedOn: null, actorId: ACTOR }),
+    ).rejects.toMatchObject({ reason: "noDefinitive" });
+  });
+
+  it("is due the day the PV définitif is signed, not a year after it", async () => {
+    await recordReception({ projectId, pvDefinitiveOn: "2027-11-28", actorId: ACTOR });
+
+    const p = await getProject(projectId, new Date("2027-11-29T00:00:00Z"));
+    expect(p?.retentionReleases).toEqual({ on: "2027-11-28", basis: "definitive" });
+    // Still warranty: the money is due and nobody has sent it.
+    expect(p?.state).toBe("warranty");
+
+    const next = await nextRetentionRelease(projectId);
+    expect(next?.blocked).toBeNull();
+    expect(next?.toAsk).toBe("138260.00");
+    expect(next?.releaseDueOn).toBe("2027-11-28");
+    expect(next?.rows).toHaveLength(4);
+  });
+
+  it("lists what each situation withheld, and charges no VAT on any of it", async () => {
+    await db
+      .insert(numberingSeries)
+      .values({ kind: "retention_release", pattern: "RG/{YYYY}/{###}" })
+      .onConflictDoNothing();
+
+    demande = await saveRetentionRelease({
+      projectId,
+      issuedOn: "2027-12-01",
+      actorId: ACTOR,
+    });
+    created.push(demande);
+
+    const lines = await db
+      .select()
+      .from(documentLine)
+      .where(eq(documentLine.documentId, demande))
+      .orderBy(asc(documentLine.position));
+    expect(lines).toHaveLength(4);
+    expect(lines[0]?.designation).toContain("Retenue de garantie — situation n° 1");
+    // The tax was paid on the situation this sum was withheld from. Charging it
+    // again would be charging the client twice for one tax.
+    expect(lines.every((l) => Number(l.vatRate) === 0)).toBe(true);
+
+    const [row] = await db.select().from(document).where(eq(document.id, demande));
+    expect(row?.status).toBe("draft");
+    const totals = row?.totals as Record<string, string>;
+    expect(totals.totalExcl).toBe("138260.00");
+    expect(totals.totalVat).toBe("0.00");
+    expect(totals.totalIncl).toBe("138260.00");
+
+    // `releases`, on the marché itself — which is what lets screen 16 find it.
+    const [link] = await db
+      .select()
+      .from(documentLink)
+      .where(and(eq(documentLink.fromDocument, demande), eq(documentLink.relation, "releases")));
+    expect(link?.toDocument).toBe(contractId);
+
+    // Asking again rewrites the same draft rather than opening a second.
+    expect(await saveRetentionRelease({ projectId, issuedOn: "2027-12-01", actorId: ACTOR })).toBe(
+      demande,
+    );
+  });
+
+  it("cannot be edited by hand, because every figure on it is a situation's", async () => {
+    await expect(
+      saveDraft(
+        demande,
+        { lines: [{ lineKind: "item", designation: "x", qty: "1", unitPrice: "999999" }] },
+        ACTOR,
+      ),
+    ).rejects.toBeInstanceOf(DraftRefused);
+  });
+
+  it("is issued under a number of ours and then chased like anything else owed", async () => {
+    const out = await render({ documentId: demande, purpose: "issue", actorId: ACTOR });
+    expect(out.number).toMatch(/^RG\/2027\/\d{3}$/);
+    const pdf = await toPdf(out);
+    expect(pdf.subarray(0, 4).toString()).toBe("%PDF");
+    writeFileSync(".logs/demande-retenue.pdf", pdf);
+
+    // THE POINT OF THE WHOLE SCREEN. Until this kind was in the ledger the
+    // retenue was remembered by whoever remembered it, which is how five per
+    // cent of a marché goes missing.
+    const owed = (await owings({ partyId: clientId })).find((o) => o.documentId === demande);
+    expect(owed).toBeDefined();
+    expect(balanceOf(owed as Owing)).toBe("138260.00");
+
+    expect((await nextRetentionRelease(projectId))?.blocked).toBe("allAsked");
+  });
+
+  it("leaves the marché in warranty while the demand sits unanswered", async () => {
+    // Eight months on a wilaya's desk is exactly the state screen 15 exists to
+    // show. Closing the marché because we asked would hide it.
+    expect((await retentionReturned([projectId])).get(projectId)).toBeUndefined();
+    const p = await getProject(projectId, new Date("2028-06-01T00:00:00Z"));
+    expect(p?.progress.money.retentionOutstanding).toBe("138260.00");
+    expect(p?.state).toBe("warranty");
+  });
+
+  it("closes the marché the day the money arrives", async () => {
+    await recordPayment({
+      partyId: clientId,
+      method: "virement",
+      amount: "138260.00",
+      receivedOn: "2028-02-14",
+      allocations: { [demande]: "138260.00" },
+      actorId: ACTOR,
+    });
+
+    expect((await retentionReturned([projectId])).get(projectId)).toBe("138260.00");
+
+    const p = await getProject(projectId, new Date("2028-02-15T00:00:00Z"));
+    // Held never falls — an issued situation cannot change. Outstanding does.
+    expect(p?.progress.money.retentionHeld).toBe("138260.00");
+    expect(p?.progress.money.retentionReleased).toBe("138260.00");
+    expect(p?.progress.money.retentionOutstanding).toBe("0.00");
+    expect(p?.state).toBe("closed");
   });
 });

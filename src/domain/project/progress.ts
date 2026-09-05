@@ -83,6 +83,18 @@ export type Money = {
   awaitingApproval: string;
   /** Held back across every approved situation. */
   retentionHeld: string;
+  /**
+   * Of that, what the client has actually GIVEN BACK — money allocated against
+   * an issued levée de retenue de garantie.
+   *
+   * Money arriving is what ends a warranty, not a demand being sent. A demand
+   * sitting unanswered on a wilaya's desk for eight months is precisely the
+   * state screen 15 exists to show, and calling the marché closed because we
+   * asked would hide it.
+   */
+  retentionReleased: string;
+  /** Still with the client: held less released. What is worth going after. */
+  retentionOutstanding: string;
   /** Actually received. */
   paid: string;
   /** Contract less what has been approved. */
@@ -112,6 +124,8 @@ export function progressOf(opts: {
   situations: SituationInput[];
   contract: string | null;
   retentionPct: string;
+  /** What the client has given back. Zero until a levée is paid. */
+  retentionReleased?: string;
   physicalPercent: number | null;
   now: Date;
 }): Progress {
@@ -138,6 +152,8 @@ export function progressOf(opts: {
    * plan around.
    */
   const retentionHeld = sum(approvedRows, (s) => d(s.retention));
+  const retentionReleased = d(opts.retentionReleased);
+  const retentionOutstanding = Decimal.max(retentionHeld.minus(retentionReleased), 0);
 
   const financialPercent =
     contract && contract.greaterThan(0)
@@ -163,6 +179,8 @@ export function progressOf(opts: {
       approved: approved.toFixed(2),
       awaitingApproval: sum(waitingRows, (s) => d(s.amountExcl)).toFixed(2),
       retentionHeld: retentionHeld.toFixed(2),
+      retentionReleased: retentionReleased.toFixed(2),
+      retentionOutstanding: retentionOutstanding.toFixed(2),
       paid: sum(situations, (s) => d(s.paid)).toFixed(2),
       remaining: contract ? Decimal.max(contract.minus(approved), 0).toFixed(2) : "0.00",
     },
@@ -176,33 +194,46 @@ export function progressOf(opts: {
 /**
  * When the retention comes back.
  *
- * The trigger is the PV définitif plus the warranty period, and until that PV
- * exists the date is a projection off the provisional acceptance rather than a
- * promise. Screen 16 labels it "expected", and this returns which of the two it
- * is so the label can be honest.
+ * The délai de garantie runs from the réception PROVISOIRE and ends at the
+ * réception DÉFINITIVE. So the two cases are not the same arithmetic:
+ *
+ *   - No PV définitif yet: the date is a PROJECTION, provisoire + warranty. The
+ *     screen labels it "expected", because a projection presented as a promise
+ *     is how somebody plans a year around a date nobody has set.
+ *   - PV définitif signed: the warranty has already run. The date is the PV
+ *     itself — the day the right to ask for the money back opened.
+ *
+ * It read `définitif + warranty` until screen 16e was written, which put the
+ * release a second year out and told the Gérant to sit on a demand he was
+ * already entitled to send. How long the wilaya then takes to pay is the
+ * ageing screen's business, from the date the demand was issued; a délai
+ * réglementaire is a legal claim and this screen makes none.
  */
 export function retentionRelease(opts: {
   pvProvisoireOn: string | null;
   pvDefinitiveOn: string | null;
   warrantyMonths: number | null;
 }): { on: string | null; basis: "definitive" | "provisional" | "unknown" } {
+  if (opts.pvDefinitiveOn) return { on: opts.pvDefinitiveOn, basis: "definitive" };
+
   if (!opts.warrantyMonths) return { on: null, basis: "unknown" };
+  if (!opts.pvProvisoireOn) return { on: null, basis: "unknown" };
 
-  const anchor = opts.pvDefinitiveOn ?? opts.pvProvisoireOn;
-  if (!anchor) return { on: null, basis: "unknown" };
-
-  const at = new Date(`${anchor}T00:00:00Z`);
+  const at = new Date(`${opts.pvProvisoireOn}T00:00:00Z`);
   at.setUTCMonth(at.getUTCMonth() + opts.warrantyMonths);
 
-  return {
-    on: at.toISOString().slice(0, 10),
-    basis: opts.pvDefinitiveOn ? "definitive" : "provisional",
-  };
+  return { on: at.toISOString().slice(0, 10), basis: "provisional" };
 }
 
 export function projectState(opts: {
   closedAt: Date | null;
   pvProvisoireOn: string | null;
+  /**
+   * What the client is STILL holding — `money.retentionOutstanding`, not
+   * `retentionHeld`. Held never falls: it is the sum of what the situations
+   * withheld, and an issued situation cannot change. Reading it here meant no
+   * marché could ever leave the warranty, however much money came back.
+   */
   retentionHeld: string;
 }): ProjectState {
   if (opts.closedAt) return "closed";

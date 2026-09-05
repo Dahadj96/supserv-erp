@@ -132,6 +132,7 @@ const EXPECTED: Record<string, string[]> = {
   "projects/[id]/actions.ts:saveAmendmentAction": ["offers.issue"],
   // The décompte final is money owed and money received, added up: compta's.
   "projects/[id]/actions.ts:saveFinalAccountAction": ["invoices.issue"],
+  "projects/[id]/actions.ts:saveRetentionReleaseAction": ["invoices.issue"],
   // The signed paper reaches the office as often as the site, so either.
   "projects/[id]/actions.ts:situationApprovedAction": ["invoices.issue", "works.issue"],
   "projects/[id]/actions.ts:situationSubmittedAction": ["invoices.issue", "works.issue"],

@@ -26,6 +26,7 @@ import {
   retentionRelease,
   type SituationInput,
 } from "./progress";
+import { retentionReturned } from "./retention";
 import { amendmentDeltas, contractVatRatio, deadlineOf } from "./situations";
 
 /**
@@ -225,13 +226,16 @@ export async function listProjects(now = new Date()): Promise<ProjectRow[]> {
   if (rows.length === 0) return [];
 
   const ids = rows.map((r) => r.id);
-  const [situations, cautions, deltas] = await Promise.all([
+  const [situations, cautions, deltas, released] = await Promise.all([
     situationsFor(ids),
     db.select().from(projectCaution).where(inArray(projectCaution.projectId, ids)),
     // What the avenants added. Progress is measured against what is under
     // contract today, and the list must say the same number the project page
     // and the situation say.
     amendmentDeltas(ids),
+    // And what the client has given back of the retention, which is the only
+    // thing that ends a warranty.
+    retentionReturned(ids),
   ]);
 
   return rows.map((row) => {
@@ -239,6 +243,7 @@ export async function listProjects(now = new Date()): Promise<ProjectRow[]> {
       situations: situations.get(row.id) ?? [],
       contract: underContract(row.amountExcl, deltas.get(row.id)),
       retentionPct: row.retentionPct,
+      retentionReleased: released.get(row.id),
       physicalPercent: row.physicalPercent,
       now,
     });
@@ -261,7 +266,8 @@ export async function listProjects(now = new Date()): Promise<ProjectRow[]> {
       state: projectState({
         closedAt: row.closedAt,
         pvProvisoireOn: row.pvProvisoireOn,
-        retentionHeld: progress.money.retentionHeld,
+        // What the client is STILL holding. See `projectState`.
+        retentionHeld: progress.money.retentionOutstanding,
       }),
       situationsApproved: progress.situations.filter(
         (s) => s.state === "approved" || s.state === "paid",
@@ -365,6 +371,7 @@ export async function getProject(id: string, now = new Date()): Promise<ProjectD
     situations: situations.get(id) ?? [],
     contract: contractExcl,
     retentionPct: row.retentionPct,
+    retentionReleased: (await retentionReturned([id])).get(id),
     physicalPercent: row.physicalPercent,
     now,
   });
@@ -421,7 +428,8 @@ export async function getProject(id: string, now = new Date()): Promise<ProjectD
     state: projectState({
       closedAt: row.closedAt,
       pvProvisoireOn: row.pvProvisoireOn,
-      retentionHeld: progress.money.retentionHeld,
+      // What the client is STILL holding. See `projectState`.
+      retentionHeld: progress.money.retentionOutstanding,
     }),
     situationsApproved: progress.situations.filter(
       (s) => s.state === "approved" || s.state === "paid",

@@ -155,6 +155,31 @@ export const SEED_TYPES: SeedType[] = [
     pattern: "DEC/{YYYY}/{###}",
   },
   {
+    /**
+     * LEVÉE DE RETENUE DE GARANTIE — the paper that asks for the money back.
+     *
+     * The twenty-second kind, and the one the catalogue has been pointing at
+     * since it was written: `reception_report` has converted to it on paper
+     * for months and the type did not exist, which meant nothing in this ERP
+     * could ever record the retention coming back. A marché stayed in WARRANTY
+     * for ever, because the only thing that ends the warranty is money
+     * arriving and there was nothing for it to arrive against.
+     *
+     * It re-charges no VAT: the tax was paid on the situations, and this asks
+     * for a part of a sum already invoiced. So `information` rather than
+     * `accounting` — it is a demand, not a pièce comptable — and it appears on
+     * screens 19 and 20 by KIND, because the money is genuinely owed.
+     */
+    kind: "retention_release",
+    family: "sell",
+    legalValue: "information",
+    numbering: "reservedOnIssue",
+    convertsTo: [],
+    languages: ["fr"],
+    active: true,
+    pattern: "RG/{YYYY}/{###}",
+  },
+  {
     kind: "credit_note",
     family: "sell",
     legalValue: "accounting",

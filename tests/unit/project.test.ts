@@ -209,13 +209,28 @@ describe("what the project is worth today", () => {
 });
 
 describe("when the retention comes back", () => {
-  it("counts from the PV définitif when there is one", () => {
+  it("is due the day the PV définitif is signed, because that is when the warranty ended", () => {
+    // Not définitif + 12. The délai de garantie runs from the PROVISOIRE and
+    // the définitive is what ends it; adding the warranty again put the money a
+    // second year out and told the Gérant to sit on a demand he could send.
     const release = retentionRelease({
       pvProvisoireOn: "2026-10-05",
-      pvDefinitiveOn: "2026-11-01",
+      pvDefinitiveOn: "2027-11-01",
       warrantyMonths: 12,
     });
     expect(release).toEqual({ on: "2027-11-01", basis: "definitive" });
+  });
+
+  it("says the définitive's date even when nobody typed a warranty period", () => {
+    // The right opened on a date somebody recorded. It does not depend on a
+    // number being in the CCAP field.
+    expect(
+      retentionRelease({
+        pvProvisoireOn: "2026-10-05",
+        pvDefinitiveOn: "2027-11-01",
+        warrantyMonths: null,
+      }),
+    ).toEqual({ on: "2027-11-01", basis: "definitive" });
   });
 
   it("projects off the provisional acceptance until then, and says so", () => {
@@ -243,6 +258,75 @@ describe("when the retention comes back", () => {
         warrantyMonths: null,
       }),
     ).toEqual({ on: null, basis: "unknown" });
+  });
+});
+
+describe("the retention actually coming back", () => {
+  const held: SituationInput[] = [
+    situation({ sequence: 1, amountExcl: "620000", paid: "589000" }),
+    situation({ sequence: 2, documentId: "d2", amountExcl: "720000", paid: "684000" }),
+  ];
+
+  function money(released?: string) {
+    return progressOf({
+      situations: held,
+      contract: "5180000",
+      retentionPct: "5",
+      retentionReleased: released,
+      physicalPercent: null,
+      now: NOW,
+    }).money;
+  }
+
+  it("is outstanding in full until a dinar of it arrives", () => {
+    const m = money();
+    expect(m.retentionHeld).toBe("67000.00");
+    expect(m.retentionReleased).toBe("0.00");
+    expect(m.retentionOutstanding).toBe("67000.00");
+  });
+
+  it("does not let held fall when part of it comes back", () => {
+    // Held is what the SITUATIONS withheld and an issued situation cannot
+    // change. Only the outstanding figure moves.
+    const m = money("20000");
+    expect(m.retentionHeld).toBe("67000.00");
+    expect(m.retentionOutstanding).toBe("47000.00");
+  });
+
+  it("never reports a negative outstanding when the client overpays", () => {
+    expect(money("80000").retentionOutstanding).toBe("0.00");
+  });
+
+  it("closes the marché on the outstanding figure, not on the held one", () => {
+    // The bug this pair exists for: projectState was reading `retentionHeld`,
+    // which never falls, so no marché could ever leave WARRANTY however much
+    // money arrived.
+    const m = money("67000");
+    expect(
+      projectState({
+        closedAt: null,
+        pvProvisoireOn: "2026-10-05",
+        retentionHeld: m.retentionHeld,
+      }),
+    ).toBe("warranty");
+    expect(
+      projectState({
+        closedAt: null,
+        pvProvisoireOn: "2026-10-05",
+        retentionHeld: m.retentionOutstanding,
+      }),
+    ).toBe("closed");
+  });
+
+  it("keeps the marché in warranty while the demand is unanswered", () => {
+    // Issuing the levée does not release anything. Money arriving does.
+    expect(
+      projectState({
+        closedAt: null,
+        pvProvisoireOn: "2026-10-05",
+        retentionHeld: money("0").retentionOutstanding,
+      }),
+    ).toBe("warranty");
   });
 });
 

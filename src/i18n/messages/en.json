@@ -1776,7 +1776,8 @@
       "noSuchDocument": "That document no longer exists.",
       "situationHasItsOwnScreen": "A situation is edited against the marché on the project page, not here.",
       "amendmentHasItsOwnScreen": "An avenant is written against the marché's bordereau on the project page, not here.",
-      "finalAccountIsComputed": "A final account is arithmetic over the situations. There is nothing on it to edit — it is drawn again on the project page."
+      "finalAccountIsComputed": "A final account is arithmetic over the situations. There is nothing on it to edit — it is drawn again on the project page.",
+      "retentionIsComputed": "A demand for the retention lists what each situation withheld. There is nothing on it to type — it is written again on the project page."
     },
     "settlement": "Payment method",
     "settlementUnsaid": "Not stated",
@@ -4260,7 +4261,7 @@
       "held": "Held to date",
       "release": "Expected release",
       "basis": {
-        "definitive": "Counted from the PV de réception définitive.",
+        "definitive": "The réception définitive is pronounced: the warranty has run and the retention has been due since that date.",
         "provisional": "A projection off the provisional acceptance. It is not a date anybody has agreed to until the PV définitif exists.",
         "unknown": "No release date can be worked out until the work is accepted and a warranty period is recorded."
       }
@@ -4706,7 +4707,10 @@
       "situationUnissued": "A situation is still a draft.",
       "situationUnapproved": "A situation is issued and not signed.",
       "noReception": "The work has not been accepted yet.",
-      "alreadyClosed": "This marché already has a final account issued."
+      "alreadyClosed": "This marché already has a final account issued.",
+      "noRetention": "No issued situation on this marché withheld any retention.",
+      "noDefinitive": "The réception définitive has not been pronounced, so the right to ask is not open.",
+      "allAsked": "Every dinar held has already been asked for."
     },
     "physical": {
       "title": "Physical progress",
@@ -4934,6 +4938,21 @@
       "noReception": "The work has not been accepted yet. Record the PV de réception provisoire first.",
       "noSeries": "No numbering series exists for the final account — screen 50 creates it, once, and the pattern cannot be changed afterwards.",
       "alreadyClosed": "This marché already has a final account issued."
+    }
+  },
+  "retention": {
+    "returned": "Already returned",
+    "theDraft": "the draft",
+    "ask": "Ask for it back",
+    "redraw": "Write the demand again",
+    "issuedOn": "Date on the paper",
+    "why": "The demand asks for {amount}, listed situation by situation, with no VAT: it was paid on the situations this money was withheld from. The marché closes when the money arrives, not when the letter goes out.",
+    "blocked": {
+      "noRetention": "No issued situation on this marché withheld any retention, so there is nothing to ask back.",
+      "noDefinitive": "The réception définitive has not been pronounced. That is what entitles us to the money; a demand sent before it is a demand the client files.",
+      "allAsked": "Every dinar held has already been asked for. The marché closes when the money arrives.",
+      "noContract": "This project is not attached to a marché, so there is no document to attach the demand to.",
+      "noSeries": "No numbering series exists for the retention release — screen 50 creates it, once, and the pattern cannot be changed afterwards."
     }
   }
 }

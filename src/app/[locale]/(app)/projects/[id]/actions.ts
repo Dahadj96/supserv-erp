@@ -5,6 +5,7 @@ import { redirect } from "next/navigation";
 import { can, canAny } from "@/auth/can";
 import { getSession } from "@/auth/session";
 import { saveFinalAccount } from "@/domain/project/final";
+import { saveRetentionRelease } from "@/domain/project/retention";
 import {
   recordSituationApproved,
   recordSituationSubmitted,
@@ -288,6 +289,37 @@ export async function saveFinalAccountAction(
   let documentId: string;
   try {
     documentId = await saveFinalAccount({
+      projectId: id,
+      issuedOn: orNull(str(form, "issuedOn")),
+      actorId: session.userId,
+    });
+  } catch (error) {
+    if (error instanceof ProjectRefused) back(locale, id, `?error=${error.reason}`);
+    throw error;
+  }
+  revalidatePath(`/${locale}/projects/${id}`);
+  redirect(`/${locale}/documents/${documentId}?created=1`);
+}
+
+/**
+ * Ask the client for the retenue de garantie back.
+ *
+ * `invoices.issue`, like the décompte: it is a demand for money. One field —
+ * the date on the paper — because the sum is what the situations withheld and
+ * a person typing it again is a person typing it differently.
+ */
+export async function saveRetentionReleaseAction(
+  locale: string,
+  id: string,
+  form: FormData,
+): Promise<void> {
+  const session = await getSession();
+  if (!session) redirect(`/${locale}/sign-in`);
+  if (!can(session.role, "invoices.issue")) back(locale, id, "?error=notAllowed");
+
+  let documentId: string;
+  try {
+    documentId = await saveRetentionRelease({
       projectId: id,
       issuedOn: orNull(str(form, "issuedOn")),
       actorId: session.userId,

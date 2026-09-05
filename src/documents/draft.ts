@@ -64,7 +64,8 @@ export class DraftRefused extends Error {
       | "noLines"
       | "situationHasItsOwnScreen"
       | "amendmentHasItsOwnScreen"
-      | "finalAccountIsComputed",
+      | "finalAccountIsComputed"
+      | "retentionIsComputed",
   ) {
     super(reason);
   }
@@ -145,6 +146,12 @@ export async function saveDraft(
   // is arithmetic over the situations, and a person editing one of them by
   // hand would be signing a total that no longer matches the papers behind it.
   if (record.kind === "final_account") throw new DraftRefused("finalAccountIsComputed");
+
+  // And the demande de restitution, which is the same arithmetic seen from the
+  // other end: one line per situation, each naming what that situation
+  // withheld. A hand-typed figure here is a sum asked for that no situation
+  // supports, and it is the client's accountant who finds it.
+  if (record.kind === "retention_release") throw new DraftRefused("retentionIsComputed");
 
   const lines = keepable(patch.lines);
   if (lines.length === 0) throw new DraftRefused("noLines");

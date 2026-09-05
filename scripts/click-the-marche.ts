@@ -99,6 +99,18 @@ async function main() {
     /* ── the terms: the CCAP's penalty clause, typed ───────────────────── */
     console.log("\nscreen 16 — the terms");
     check("the project opens", (await go(`/fr/projects/${ids.projectId}`)) === 200);
+    /*
+      A 200 IS NOT A PAGE. Signed out, every route answers 200 — with the
+      sign-in page, which carries the whole message catalogue in its payload,
+      so `content()` contains every string this file looks for. The walk once
+      reported two checks green on the sign-in screen and then spent thirty
+      seconds waiting for a form that was never going to be there.
+    */
+    if (page.url().includes("/sign-in")) {
+      throw new Error(
+        "the walk is signed out — the cookie was signed with a different secret; run it with --env-file=.env (pnpm walk)",
+      );
+    }
     check(
       "the penalties say nobody has read the CCAP",
       (await text()).includes("Personne n'a encore relevé la clause"),
@@ -154,6 +166,20 @@ async function main() {
         onProject.includes("Une situation est encore au brouillon") ||
         onProject.includes("Les travaux ne sont pas encore réceptionnés"),
     );
+
+    /* ── the retenue: the panel that asks for it back ──────────────────── */
+    console.log("\nscreen 16e — the retenue de garantie");
+    check("the retention panel is there", onProject.includes("Retenue de garantie"));
+    check(
+      "and refuses, naming why nothing can be asked for yet",
+      onProject.includes("La réception définitive n'est pas prononcée") ||
+        onProject.includes("Aucune situation émise sur ce marché n'a retenu") ||
+        onProject.includes("Toute la retenue détenue a déjà fait l'objet") ||
+        onProject.includes("Ce projet n'est rattaché à aucun marché"),
+    );
+    // The same trap as the penalty clause: `numeric(6,3)` reads back "5.000",
+    // and "5.000 %" on a French page is five thousand per cent.
+    checkText("the rate reads as it was typed", onProject, "5 %");
 
     /* ── the situation: the column a person types ──────────────────────── */
     console.log("\nscreen 16b — the next situation");

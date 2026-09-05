@@ -31,7 +31,16 @@ export class PaymentRefused extends Error {
   }
 }
 
-const INVOICE_KINDS = ["invoice", "advance_invoice", "situation"];
+/**
+ * What a payment can be allocated against, and what screen 19 chases.
+ *
+ * `retention_release` belongs here for one reason: the retenue de garantie is
+ * money the client already holds and does not send back on its own. Once the
+ * demande is issued it is a sum owed, with a date, and it has to sit in the
+ * same list as everything else owed — otherwise it is remembered by whoever
+ * remembers it, which is how five per cent of a marché goes missing.
+ */
+const INVOICE_KINDS = ["invoice", "advance_invoice", "situation", "retention_release"];
 
 /** Every unpaid invoice, with what has been allocated against it. */
 export async function owings(opts: { partyId?: string } = {}): Promise<Owing[]> {
@@ -531,7 +540,14 @@ export type BilledRow = {
   paid: string;
 };
 
-const BILLED_KINDS = ["invoice", "advance_invoice", "situation", "proforma", "credit_note"];
+const BILLED_KINDS = [
+  "invoice",
+  "advance_invoice",
+  "situation",
+  "proforma",
+  "credit_note",
+  "retention_release",
+];
 
 export async function billed(): Promise<BilledRow[]> {
   const rows = await db

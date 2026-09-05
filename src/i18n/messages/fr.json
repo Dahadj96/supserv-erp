@@ -1776,7 +1776,8 @@
       "noSuchDocument": "Ce document n'existe plus.",
       "situationHasItsOwnScreen": "Une situation se modifie face au marché, sur la page du projet, pas ici.",
       "amendmentHasItsOwnScreen": "Un avenant s'écrit face au bordereau du marché, sur la page du projet, pas ici.",
-      "finalAccountIsComputed": "Un décompte final est le calcul des situations. Il n'y a rien à y modifier — il se refait sur la page du projet."
+      "finalAccountIsComputed": "Un décompte final est le calcul des situations. Il n'y a rien à y modifier — il se refait sur la page du projet.",
+      "retentionIsComputed": "Une demande de restitution reprend ce que chaque situation a retenu. Il n'y a rien à y saisir — elle se refait sur la page du projet."
     },
     "settlement": "Mode de règlement",
     "settlementUnsaid": "Non précisé",
@@ -4260,7 +4261,7 @@
       "held": "Retenue à ce jour",
       "release": "Restitution attendue",
       "basis": {
-        "definitive": "Comptée à partir du PV de réception définitive.",
+        "definitive": "La réception définitive est prononcée : le délai de garantie est écoulé et la retenue est exigible depuis cette date.",
         "provisional": "Une projection à partir de la réception provisoire. Ce n'est pas une date convenue tant que le PV définitif n'existe pas.",
         "unknown": "Aucune date de restitution ne peut être calculée tant que les travaux ne sont pas réceptionnés et qu'aucune période de garantie n'est enregistrée."
       }
@@ -4706,7 +4707,10 @@
       "situationUnissued": "Une situation est encore au brouillon.",
       "situationUnapproved": "Une situation est émise et non signée.",
       "noReception": "Les travaux ne sont pas encore réceptionnés.",
-      "alreadyClosed": "Ce marché a déjà un décompte final émis."
+      "alreadyClosed": "Ce marché a déjà un décompte final émis.",
+      "noRetention": "Aucune situation émise n'a retenu de garantie sur ce marché.",
+      "noDefinitive": "La réception définitive n'est pas prononcée : le droit à la restitution n'est pas ouvert.",
+      "allAsked": "Toute la retenue détenue a déjà fait l'objet d'une demande."
     },
     "physical": {
       "title": "Avancement physique",
@@ -4934,6 +4938,21 @@
       "noReception": "Les travaux ne sont pas encore réceptionnés. Enregistrez d'abord le PV de réception provisoire.",
       "noSeries": "Aucune série de numérotation n'existe pour le décompte final — l'écran 50 la crée, une fois, et le format ne se change plus ensuite.",
       "alreadyClosed": "Ce marché a déjà un décompte final émis."
+    }
+  },
+  "retention": {
+    "returned": "Déjà restituée",
+    "theDraft": "le brouillon",
+    "ask": "Demander la restitution",
+    "redraw": "Refaire la demande",
+    "issuedOn": "Date sur le papier",
+    "why": "La demande porte sur {amount}, détaillés situation par situation, sans TVA : elle a été payée sur les situations d'où cette retenue a été prélevée. Le marché ne se clôt pas à l'envoi de la lettre mais à l'arrivée de l'argent.",
+    "blocked": {
+      "noRetention": "Aucune situation émise sur ce marché n'a retenu de garantie : il n'y a rien à restituer.",
+      "noDefinitive": "La réception définitive n'est pas prononcée. C'est elle qui ouvre le droit à la restitution ; une demande envoyée avant est une demande que le client classe.",
+      "allAsked": "Toute la retenue détenue a déjà fait l'objet d'une demande. Le marché se clôturera quand l'argent arrivera.",
+      "noContract": "Ce projet n'est rattaché à aucun marché : il n'y a pas de pièce à laquelle rattacher la demande.",
+      "noSeries": "Aucune série de numérotation n'existe pour la levée de retenue — l'écran 50 la crée, une fois, et le format ne se change plus ensuite."
     }
   }
 }

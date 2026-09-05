@@ -156,6 +156,12 @@ const TITLES: Record<string, { fr: string; en: string }> = {
   situation: { fr: "SITUATION DE TRAVAUX", en: "PROGRESS STATEMENT" },
   amendment: { fr: "AVENANT AU MARCHÉ", en: "CONTRACT AMENDMENT" },
   final_account: { fr: "DÉCOMPTE FINAL", en: "FINAL ACCOUNT" },
+  // Not "LEVÉE": the levée is what the client grants. What leaves this office
+  // is the demand for it, and the paper says which of the two it is.
+  retention_release: {
+    fr: "DEMANDE DE RESTITUTION DE LA RETENUE DE GARANTIE",
+    en: "REQUEST FOR RELEASE OF THE RETENTION",
+  },
 };
 
 /**

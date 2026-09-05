@@ -135,6 +135,8 @@ export const ISSUE_PERMISSION: Record<string, Permission> = {
   amendment: "offers.issue",
   // The décompte final is money owed and money received, added up. Compta's.
   final_account: "invoices.issue",
+  // And the paper that asks for the retenue de garantie back.
+  retention_release: "invoices.issue",
   // What leaves the warehouse and what is signed off on site.
   delivery_note: "deliveries.issue",
   work_order: "works.issue",

@@ -116,14 +116,12 @@ describe("the document type catalogue", () => {
 
   it("only ever converts into a kind that exists", async () => {
     const kinds = new Set(SEED_TYPES.map((t) => t.kind));
-    // retention_release is named as a destination by the mockup but is not a
-    // type of its own yet — the test names it rather than letting a dangling
-    // reference pass unnoticed.
-    //
-    // `supplier_invoice` was here too until screen 68 needed it to be real. A
-    // known gap that stays known for months is a decision nobody made; this
-    // list is meant to shrink.
-    const knownGaps = new Set(["retention_release"]);
+    // Empty, and meant to stay that way. `supplier_invoice` was here until
+    // screen 68 needed it to be real, and `retention_release` until screen 16e
+    // did: a marché could not leave WARRANTY because nothing could record the
+    // retenue coming back. A known gap that stays known for months is a
+    // decision nobody made.
+    const knownGaps = new Set<string>([]);
 
     for (const type of SEED_TYPES) {
       for (const target of type.convertsTo) {
