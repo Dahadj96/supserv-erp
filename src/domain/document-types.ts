@@ -39,7 +39,9 @@ export const SEED_TYPES: SeedType[] = [
     family: "sell",
     legalValue: "none",
     numbering: "onIssue",
-    convertsTo: ["proforma", "invoice"],
+    // `client_order` was missing here and the engine has always done it: it is
+    // screen 48's "Record their order", the thing that moves an enquiry to won.
+    convertsTo: ["proforma", "client_order", "invoice"],
     languages: ["fr", "ar"],
     active: true,
     pattern: "DEV/{YYYY}/{####}",
@@ -49,7 +51,10 @@ export const SEED_TYPES: SeedType[] = [
     family: "sell",
     legalValue: "none",
     numbering: "onIssue",
-    convertsTo: ["invoice", "advance_invoice"],
+    // Same omission. `advance_invoice` stays: the facture d'avance is raised
+    // from the marché, not by converting the proforma, and this column says
+    // what the paper becomes — the screen marks which of them the system does.
+    convertsTo: ["client_order", "invoice", "advance_invoice"],
     languages: ["fr", "ar", "en"],
     active: true,
     pattern: "PRO/{YYYY}/{####}",
@@ -370,9 +375,16 @@ export async function listTypes(): Promise<TypeRow[]> {
  * IS. The suggested pattern is shown on screen and copied on request.
  */
 export async function ensureTypesExist(): Promise<number> {
-  let written = 0;
+  // What was there before, so the screen can say how many are NEW rather than
+  // how many rows the statement touched. With the upsert below that is every
+  // one of them, every time.
+  const before = new Set(
+    (await db.select({ kind: documentType.kind }).from(documentType)).map((r) => r.kind),
+  );
+
+  let added = 0;
   for (const [index, type] of SEED_TYPES.entries()) {
-    const result = await db
+    await db
       .insert(documentType)
       .values({
         kind: type.kind,
@@ -384,11 +396,33 @@ export async function ensureTypesExist(): Promise<number> {
         active: type.active,
         position: index,
       })
-      .onConflictDoNothing()
-      .returning({ kind: documentType.kind });
-    written += result.length;
+      /*
+        UPDATE, and it was `onConflictDoNothing()`.
+
+        What a kind IS belongs to this file — its family, its legal value, how
+        it is numbered, what it becomes, which languages it is printed in. What
+        is SWITCHED ON belongs to whoever runs the company, and `setActive`
+        writes that. Doing nothing on conflict meant the first half could never
+        be corrected: a row written in August kept August's answer for ever,
+        and screen 50 went on printing it beside a catalogue that had since
+        changed its mind. `active` is deliberately absent from the update — a
+        kind somebody switched off does not come back on because the catalogue
+        was rewritten.
+      */
+      .onConflictDoUpdate({
+        target: documentType.kind,
+        set: {
+          family: type.family,
+          legalValue: type.legalValue,
+          numbering: type.numbering,
+          convertsTo: type.convertsTo,
+          languages: type.languages,
+          position: index,
+        },
+      });
+    if (!before.has(type.kind)) added += 1;
   }
-  return written;
+  return added;
 }
 
 export class TypeRefused extends Error {

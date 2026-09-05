@@ -1528,7 +1528,7 @@
     "setUpSeries": "Numbering series",
     "empty": "The catalogue is empty. Nothing is broken — the engine issues whatever kind it is handed. Writing the types down is what lets a screen say that a delivery note is proof and a proforma is not, and what stops the system generating a number for a client purchase order that already has one.",
     "writeThemDown": "Write down the types",
-    "written": "{count, plural, =0 {Everything was already written down} one {# type written down} other {# types written down}}. None of them has a numbering series until you set one.",
+    "written": "{count, plural, =0 {No new types} one {# type added} other {# types added}}. The rest were refreshed from the catalogue, leaving what is switched on alone. None of them has a numbering series until you set one.",
     "seriesCount": "{with} of {total} types have a numbering series configured.",
     "theirNumber": "the client's number",
     "suggested": "suggested {pattern}",
@@ -1617,7 +1617,8 @@
     "error": {
       "notAllowed": "Only a Gérant may change the document types.",
       "noSuchType": "That type is not in the catalogue."
-    }
+    },
+    "byHandLegend": "Greyed and marked with a star: what the document becomes on paper, but not from a button here — that one is done by hand, on the screen it belongs to."
   },
   "templates": {
     "title": "Document templates",

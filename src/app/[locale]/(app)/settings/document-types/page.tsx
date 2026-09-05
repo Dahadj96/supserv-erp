@@ -5,6 +5,7 @@ import { can } from "@/auth/can";
 import { getSession } from "@/auth/session";
 import { Badge, type BadgeTone } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import { mayConvert } from "@/documents/conversion";
 import { FAMILIES, listTypes, SEED_TYPES, type TypeRow } from "@/domain/document-types";
 import { Link } from "@/i18n/navigation";
 import { seedTypesAction, toggleTypeAction } from "./actions";
@@ -169,6 +170,8 @@ export default async function DocumentTypesPage({
             </section>
           ))}
 
+          <p className="text-micro leading-relaxed text-muted">{t("docTypes.byHandLegend")}</p>
+
           <section className="rounded-[var(--radius-card)] border border-line bg-surface p-5">
             <h2 className="text-tiny font-semibold text-ink">{t("docTypes.neverChange")}</h2>
             <ul className="mt-3 grid grid-cols-1 sm:grid-cols-2 gap-2.5">
@@ -244,8 +247,32 @@ function Row({
         {t(`docTypes.numbering.${row.numbering}`)}
       </td>
 
+      {/*
+        WHICH OF THESE THE SYSTEM WILL ACTUALLY DO.
+
+        This column used to be a plain list, and it reads as a list of buttons.
+        It is not: `convertsTo` describes the paper flow of Algerian commerce —
+        a bon de commande becomes a bon de livraison — while `CONVERSIONS` in
+        `src/documents/conversion.ts` is what screen 48 offers. A bon de
+        commande client does become a BL, and it does not become one by
+        pressing anything: somebody records the delivery on screen 49.
+
+        So the ones the engine converts are in ink, the rest are greyed with the
+        legend under the table saying they are done by hand. Telling somebody a
+        button exists is worse than telling them it does not.
+      */}
       <td className="py-2.5 pe-4 text-micro text-secondary">
-        {row.convertsTo.length === 0 ? "—" : row.convertsTo.map(name).join(", ")}
+        {row.convertsTo.length === 0
+          ? "—"
+          : row.convertsTo.map((target, index) => (
+              <span key={target}>
+                {index > 0 ? ", " : ""}
+                <span className={mayConvert(row.kind, target) ? "text-ink" : "text-muted"}>
+                  {name(target)}
+                  {mayConvert(row.kind, target) ? "" : " *"}
+                </span>
+              </span>
+            ))}
       </td>
 
       <td className="py-2.5 pe-4 text-micro uppercase text-muted">{row.languages.join(" · ")}</td>

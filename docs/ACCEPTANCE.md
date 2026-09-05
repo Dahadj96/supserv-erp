@@ -937,3 +937,37 @@ tells you what you want to hear.
    - `tests/integration/delivery.test.ts` :: "refuses to deliver against a bon de livraison, whatever the id in the URL says"
    - `tests/integration/delivery.test.ts` :: "delivers against the client's own bon de commande — the kind the button did not offer"
    - `tests/integration/delivery.test.ts` :: "refuses to deliver against something the client never agreed to"
+
+28. ~~**The catalogue could never be corrected, and its "Becomes" column disagreed with the engine.**~~ **Found and closed on 5 September.**
+   `ensureTypesExist()` inserted with `onConflictDoNothing()`. Every field on
+   `document_type` — family, legal value, numbering, `converts_to`, languages,
+   position — is owned by `SEED_TYPES` in code and could only ever be written
+   once, so a row recorded in August kept August's answer for ever while the
+   catalogue in the repository went on being edited. Screen 50 printed the old
+   one beside a *Write down the types* button that did nothing and then said
+   *Everything was already written down* — true about the rows, false about
+   what was in them.
+
+   It upserts now, and `active` is deliberately not in the update: **the code
+   owns what a kind IS, the person owns whether it is switched on.** The count
+   means NEW, because with an upsert every row is written every time and "22
+   types written down" on every press for ever is not information.
+
+   The same column claimed conversions the engine will not do and hid two it
+   will. `quotation` and `proforma` both omitted `client_order` — recording the
+   client's own order, the one thing that moves an enquiry to won — while the
+   catalogue offered `invoice → credit_note` and `purchase_order →
+   goods_receipt`, which nothing implements. Rendered as a plain
+   comma-separated list, that reads as a list of buttons.
+
+   The column may say MORE than the engine does and never less: a bon de
+   commande client does become a bon de livraison, and somebody records that
+   delivery on screen 49 rather than pressing anything. So the paper flow stays
+   and the screen marks it — the conversions screen 48 will do are in ink, the
+   rest grey with a star and a line under the table saying they are done by
+   hand. See `docs/DECISIONS/2026-09-05-what-a-document-becomes.md`.
+
+   - `tests/integration/document-types.test.ts` :: "never hides a conversion the engine will actually do"
+   - `tests/integration/document-types.test.ts` :: "corrects a row when the catalogue changes its mind, and leaves what is switched on alone"
+   - `tests/integration/document-types.test.ts` :: "is idempotent — pressing the button twice writes nothing the second time"
+   - `tests/integration/document-types.test.ts` :: "only ever converts into a kind that exists"

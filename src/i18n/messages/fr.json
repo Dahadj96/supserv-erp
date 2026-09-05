@@ -1528,7 +1528,7 @@
     "setUpSeries": "Séries de numérotation",
     "empty": "Le catalogue est vide. Rien n'est cassé — le moteur émet le type qu'on lui donne. Écrire les types, c'est ce qui permet à un écran de dire qu'un bon de livraison est une preuve et qu'une proforma n'en est pas une, et ce qui empêche le système de générer un numéro pour un bon de commande client qui en a déjà un.",
     "writeThemDown": "Écrire les types",
-    "written": "{count, plural, =0 {Tout était déjà écrit} one {# type écrit} other {# types écrits}}. Aucun n'a de série de numérotation tant que vous n'en réglez pas une.",
+    "written": "{count, plural, =0 {Aucun nouveau type} one {# type ajouté} other {# types ajoutés}}. Les autres ont été remis à jour depuis le catalogue, sans toucher à ce qui est activé. Aucun n'a de série de numérotation tant que vous n'en réglez pas une.",
     "seriesCount": "{with} types sur {total} ont une série de numérotation configurée.",
     "theirNumber": "le numéro du client",
     "suggested": "suggéré {pattern}",
@@ -1617,7 +1617,8 @@
     "error": {
       "notAllowed": "Seul un Gérant peut modifier les types de documents.",
       "noSuchType": "Ce type ne figure pas au catalogue."
-    }
+    },
+    "byHandLegend": "En gris et suivi d'une étoile : ce que le document devient sur le papier, mais que le système ne fabrique pas d'un bouton — cela se fait à la main, sur l'écran qui va avec."
   },
   "templates": {
     "title": "Modèles de documents",

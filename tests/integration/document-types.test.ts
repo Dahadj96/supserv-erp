@@ -3,6 +3,7 @@ import { afterAll, beforeAll, describe, expect, it } from "vitest";
 import { db } from "@/db";
 import { auditEntry } from "@/db/schema/control";
 import { documentType } from "@/db/schema/document-type";
+import { CONVERSIONS } from "@/documents/conversion";
 import {
   ensureTypesExist,
   issuingRules,
@@ -128,5 +129,53 @@ describe("the document type catalogue", () => {
         expect(kinds.has(target) || knownGaps.has(target), `${type.kind} → ${target}`).toBe(true);
       }
     }
+  });
+
+  it("never hides a conversion the engine will actually do", () => {
+    /**
+     * Screen 50's "Becomes" column and screen 48's buttons are two answers to
+     * one question, and only one of them can be pressed.
+     *
+     * The column may say MORE than the engine does — a bon de commande client
+     * becomes a bon de livraison on paper, and somebody records that delivery
+     * on screen 49 rather than pressing anything. It must never say LESS: a
+     * conversion the engine offers and the catalogue omits is a capability
+     * nobody reading the settings screen knows exists. `quotation` and
+     * `proforma` both omitted `client_order` — recording the client's order,
+     * the one thing that moves an enquiry to won.
+     */
+    const declared = new Map(SEED_TYPES.map((t) => [t.kind, new Set(t.convertsTo)]));
+
+    for (const [from, targets] of Object.entries(CONVERSIONS)) {
+      for (const target of targets) {
+        expect(
+          declared.get(from)?.has(target),
+          `${from} → ${target} is done and not declared`,
+        ).toBe(true);
+      }
+    }
+  });
+
+  it("corrects a row when the catalogue changes its mind, and leaves what is switched on alone", async () => {
+    // `onConflictDoNothing()` meant a row written in August kept August's
+    // answer for ever, while screen 50 went on printing it beside a catalogue
+    // that had since been rewritten.
+    await db
+      .update(documentType)
+      .set({ family: "correspondence", convertsTo: ["nonsense"] })
+      .where(eq(documentType.kind, "quotation"));
+    await setActive("attestation", false, ACTOR);
+
+    await ensureTypesExist();
+
+    const rows = await listTypes();
+    const quotation = rows.find((r) => r.kind === "quotation");
+    expect(quotation?.family, "corrected from the catalogue").toBe("sell");
+    expect(quotation?.convertsTo).toContain("client_order");
+
+    const attestation = rows.find((r) => r.kind === "attestation");
+    expect(attestation?.active, "switched off by a person, and it stays off").toBe(false);
+
+    await setActive("attestation", true, ACTOR);
   });
 });
