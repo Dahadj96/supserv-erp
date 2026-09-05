@@ -16,15 +16,27 @@ import { readFormFields } from "./lib/form-fields.mjs";
 const rows = readFormFields();
 const forms = new Set(rows.map((r) => `${r.file}:${r.action}`));
 
-// A field whose action could not be located is not a finding: it is a form
-// posting to something this script cannot follow, and saying "unread" would
-// be a lie.
+// A field whose action could not be located is not "unread" — saying so would
+// be a lie — but it is not green either, and for a fortnight it was printed as
+// a number nobody read. Forty-three fields sat behind it, on the company form,
+// the document builder and the payment recorder: the three forms in this ERP
+// where a silently dropped value costs the most. The reader follows an action
+// arriving as a prop now, so THE COUNT IS NOUGHT and this fails if it is not.
 const followed = rows.filter((r) => r.read !== null);
+const unfollowed = rows.filter((r) => r.read === null);
 const dropped = followed.filter((r) => !r.read);
 
 console.log(
-  `${followed.length} fields on ${forms.size} forms, ${rows.length - followed.length} not followed`,
+  `${followed.length} fields on ${forms.size} forms, ${unfollowed.length} not followed`,
 );
+
+if (unfollowed.length > 0) {
+  for (const row of unfollowed) {
+    console.log(`  ${row.file} :: ${row.action}  — "${row.field}" goes somewhere nobody can name`);
+  }
+  console.log(`\n${unfollowed.length} field(s) on a form this cannot follow`);
+  process.exit(1);
+}
 if (dropped.length === 0) {
   console.log("every field a person can fill in is read by the action it posts to");
   process.exit(0);

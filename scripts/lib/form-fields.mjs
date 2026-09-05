@@ -63,9 +63,69 @@ function formsIn(source) {
     const tag = body.slice(0, tagEnd === -1 ? body.length : tagEnd + 1);
     const action = actionName(tag);
     if (!action) continue;
-    forms.push({ action, fields: fieldsIn(body) });
+    forms.push({ action, fields: fieldsIn(body), owner: ownerAt(source, at) });
   }
   return forms;
+}
+
+/**
+ * The exported component whose body contains a given offset.
+ *
+ * Needed because three of this ERP's forms — the company form, the document
+ * builder and the payment recorder — are handed their action as a PROP, and
+ * the only way to find out what that action is, is to find who renders them.
+ * The nearest `export function` above the `<form` is that component.
+ */
+function ownerAt(source, at) {
+  let owner = null;
+  for (const m of source.matchAll(/export\s+(?:async\s+)?function\s+([A-Za-z0-9_$]+)/g)) {
+    if ((m.index ?? 0) > at) break;
+    owner = m[1];
+  }
+  return owner;
+}
+
+/**
+ * One JSX opening tag, from `<Name` to the `>` that closes it.
+ *
+ * Braces are counted, because a prop can hold an object or an arrow function
+ * with a `>` inside it and stopping at the first one would cut the tag in half.
+ */
+function openingTag(source, at) {
+  let depth = 0;
+  for (let i = at; i < source.length; i++) {
+    const c = source[i];
+    if (c === "{") depth++;
+    else if (c === "}") depth--;
+    else if (c === ">" && depth === 0) return source.slice(at, i + 1);
+  }
+  return source.slice(at);
+}
+
+/**
+ * Everywhere a component is rendered with a given prop, and the action passed
+ * to it there.
+ *
+ * `<CompanyForm action={createCompany.bind(null, locale)} />` in
+ * `companies/new/page.tsx` is what makes the company form's fifteen fields
+ * followable: the prop is resolved to `createCompany`, and that is an ordinary
+ * imported action from there on. A component rendered in two places has two
+ * call sites and both are checked, because `createCompany` reading a field
+ * that `updateCompany` drops is exactly the bug this looks for.
+ */
+function callSites(component, prop, files) {
+  const sites = [];
+  for (const file of files) {
+    const source = readFileSync(file, "utf8");
+    for (const m of source.matchAll(new RegExp(`<${component}(?=[\\s/>])`, "g"))) {
+      const tag = openingTag(source, m.index ?? 0);
+      const bound = tag.match(new RegExp(`${prop}=\\{\\s*([A-Za-z0-9_$]+)\\s*\\.bind\\b`));
+      const plain = tag.match(new RegExp(`${prop}=\\{\\s*([A-Za-z0-9_$]+)\\s*\\}`));
+      const name = bound?.[1] ?? plain?.[1] ?? null;
+      if (name) sites.push({ file, source, name });
+    }
+  }
+  return sites;
 }
 
 /** Where an imported action lives, so its source can be read. */
@@ -131,25 +191,69 @@ function readsName(actionSource, fileSource, field) {
   return rx.test(actionSource) || rx.test(fileSource);
 }
 
+/**
+ * The action a form posts to, as source: where it lives, the whole file, and
+ * the one function's body. `null` when it cannot be found, which is reported
+ * as "not followed" and never as "not read".
+ */
+function resolveAction(source, name, file) {
+  const actionFile = importedFrom(source, name, file);
+  if (actionFile) {
+    const actionSource = readFileSync(actionFile, "utf8");
+    return { actionFile, actionSource, body: actionBody(actionSource, name) ?? "" };
+  }
+  // Defined in the file that renders the form — a page with its own
+  // `"use server"` function, which is how several of the small forms work.
+  const local = actionBody(source, name);
+  return local === null ? null : { actionFile: file, actionSource: source, body: local };
+}
+
 export function readFormFields() {
   const rows = [];
-  for (const file of walk(APP)) {
+  const files = walk(APP);
+
+  for (const file of files) {
     const source = readFileSync(file, "utf8");
     if (!source.includes("<form")) continue;
 
     for (const form of formsIn(source)) {
-      const actionFile = importedFrom(source, form.action, file);
-      const actionSource = actionFile ? readFileSync(actionFile, "utf8") : "";
-      const body = actionSource ? (actionBody(actionSource, form.action) ?? "") : "";
+      // Ordinary case: the action is imported into, or written in, this file.
+      let targets = [];
+      const here = resolveAction(source, form.action, file);
+      if (here) {
+        targets = [{ ...here, action: form.action }];
+      } else if (form.owner) {
+        // The action arrives as a prop. Follow it to whoever renders this
+        // component — every place, because two callers can pass two different
+        // actions and only one of them may read the field.
+        for (const site of callSites(form.owner, form.action, files)) {
+          const there = resolveAction(site.source, site.name, site.file);
+          if (there) targets.push({ ...there, action: site.name });
+        }
+      }
+
       for (const field of form.fields) {
-        rows.push({
-          file: file.replace(/\\/g, "/"),
-          action: form.action,
-          actionFile: actionFile?.replace(/\\/g, "/") ?? null,
-          field: field.name,
-          kind: field.kind,
-          read: actionFile ? readsName(body, actionSource, field) : null,
-        });
+        if (targets.length === 0) {
+          rows.push({
+            file: file.replace(/\\/g, "/"),
+            action: form.action,
+            actionFile: null,
+            field: field.name,
+            kind: field.kind,
+            read: null,
+          });
+          continue;
+        }
+        for (const target of targets) {
+          rows.push({
+            file: file.replace(/\\/g, "/"),
+            action: target.action,
+            actionFile: target.actionFile.replace(/\\/g, "/"),
+            field: field.name,
+            kind: field.kind,
+            read: readsName(target.body, target.actionSource, field),
+          });
+        }
       }
     }
   }

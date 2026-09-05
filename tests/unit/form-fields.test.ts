@@ -17,15 +17,23 @@ import { readFormFields } from "../../scripts/lib/form-fields.mjs";
 const rows = readFormFields();
 
 /**
- * The forms whose action arrives as a PROP, so no static reader can say where
- * the fields go. Named rather than counted: a new one appearing is a decision
- * somebody made, and this is where they notice they made it.
+ * THE THREE FORMS THAT ARE HANDED THEIR ACTION AS A PROP, and the actions the
+ * screens rendering them actually pass.
+ *
+ * These were unfollowed for a fortnight — the reader saw `<form action={action}>`,
+ * could not say what `action` was, and reported "not followed", which reads as
+ * green. They were the company form, the document builder and the payment
+ * recorder: forty-three fields, on the three forms in this ERP where a
+ * silently dropped value costs the most. The reader follows the prop to
+ * whoever renders the component now, and both of the company form's two
+ * callers are checked, because `createCompany` reading a field that
+ * `updateCompany` drops is exactly the bug.
  */
-const NOT_FOLLOWED = [
-  "src/app/[locale]/(app)/companies/company-form.tsx",
-  "src/app/[locale]/(app)/documents/[id]/edit/builder.tsx",
-  "src/app/[locale]/(app)/payments/record-payment.tsx",
-];
+const BY_PROP: Record<string, string[]> = {
+  "src/app/[locale]/(app)/companies/company-form.tsx": ["createCompany", "updateCompany"],
+  "src/app/[locale]/(app)/documents/[id]/edit/builder.tsx": ["saveDraftAction"],
+  "src/app/[locale]/(app)/payments/record-payment.tsx": ["recordPaymentAction"],
+};
 
 describe("what every form field does", () => {
   it("finds the forms at all — a parser that found none would pass everything", () => {
@@ -41,9 +49,16 @@ describe("what every form field does", () => {
     expect(dropped, "a field somebody fills in and nobody reads").toEqual([]);
   });
 
-  it("follows every form but the ones handed their action as a prop", () => {
+  it("follows every form there is — nothing is reported green by being unreadable", () => {
     const unfollowed = [...new Set(rows.filter((r) => r.read === null).map((r) => r.file))];
-    expect(unfollowed.sort()).toEqual([...NOT_FOLLOWED].sort());
+    expect(unfollowed, "a form whose action nobody can name").toEqual([]);
+  });
+
+  it("follows a form's action through the prop it arrives on, to every screen that passes one", () => {
+    for (const [file, expected] of Object.entries(BY_PROP)) {
+      const actions = [...new Set(rows.filter((r) => r.file === file).map((r) => r.action))];
+      expect(actions.sort(), file).toEqual([...expected].sort());
+    }
   });
 
   it("reads the templated names too — `qty:<lineId>` is a field like any other", () => {

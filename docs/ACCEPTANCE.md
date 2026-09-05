@@ -829,3 +829,37 @@ tells you what you want to hear.
    `confirmed_at`, `delete_reason` are written and never displayed, and that is
    correct: they are what makes an answer defensible six months later, not what
    a screen shows today.
+
+25. ~~**Forty-three fields on three forms the audit could not follow.**~~ **Found and closed on 5 September.**
+   `pnpm audit:forms` printed *271 fields on 79 forms, 43 not followed* above
+   the sentence *every field a person can fill in is read by the action it
+   posts to*. The sentence was true about 271 of them. The other forty-three
+   were not checked at all, and they were not a random forty-three: the
+   **company form** (15 fields, the form this ERP is used through most), the
+   **document builder** (21, including every line of a devis, `theirNumber`,
+   `retentionPct`, `advanceDeducted`) and **recording a payment** (7, including
+   the amount). The three forms where a value typed, submitted and silently
+   dropped costs the most.
+
+   One reason: all three are components handed their action as a prop, so the
+   reader saw `<form action={action}>` and could not say what `action` was. A
+   count printed beside a green sentence is a number nobody reads.
+
+   It follows the prop now — to the component's own name, then to every screen
+   that renders it. `CompanyForm` is rendered twice, by `companies/new` with
+   `createCompany` and by `companies/[id]/edit` with `updateCompany`, and both
+   are checked: a field the first reads and the second drops is invisible until
+   somebody edits a company and watches their change disappear. **Not followed
+   is a failure now, not a number** — the count is nought and the script exits
+   1 if it is not.
+   See `docs/DECISIONS/2026-09-05-the-forms-it-could-not-follow.md`.
+
+   Nothing was dropped: all forty-three are read. That answer was not knowable
+   before. To show the check can fail, `name="paymentTerms"` on the company
+   form was renamed `name="payment_terms"` — the audit named it, on both
+   actions, and went green when it was put back.
+
+   - `tests/unit/form-fields.test.ts` :: "follows every form there is — nothing is reported green by being unreadable"
+   - `tests/unit/form-fields.test.ts` :: "follows a form's action through the prop it arrives on, to every screen that passes one"
+   - `tests/unit/form-fields.test.ts` :: "is read by the action it posts to"
+   - `pnpm audit:forms` :: 329 fields on 80 forms, **0 not followed**
