@@ -92,9 +92,43 @@ for (const route of list) {
   }
 }
 
+/*
+  THE ROUTES THAT ANSWER WITH BYTES.
+
+  Every screen above is protected by one thing: the `(app)` layout checks the
+  session, and each page inherits it. A route handler has no layout above it.
+  `/api/files/[id]` returns an invoice a client sent us; the PDF route returns
+  one we are about to send. Neither is in `docs/SCREENS.md`, so the loop above
+  never asked them anything — and once this is on a tunnel, "did anybody check"
+  is the only question that matters about them.
+
+  401 in words, not a redirect: these answer to things that are often not
+  browsers, and a 302 to a sign-in page gets delivered as the file.
+*/
+const BYTES = ["/api/files/attachment:{id}", "/api/documents/{id}/pdf"];
+
+console.log("\nand the routes that answer with bytes\n");
+for (const route of BYTES) {
+  const url = `${base}${route.replace("{id}", NOWHERE)}`;
+  try {
+    const response = await fetch(url, { redirect: "manual" });
+    if (response.status === 401) {
+      console.log(`  ok    ${route}`);
+    } else {
+      bad.push({ route, url, why: `${response.status} — signed out, this must be 401` });
+      console.log(`  FAIL  ${route}  ${response.status}`);
+    }
+  } catch (error) {
+    bad.push({ route, url, why: `did not answer — ${error.message}` });
+    console.log(`  DEAD  ${route}`);
+  }
+}
+
 console.log("");
 if (bad.length === 0) {
-  console.log(`all ${list.length} routes answer and send a signed-out visitor to sign-in`);
+  console.log(
+    `all ${list.length} routes send a signed-out visitor to sign-in, and the ${BYTES.length} byte routes refuse`,
+  );
   process.exit(0);
 }
 

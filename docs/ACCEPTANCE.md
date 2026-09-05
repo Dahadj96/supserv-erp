@@ -703,3 +703,29 @@ tells you what you want to hear.
    nothing can write. `closed_at`, `is_verified` and `reversible_until` were
    every one of them the second kind. The biggest group left is
    `user_preference` — nine columns and a whole table nothing has touched.
+
+21. **Nothing asked the two routes that answer with bytes.** Every SCREEN is
+   protected by one thing: the `(app)` layout checks the session and each page
+   under it inherits that, which `pnpm smoke` proves for all 89 routes in the
+   map. A route handler has no layout above it, and neither of the two is in
+   `docs/SCREENS.md`: `/api/files/[id]` returns an invoice a client sent us and
+   `/api/documents/[id]/pdf` returns one we are about to send. Both are one
+   forgotten line from being readable by anybody who can reach the tunnel.
+
+   Both were already right — the check is what was missing, in two places:
+
+   - `tests/unit/api-routes.test.ts` reads every `route.ts` under `src/app/api`
+     and holds each one to asking who is calling, refusing with a **401 in
+     words** (not a redirect: these answer to things that are often not
+     browsers, and a 302 to a sign-in page is delivered as the file), and
+     keeping its bytes out of shared caches. Better Auth's own endpoint is the
+     one exemption, and it is named. A new handler joins the list the moment
+     somebody writes it.
+   - `pnpm smoke` now asks both of them over HTTP, signed out, and expects 401.
+
+   Read gates are deliberately few in this ERP — `inbox.view` and
+   `offers.margin.view` are the only two, and `src/auth/can.ts` says why at
+   length: at six people, records are curated and permissioned individually,
+   and raw correspondence is not a record. So "any session" is the right answer
+   for the PDF route, and "the permission that owns the file" is the right
+   answer for the file route, which is what it does.
