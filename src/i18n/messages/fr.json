@@ -950,13 +950,6 @@
       "yearly": "Repart chaque année",
       "never": "Ne repart jamais"
     },
-    "docKind": {
-      "invoice": "Facture",
-      "offer": "Offre",
-      "delivery_note": "Bon de livraison",
-      "proforma": "Proforma",
-      "credit_note": "Avoir"
-    },
     "bankTitle": "Comptes bancaires",
     "bankSubtitle": "imprimés sur la facture comme domiciliation",
     "accountsSoFar": "Comptes",
@@ -1013,8 +1006,12 @@
       "ribTwentyDigits": "Un RIB fait vingt chiffres.",
       "invalid": "Quelque chose dans le formulaire n'a pas été accepté.",
       "startDateRequired": "La date d'entrée en vigueur doit être une date, au format AAAA-MM-JJ.",
-      "capitalInvalid": "Le capital doit être un montant — « 6 000 000,00 DA » convient, un texte non."
-    }
+      "capitalInvalid": "Le capital doit être un montant — « 6 000 000,00 DA » convient, un texte non.",
+      "kindUnknown": "Ce type de document n'existe pas dans le catalogue.",
+      "kindIsTheirs": "Ce document porte le numéro du client, pas le nôtre — il n'a pas de série.",
+      "kindTaken": "Il y a déjà une série pour ce type de document."
+    },
+    "everyKindHasOne": "Chaque type de document qui prend un de nos numéros a sa série."
   },
   "documents": {
     "kind": {

@@ -74,6 +74,11 @@ const SCHEMAS: { name: string; schema: z.ZodType; bad: unknown[] }[] = [
       // A pattern with neither a year nor a counter in it.
       { kind: "invoice", pattern: "FACTURE", reset: "yearly" },
       { kind: "invoice", pattern: "FAC-{YYYY}", reset: "yearly" },
+      // A kind the catalogue does not have — "offer" was on the day-one screen
+      // for a fortnight and this ERP calls a devis `quotation`.
+      { kind: "offer", pattern: "OFF/{YYYY}/{####}", reset: "yearly" },
+      // A kind that carries the counterparty's number, so it has no series.
+      { kind: "amendment", pattern: "AV/{YYYY}/{####}", reset: "yearly" },
     ],
   },
 ];
@@ -148,6 +153,9 @@ describe("day one says something a person can read", () => {
     reachable.add("invalid");
     // Screen 85's VAT page prints this one directly rather than from `?error=`.
     reachable.add("rateInvalid");
+    // Thrown by `addSeries` as `SeriesRefused`, not by a schema: only the
+    // database knows whether this kind already has a series.
+    reachable.add("kindTaken");
 
     const written = Object.keys(en.setup?.error ?? {});
     expect(written.filter((key) => !reachable.has(key))).toEqual([]);

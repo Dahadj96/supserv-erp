@@ -4,6 +4,7 @@ import { db } from "@/db";
 import { bankAccount, COMPANY_ID, companyIdentity, vatRate } from "@/db/schema/company";
 import { auditEntry } from "@/db/schema/control";
 import { numberingSeries } from "@/db/schema/document";
+import { SEED_TYPES } from "./document-types";
 
 /**
  * Screen 85 — the four things the system will not invent.
@@ -258,8 +259,46 @@ export async function addBankAccount(input: BankInput, actorId: string) {
  * yours. Once the first document is issued the shape is frozen for the year,
  * because a series with two shapes in it is a series nobody can defend."
  */
+/**
+ * The kinds a series can be created for: the ones this ERP issues under a
+ * number of ours. `pattern: null` in the catalogue means the document carries
+ * the COUNTERPARTY's number — a bon de commande client, an avenant, a supplier
+ * invoice — and a series for one of those would allocate a number nothing ever
+ * prints.
+ */
+export const SERIES_KINDS = SEED_TYPES.filter((t) => t.pattern !== null).map((t) => t.kind);
+
+/** The pattern the catalogue suggests for a kind, shown on screen, never forced. */
+export function suggestedPattern(kind: string): string | null {
+  return SEED_TYPES.find((t) => t.kind === kind)?.pattern ?? null;
+}
+
+export class SeriesRefused extends Error {
+  constructor(readonly reason: "kindTaken") {
+    super(reason);
+  }
+}
+
 export const seriesInput = z.object({
-  kind: z.string({ error: "kindRequired" }).trim().min(2, "kindRequired"),
+  /*
+    THE KIND IS CHECKED AGAINST THE CATALOGUE, and it was a free string.
+
+    Day one offered five kinds from a list typed into the screen, and one of
+    them — "offer" — is not a kind this ERP has: the catalogue calls it
+    `quotation`. So a Gérant could finish the wizard having created a series
+    that nothing would ever use, and find out on the day they issued their
+    first devis. The other way round is worse and is what actually happened:
+    `final_account` and `retention_release` — the décompte that closes a marché
+    and the paper that asks for the retenue de garantie back — were not on the
+    list at all, so they had to be noticed and created by hand later, from a
+    different screen.
+  */
+  kind: z
+    .string({ error: "kindRequired" })
+    .trim()
+    .min(2, "kindRequired")
+    .refine((k) => SEED_TYPES.some((t) => t.kind === k), "kindUnknown")
+    .refine((k) => SERIES_KINDS.includes(k), "kindIsTheirs"),
   pattern: z
     .string({ error: "patternNeedsCounter" })
     .trim()
@@ -276,6 +315,18 @@ export async function listSeries() {
 
 export async function addSeries(input: SeriesInput, actorId: string) {
   const data = seriesInput.parse(input);
+
+  // ONE SERIES PER KIND. Two rows for `invoice` is two shapes of invoice
+  // number in one year, which is the thing the amber panel promises cannot
+  // happen — and the lookup that allocates a number takes whichever row the
+  // database hands back first, so it would not even be consistently wrong.
+  // The database says so too, from migration 0050.
+  const [already] = await db
+    .select({ id: numberingSeries.id })
+    .from(numberingSeries)
+    .where(eq(numberingSeries.kind, data.kind))
+    .limit(1);
+  if (already) throw new SeriesRefused("kindTaken");
 
   const [created] = await db
     .insert(numberingSeries)

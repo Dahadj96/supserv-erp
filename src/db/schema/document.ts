@@ -16,13 +16,15 @@ import {
 import { item } from "./item";
 import { party } from "./party";
 
-export const numberingSeries = pgTable("numbering_series", {
-  id: uuid("id").primaryKey().defaultRandom(),
-  kind: text("kind").notNull(),
-  pattern: text("pattern").notNull(), // SUP/{YYYY}/{####}
-  reset: text("reset").notNull().default("yearly"),
-  nextValue: integer("next_value").notNull().default(1),
-  /*
+export const numberingSeries = pgTable(
+  "numbering_series",
+  {
+    id: uuid("id").primaryKey().defaultRandom(),
+    kind: text("kind").notNull(),
+    pattern: text("pattern").notNull(), // SUP/{YYYY}/{####}
+    reset: text("reset").notNull().default("yearly"),
+    nextValue: integer("next_value").notNull().default(1),
+    /*
     There was a `reserve_on` here, `'issue'` on every row and read by nothing.
     LAW 5 is not a per-series setting: a number is allocated at ISSUE, full
     stop, and `document_type.numbering` already says which kinds take one of
@@ -30,7 +32,19 @@ export const numberingSeries = pgTable("numbering_series", {
     offering a second answer to a question the catalogue has already answered is
     a column that can disagree with it. Dropped 5 September 2026.
   */
-});
+  },
+  /*
+    ONE SERIES PER KIND, said by the database and not only by the screen.
+
+    Every reader here joins on `kind` and takes one row — screen 50's table,
+    the allocator at issue, day one's "already set up" list. A second row for
+    `invoice` would put two shapes of invoice number in one year and the
+    allocator would take whichever the database handed back first, so it would
+    not even be consistently wrong. The screen filtered the kinds it had
+    already; nothing stopped the domain function.
+  */
+  (t) => [uniqueIndex("numbering_series_kind_uq").on(t.kind)],
+);
 
 /**
  * One table, nineteen kinds. Everything SUPSERV issues or receives that has a

@@ -863,3 +863,47 @@ tells you what you want to hear.
    - `tests/unit/form-fields.test.ts` :: "follows a form's action through the prop it arrives on, to every screen that passes one"
    - `tests/unit/form-fields.test.ts` :: "is read by the action it posts to"
    - `pnpm audit:forms` :: 329 fields on 80 forms, **0 not followed**
+
+26. ~~**Day one offered a series for a document kind this ERP does not have, and not for the two a marché needs.**~~ **Found and closed on 5 September.**
+   Screen 85's numbering step offered five kinds typed into the screen:
+   `invoice, offer, delivery_note, proforma, credit_note`. **`offer` is not a
+   kind this ERP has** — the catalogue calls a devis `quotation` — so a Gérant
+   could finish day one having created a numbering series nothing would ever
+   look at, and find out on the morning they issued their first devis.
+
+   The omission cost more than the mistake. `final_account` (the décompte that
+   closes a marché) and `retention_release` (asking for the retenue de garantie
+   back) were not on the list at all, so a company doing marchés publics could
+   not set them up on day one and met the refusal on the day it needed the
+   document. The standing instruction for a fortnight — "create the DEC and RG
+   series on screen 50" — was a step somebody had to remember, on a screen the
+   wizard never mentions. `seriesInput.kind` was `z.string().min(2)`: any word
+   at all.
+
+   The kinds come from the catalogue now. `SEED_TYPES` already carries
+   `pattern: string | null`, null exactly when the document arrives with the
+   counterparty's number on it — a bon de commande client, an avenant, a
+   supplier invoice. `SERIES_KINDS` is the rest, and it is both what the select
+   offers and what the validator accepts: one derived list, not two that can
+   disagree. Three refusals with their own words — `kindUnknown`,
+   `kindIsTheirs`, `kindTaken` — because reporting any of them as "something in
+   the form was not accepted" sends somebody to look at their pattern. The
+   suggested pattern is shown beside each kind and never filled in: the shape
+   is the Gérant's decision and it is frozen from the first document that
+   carries it.
+   See `docs/DECISIONS/2026-09-05-a-series-for-a-kind-that-does-not-exist.md`.
+
+   **One series per kind, said by the database** — migration 0050,
+   `numbering_series_kind_uq`. Every reader joins on `kind` and takes one row,
+   so two rows for `invoice` is two shapes of invoice number in one year and
+   the allocator takes whichever Postgres hands back first. It found something
+   immediately: the **test database held thirty-five `final_account` series and
+   twenty-three `retention_release` ones**, put there by two tests calling
+   `.onConflictDoNothing()` with no unique constraint to conflict on. Fifty-six
+   duplicate rows, any of which could have been the one a number came from.
+
+   - `tests/integration/setup.test.ts` :: "refuses a kind the catalogue does not have"
+   - `tests/integration/setup.test.ts` :: "refuses a kind that carries the counterparty's number"
+   - `tests/integration/setup.test.ts` :: "refuses a second series for a kind that already has one"
+   - `tests/integration/setup.test.ts` :: "offers the two a marché needs, and never the ones that are theirs"
+   - `tests/unit/setup-errors.test.ts` :: "seriesInput only produces keys that resolve"

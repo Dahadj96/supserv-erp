@@ -1,7 +1,7 @@
 import { getTranslations, setRequestLocale } from "next-intl/server";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { listSeries, previewNumber } from "@/domain/company";
+import { listSeries, previewNumber, SERIES_KINDS, suggestedPattern } from "@/domain/company";
 import { Link } from "@/i18n/navigation";
 import { saveSeries } from "../actions";
 import { Field, INPUT } from "../field";
@@ -20,8 +20,24 @@ import { Field, INPUT } from "../field";
  */
 export const dynamic = "force-dynamic";
 
-/** The document kinds that need a series before anything can be issued. */
-const SUGGESTED = ["invoice", "offer", "delivery_note", "proforma", "credit_note"] as const;
+/*
+  THE KINDS COME FROM THE CATALOGUE, and they were five names typed here.
+
+  One of the five — "offer" — is not a kind this ERP has: the catalogue calls a
+  devis `quotation`. So a Gérant could finish day one having created a series
+  nothing would ever use. And the ones missing mattered more than the one that
+  was wrong: `final_account` and `retention_release` — the décompte that closes
+  a marché and the paper that asks for the retenue de garantie back — could not
+  be created here at all, so a company doing marchés publics met the refusal on
+  the day it needed the document, and had to be told which other screen to go
+  to.
+
+  `SERIES_KINDS` is every kind whose catalogue entry carries a pattern, which
+  is exactly the set that takes a number of ours. A kind that carries the
+  counterparty's — a bon de commande client, an avenant, a supplier invoice —
+  is not offered, because a series for one of those allocates a number nothing
+  ever prints.
+*/
 
 export default async function NumberingPage({
   params,
@@ -37,6 +53,7 @@ export default async function NumberingPage({
 
   const series = await listSeries();
   const taken = new Set(series.map((s) => s.kind));
+  const remaining = SERIES_KINDS.filter((k) => !taken.has(k));
 
   return (
     <main className="min-h-0 flex-1 overflow-auto">
@@ -82,7 +99,11 @@ export default async function NumberingPage({
               <tbody>
                 {series.map((s) => (
                   <tr key={s.id} className="border-b border-line-subtle last:border-0">
-                    <td className="py-2 text-ink">{s.kind}</td>
+                    {/* The label, not `final_account`: this table is read by
+                        the person who has to recognise the document. */}
+                    <td className="py-2 text-ink">
+                      {t.has(`docTypes.kind.${s.kind}`) ? t(`docTypes.kind.${s.kind}`) : s.kind}
+                    </td>
                     <td className="py-2 font-mono text-secondary">{s.pattern}</td>
                     <td className="py-2">
                       <Badge tone="neutral">{previewNumber(s.pattern, s.nextValue)}</Badge>
@@ -102,60 +123,77 @@ export default async function NumberingPage({
         <section className="mt-5 rounded-[var(--radius-card)] border border-line bg-surface p-5">
           <h2 className="text-tiny font-semibold text-ink">{t("setup.addSeries")}</h2>
 
-          <form action={saveSeries.bind(null, locale)} className="mt-3">
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-              <Field htmlFor="kind" label={t("setup.f.kind")} required>
-                <select id="kind" name="kind" className={INPUT} defaultValue="">
-                  <option value="" disabled>
-                    {t("setup.chooseKind")}
-                  </option>
-                  {SUGGESTED.filter((k) => !taken.has(k)).map((k) => (
-                    <option key={k} value={k}>
-                      {t(`setup.docKind.${k}`)}
-                    </option>
-                  ))}
-                </select>
-              </Field>
-
-              <Field
-                htmlFor="pattern"
-                label={t("setup.f.pattern")}
-                hint={t("setup.h.pattern")}
-                required
-              >
-                <input
-                  id="pattern"
-                  name="pattern"
-                  required
-                  placeholder="SUP/{YYYY}/{####}"
-                  className={`${INPUT} font-mono`}
-                />
-              </Field>
-
-              <Field htmlFor="reset" label={t("setup.f.reset")}>
-                <select id="reset" name="reset" defaultValue="yearly" className={INPUT}>
-                  <option value="yearly">{t("setup.reset.yearly")}</option>
-                  <option value="never">{t("setup.reset.never")}</option>
-                </select>
-              </Field>
-            </div>
-
-            <p className="mt-3 text-micro leading-relaxed text-muted">
-              {t("setup.patternExamples", {
-                a: previewNumber("SUP/{YYYY}/{####}", 1),
-                b: previewNumber("FA-{YYYY}-{###}", 1),
-              })}
+          {/* Every kind has one. An empty select with a submit button beside it
+              is a form that can only fail. */}
+          {remaining.length === 0 ? (
+            <p className="mt-3 max-w-[680px] text-micro leading-relaxed text-muted">
+              {t("setup.everyKindHasOne")}
             </p>
+          ) : (
+            <form action={saveSeries.bind(null, locale)} className="mt-3">
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                <Field htmlFor="kind" label={t("setup.f.kind")} required>
+                  <select id="kind" name="kind" className={INPUT} defaultValue="">
+                    <option value="" disabled>
+                      {t("setup.chooseKind")}
+                    </option>
+                    {remaining.map((k) => (
+                      <option key={k} value={k}>
+                        {t.has(`docTypes.kind.${k}`) ? t(`docTypes.kind.${k}`) : k}
+                        {suggestedPattern(k) ? ` — ${suggestedPattern(k)}` : ""}
+                      </option>
+                    ))}
+                  </select>
+                </Field>
 
-            <div className="mt-4 flex items-center gap-2">
-              <Button type="submit" variant="primary">
-                {t("setup.addSeries")}
-              </Button>
+                <Field
+                  htmlFor="pattern"
+                  label={t("setup.f.pattern")}
+                  hint={t("setup.h.pattern")}
+                  required
+                >
+                  <input
+                    id="pattern"
+                    name="pattern"
+                    required
+                    placeholder="SUP/{YYYY}/{####}"
+                    className={`${INPUT} font-mono`}
+                  />
+                </Field>
+
+                <Field htmlFor="reset" label={t("setup.f.reset")}>
+                  <select id="reset" name="reset" defaultValue="yearly" className={INPUT}>
+                    <option value="yearly">{t("setup.reset.yearly")}</option>
+                    <option value="never">{t("setup.reset.never")}</option>
+                  </select>
+                </Field>
+              </div>
+
+              <p className="mt-3 text-micro leading-relaxed text-muted">
+                {t("setup.patternExamples", {
+                  a: previewNumber("SUP/{YYYY}/{####}", 1),
+                  b: previewNumber("FA-{YYYY}-{###}", 1),
+                })}
+              </p>
+
+              <div className="mt-4 flex items-center gap-2">
+                <Button type="submit" variant="primary">
+                  {t("setup.addSeries")}
+                </Button>
+                <Link href="/setup">
+                  <Button variant="ghost">{t("setup.backToDayOne")}</Button>
+                </Link>
+              </div>
+            </form>
+          )}
+
+          {remaining.length === 0 ? (
+            <div className="mt-4">
               <Link href="/setup">
                 <Button variant="ghost">{t("setup.backToDayOne")}</Button>
               </Link>
             </div>
-          </form>
+          ) : null}
         </section>
       </div>
     </main>

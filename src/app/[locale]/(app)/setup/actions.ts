@@ -3,7 +3,14 @@
 import { revalidatePath } from "next/cache";
 import { can } from "@/auth/can";
 import { getSession } from "@/auth/session";
-import { addBankAccount, addSeries, addVatRate, saveIdentity, setLogo } from "@/domain/company";
+import {
+  addBankAccount,
+  addSeries,
+  addVatRate,
+  SeriesRefused,
+  saveIdentity,
+  setLogo,
+} from "@/domain/company";
 import { redirect } from "@/i18n/navigation";
 import { storageFor } from "@/storage";
 
@@ -111,10 +118,15 @@ export async function saveSeries(locale: string, formData: FormData) {
       session.userId,
     );
   } catch (error) {
+    // `SeriesRefused` carries its own reason — "there is already one for this
+    // kind" is a sentence the screen has, and reporting it as "invalid" would
+    // send somebody looking at their pattern.
     const issue =
-      error instanceof Error && "issues" in error
-        ? (error as { issues: { message: string }[] }).issues[0]?.message
-        : "invalid";
+      error instanceof SeriesRefused
+        ? error.reason
+        : error instanceof Error && "issues" in error
+          ? (error as { issues: { message: string }[] }).issues[0]?.message
+          : "invalid";
     redirect({ href: `/setup/numbering?error=${issue ?? "invalid"}`, locale });
     return;
   }

@@ -351,6 +351,13 @@
       "when": 1788584897045,
       "tag": "0049_curly_genesis",
       "breakpoints": true
+    },
+    {
+      "idx": 50,
+      "version": "7",
+      "when": 1788588492260,
+      "tag": "0050_concerned_reaper",
+      "breakpoints": true
     }
   ]
 }

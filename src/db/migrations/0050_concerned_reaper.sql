@@ -1,0 +1,1 @@
+CREATE UNIQUE INDEX "numbering_series_kind_uq" ON "numbering_series" USING btree ("kind");

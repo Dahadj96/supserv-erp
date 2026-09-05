@@ -950,13 +950,6 @@
       "yearly": "Restarts each year",
       "never": "Never restarts"
     },
-    "docKind": {
-      "invoice": "Invoice",
-      "offer": "Offer",
-      "delivery_note": "Delivery note",
-      "proforma": "Proforma",
-      "credit_note": "Credit note"
-    },
     "bankTitle": "Bank accounts",
     "bankSubtitle": "printed on the invoice as the domiciliation",
     "accountsSoFar": "Accounts",
@@ -1013,8 +1006,12 @@
       "ribTwentyDigits": "A RIB is twenty digits.",
       "invalid": "Something in the form was not accepted.",
       "startDateRequired": "The start date has to be a date, written YYYY-MM-DD.",
-      "capitalInvalid": "The capital has to be an amount — “6 000 000,00 DA” is fine, words are not."
-    }
+      "capitalInvalid": "The capital has to be an amount — “6 000 000,00 DA” is fine, words are not.",
+      "kindUnknown": "That document kind is not in the catalogue.",
+      "kindIsTheirs": "This document carries the client's number, not ours — it has no series.",
+      "kindTaken": "There is already a series for this document kind."
+    },
+    "everyKindHasOne": "Every document kind that takes one of our numbers has a series."
   },
   "documents": {
     "kind": {
