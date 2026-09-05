@@ -69,6 +69,7 @@ const SAMPLE: RenderedDocument = {
   ],
   amountInWords: "quatre-vingt-quatre mille deux cents dinars algériens et zéro centime",
   situation: null,
+  amendment: null,
   findings: [],
   template: "SUPSERV invoice — FR v1",
 };

@@ -118,6 +118,7 @@ nothing gets built into this ERP without a line saying what it is for.
 | `/prices/new` | 74 Price capture — the phone half, at a supplier's counter, with no enquiry open |
 | `/projects/new` | 15 Projects — open one on an enquiry the client said yes to |
 | `/projects/[id]/situation` | 16 Project detail — the next situation, typed against the marché's bordereau |
+| `/projects/[id]/amendment` | 16 Project detail — the avenant, typed against the same bordereau |
 | `/settings/compliance/one-pager` | 69 Compliance profile — the printable sheet |
 | `/setup/identity` | 85 Day one — step 1 |
 | `/setup/bank` | 85 Day one — step 2 |

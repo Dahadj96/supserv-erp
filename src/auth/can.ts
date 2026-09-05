@@ -130,6 +130,9 @@ export const ISSUE_PERMISSION: Record<string, Permission> = {
   proforma: "offers.issue",
   offer: "offers.issue",
   client_order: "offers.issue",
+  // An avenant changes what the client committed to, which is the same act as
+  // recording the commitment: the Commercial's.
+  amendment: "offers.issue",
   // What leaves the warehouse and what is signed off on site.
   delivery_note: "deliveries.issue",
   work_order: "works.issue",

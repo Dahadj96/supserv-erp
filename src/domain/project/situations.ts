@@ -1,5 +1,5 @@
 import Decimal from "decimal.js";
-import { and, asc, desc, eq, inArray, lt, sql } from "drizzle-orm";
+import { and, asc, desc, eq, inArray, lt, lte, sql } from "drizzle-orm";
 import { db } from "@/db";
 import { auditEntry } from "@/db/schema/control";
 import { document, documentLine, documentLink } from "@/db/schema/document";
@@ -33,17 +33,32 @@ import { ProjectRefused } from "./store";
 /** The kinds whose issued lines can be a marché's bordereau. */
 const CONTRACT_KINDS = ["client_order", "quotation", "proforma"] as const;
 
+export type Amendment = {
+  documentId: string;
+  /** Theirs — "avenant n° 2" is what the form prints. */
+  number: string | null;
+  issuedOn: string | null;
+  /** What it adds to the marché, excluding VAT. Negative when it takes away. */
+  deltaExcl: string;
+  /** How many bordereau lines it changed, and how many it added. */
+  changed: number;
+  added: number;
+};
+
 export type Contract = {
   documentId: string;
   kind: string;
   number: string | null;
   issuedOn: string | null;
   totalExcl: string;
+  /** The marché's own lines, amended by every issued avenant, in order. */
   lines: ContractLine[];
+  /** The avenants, oldest first. Empty on a marché nobody has changed. */
+  amendments: Amendment[];
 };
 
 /** A document the project could name as its DQE — for the opening form. */
-export type ContractCandidate = Omit<Contract, "lines">;
+export type ContractCandidate = Omit<Contract, "lines" | "amendments">;
 
 export async function contractCandidates(dealId: string): Promise<ContractCandidate[]> {
   const rows = await db
@@ -91,6 +106,120 @@ function plain(value: string | null): string {
   return new Decimal(value ?? 0).toFixed();
 }
 
+/** The marché's stated value plus every avenant's delta. Null stays null. */
+export function withAmendments(amountExcl: string | null, amendments: Amendment[]): string | null {
+  if (!amountExcl) return null;
+  return amendments
+    .reduce((sum, one) => sum.plus(one.deltaExcl), new Decimal(amountExcl))
+    .toFixed(2);
+}
+
+function amountOf(lines: ContractLine[]): Decimal {
+  return lines.reduce(
+    (sum, line) => sum.plus(new Decimal(line.qty).times(line.unitPrice)),
+    new Decimal(0),
+  );
+}
+
+/**
+ * The marché as its avenants left it.
+ *
+ * An avenant's line either points at a line of the marché — `source_line_id`,
+ * the same link a delivery note uses — and REPLACES its quantity and price, or
+ * points at nothing and ADDS a price to the bordereau. Applied oldest first,
+ * so avenant 2 wins over avenant 1 on a line both touch.
+ *
+ * The composed lines keep the ORIGINAL line's id where one was amended. That
+ * is deliberate: situations already issued point at the marché's lines through
+ * `source_line_id`, and changing the identity of a line under them would break
+ * every cumulative column on paper the client has already signed. An avenant
+ * changes what a line says, not which line it is.
+ */
+async function amendedLines(
+  base: ContractLine[],
+  amendmentIds: string[],
+): Promise<{
+  lines: ContractLine[];
+  perAmendment: Map<string, { changed: number; added: number }>;
+}> {
+  const perAmendment = new Map<string, { changed: number; added: number }>();
+  if (amendmentIds.length === 0) return { lines: base, perAmendment };
+
+  const rows = await db
+    .select()
+    .from(documentLine)
+    .where(and(inArray(documentLine.documentId, amendmentIds), eq(documentLine.lineKind, "item")))
+    .orderBy(asc(documentLine.position));
+
+  const lines = [...base];
+  for (const id of amendmentIds) {
+    const tally = { changed: 0, added: 0 };
+    for (const row of rows.filter((r) => r.documentId === id && !r.isOption)) {
+      const at = row.sourceLineId
+        ? lines.findIndex((line) => line.lineId === row.sourceLineId)
+        : -1;
+      if (at >= 0) {
+        const previous = lines[at] as ContractLine;
+        lines[at] = {
+          ...previous,
+          // Only what the avenant states. A line whose price it left blank
+          // keeps the marché's price; the paper changed a quantity, not both.
+          qty: row.qty === null ? previous.qty : plain(row.qty),
+          unitPrice: row.unitPrice === null ? previous.unitPrice : plain(row.unitPrice),
+          designation: row.designation ?? previous.designation,
+        };
+        tally.changed += 1;
+      } else {
+        lines.push({
+          lineId: row.id,
+          position: lines.length + 1,
+          reference: row.reference,
+          designation: row.designation,
+          unit: row.unit,
+          qty: plain(row.qty),
+          unitPrice: plain(row.unitPrice),
+          vatRate: row.vatRate ?? "0",
+        });
+        tally.added += 1;
+      }
+    }
+    perAmendment.set(id, tally);
+  }
+  return { lines, perAmendment };
+}
+
+/**
+ * The issued avenants on a marché, oldest first.
+ *
+ * `asOf` is the date the reader is standing on. A situation issued in August
+ * was signed against the marché as it stood in August, and re-printing it in
+ * November must not show it a quantity an avenant changed afterwards — the
+ * paper the client holds would no longer match ours. Undefined means today:
+ * every avenant there is.
+ */
+async function amendmentsOf(contractDocumentId: string, asOf?: string | null) {
+  return db
+    .select({
+      documentId: document.id,
+      number: document.number,
+      issuedOn: document.issuedOn,
+    })
+    .from(document)
+    .innerJoin(documentLink, eq(documentLink.fromDocument, document.id))
+    .where(
+      and(
+        eq(document.kind, "amendment"),
+        eq(document.status, "issued"),
+        eq(documentLink.toDocument, contractDocumentId),
+        eq(documentLink.relation, "amends"),
+        // An avenant signed the same day as the situation counts: the two
+        // pieces of paper travelled together and the situation quotes it.
+        asOf ? lte(document.issuedOn, asOf) : undefined,
+      ),
+    )
+    .orderBy(asc(document.issuedOn), asc(document.createdAt));
+}
+
 /**
  * The project's DQE contractuel.
  *
@@ -98,8 +227,13 @@ function plain(value: string | null): string {
  * client's order, and failing that the offer they accepted — the same
  * preference the opening form shows first. The fallback is not written back:
  * a guess the system made is not a fact somebody confirmed.
+ *
+ * `asOf` reads the marché as it stood on that date — see `amendmentsOf`.
  */
-export async function contractOf(projectId: string): Promise<Contract | null> {
+export async function contractOf(
+  projectId: string,
+  asOf?: string | null,
+): Promise<Contract | null> {
   const [row] = await db
     .select({ dealId: project.dealId, contractDocumentId: project.contractDocumentId })
     .from(project)
@@ -135,7 +269,35 @@ export async function contractOf(projectId: string): Promise<Contract | null> {
   }
   if (!chosen) return null;
 
-  return { ...chosen, lines: await contractLines(chosen.documentId) };
+  const base = await contractLines(chosen.documentId);
+  const found = await amendmentsOf(chosen.documentId, asOf);
+  const { lines, perAmendment } = await amendedLines(
+    base,
+    found.map((a) => a.documentId),
+  );
+
+  // Each avenant's delta is what the bordereau was worth after it, less what
+  // it was worth before — arithmetic on its own lines, not a figure anybody
+  // types twice.
+  const amendments: Amendment[] = [];
+  let running = base;
+  for (const one of found) {
+    const before = amountOf(running);
+    const next = (
+      await amendedLines(base, [...amendments.map((a) => a.documentId), one.documentId])
+    ).lines;
+    amendments.push({
+      documentId: one.documentId,
+      number: one.number,
+      issuedOn: one.issuedOn,
+      deltaExcl: amountOf(next).minus(before).toFixed(2),
+      changed: perAmendment.get(one.documentId)?.changed ?? 0,
+      added: perAmendment.get(one.documentId)?.added ?? 0,
+    });
+    running = next;
+  }
+
+  return { ...chosen, lines, amendments };
 }
 
 /**
@@ -449,8 +611,11 @@ export type SituationView = {
   object: string;
   contractRef: string | null;
   wilaya: string | null;
+  /** The marché as signed, plus what its avenants added. */
   contractExcl: string | null;
   contract: { documentId: string; number: string | null; kind: string };
+  /** "s/marché + avenant n° 2" — what the wilaya's form prints. */
+  amendments: Amendment[];
   sequence: number;
   periodFrom: string | null;
   periodTo: string | null;
@@ -483,14 +648,23 @@ export async function situationOf(documentId: string): Promise<SituationView | n
       amountExcl: project.amountExcl,
       retentionPct: project.retentionPct,
       retentionBase: project.retentionBase,
+      issuedOn: document.issuedOn,
+      status: document.status,
     })
     .from(situationDetail)
     .innerJoin(project, eq(project.id, situationDetail.projectId))
+    .innerJoin(document, eq(document.id, situationDetail.documentId))
     .where(eq(situationDetail.documentId, documentId))
     .limit(1);
   if (!detail) return null;
 
-  const contract = await contractOf(detail.projectId);
+  // The marché as it stood the day this situation was ISSUED. A draft is read
+  // against the marché as it stands now — it has not been anywhere yet, and
+  // it is the same marché the screen that writes it is showing.
+  const contract = await contractOf(
+    detail.projectId,
+    detail.status === "issued" ? detail.issuedOn : null,
+  );
   if (!contract) return null;
 
   const lines = await db
@@ -503,6 +677,11 @@ export async function situationOf(documentId: string): Promise<SituationView | n
   const before = await claimedBefore(detail.projectId, detail.sequence);
   const rows = situationRows({ contract: contract.lines, previous: before.byLine, period });
 
+  // The marché the person typed, plus what each avenant added. Progress is
+  // measured against what is under contract TODAY — a situation reading 104%
+  // because an avenant is not counted is a figure that starts an argument.
+  const contractExcl = withAmendments(detail.amountExcl, contract.amendments);
+
   return {
     documentId,
     projectId: detail.projectId,
@@ -510,8 +689,9 @@ export async function situationOf(documentId: string): Promise<SituationView | n
     object: detail.object,
     contractRef: detail.contractRef,
     wilaya: detail.wilaya,
-    contractExcl: detail.amountExcl,
+    contractExcl,
     contract: { documentId: contract.documentId, number: contract.number, kind: contract.kind },
+    amendments: contract.amendments,
     sequence: detail.sequence,
     periodFrom: detail.periodFrom,
     periodTo: detail.periodTo,
@@ -525,7 +705,7 @@ export async function situationOf(documentId: string): Promise<SituationView | n
     cumulative: cumulative({
       rows,
       previouslyCertifiedExcl: before.certifiedExcl,
-      contractExcl: detail.amountExcl,
+      contractExcl,
     }),
   };
 }
@@ -624,4 +804,451 @@ export async function earlierSituationUnissued(documentId: string): Promise<bool
     )
     .limit(1);
   return Boolean(earlier);
+}
+
+/** One line of the marché, as the avenant's screen shows it. */
+export type AmendmentRow = {
+  lineId: string;
+  position: number;
+  reference: string | null;
+  designation: string | null;
+  unit: string | null;
+  /** What the marché says today. A placeholder on the screen, never a default. */
+  qty: string;
+  unitPrice: string;
+  vatRate: string;
+  /** What the open avenant makes of this line, when it touches it at all. */
+  newQty: string | null;
+  newUnitPrice: string | null;
+};
+
+/** A prix nouveau: a price the avenant introduces, on no line of the marché. */
+export type AmendmentAddition = {
+  reference: string | null;
+  designation: string;
+  unit: string | null;
+  qty: string;
+  unitPrice: string;
+  vatRate: string;
+};
+
+export type NextAmendment = {
+  projectId: string;
+  contract: Contract | null;
+  /** The avenant still open, which the screen edits instead of opening a second. */
+  draft: { documentId: string; theirNumber: string | null; signedOn: string | null } | null;
+  rows: AmendmentRow[];
+  additions: AmendmentAddition[];
+  /** The marché as its issued avenants left it — what this one starts from. */
+  contractExcl: string;
+  blocked: "noContract" | null;
+};
+
+/**
+ * Everything the avenant screen shows.
+ *
+ * The marché's bordereau as it stands — after every avenant already issued —
+ * with, on each line, whatever the open avenant makes of it. An avenant is
+ * read against the paper it changes; a blank column means "this one does not
+ * touch this price", which is the common case and must cost nothing to say.
+ */
+export async function nextAmendment(projectId: string): Promise<NextAmendment | null> {
+  const [exists] = await db
+    .select({ id: project.id })
+    .from(project)
+    .where(eq(project.id, projectId))
+    .limit(1);
+  if (!exists) return null;
+
+  const contract = await contractOf(projectId);
+  if (!contract) {
+    return {
+      projectId,
+      contract: null,
+      draft: null,
+      rows: [],
+      additions: [],
+      contractExcl: "0",
+      blocked: "noContract",
+    };
+  }
+
+  // One open avenant at a time, for the reason there is one open situation:
+  // two drafts amending the same bordereau cannot both be read against it.
+  const [open] = await db
+    .select({ id: document.id, number: document.number, issuedOn: document.issuedOn })
+    .from(document)
+    .innerJoin(documentLink, eq(documentLink.fromDocument, document.id))
+    .where(
+      and(
+        eq(document.kind, "amendment"),
+        eq(document.status, "draft"),
+        eq(documentLink.toDocument, contract.documentId),
+        eq(documentLink.relation, "amends"),
+      ),
+    )
+    .limit(1);
+
+  const drafted = open
+    ? await db
+        .select()
+        .from(documentLine)
+        .where(and(eq(documentLine.documentId, open.id), eq(documentLine.lineKind, "item")))
+        .orderBy(asc(documentLine.position))
+    : [];
+
+  const rows: AmendmentRow[] = contract.lines.map((line) => {
+    const touched = drafted.find((d) => d.sourceLineId === line.lineId);
+    return {
+      lineId: line.lineId,
+      position: line.position,
+      reference: line.reference,
+      designation: line.designation,
+      unit: line.unit,
+      qty: line.qty,
+      unitPrice: line.unitPrice,
+      vatRate: line.vatRate,
+      newQty: touched ? plain(touched.qty) : null,
+      newUnitPrice: touched ? plain(touched.unitPrice) : null,
+    };
+  });
+
+  const onContract = new Set(contract.lines.map((line) => line.lineId));
+  const additions: AmendmentAddition[] = drafted
+    .filter((d) => !d.sourceLineId || !onContract.has(d.sourceLineId))
+    .map((d) => ({
+      reference: d.reference,
+      designation: d.designation ?? "",
+      unit: d.unit,
+      qty: plain(d.qty),
+      unitPrice: plain(d.unitPrice),
+      vatRate: d.vatRate ?? "0",
+    }));
+
+  return {
+    projectId,
+    contract,
+    draft: open ? { documentId: open.id, theirNumber: open.number, signedOn: open.issuedOn } : null,
+    rows,
+    additions,
+    contractExcl: amountOf(contract.lines).toFixed(2),
+    blocked: null,
+  };
+}
+
+export type AmendmentInput = {
+  projectId: string;
+  /**
+   * marché lineId → what the avenant makes of that line. A blank field keeps
+   * the marché's own figure: an avenant that moves a quantity has not touched
+   * the price, and re-stating the price would be us saying so, not them.
+   */
+  changes: Record<string, { qty?: string | null; unitPrice?: string | null }>;
+  /** Prix nouveaux — lines the avenant introduces. Blank rows are dropped. */
+  additions: {
+    reference?: string | null;
+    designation?: string | null;
+    unit?: string | null;
+    qty?: string | null;
+    unitPrice?: string | null;
+  }[];
+  /** Theirs: "Avenant n° 2". Blank until the signed paper comes back. */
+  theirNumber: string | null;
+  /** The date on the signature. */
+  signedOn: string | null;
+  actorId: string;
+};
+
+/** "" and null are "not said"; "0" is a figure somebody typed. */
+function said(value: string | null | undefined): boolean {
+  return (
+    value !== null && value !== undefined && value.trim() !== "" && Number.isFinite(Number(value))
+  );
+}
+
+/**
+ * Write the avenant as a DRAFT, or rewrite the one still open.
+ *
+ * It carries only what the avenant states: the lines whose quantity or price
+ * it moves, each pointing back at the line of the marché it replaces, and the
+ * prix nouveaux it introduces, pointing at nothing. `contractOf` composes the
+ * two, so every situation raised afterwards bills against the amended marché
+ * without anybody retyping the bordereau.
+ *
+ * Nothing is amended until it is issued (LAW 2), and once issued it cannot
+ * change (LAW 5): a second avenant is how the first is corrected, which is
+ * what a wilaya does too.
+ *
+ * This has its own screen rather than the builder for the reason a situation
+ * does — the builder saves lines as typed, with no memory of which line of the
+ * marché each one answers, and an avenant that has forgotten that is a
+ * bordereau of forty new prices.
+ */
+export async function saveAmendment(input: AmendmentInput): Promise<string> {
+  const next = await nextAmendment(input.projectId);
+  if (!next) throw new ProjectRefused("noSuchProject");
+  if (next.blocked) throw new ProjectRefused(next.blocked);
+  const contract = next.contract as Contract;
+
+  const touched = Object.entries(input.changes).filter(
+    ([, patch]) => said(patch.qty) || said(patch.unitPrice),
+  );
+  for (const [lineId] of touched) {
+    if (!contract.lines.some((line) => line.lineId === lineId)) {
+      throw new ProjectRefused("lineNotOnContract");
+    }
+  }
+
+  // A row of the prix nouveaux block with nothing in it is not a mistake, it
+  // is an empty row. A row with a designation and no price is.
+  const additions = input.additions.filter(
+    (a) => (a.designation ?? "").trim() !== "" || said(a.qty) || said(a.unitPrice),
+  );
+  for (const a of additions) {
+    if ((a.designation ?? "").trim() === "") throw new ProjectRefused("additionNeedsDesignation");
+    if (!said(a.qty) || Number(a.qty) <= 0 || !said(a.unitPrice) || Number(a.unitPrice) <= 0) {
+      throw new ProjectRefused("additionNeedsPrice");
+    }
+  }
+
+  if (touched.length === 0 && additions.length === 0) throw new ProjectRefused("nothingAmended");
+
+  const [row] = await db
+    .select({ partyId: project.partyId, dealId: project.dealId, currency: project.currency })
+    .from(project)
+    .where(eq(project.id, input.projectId))
+    .limit(1);
+  if (!row) throw new ProjectRefused("noSuchProject");
+
+  const [client] = await db
+    .select({ docLocale: party.docLocale })
+    .from(party)
+    .where(eq(party.id, row.partyId))
+    .limit(1);
+
+  // A prix nouveau on a marché de travaux carries the rate the marché carries;
+  // the person can change it in the builder if this one ever differs.
+  const defaultVat = contract.lines[0]?.vatRate ?? "19";
+
+  const stated = [
+    ...touched.map(([lineId, patch]) => {
+      const line = contract.lines.find((l) => l.lineId === lineId) as ContractLine;
+      return {
+        sourceLineId: line.lineId,
+        reference: line.reference,
+        designation: line.designation,
+        unit: line.unit,
+        qty: said(patch.qty) ? new Decimal(patch.qty as string).toFixed() : line.qty,
+        unitPrice: said(patch.unitPrice)
+          ? new Decimal(patch.unitPrice as string).toFixed()
+          : line.unitPrice,
+        vatRate: line.vatRate,
+      };
+    }),
+    ...additions.map((a) => ({
+      sourceLineId: null,
+      reference: a.reference?.trim() || null,
+      designation: (a.designation as string).trim(),
+      unit: a.unit?.trim() || null,
+      qty: new Decimal(a.qty as string).toFixed(),
+      unitPrice: new Decimal(a.unitPrice as string).toFixed(),
+      vatRate: defaultVat,
+    })),
+  ];
+
+  // The avenant's own money is the value of the prices it states. What it adds
+  // to the marché — the incidence financière — is arithmetic against the
+  // bordereau, computed where the marché is composed rather than typed here.
+  const totals = computeTotals(
+    stated.map((line) => ({ qty: line.qty, unitPrice: line.unitPrice, vatRate: line.vatRate })),
+  );
+
+  const lines = stated.map((line, index) => ({
+    ...line,
+    position: index + 1,
+    lineKind: "item",
+    totalExcl: lineTotalExcl({ qty: line.qty, unitPrice: line.unitPrice }).toFixed(2),
+  }));
+
+  return db.transaction(async (tx) => {
+    let documentId: string;
+
+    if (next.draft) {
+      documentId = next.draft.documentId;
+      await tx
+        .update(document)
+        .set({
+          number: input.theirNumber?.trim() || null,
+          issuedOn: input.signedOn ?? undefined,
+          totals,
+        })
+        .where(eq(document.id, documentId));
+      await tx.delete(documentLine).where(eq(documentLine.documentId, documentId));
+    } else {
+      const [created] = await tx
+        .insert(document)
+        .values({
+          kind: "amendment",
+          // LAW 5 allocates us no number here: the number on an avenant is the
+          // client's, typed off the signed paper.
+          number: input.theirNumber?.trim() || null,
+          partyId: row.partyId,
+          dealId: row.dealId,
+          locale: client?.docLocale ?? "fr",
+          currency: row.currency,
+          issuedOn: input.signedOn ?? new Date().toISOString().slice(0, 10),
+          status: "draft",
+          settlement: "virement",
+          totals,
+        })
+        .returning({ id: document.id });
+      documentId = created?.id as string;
+
+      await tx.insert(documentLink).values({
+        fromDocument: documentId,
+        toDocument: contract.documentId,
+        relation: "amends",
+      });
+    }
+
+    await tx.insert(documentLine).values(lines.map((line) => ({ ...line, documentId })));
+
+    await tx.insert(auditEntry).values({
+      actorId: input.actorId,
+      actorKind: "user",
+      entity: "document",
+      entityId: documentId,
+      action: next.draft ? "edit" : "create",
+      after: {
+        kind: "amendment",
+        projectId: input.projectId,
+        amends: contract.documentId,
+        changed: touched.length,
+        added: additions.length,
+        alreadyAmendedBy: contract.amendments.length,
+      },
+      sourceScreen: "16",
+    });
+
+    return documentId;
+  });
+}
+
+/**
+ * What every project's avenants added, for many projects at once.
+ *
+ * The list and the detail page and the situation must all say the same number
+ * — a project reading 4 390 000 in one place and 4 710 000 in another is a
+ * question somebody has to ask the Gérant. So this exists rather than each
+ * screen doing its own arithmetic.
+ *
+ * Cheap when nothing has been amended, which is the common case: one query
+ * finds the amendments, and if there are none it stops there.
+ */
+export async function amendmentDeltas(projectIds: string[]): Promise<Map<string, string>> {
+  const out = new Map<string, string>();
+  if (projectIds.length === 0) return out;
+
+  const amended = await db
+    .select({ projectId: project.id })
+    .from(project)
+    .innerJoin(documentLink, eq(documentLink.toDocument, project.contractDocumentId))
+    .innerJoin(document, eq(document.id, documentLink.fromDocument))
+    .where(
+      and(
+        inArray(project.id, projectIds),
+        eq(documentLink.relation, "amends"),
+        eq(document.kind, "amendment"),
+        eq(document.status, "issued"),
+      ),
+    );
+  if (amended.length === 0) return out;
+
+  for (const id of new Set(amended.map((a) => a.projectId))) {
+    const contract = await contractOf(id);
+    if (!contract) continue;
+    const delta = contract.amendments.reduce((sum, one) => sum.plus(one.deltaExcl), new Decimal(0));
+    if (!delta.isZero()) out.set(id, delta.toFixed(2));
+  }
+  return out;
+}
+
+export type AmendmentImpact = {
+  projectId: string | null;
+  contractDocumentId: string;
+  /** The marché's own number — "MAR/2026/018". */
+  contractNumber: string | null;
+  /** Plain decimals; the engine formats them. */
+  beforeExcl: string;
+  incidenceExcl: string;
+  afterExcl: string;
+  changed: number;
+  added: number;
+};
+
+/**
+ * What one avenant does to the marché it amends.
+ *
+ * An avenant states only the prices it moves, so its own total is the value of
+ * those prices and not the marché's. The three figures a reader actually wants
+ * — before, incidence, after — are arithmetic over the bordereau, and they are
+ * computed HERE rather than typed, because a marché reading 4 390 000 on the
+ * avenant and 4 710 000 on the project is a question somebody has to answer.
+ *
+ * Read against the avenants issued BEFORE this one: avenant n° 2's incidence is
+ * measured on the marché as avenant n° 1 left it, which is what its own paper
+ * says. A draft is measured against everything issued so far.
+ */
+export async function amendmentImpact(documentId: string): Promise<AmendmentImpact | null> {
+  const [me] = await db
+    .select({ kind: document.kind, dealId: document.dealId })
+    .from(document)
+    .where(eq(document.id, documentId))
+    .limit(1);
+  if (!me || me.kind !== "amendment") return null;
+
+  const [link] = await db
+    .select({ contractDocumentId: documentLink.toDocument })
+    .from(documentLink)
+    .where(and(eq(documentLink.fromDocument, documentId), eq(documentLink.relation, "amends")))
+    .limit(1);
+  if (!link) return null;
+
+  const [marche] = await db
+    .select({ number: document.number })
+    .from(document)
+    .where(eq(document.id, link.contractDocumentId))
+    .limit(1);
+
+  const base = await contractLines(link.contractDocumentId);
+  const issued = await amendmentsOf(link.contractDocumentId);
+  // A draft is not in that list, and `findIndex` says -1: everything issued
+  // comes before it, which is exactly right.
+  const at = issued.findIndex((a) => a.documentId === documentId);
+  const prior = (at >= 0 ? issued.slice(0, at) : issued).map((a) => a.documentId);
+
+  const before = await amendedLines(base, prior);
+  const after = await amendedLines(base, [...prior, documentId]);
+  const beforeExcl = amountOf(before.lines);
+  const afterExcl = amountOf(after.lines);
+  const tally = after.perAmendment.get(documentId) ?? { changed: 0, added: 0 };
+
+  const [owner] = me.dealId
+    ? await db
+        .select({ id: project.id })
+        .from(project)
+        .where(eq(project.dealId, me.dealId))
+        .limit(1)
+    : [];
+
+  return {
+    projectId: owner?.id ?? null,
+    contractDocumentId: link.contractDocumentId,
+    contractNumber: marche?.number ?? null,
+    beforeExcl: beforeExcl.toFixed(2),
+    incidenceExcl: afterExcl.minus(beforeExcl).toFixed(2),
+    afterExcl: afterExcl.toFixed(2),
+    changed: tally.changed,
+    added: tally.added,
+  };
 }

@@ -65,6 +65,32 @@ export const SEED_TYPES: SeedType[] = [
     pattern: null,
   },
   {
+    /**
+     * AVENANT — the paper that changes a marché after it is signed.
+     *
+     * The twentieth kind, and it is here rather than being a `client_order`
+     * with a note because a wilaya's situation form prints "situation n° 4
+     * s/marché + avenant n° 2": the amendment is counted, named and reasoned
+     * about separately from the order it amends, by the client as much as by
+     * us.
+     *
+     * `clientReference`, for the same reason `client_order` is: the number on
+     * it is theirs. Its lines either point at a line of the marché — replacing
+     * that line's quantity or price — or point at nothing, which adds a price
+     * to the bordereau. `contractOf` composes the two, so every situation
+     * raised afterwards bills against the amended contract without anybody
+     * retyping it.
+     */
+    kind: "amendment",
+    family: "sell",
+    legalValue: "commitment",
+    numbering: "clientReference",
+    convertsTo: [],
+    languages: ["fr"],
+    active: true,
+    pattern: null,
+  },
+  {
     kind: "delivery_note",
     family: "sell",
     legalValue: "proof",

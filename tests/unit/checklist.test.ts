@@ -60,6 +60,7 @@ function doc(over: Partial<RenderedDocument> = {}): RenderedDocument {
     totals: [],
     amountInWords: "deux mille dinars algériens",
     situation: null,
+    amendment: null,
     findings: [],
     template: "SUPSERV invoice — FR v1",
     ...over,

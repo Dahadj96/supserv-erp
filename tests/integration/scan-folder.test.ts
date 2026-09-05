@@ -70,6 +70,7 @@ function sample(designation: string): RenderedDocument {
     totals: [{ label: "totalIncl", value: "1 190,00" }],
     amountInWords: "mille cent quatre-vingt-dix dinars algériens",
     situation: null,
+    amendment: null,
     findings: [],
     template: "SUPSERV invoice — FR v1",
   };

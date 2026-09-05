@@ -1024,7 +1024,8 @@
       "retention_release": "Levée de retenue de garantie",
       "attestation": "Attestation",
       "official_letter": "Lettre officielle",
-      "cover_letter": "Lettre d'accompagnement"
+      "cover_letter": "Lettre d'accompagnement",
+      "amendment": "Avenant"
     },
     "draft": "Brouillon — non émise",
     "forClient": "Pour {client}",
@@ -1078,6 +1079,16 @@
       "submitted": "Déposée",
       "approved": "Approuvée",
       "why": "Dépôt et approbation s'enregistrent sur la page du projet, le jour où le papier bouge."
+    },
+    "amendment": {
+      "title": "Ce que cet avenant change",
+      "contract": "Marché",
+      "before": "Avant cet avenant (HT)",
+      "incidence": "Incidence du présent avenant (HT)",
+      "after": "Nouveau montant du marché (HT)",
+      "touched": "Prix",
+      "touchedValue": "{changed} modifié(s), {added} nouveau(x)",
+      "why": "Un avenant ne porte que les prix qu'il déplace : son propre total est la valeur de ces prix. Toute situation postérieure à son émission facture sur le bordereau modifié."
     }
   },
   "checklist": {
@@ -1565,7 +1576,8 @@
       "retention_release": "Levée de retenue de garantie",
       "attestation": "Attestation",
       "official_letter": "Lettre officielle",
-      "cover_letter": "Lettre d'accompagnement"
+      "cover_letter": "Lettre d'accompagnement",
+      "amendment": "Avenant"
     },
     "neverChange": "Des règles qui ne changent jamais",
     "never": {
@@ -1760,7 +1772,8 @@
       "alreadyIssued": "Ce document est émis. Une correction est un nouveau document.",
       "noLines": "Un document demande au moins une ligne avec une désignation et une quantité.",
       "noSuchDocument": "Ce document n'existe plus.",
-      "situationHasItsOwnScreen": "Une situation se modifie face au marché, sur la page du projet, pas ici."
+      "situationHasItsOwnScreen": "Une situation se modifie face au marché, sur la page du projet, pas ici.",
+      "amendmentHasItsOwnScreen": "Un avenant s'écrit face au bordereau du marché, sur la page du projet, pas ici."
     },
     "settlement": "Mode de règlement",
     "settlementUnsaid": "Non précisé",
@@ -4683,7 +4696,8 @@
       "alreadyOnSite": "Cette personne est déjà sur ce chantier.",
       "noSuchCrew": "Cette ligne d'équipe n'existe pas.",
       "alreadyLeft": "Cette personne est déjà partie.",
-      "leftBeforeArrival": "Personne ne part avant d'être arrivé."
+      "leftBeforeArrival": "Personne ne part avant d'être arrivé.",
+      "noContract": "Désignez d'abord le DQE contractuel sur le projet."
     },
     "physical": {
       "title": "Avancement physique",
@@ -4803,6 +4817,51 @@
       "noSubject": "Dites à quoi correspond le prix.",
       "noPrice": "Un prix est un nombre supérieur à zéro.",
       "supplierRequired": "Dites quel magasin."
+    }
+  },
+  "amendment": {
+    "title": "Avenants",
+    "none": "aucun pour l'instant",
+    "count": "{n} signé(s)",
+    "noNumber": "sans numéro",
+    "touched": "{changed} ligne(s) modifiée(s), {added} ajoutée(s)",
+    "theirNumber": "Leur numéro d'avenant",
+    "theirNumberHint": "Avenant n° 2",
+    "signedOn": "Signé le",
+    "open": "Ouvrir un avenant",
+    "why": "Ouvre un brouillon portant le bordereau du marché, chaque ligne pointant sur celle qu'elle peut remplacer. Supprimez ce que l'avenant ne touche pas, modifiez ce qu'il change, puis émettez-le sous leur numéro — rien n'est modifié tant qu'il ne l'est pas.",
+    "wasMarche": "marché {amount}",
+    "lead": "Le bordereau du marché tel qu'il est aujourd'hui. Ne remplissez que les lignes que cet avenant modifie — une colonne vide veut dire qu'il ne touche pas à ce prix.",
+    "editingDraft": "Un avenant est déjà ouvert sur ce marché. Vous le modifiez.",
+    "bordereau": "Le bordereau du marché",
+    "identity": "L'avenant",
+    "contractNow": "Montant sous contrat à ce jour (HT)",
+    "untouchedHint": "Une case vide conserve le chiffre du marché. Tapez 0 pour une quantité que l'avenant annule.",
+    "newPrices": "Prix nouveaux",
+    "newPricesHint": "Les prix que cet avenant introduit et qui ne figurent sur aucune ligne du marché. Ils sont ajoutés au bordereau et toute situation postérieure peut les réclamer.",
+    "createsADraft": "Ceci écrit un brouillon. Rien n'est modifié tant qu'il n'est pas émis.",
+    "saveDraft": "Enregistrer l'avenant",
+    "go": "Écrire l'avenant",
+    "column": {
+      "newQty": "Qté avenant",
+      "newPrice": "P.U. avenant",
+      "qty": "Quantité"
+    },
+    "add": {
+      "reference": "N° prix",
+      "designationHint": "Désignation du prix nouveau"
+    },
+    "blocked": {
+      "noContract": "Ce projet n'a pas encore de DQE contractuel : il n'y a rien à modifier."
+    },
+    "error": {
+      "noContract": "Ce projet n'a pas encore de DQE contractuel : il n'y a rien à modifier.",
+      "nothingAmended": "Un avenant qui ne change rien n'est pas un avenant.",
+      "lineNotOnContract": "Cette ligne ne figure pas sur le marché.",
+      "additionNeedsDesignation": "Un prix nouveau a besoin d'une désignation.",
+      "additionNeedsPrice": "Un prix nouveau a besoin d'une quantité et d'un prix unitaire, tous deux supérieurs à zéro.",
+      "notAllowed": "Votre rôle ne peut pas modifier un marché.",
+      "noSuchProject": "Ce projet n'existe pas."
     }
   }
 }

@@ -7,6 +7,7 @@ import { getSession } from "@/auth/session";
 import {
   recordSituationApproved,
   recordSituationSubmitted,
+  saveAmendment,
   saveSituation,
 } from "@/domain/project/situations";
 import {
@@ -259,4 +260,91 @@ export async function crewUpdateAction(locale: string, id: string, form: FormDat
     throw error;
   }
   back(locale, id, "?recorded=crew");
+}
+
+/**
+ * `newQty:<lineId>` / `newPrice:<lineId>` → what the avenant makes of each
+ * line. A field left blank is not a change; "0" is — a quantity cancelled.
+ */
+function changes(form: FormData): Record<string, { qty?: string; unitPrice?: string }> {
+  const out: Record<string, { qty?: string; unitPrice?: string }> = {};
+  const clean = (value: FormDataEntryValue) =>
+    String(value)
+      .trim()
+      .replace(/[\s  ]/g, "")
+      .replace(",", ".");
+  for (const [key, value] of form.entries()) {
+    const which = key.startsWith("newQty:")
+      ? "qty"
+      : key.startsWith("newPrice:")
+        ? "unitPrice"
+        : null;
+    if (!which) continue;
+    const typed = clean(value);
+    if (!typed) continue;
+    const lineId = key.slice(key.indexOf(":") + 1);
+    out[lineId] = { ...out[lineId], [which]: typed };
+  }
+  return out;
+}
+
+/** `add.designation.<n>` … → the prix nouveaux block, blank rows and all. */
+function additions(form: FormData) {
+  const rows = new Map<string, Record<string, string>>();
+  for (const [key, value] of form.entries()) {
+    if (!key.startsWith("add.")) continue;
+    const [, field, index] = key.split(".");
+    if (!field || index === undefined) continue;
+    const row = rows.get(index) ?? {};
+    row[field] = String(value).trim();
+    rows.set(index, row);
+  }
+  const clean = (value: string | undefined) =>
+    (value ?? "").replace(/[\s  ]/g, "").replace(",", ".");
+  return [...rows.entries()]
+    .sort(([a], [b]) => Number(a) - Number(b))
+    .map(([, row]) => ({
+      reference: row.reference ?? null,
+      designation: row.designation ?? null,
+      unit: row.unit ?? null,
+      qty: clean(row.qty),
+      unitPrice: clean(row.unitPrice),
+    }));
+}
+
+/**
+ * Write the avenant, as a draft, from what the signed paper says.
+ *
+ * `offers.issue`, not `works.issue`: an avenant changes what the client
+ * committed to, which is the same act as recording their order, and the
+ * document catalogue gives the kind the same permission for the same reason.
+ */
+export async function saveAmendmentAction(
+  locale: string,
+  id: string,
+  form: FormData,
+): Promise<void> {
+  const session = await getSession();
+  if (!session) redirect(`/${locale}/sign-in`);
+  if (!can(session.role, "offers.issue")) back(locale, id, "?error=notAllowed");
+
+  let documentId: string;
+  try {
+    documentId = await saveAmendment({
+      projectId: id,
+      changes: changes(form),
+      additions: additions(form),
+      theirNumber: orNull(str(form, "theirNumber")),
+      signedOn: orNull(str(form, "signedOn")),
+      actorId: session.userId,
+    });
+  } catch (error) {
+    if (error instanceof ProjectRefused) {
+      revalidatePath(`/${locale}/projects/${id}/amendment`);
+      redirect(`/${locale}/projects/${id}/amendment?error=${error.reason}`);
+    }
+    throw error;
+  }
+  revalidatePath(`/${locale}/projects/${id}`);
+  redirect(`/${locale}/documents/${documentId}?created=1`);
 }

@@ -9,7 +9,7 @@ import { db } from "@/db";
 import { document, documentLine } from "@/db/schema/document";
 import { blockingRule } from "@/db/schema/interface";
 import { party } from "@/db/schema/party";
-import { situationDetail } from "@/db/schema/project";
+import { project, situationDetail } from "@/db/schema/project";
 import type { LineKind } from "@/documents/draft";
 import { issuingRules, listTypes } from "@/domain/document-types";
 import { STAMP_DUTY_RULE } from "@/domain/money/instruments";
@@ -59,6 +59,17 @@ export default async function EditDocumentPage({
       .where(eq(situationDetail.documentId, id))
       .limit(1);
     if (detail) hardRedirect(`/${locale}/projects/${detail.projectId}/situation`);
+  }
+  // An avenant, for the stronger version of the same reason: its lines say
+  // which line of the marché each one replaces, and the builder does not
+  // carry that. It is written on the project's screen, against the bordereau.
+  if (record.kind === "amendment" && record.dealId) {
+    const [owner] = await db
+      .select({ projectId: project.id })
+      .from(project)
+      .where(eq(project.dealId, record.dealId))
+      .limit(1);
+    if (owner) hardRedirect(`/${locale}/projects/${owner.projectId}/amendment`);
   }
   const rules = await issuingRules(record.kind);
   const carriesTheirNumber = !(rules?.reservesNumber ?? true);

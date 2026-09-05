@@ -431,6 +431,20 @@ and in `.data/screenshots/report.json`; the seeded enquiry is removed after.
 If the Chromium build this Playwright pins is not installed, point it at one
 that is: `--chrome $env:LOCALAPPDATA\ms-playwright\chromium_headless_shell-1228\chrome-headless-shell-win64\chrome-headless-shell.exe`.
 
+### After a new kind of document is added
+
+```
+pnpm catalogue
+```
+
+Writes the document catalogue and its templates into whichever database `.env`
+points at — the same thing screen 50's **Seed types** button does, and
+idempotent: it inserts only what is missing and touches nothing already there.
+It matters because a kind absent from the catalogue has no rules, and the
+engine's fallback is "we allocate the number". On a kind the counterparty
+numbers — a client's order, an **avenant** — that would print a reference of
+ours over theirs, on paper the client files by their own.
+
 ### And whether every button asks who is pressing it
 
 ```

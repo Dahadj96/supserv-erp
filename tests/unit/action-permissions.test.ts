@@ -127,6 +127,9 @@ const EXPECTED: Record<string, string[]> = {
   "projects/[id]/actions.ts:releaseCautionAction": ["works.issue"],
   "projects/[id]/actions.ts:saveSituationAction": ["works.issue"],
   "projects/[id]/actions.ts:termsAction": ["works.issue"],
+  // An avenant changes what the CLIENT committed to, which is the Commercial's
+  // act and not the site's — the same permission the kind takes to be issued.
+  "projects/[id]/actions.ts:saveAmendmentAction": ["offers.issue"],
   // The signed paper reaches the office as often as the site, so either.
   "projects/[id]/actions.ts:situationApprovedAction": ["invoices.issue", "works.issue"],
   "projects/[id]/actions.ts:situationSubmittedAction": ["invoices.issue", "works.issue"],

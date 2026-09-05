@@ -1024,7 +1024,8 @@
       "retention_release": "Retention release",
       "attestation": "Attestation",
       "official_letter": "Official letter",
-      "cover_letter": "Cover letter"
+      "cover_letter": "Cover letter",
+      "amendment": "Avenant"
     },
     "draft": "Draft — not issued",
     "forClient": "For {client}",
@@ -1078,6 +1079,16 @@
       "submitted": "Submitted",
       "approved": "Approved",
       "why": "Submitted and approved are recorded on the project page, the day the paper moves."
+    },
+    "amendment": {
+      "title": "What this avenant changes",
+      "contract": "Marché",
+      "before": "Before this avenant (excl. VAT)",
+      "incidence": "Effect of this avenant (excl. VAT)",
+      "after": "New contract value (excl. VAT)",
+      "touched": "Prices",
+      "touchedValue": "{changed} changed, {added} new",
+      "why": "An avenant states only the prices it moves, so its own total is the value of those prices. Every situation raised after it is issued bills against the amended bordereau."
     }
   },
   "checklist": {
@@ -1565,7 +1576,8 @@
       "retention_release": "Retention release",
       "attestation": "Attestation",
       "official_letter": "Official letter",
-      "cover_letter": "Cover letter"
+      "cover_letter": "Cover letter",
+      "amendment": "Avenant"
     },
     "neverChange": "Rules that never change",
     "never": {
@@ -1760,7 +1772,8 @@
       "alreadyIssued": "That document is issued. A correction is a new document.",
       "noLines": "A document needs at least one line with a description and a quantity.",
       "noSuchDocument": "That document no longer exists.",
-      "situationHasItsOwnScreen": "A situation is edited against the marché on the project page, not here."
+      "situationHasItsOwnScreen": "A situation is edited against the marché on the project page, not here.",
+      "amendmentHasItsOwnScreen": "An avenant is written against the marché's bordereau on the project page, not here."
     },
     "settlement": "Payment method",
     "settlementUnsaid": "Not stated",
@@ -4683,7 +4696,8 @@
       "alreadyOnSite": "They are already on this site.",
       "noSuchCrew": "That crew row does not exist.",
       "alreadyLeft": "They have already left.",
-      "leftBeforeArrival": "Nobody leaves before they arrive."
+      "leftBeforeArrival": "Nobody leaves before they arrive.",
+      "noContract": "Name the DQE contractuel on the project first."
     },
     "physical": {
       "title": "Physical progress",
@@ -4803,6 +4817,51 @@
       "noSubject": "Say what the price is for.",
       "noPrice": "A price is a number greater than nought.",
       "supplierRequired": "Say which shop."
+    }
+  },
+  "amendment": {
+    "title": "Avenants",
+    "none": "none yet",
+    "count": "{n} signed",
+    "noNumber": "no number yet",
+    "touched": "{changed} line(s) changed, {added} added",
+    "theirNumber": "Their avenant number",
+    "theirNumberHint": "Avenant n° 2",
+    "signedOn": "Signed on",
+    "open": "Open an avenant",
+    "why": "Opens a draft carrying the marché's own bordereau, each line pointing at the line it may replace. Delete what the avenant does not touch, change what it does, then issue it under their number — nothing is amended until it is.",
+    "wasMarche": "marché {amount}",
+    "lead": "The marché's bordereau as it stands. Fill in only the lines this avenant moves — a blank column means it does not touch that price.",
+    "editingDraft": "An avenant is already open on this marché. This edits it.",
+    "bordereau": "The marché's bordereau",
+    "identity": "The avenant",
+    "contractNow": "Under contract today (excl. VAT)",
+    "untouchedHint": "A blank cell keeps the marché's own figure. Type 0 for a quantity the avenant cancels.",
+    "newPrices": "New prices",
+    "newPricesHint": "Prices this avenant introduces, which are on no line of the marché. They are appended to the bordereau and every situation raised afterwards can claim them.",
+    "createsADraft": "This writes a draft. Nothing is amended until it is issued.",
+    "saveDraft": "Save the avenant",
+    "go": "Write the avenant",
+    "column": {
+      "newQty": "Avenant qty",
+      "newPrice": "Avenant price",
+      "qty": "Quantity"
+    },
+    "add": {
+      "reference": "Item no.",
+      "designationHint": "Description of the new price"
+    },
+    "blocked": {
+      "noContract": "This project has no DQE contractuel yet, so there is nothing to amend."
+    },
+    "error": {
+      "noContract": "This project has no DQE contractuel yet, so there is nothing to amend.",
+      "nothingAmended": "An avenant that changes nothing is not an avenant.",
+      "lineNotOnContract": "That line is not on the marché.",
+      "additionNeedsDesignation": "A new price needs a description.",
+      "additionNeedsPrice": "A new price needs a quantity and a unit price, both above zero.",
+      "notAllowed": "Your role cannot amend a marché.",
+      "noSuchProject": "That project does not exist."
     }
   }
 }

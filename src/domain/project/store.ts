@@ -1,3 +1,4 @@
+import Decimal from "decimal.js";
 import { and, asc, eq, inArray, isNull, sql } from "drizzle-orm";
 import { db } from "@/db";
 import { auditEntry } from "@/db/schema/control";
@@ -24,6 +25,7 @@ import {
   retentionRelease,
   type SituationInput,
 } from "./progress";
+import { amendmentDeltas } from "./situations";
 
 /**
  * Screens 15 and 16, against the database.
@@ -40,6 +42,13 @@ export class ProjectRefused extends Error {
     super(reason);
     this.name = "ProjectRefused";
   }
+}
+
+/** The marché as signed, plus what its avenants added. Null stays null. */
+function underContract(amountExcl: string | null, delta: string | undefined): string | null {
+  if (!amountExcl) return null;
+  if (!delta) return amountExcl;
+  return new Decimal(amountExcl).plus(delta).toFixed(2);
 }
 
 function asRetentionBase(value: string | null | undefined): RetentionBase | null {
@@ -215,15 +224,19 @@ export async function listProjects(now = new Date()): Promise<ProjectRow[]> {
   if (rows.length === 0) return [];
 
   const ids = rows.map((r) => r.id);
-  const [situations, cautions] = await Promise.all([
+  const [situations, cautions, deltas] = await Promise.all([
     situationsFor(ids),
     db.select().from(projectCaution).where(inArray(projectCaution.projectId, ids)),
+    // What the avenants added. Progress is measured against what is under
+    // contract today, and the list must say the same number the project page
+    // and the situation say.
+    amendmentDeltas(ids),
   ]);
 
   return rows.map((row) => {
     const progress = progressOf({
       situations: situations.get(row.id) ?? [],
-      contract: row.amountExcl,
+      contract: underContract(row.amountExcl, deltas.get(row.id)),
       retentionPct: row.retentionPct,
       physicalPercent: row.physicalPercent,
       now,
@@ -326,9 +339,11 @@ export async function getProject(id: string, now = new Date()): Promise<ProjectD
   if (!row) return null;
 
   const situations = await situationsFor([id]);
+  const deltas = await amendmentDeltas([id]);
   const progress = progressOf({
     situations: situations.get(id) ?? [],
-    contract: row.amountExcl,
+    // Under contract today — the marché as signed, plus its avenants.
+    contract: underContract(row.amountExcl, deltas.get(id)),
     retentionPct: row.retentionPct,
     physicalPercent: row.physicalPercent,
     now,

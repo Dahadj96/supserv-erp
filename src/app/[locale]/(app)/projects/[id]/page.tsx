@@ -11,7 +11,7 @@ import { listPeople } from "@/domain/people";
 import type { CautionState, CrewState } from "@/domain/project/cautions";
 import { needsAttention } from "@/domain/project/cautions";
 import type { SituationState } from "@/domain/project/progress";
-import { contractCandidates } from "@/domain/project/situations";
+import { contractCandidates, contractOf, withAmendments } from "@/domain/project/situations";
 import { getProject } from "@/domain/project/store";
 import { Link } from "@/i18n/navigation";
 import {
@@ -77,10 +77,14 @@ export default async function ProjectPage({
 
   const p = await getProject(id);
   if (!p) notFound();
-  const [contracts, people] = await Promise.all([
+  const [contracts, people, contract] = await Promise.all([
     contractCandidates(p.dealId),
     listPeople("all", 300),
+    contractOf(id),
   ]);
+  // What is under contract TODAY: the marché the person typed, plus what each
+  // avenant added. Progress against the original would read past 100%.
+  const underContract = withAmendments(p.amountExcl, contract?.amendments ?? []);
 
   const format = await getFormatter({ locale });
   const money = (value: string) =>
@@ -480,7 +484,19 @@ export default async function ProjectPage({
               {[
                 { key: "client", value: p.client },
                 { key: "contract", value: p.contractRef ?? "—" },
-                { key: "amount", value: p.amountExcl ? money(p.amountExcl) : "—" },
+                {
+                  key: "amount",
+                  // What is under contract today. When an avenant has moved
+                  // it, the marché's own figure is named beside it — the two
+                  // are different facts and the client quotes both.
+                  value: underContract
+                    ? underContract === p.amountExcl
+                      ? money(underContract)
+                      : `${money(underContract)} (${t("amendment.wasMarche", {
+                          amount: money(p.amountExcl as string),
+                        })})`
+                    : "—",
+                },
                 { key: "started", value: p.startedOn ?? "—" },
                 { key: "end", value: p.contractualEnd ?? "—" },
               ].map((row) => (
@@ -647,7 +663,14 @@ export default async function ProjectPage({
             </section>
           ) : null}
 
-          <RecordPanels locale={locale} p={p} contracts={contracts} canWrite={siteWrite} />
+          <RecordPanels
+            locale={locale}
+            p={p}
+            contracts={contracts}
+            contract={contract}
+            canWrite={siteWrite}
+            canAmend={can(session.role, "offers.issue")}
+          />
 
           <section className="rounded-[var(--radius-card)] border border-line bg-surface p-5">
             <h2 className="text-tiny font-semibold text-ink">{t("project.fromEnquiry")}</h2>

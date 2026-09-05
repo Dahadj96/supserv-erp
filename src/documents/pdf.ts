@@ -154,6 +154,7 @@ const TITLES: Record<string, { fr: string; en: string }> = {
   delivery_note: { fr: "BON DE LIVRAISON", en: "DELIVERY NOTE" },
   credit_note: { fr: "AVOIR", en: "CREDIT NOTE" },
   situation: { fr: "SITUATION DE TRAVAUX", en: "PROGRESS STATEMENT" },
+  amendment: { fr: "AVENANT AU MARCHÉ", en: "CONTRACT AMENDMENT" },
 };
 
 /**
@@ -244,6 +245,19 @@ const WORDS = {
     inWords: "Arrêtée la présente facture à la somme de :",
     settlement: "Mode de règlement",
     domiciliation: "Domiciliation bancaire",
+    // An avenant lists only the prices it moves, so its own total is not the
+    // marché's. What a reader wants is the three figures underneath.
+    amendment: {
+      before: "Montant du marché avant avenant (HT)",
+      incidence: "Incidence du présent avenant (HT)",
+      after: "Nouveau montant du marché (HT)",
+      touchedOne: "prix modifié",
+      touched: "prix modifiés",
+      addedOne: "prix nouveau",
+      added: "prix nouveaux",
+      inWords: "Incidence du présent avenant arrêtée à la somme de :",
+      inWordsLess: "Incidence du présent avenant, EN MOINS, arrêtée à la somme de :",
+    },
     totals: {
       totalExcl: "Total HT",
       totalVat: "TVA",
@@ -269,6 +283,17 @@ const WORDS = {
     inWords: "The present invoice is settled at the sum of:",
     settlement: "Payment method",
     domiciliation: "Bank details",
+    amendment: {
+      before: "Contract value before this amendment (excl. VAT)",
+      incidence: "Effect of this amendment (excl. VAT)",
+      after: "New contract value (excl. VAT)",
+      touchedOne: "price changed",
+      touched: "prices changed",
+      addedOne: "new price",
+      added: "new prices",
+      inWords: "The effect of this amendment is set at the sum of:",
+      inWordsLess: "The effect of this amendment, AS A REDUCTION, is set at the sum of:",
+    },
     totals: {
       totalExcl: "Total excl. VAT",
       totalVat: "VAT",
@@ -341,6 +366,20 @@ export async function toPdf(doc: RenderedDocument): Promise<Buffer> {
     .filter(Boolean)
     .join("   ");
   if (theirs) text(ctx, theirs, { size: 8.5, color: MUTED });
+
+  // Which marché this avenant amends. Its own number is theirs and says
+  // nothing about the contract it belongs to; the file is ordered by that one.
+  if (doc.amendment?.contractNumber) {
+    ctx.y -= 13;
+    text(
+      ctx,
+      `${SITUATION_WORDS[doc.locale === "en" ? "en" : "fr"].contract} ${doc.amendment.contractNumber}`,
+      {
+        size: 9,
+        bold: true,
+      },
+    );
+  }
 
   /* ── the lines ──────────────────────────────────────────────────────── */
   ctx.y -= 26;
@@ -429,11 +468,66 @@ export async function toPdf(doc: RenderedDocument): Promise<Buffer> {
     ctx.y -= isGrand ? 16 : 13;
   }
 
+  /* ── what an avenant does to the marché ─────────────────────────────── */
+  // Its own total is the value of the prices it moves. Nobody reads an
+  // avenant for that figure; they read it for these three.
+  if (doc.amendment) {
+    const a = doc.amendment;
+    ctx.y -= 6;
+    rule(ctx, 300, edge);
+    ctx.y -= 13;
+    for (const [label, value, strong] of [
+      [w.amendment.before, a.contractBeforeExcl, false],
+      [w.amendment.incidence, a.incidenceExcl, false],
+      [w.amendment.after, a.contractAfterExcl, true],
+    ] as [string, string, boolean][]) {
+      text(ctx, label, {
+        x: 300,
+        size: strong ? 9 : 8.5,
+        bold: strong,
+        color: strong ? INK : MUTED,
+      });
+      right(ctx, value, edge, strong ? 9 : 8.5, strong);
+      ctx.y -= strong ? 15 : 13;
+    }
+    const tally = [
+      a.changed
+        ? `${a.changed} ${a.changed > 1 ? w.amendment.touched : w.amendment.touchedOne}`
+        : null,
+      a.added ? `${a.added} ${a.added > 1 ? w.amendment.added : w.amendment.addedOne}` : null,
+    ]
+      .filter(Boolean)
+      .join(" · ");
+    if (tally) {
+      text(ctx, tally, { x: 300, size: 8, color: MUTED });
+      ctx.y -= 12;
+    }
+  }
+
   /* ── the sentence a client reads when the figures are disputed ──────── */
+  // On an avenant it is the INCIDENCE that is written out. Its own total is
+  // the value of the prices it states, and a reader who took that for the
+  // marché would be reading a figure nobody owes.
   ctx.y -= 10;
-  text(ctx, w.inWords, { size: 8, color: MUTED });
+  text(
+    ctx,
+    doc.amendment
+      ? doc.amendment.incidenceNegative
+        ? w.amendment.inWordsLess
+        : w.amendment.inWords
+      : w.inWords,
+    {
+      size: 8,
+      color: MUTED,
+      maxWidth: edge - MARGIN,
+    },
+  );
   ctx.y -= 12;
-  text(ctx, doc.amountInWords, { size: 9, bold: true, maxWidth: edge - MARGIN });
+  text(ctx, doc.amendment ? doc.amendment.incidenceInWords : doc.amountInWords, {
+    size: 9,
+    bold: true,
+    maxWidth: edge - MARGIN,
+  });
 
   /* ── how it is to be settled — a mention décret 05-468 requires ─────── */
   if (doc.settlement) {
@@ -563,7 +657,9 @@ function situationPages(
   const facts: [string, string | null][] = [
     [f.owner, doc.counterparty.legalName],
     [f.operation, s.object],
-    [f.contract, s.contractRef],
+    // "MAR/2026/018 + avenant n° 2". The wilaya's form names the paper this
+    // situation is raised against, and after an avenant that is both.
+    [f.contract, s.amendmentRef ? `${s.contractRef ?? "—"} + ${s.amendmentRef}` : s.contractRef],
     [f.ourRef, s.contractNumber ? `${s.projectCode} · ${s.contractNumber}` : s.projectCode],
     [f.wilaya, s.wilaya],
     [f.period, s.period],

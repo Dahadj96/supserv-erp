@@ -177,8 +177,10 @@ const MEASURE = `(() => {
   const missingKeys = [...new Set((document.body.innerText.match(/\\[[a-z]+(?:\\.[A-Za-z0-9_]+)+\\]/g) || []))].slice(0, 10);
   // A text field a person types a sentence into, drawn narrower than a
   // sentence: the builder's designation column was 60px wide on the laptop.
+  // \`data-short\` marks a field that holds a code, not a sentence — a unit
+  // ("ml"), a price reference ("3.1") — and 90px is the right width for one.
   const narrowInputs = [];
-  for (const el of document.querySelectorAll('input[type=text]:not([name=unit]):not([inputmode=decimal]), input:not([type]):not([name=unit]):not([inputmode=decimal]), textarea')) {
+  for (const el of document.querySelectorAll('input[type=text]:not([name=unit]):not([data-short]):not([inputmode=decimal]), input:not([type]):not([name=unit]):not([data-short]):not([inputmode=decimal]), textarea')) {
     const r = el.getBoundingClientRect();
     if (r.width > 0 && r.width < 140 && narrowInputs.length < 8) narrowInputs.push(Math.round(r.width) + 'px ' + label(el));
   }

@@ -259,6 +259,18 @@ bordereau in the wilaya's own "partie co-contractant" layout — see
 - `tests/integration/situation-flow.test.ts` :: "refuses to issue a situation whose predecessor is still a draft"
 - `tests/integration/situation-flow.test.ts` :: "records the provisoire, then the définitive, and never the other way round"
 
+And later the same day, the marché that changes — an avenant is the twentieth
+document kind, its lines say which line of the marché each one replaces, and
+a situation already issued is read against the bordereau as it stood the day
+it went out. See `docs/DECISIONS/2026-09-04-a-marche-that-changed.md`:
+
+- `tests/integration/situation-flow.test.ts` :: "refuses an avenant that changes nothing, and a new price with no price"
+- `tests/integration/situation-flow.test.ts` :: "carries only what the paper says: one quantity moved, one prix nouveau"
+- `tests/integration/situation-flow.test.ts` :: "changes nothing while it is a draft, and cannot be edited in the builder"
+- `tests/integration/situation-flow.test.ts` :: "moves the marché once it is issued, by its own arithmetic"
+- `tests/integration/situation-flow.test.ts` :: "leaves the situations already issued exactly as the client signed them"
+- `tests/integration/situation-flow.test.ts` :: "is what the next situation bills against, and what its form names"
+
 And screens 24, 25 and 26 — `/personnel-requests` was the third dead link in
 the rail, and a certification that lapses before a man is due on site is the
 same rule for the third time:

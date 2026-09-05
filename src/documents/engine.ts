@@ -7,7 +7,12 @@ import { party } from "@/db/schema/party";
 import { assertTransition, IllegalTransition } from "@/domain/control/transitions";
 import { issuingRules } from "@/domain/document-types";
 import type { Totals } from "@/domain/money";
-import { earlierSituationUnissued, situationOf } from "@/domain/project/situations";
+import {
+  type Amendment,
+  amendmentImpact,
+  earlierSituationUnissued,
+  situationOf,
+} from "@/domain/project/situations";
 import { assertCanIssue } from "@/domain/setup";
 import { storageFor } from "@/storage";
 import { amountInWords } from "./amount-in-words";
@@ -110,6 +115,13 @@ export type RenderedDocument = {
    */
   situation: RenderedSituation | null;
 
+  /**
+   * An avenant states only the prices it moves, so its own total is not the
+   * marché's. This is what the marché was worth, what this paper does to it,
+   * and what it is worth afterwards. Null on every other kind.
+   */
+  amendment: RenderedAmendment | null;
+
   findings: Finding[];
   /** Which template produced this. Screen 70 wants it in the audit entry. */
   template: string;
@@ -127,6 +139,12 @@ export type RenderedSituation = {
   /** The client's own contract reference: MAR/2026/018. */
   contractRef: string | null;
   contractNumber: string | null;
+  /**
+   * "avenant n° 2", or "avenants n° 1, 2" — what the wilaya's form prints
+   * after the marché's number, because a situation is raised *s/marché +
+   * avenant*. Null on a marché nobody has changed.
+   */
+  amendmentRef: string | null;
   wilaya: string | null;
   /** "du 01/08/2026 au 31/08/2026", already in the document language. */
   period: string | null;
@@ -150,6 +168,25 @@ export type RenderedSituation = {
   previouslyCertifiedExcl: string;
   periodExcl: string;
   percentOfContract: number | null;
+};
+
+export type RenderedAmendment = {
+  projectId: string | null;
+  /** The marché's own number, as the client files it. */
+  contractNumber: string | null;
+  /** Formatted, in the document language. */
+  contractBeforeExcl: string;
+  incidenceExcl: string;
+  contractAfterExcl: string;
+  /**
+   * The incidence written out, always as a positive sum — an avenant that
+   * takes work away is "en moins", which the form says in words of its own
+   * rather than by a minus sign a reader can miss.
+   */
+  incidenceInWords: string;
+  incidenceNegative: boolean;
+  changed: number;
+  added: number;
 };
 
 export class NotRenderable extends Error {
@@ -389,6 +426,7 @@ export async function render(request: RenderRequest): Promise<RenderedDocument> 
     totals: totalRows(record.totals, locale),
 
     situation: record.kind === "situation" ? await renderSituation(record.id, locale) : null,
+    amendment: record.kind === "amendment" ? await renderAmendment(record.id, locale) : null,
 
     /* 6 ── Amount in words, in the document language ----------------------- */
     // A situation is settled at its net à payer — the sum after the retention
@@ -454,6 +492,7 @@ async function renderSituation(documentId: string, locale: string) {
     object: view.object,
     contractRef: view.contractRef,
     contractNumber: view.contract.number,
+    amendmentRef: amendmentRef(view.amendments, locale),
     wilaya: view.wilaya,
     period,
     workDone: view.workDone,
@@ -476,6 +515,49 @@ async function renderSituation(documentId: string, locale: string) {
     periodExcl: money(Number(view.cumulative.periodExcl), locale),
     percentOfContract: view.cumulative.percentOfContract,
   };
+}
+
+/**
+ * What this avenant does to the marché, formatted. Null when the paper is not
+ * linked to a marché at all, in which case it prints as an ordinary document.
+ */
+async function renderAmendment(
+  documentId: string,
+  locale: string,
+): Promise<RenderedAmendment | null> {
+  const impact = await amendmentImpact(documentId);
+  if (!impact) return null;
+  return {
+    projectId: impact.projectId,
+    contractNumber: impact.contractNumber,
+    contractBeforeExcl: money(Number(impact.beforeExcl), locale),
+    incidenceExcl: money(Number(impact.incidenceExcl), locale),
+    contractAfterExcl: money(Number(impact.afterExcl), locale),
+    incidenceInWords: amountInWords(Math.abs(Number(impact.incidenceExcl)), locale),
+    incidenceNegative: Number(impact.incidenceExcl) < 0,
+    changed: impact.changed,
+    added: impact.added,
+  };
+}
+
+/**
+ * "avenant n° 2" — the tail of "situation n° 4 s/marché + avenant n° 2".
+ *
+ * The wilaya's form names the paper the situation is raised against, and once
+ * a marché has been amended that is the marché AND its avenants. Their own
+ * numbers are what the client's file is ordered by, so those are printed; an
+ * avenant issued before its number came back is counted rather than named,
+ * which is still truer than printing the marché alone.
+ */
+function amendmentRef(amendments: Amendment[], locale: string): string | null {
+  if (amendments.length === 0) return null;
+  const fr = locale !== "en";
+  const numbers = amendments.map((one) => one.number).filter((n): n is string => Boolean(n));
+  const plural = amendments.length > 1;
+  const word = fr ? (plural ? "avenants" : "avenant") : plural ? "amendments" : "amendment";
+  if (numbers.length === 0) return `${amendments.length} ${word}`;
+  const trail = numbers.length < amendments.length ? " …" : "";
+  return `${word} ${fr ? "n°" : "no."} ${numbers.join(", ")}${trail}`;
 }
 
 /**

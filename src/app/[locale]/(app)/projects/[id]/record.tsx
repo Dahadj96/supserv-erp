@@ -4,8 +4,9 @@ import { Button } from "@/components/ui/button";
 import { WILAYA_LIST_ID, WilayaList } from "@/components/ui/wilaya-list";
 import { RETENTION_BASES } from "@/domain/money";
 import { CAUTION_KINDS } from "@/domain/project/cautions";
-import type { ContractCandidate } from "@/domain/project/situations";
+import type { Contract, ContractCandidate } from "@/domain/project/situations";
 import type { ProjectDetail } from "@/domain/project/store";
+import { Link } from "@/i18n/navigation";
 import {
   cautionAction,
   physicalAction,
@@ -26,12 +27,17 @@ export async function RecordPanels({
   locale,
   p,
   contracts,
+  contract,
   canWrite,
+  canAmend,
 }: {
   locale: string;
   p: ProjectDetail;
   contracts: ContractCandidate[];
+  /** The marché as its avenants left it, when one is named. */
+  contract: Contract | null;
   canWrite: boolean;
+  canAmend: boolean;
 }) {
   const t = await getTranslations();
   const today = new Date().toISOString().slice(0, 10);
@@ -104,6 +110,61 @@ export async function RecordPanels({
           </p>
         </form>
       </section>
+
+      {/*
+        The avenants. A marché that has been changed is billed against what it
+        says NOW, and the wilaya's own form prints "s/marché + avenant n° 2" —
+        so they are listed here with what each one added, and the button opens
+        the next one with the bordereau already on it.
+      */}
+      {contract ? (
+        <section className="rounded-[var(--radius-card)] border border-line bg-surface p-5">
+          <div className="flex items-baseline gap-3">
+            <h2 className="text-tiny font-semibold text-ink">{t("amendment.title")}</h2>
+            <span className="ms-auto text-micro text-muted">
+              {contract.amendments.length === 0
+                ? t("amendment.none")
+                : t("amendment.count", { n: contract.amendments.length })}
+            </span>
+          </div>
+
+          {contract.amendments.length > 0 ? (
+            <ul className="mt-3 flex flex-col gap-2">
+              {contract.amendments.map((one) => (
+                <li key={one.documentId} className="flex items-baseline gap-3 text-tiny">
+                  <Link href={`/documents/${one.documentId}`} className="text-ink hover:underline">
+                    {one.number ?? t("amendment.noNumber")}
+                  </Link>
+                  <span className="text-micro text-muted">
+                    {t("amendment.touched", { changed: one.changed, added: one.added })}
+                  </span>
+                  <span className="ms-auto shrink-0 tabular-nums text-secondary">
+                    {Number(one.deltaExcl) >= 0 ? "+" : ""}
+                    {amount(one.deltaExcl)} {p.currency}
+                  </span>
+                </li>
+              ))}
+            </ul>
+          ) : null}
+
+          <div className="mt-3 flex flex-wrap items-center gap-3 border-t border-line-subtle pt-3">
+            <p className="min-w-[240px] flex-1 text-micro leading-relaxed text-muted">
+              {t("amendment.why")}
+            </p>
+            {canAmend ? (
+              <Link href={`/projects/${p.id}/amendment`} className="ms-auto shrink-0">
+                <Button variant="secondary">{t("amendment.open")}</Button>
+              </Link>
+            ) : (
+              <div className="ms-auto shrink-0">
+                <Button variant="secondary" disabledReason={t("documents.notAllowed")}>
+                  {t("amendment.open")}
+                </Button>
+              </div>
+            )}
+          </div>
+        </section>
+      ) : null}
 
       <section
         id="terms"

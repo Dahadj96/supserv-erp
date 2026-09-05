@@ -1,5 +1,5 @@
 import { mkdirSync, writeFileSync } from "node:fs";
-import { eq, inArray } from "drizzle-orm";
+import { and, asc, eq, inArray } from "drizzle-orm";
 import { afterAll, beforeAll, describe, expect, it } from "vitest";
 import { db } from "@/db";
 import { auditEntry } from "@/db/schema/control";
@@ -11,12 +11,16 @@ import { DraftRefused, saveDraft } from "@/documents/draft";
 import { render } from "@/documents/engine";
 import { toPdf } from "@/documents/pdf";
 import { createDeal } from "@/domain/deal/deal";
+import { ensureTypesExist } from "@/domain/document-types";
 import {
+  amendmentDeltas,
   contractOf,
   nextSituation,
   recordSituationApproved,
   recordSituationSubmitted,
+  saveAmendment,
   saveSituation,
+  withAmendments,
 } from "@/domain/project/situations";
 import {
   createProject,
@@ -41,6 +45,10 @@ let lineIds: string[] = [];
 const created: string[] = [];
 
 beforeAll(async () => {
+  // The catalogue says an avenant carries the CLIENT's number. Without the row
+  // the engine would allocate one of ours over it.
+  await ensureTypesExist();
+
   const [client] = await db
     .insert(party)
     .values({
@@ -444,6 +452,207 @@ describe("situations n° 2 and 3", () => {
       render({ documentId: rogue?.id as string, purpose: "issue", actorId: ACTOR }),
     ).rejects.toMatchObject({ why: "previousSituationNotIssued" });
     await db.delete(situationDetail).where(eq(situationDetail.documentId, rogue?.id as string));
+  });
+});
+
+/**
+ * The avenant.
+ *
+ * A marché de travaux is changed by a signed avenant, and the two things that
+ * must survive it are the situations already issued — the client holds those
+ * on paper, and their columns cannot move — and the arithmetic of the ones
+ * raised afterwards, which bill against the amended bordereau.
+ */
+describe("avenant n° 1", () => {
+  let avenant = "";
+
+  /** The situation carrying that sequence, whatever order the block wrote it in. */
+  async function situationNo(sequence: number): Promise<string> {
+    const [row] = await db
+      .select({ id: situationDetail.documentId })
+      .from(situationDetail)
+      .where(and(eq(situationDetail.projectId, projectId), eq(situationDetail.sequence, sequence)))
+      .limit(1);
+    return row?.id as string;
+  }
+
+  it("refuses an avenant that changes nothing, and a new price with no price", async () => {
+    // n° 3 is still a draft from the block above; issue it, so the marché has
+    // a settled history behind it before anything is amended.
+    await render({ documentId: await situationNo(3), purpose: "issue", actorId: ACTOR });
+
+    await expect(
+      saveAmendment({
+        projectId,
+        changes: {},
+        additions: [{ designation: "", qty: "", unitPrice: "" }],
+        theirNumber: null,
+        signedOn: null,
+        actorId: ACTOR,
+      }),
+    ).rejects.toMatchObject({ reason: "nothingAmended" });
+
+    await expect(
+      saveAmendment({
+        projectId,
+        changes: { "00000000-0000-0000-0000-000000000000": { qty: "5" } },
+        additions: [],
+        theirNumber: null,
+        signedOn: null,
+        actorId: ACTOR,
+      }),
+    ).rejects.toMatchObject({ reason: "lineNotOnContract" });
+
+    await expect(
+      saveAmendment({
+        projectId,
+        changes: {},
+        additions: [{ designation: "Massif béton pour poteau", qty: "4", unitPrice: "" }],
+        theirNumber: null,
+        signedOn: null,
+        actorId: ACTOR,
+      }),
+    ).rejects.toMatchObject({ reason: "additionNeedsPrice" });
+  });
+
+  it("carries only what the paper says: one quantity moved, one prix nouveau", async () => {
+    const paper = {
+      projectId,
+      // Five more poteaux than the marché, at the marché's own price.
+      changes: { [lineIds[2] as string]: { qty: "25" } },
+      additions: [
+        {
+          reference: "3.1",
+          designation: "Massif béton pour poteau, prix nouveau",
+          unit: "U",
+          qty: "5",
+          unitPrice: "30000",
+        },
+      ],
+      theirNumber: "AV 01/2026",
+      signedOn: "2026-10-15",
+      actorId: ACTOR,
+    };
+    avenant = await saveAmendment(paper);
+    created.push(avenant);
+
+    const lines = await db
+      .select()
+      .from(documentLine)
+      .where(eq(documentLine.documentId, avenant))
+      .orderBy(asc(documentLine.position));
+    expect(lines).toHaveLength(2);
+    // The changed line points at the line of the marché it replaces; the prix
+    // nouveau points at nothing, which is what makes it an addition.
+    expect(lines[0]?.sourceLineId).toBe(lineIds[2]);
+    expect(lines[1]?.sourceLineId).toBeNull();
+    // A blank price kept the marché's own — the paper moved a quantity.
+    expect(Number(lines[0]?.unitPrice)).toBe(38000);
+
+    const [row] = await db.select().from(document).where(eq(document.id, avenant));
+    expect(row?.status).toBe("draft");
+    expect(row?.number).toBe("AV 01/2026");
+    expect(row?.issuedOn).toBe("2026-10-15");
+    // Its own total is the value of the prices it states: 25×38 000 + 5×30 000.
+    expect((row?.totals as Record<string, string>)?.totalExcl).toBe("1100000.00");
+
+    // Saving again rewrites the open avenant rather than opening a second one.
+    expect(await saveAmendment(paper)).toBe(avenant);
+  });
+
+  it("changes nothing while it is a draft, and cannot be edited in the builder", async () => {
+    const contract = await contractOf(projectId);
+    expect(contract?.amendments).toEqual([]);
+    expect(contract?.lines).toHaveLength(3);
+    expect(await amendmentDeltas([projectId])).toEqual(new Map());
+
+    await expect(
+      saveDraft(
+        avenant,
+        { lines: [{ lineKind: "item", designation: "x", qty: "1", unitPrice: "1" }] },
+        ACTOR,
+      ),
+    ).rejects.toMatchObject({ reason: "amendmentHasItsOwnScreen" });
+  });
+
+  it("moves the marché once it is issued, by its own arithmetic", async () => {
+    const out = await render({ documentId: avenant, purpose: "issue", actorId: ACTOR });
+    // LAW 5 allocates us no number here — an avenant's number is theirs.
+    expect(out.number).toBe("AV 01/2026");
+    expect(out.amendment).toMatchObject({ changed: 1, added: 1 });
+
+    // Its own total is 1 100 000 — the prices it states. The three figures a
+    // reader wants are printed underneath, and are not that one.
+    const paper = await toPdf(out);
+    expect(paper.subarray(0, 4).toString()).toBe("%PDF");
+    writeFileSync(".logs/avenant-1.pdf", paper);
+
+    const contract = await contractOf(projectId);
+    expect(contract?.lines).toHaveLength(4);
+    expect(contract?.lines[2]?.qty).toBe("25");
+    // The amended line keeps its identity: the situations already issued point
+    // at it, and their cumulative columns would break if it changed.
+    expect(contract?.lines[2]?.lineId).toBe(lineIds[2]);
+    expect(contract?.amendments).toHaveLength(1);
+    expect(contract?.amendments[0]).toMatchObject({
+      number: "AV 01/2026",
+      // 25×38 000 − 20×38 000 = 190 000, plus the prix nouveau at 150 000.
+      deltaExcl: "340000.00",
+      changed: 1,
+      added: 1,
+    });
+
+    expect(withAmendments("4390000", contract?.amendments ?? [])).toBe("4730000.00");
+    expect((await amendmentDeltas([projectId])).get(projectId)).toBe("340000.00");
+  });
+
+  it("leaves the situations already issued exactly as the client signed them", async () => {
+    const view = await render({
+      documentId: await situationNo(1),
+      purpose: "preview",
+      actorId: ACTOR,
+    });
+    expect(view.situation?.sequence).toBe(1);
+    // Three lines, and the poteaux still at the marché's own 20: this paper was
+    // signed in July and the avenant is dated October.
+    expect(view.situation?.rows).toHaveLength(3);
+    expect(view.situation?.rows[2]?.qtyContract).toBe("20");
+    expect(view.situation?.amendmentRef).toBeNull();
+  });
+
+  it("is what the next situation bills against, and what its form names", async () => {
+    const next = await nextSituation(projectId);
+    expect(next?.sequence).toBe(4);
+    expect(next?.rows).toHaveLength(4);
+    expect(next?.rows[2]).toMatchObject({ qty: "25", qtyPrevious: "20" });
+    expect(next?.rows[3]?.qtyPrevious).toBe("0");
+
+    const fourth = await saveSituation({
+      projectId,
+      quantities: {
+        [next?.rows[2]?.lineId as string]: "3",
+        [next?.rows[3]?.lineId as string]: "5",
+      },
+      periodFrom: "2026-10-01",
+      periodTo: "2026-10-31",
+      workDone: "Poteaux supplémentaires et massifs, avenant n° 1",
+      advanceRecovered: "0",
+      issuedOn: "2026-11-02",
+      actorId: ACTOR,
+    });
+    created.push(fourth);
+
+    const view = await render({ documentId: fourth, purpose: "preview", actorId: ACTOR });
+    // 3×38 000 + 5×30 000
+    expect(view.situation?.periodExcl).toBe("264 000,00");
+    // The poteaux are no longer over the marché: the avenant raised that line.
+    expect(view.situation?.rows[2]?.overContract).toBe(false);
+    // "s/marché + avenant n° AV 01/2026" — what the wilaya's form prints.
+    expect(view.situation?.amendmentRef).toBe("avenant n° AV 01/2026");
+
+    const pdf = await toPdf(view);
+    expect(pdf.subarray(0, 4).toString()).toBe("%PDF");
+    writeFileSync(".logs/situation-4-avenant.pdf", pdf);
   });
 });
 

@@ -106,7 +106,11 @@ export default async function DocumentPage({
                 // the project's own screen; the builder would lose the link.
                 doc.situation
                   ? `/projects/${doc.situation.projectId}/situation`
-                  : `/documents/${id}/edit`
+                  : // An avenant, likewise, is written against the bordereau
+                    // it changes and not in the builder.
+                    doc.amendment?.projectId
+                    ? `/projects/${doc.amendment.projectId}/amendment`
+                    : `/documents/${id}/edit`
               }
             >
               <Button variant="secondary">{t("documents.edit")}</Button>
@@ -209,6 +213,7 @@ export default async function DocumentPage({
 
         <div className="flex flex-col gap-5">
           {doc.situation ? <SituationPanel s={doc.situation} t={t} /> : null}
+          {doc.amendment ? <AmendmentPanel a={doc.amendment} t={t} /> : null}
           <BeforeIssuing rows={rows} summary={summary} t={t} />
           <Output doc={doc} t={t} />
         </div>
@@ -233,7 +238,11 @@ function SituationPanel({
 }) {
   const rows: [string, string][] = [
     ["project", `${s.projectCode} — ${s.object}`],
-    ["contract", s.contractRef ?? "—"],
+    // Same as the printed form: the marché and the avenants it was raised on.
+    [
+      "contract",
+      s.amendmentRef ? `${s.contractRef ?? "—"} + ${s.amendmentRef}` : (s.contractRef ?? "—"),
+    ],
     ["period", s.period ?? "—"],
     ["cumul", s.cumulExcl],
     ["percent", s.percentOfContract === null ? "—" : `${s.percentOfContract} %`],
@@ -267,6 +276,57 @@ function SituationPanel({
         ))}
       </dl>
       <p className="mt-2 text-micro leading-relaxed text-muted">{t("documents.situation.why")}</p>
+    </section>
+  );
+}
+
+/**
+ * What this avenant does to the marché.
+ *
+ * Its own total is the value of the prices it moves, which is not a figure
+ * anybody asks about. These three are.
+ */
+function AmendmentPanel({
+  a,
+  t,
+}: {
+  a: NonNullable<Awaited<ReturnType<typeof render>>["amendment"]>;
+  t: T;
+}) {
+  const rows: [string, string][] = [
+    ["contract", a.contractNumber ?? "—"],
+    ["before", a.contractBeforeExcl],
+    ["incidence", a.incidenceExcl],
+    ["after", a.contractAfterExcl],
+    ["touched", t("documents.amendment.touchedValue", { changed: a.changed, added: a.added })],
+  ];
+  return (
+    <section className="rounded-[var(--radius-card)] border border-line bg-surface p-5">
+      <div className="flex items-baseline gap-3">
+        <h2 className="text-tiny font-semibold text-ink">{t("documents.amendment.title")}</h2>
+        {a.projectId ? (
+          <Link
+            href={`/projects/${a.projectId}`}
+            className="ms-auto text-micro text-accent-ink hover:underline"
+          >
+            {t("documents.situation.toProject")}
+          </Link>
+        ) : null}
+      </div>
+      <dl className="mt-3">
+        {rows.map(([key, value]) => (
+          <div
+            key={key}
+            className="flex items-baseline gap-3 border-b border-line-subtle py-1.5 last:border-0"
+          >
+            <dt className="shrink-0 text-micro text-secondary">
+              {t(`documents.amendment.${key}`)}
+            </dt>
+            <dd className="ms-auto text-end text-tiny text-ink">{value}</dd>
+          </div>
+        ))}
+      </dl>
+      <p className="mt-2 text-micro leading-relaxed text-muted">{t("documents.amendment.why")}</p>
     </section>
   );
 }

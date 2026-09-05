@@ -58,7 +58,12 @@ export type DraftPatch = {
 
 export class DraftRefused extends Error {
   constructor(
-    readonly reason: "noSuchDocument" | "alreadyIssued" | "noLines" | "situationHasItsOwnScreen",
+    readonly reason:
+      | "noSuchDocument"
+      | "alreadyIssued"
+      | "noLines"
+      | "situationHasItsOwnScreen"
+      | "amendmentHasItsOwnScreen",
   ) {
     super(reason);
   }
@@ -128,6 +133,12 @@ export async function saveDraft(
       .limit(1);
     if (detail) throw new DraftRefused("situationHasItsOwnScreen");
   }
+
+  // An avenant for the same reason, and it matters more: its lines say which
+  // line of the marché each one REPLACES. Saved through the builder they
+  // would all come back pointing at nothing, and the avenant would read as
+  // forty new prices added to a bordereau it was meant to correct.
+  if (record.kind === "amendment") throw new DraftRefused("amendmentHasItsOwnScreen");
 
   const lines = keepable(patch.lines);
   if (lines.length === 0) throw new DraftRefused("noLines");
