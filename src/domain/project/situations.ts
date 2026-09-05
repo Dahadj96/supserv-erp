@@ -135,23 +135,40 @@ function amountOf(lines: ContractLine[]): Decimal {
  * every cumulative column on paper the client has already signed. An avenant
  * changes what a line says, not which line it is.
  */
-async function amendedLines(
-  base: ContractLine[],
-  amendmentIds: string[],
-): Promise<{
+type AmendmentLine = typeof documentLine.$inferSelect;
+
+type Composed = {
   lines: ContractLine[];
   perAmendment: Map<string, { changed: number; added: number }>;
-}> {
-  const perAmendment = new Map<string, { changed: number; added: number }>();
-  if (amendmentIds.length === 0) return { lines: base, perAmendment };
+  /**
+   * What each avenant, applied in its turn, added to the bordereau. The
+   * running total after it, less the running total before it — which is what
+   * its own paper says, and it comes out of the SAME pass rather than one
+   * composition per avenant.
+   */
+  deltas: Map<string, string>;
+};
 
-  const rows = await db
-    .select()
-    .from(documentLine)
-    .where(and(inArray(documentLine.documentId, amendmentIds), eq(documentLine.lineKind, "item")))
-    .orderBy(asc(documentLine.position));
+/**
+ * The composition itself, with the rows already in hand. PURE.
+ *
+ * It is separate from the query because the same arithmetic is done for one
+ * project on screen 16 and for thirty on screen 15, and doing it here means
+ * the list screen reads every avenant's lines in one query instead of one
+ * round trip per avenant per project.
+ */
+function composeLines(
+  base: ContractLine[],
+  amendmentIds: string[],
+  rows: AmendmentLine[],
+): Composed {
+  const perAmendment = new Map<string, { changed: number; added: number }>();
+  const deltas = new Map<string, string>();
+  if (amendmentIds.length === 0) return { lines: base, perAmendment, deltas };
 
   const lines = [...base];
+  let running = amountOf(lines);
+
   for (const id of amendmentIds) {
     const tally = { changed: 0, added: 0 };
     for (const row of rows.filter((r) => r.documentId === id && !r.isOption)) {
@@ -184,8 +201,22 @@ async function amendedLines(
       }
     }
     perAmendment.set(id, tally);
+    const after = amountOf(lines);
+    deltas.set(id, after.minus(running).toFixed(2));
+    running = after;
   }
-  return { lines, perAmendment };
+  return { lines, perAmendment, deltas };
+}
+
+/** The composition, with one query for every avenant's lines together. */
+async function amendedLines(base: ContractLine[], amendmentIds: string[]): Promise<Composed> {
+  if (amendmentIds.length === 0) return composeLines(base, [], []);
+  const rows = await db
+    .select()
+    .from(documentLine)
+    .where(and(inArray(documentLine.documentId, amendmentIds), eq(documentLine.lineKind, "item")))
+    .orderBy(asc(documentLine.position));
+  return composeLines(base, amendmentIds, rows);
 }
 
 /**
@@ -218,6 +249,33 @@ async function amendmentsOf(contractDocumentId: string, asOf?: string | null) {
       ),
     )
     .orderBy(asc(document.issuedOn), asc(document.createdAt));
+}
+
+/**
+ * WHICH document is the project's marché, without composing it.
+ *
+ * `contractOf` reads the bordereau and every avenant on it — six round trips —
+ * and a caller that only wants to link a document to the marché needs one.
+ * The preference is the same as `contractOf`'s, and so is the refusal to write
+ * a guess back.
+ */
+export async function contractDocumentIdOf(projectId: string): Promise<string | null> {
+  const [row] = await db
+    .select({ contractDocumentId: project.contractDocumentId, dealId: project.dealId })
+    .from(project)
+    .where(eq(project.id, projectId))
+    .limit(1);
+  if (!row) return null;
+  if (row.contractDocumentId) return row.contractDocumentId;
+
+  const candidates = await contractCandidates(row.dealId);
+  return (
+    (
+      candidates.find((c) => c.kind === "client_order") ??
+      candidates.find((c) => c.kind === "quotation") ??
+      candidates.find((c) => c.kind === "proforma")
+    )?.documentId ?? null
+  );
 }
 
 /**
@@ -271,31 +329,22 @@ export async function contractOf(
 
   const base = await contractLines(chosen.documentId);
   const found = await amendmentsOf(chosen.documentId, asOf);
-  const { lines, perAmendment } = await amendedLines(
+  const { lines, perAmendment, deltas } = await amendedLines(
     base,
     found.map((a) => a.documentId),
   );
 
   // Each avenant's delta is what the bordereau was worth after it, less what
   // it was worth before — arithmetic on its own lines, not a figure anybody
-  // types twice.
-  const amendments: Amendment[] = [];
-  let running = base;
-  for (const one of found) {
-    const before = amountOf(running);
-    const next = (
-      await amendedLines(base, [...amendments.map((a) => a.documentId), one.documentId])
-    ).lines;
-    amendments.push({
-      documentId: one.documentId,
-      number: one.number,
-      issuedOn: one.issuedOn,
-      deltaExcl: amountOf(next).minus(before).toFixed(2),
-      changed: perAmendment.get(one.documentId)?.changed ?? 0,
-      added: perAmendment.get(one.documentId)?.added ?? 0,
-    });
-    running = next;
-  }
+  // types twice, and out of the one composition rather than one per avenant.
+  const amendments: Amendment[] = found.map((one) => ({
+    documentId: one.documentId,
+    number: one.number,
+    issuedOn: one.issuedOn,
+    deltaExcl: deltas.get(one.documentId) ?? "0.00",
+    changed: perAmendment.get(one.documentId)?.changed ?? 0,
+    added: perAmendment.get(one.documentId)?.added ?? 0,
+  }));
 
   return { ...chosen, lines, amendments };
 }
@@ -1218,13 +1267,19 @@ export async function saveAmendment(input: AmendmentInput): Promise<string> {
  *
  * Cheap when nothing has been amended, which is the common case: one query
  * finds the amendments, and if there are none it stops there.
+ *
+ * And FOUR queries when there are — for one project or for thirty. It used to
+ * call `contractOf` per project, which is six round trips each and one more
+ * per avenant; screen 15 with thirty marchés was two hundred queries to draw a
+ * list. The work is the same arithmetic, done here over rows read in bulk.
  */
 export async function amendmentDeltas(projectIds: string[]): Promise<Map<string, string>> {
   const out = new Map<string, string>();
   if (projectIds.length === 0) return out;
 
+  // 1 — the projects that have an issued avenant at all, with their marché.
   const amended = await db
-    .select({ projectId: project.id })
+    .selectDistinct({ projectId: project.id, contractId: project.contractDocumentId })
     .from(project)
     .innerJoin(documentLink, eq(documentLink.toDocument, project.contractDocumentId))
     .innerJoin(document, eq(document.id, documentLink.fromDocument))
@@ -1238,11 +1293,76 @@ export async function amendmentDeltas(projectIds: string[]): Promise<Map<string,
     );
   if (amended.length === 0) return out;
 
-  for (const id of new Set(amended.map((a) => a.projectId))) {
-    const contract = await contractOf(id);
-    if (!contract) continue;
-    const delta = contract.amendments.reduce((sum, one) => sum.plus(one.deltaExcl), new Decimal(0));
-    if (!delta.isZero()) out.set(id, delta.toFixed(2));
+  const contractIds = [...new Set(amended.map((a) => a.contractId as string))];
+
+  // 2 — every marché's bordereau, in one read.
+  const baseRows = await db
+    .select()
+    .from(documentLine)
+    .where(and(inArray(documentLine.documentId, contractIds), eq(documentLine.lineKind, "item")))
+    .orderBy(asc(documentLine.position));
+
+  // 3 — every avenant on those marchés, oldest first, in one read.
+  const amendmentRows = await db
+    .select({
+      contractId: documentLink.toDocument,
+      documentId: document.id,
+      issuedOn: document.issuedOn,
+      createdAt: document.createdAt,
+    })
+    .from(document)
+    .innerJoin(documentLink, eq(documentLink.fromDocument, document.id))
+    .where(
+      and(
+        eq(document.kind, "amendment"),
+        eq(document.status, "issued"),
+        inArray(documentLink.toDocument, contractIds),
+        eq(documentLink.relation, "amends"),
+      ),
+    )
+    .orderBy(asc(document.issuedOn), asc(document.createdAt));
+
+  // 4 — every avenant's lines, in one read.
+  const amendmentLineRows = amendmentRows.length
+    ? await db
+        .select()
+        .from(documentLine)
+        .where(
+          and(
+            inArray(
+              documentLine.documentId,
+              amendmentRows.map((a) => a.documentId),
+            ),
+            eq(documentLine.lineKind, "item"),
+          ),
+        )
+        .orderBy(asc(documentLine.position))
+    : [];
+
+  // Then the same arithmetic `contractOf` does, per marché, in memory.
+  const byContract = new Map<string, string>();
+  for (const contractId of contractIds) {
+    const base = baseRows
+      .filter((line) => line.documentId === contractId && !line.isOption)
+      .map((line) => ({
+        lineId: line.id,
+        position: line.position,
+        reference: line.reference,
+        designation: line.designation,
+        unit: line.unit,
+        qty: plain(line.qty),
+        unitPrice: plain(line.unitPrice),
+        vatRate: line.vatRate ?? "0",
+      }));
+    const ids = amendmentRows.filter((a) => a.contractId === contractId).map((a) => a.documentId);
+    const { deltas } = composeLines(base, ids, amendmentLineRows);
+    const total = ids.reduce((sum, id) => sum.plus(deltas.get(id) ?? "0"), new Decimal(0));
+    byContract.set(contractId, total.toFixed(2));
+  }
+
+  for (const row of amended) {
+    const delta = byContract.get(row.contractId as string);
+    if (delta && !new Decimal(delta).isZero()) out.set(row.projectId, delta);
   }
   return out;
 }

@@ -83,7 +83,8 @@ export default async function ProjectPage({
     contractCandidates(p.dealId),
     listPeople("all", 300),
     contractOf(id),
-    nextFinalAccount(id),
+    // The project is already in hand — see the note on `nextFinalAccount`.
+    nextFinalAccount(id, p),
   ]);
   // What is under contract TODAY: the marché the person typed, plus what each
   // avenant added. Progress against the original would read past 100%.

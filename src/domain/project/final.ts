@@ -8,8 +8,8 @@ import { project, situationDetail } from "@/db/schema/project";
 import { peekNumber } from "@/documents/numbering";
 import type { Totals } from "@/domain/money";
 import { type FinalAccount, type FinalAccountSituation, finalAccountOf } from "./final-account";
-import { contractOf } from "./situations";
-import { getProject, ProjectRefused } from "./store";
+import { contractDocumentIdOf } from "./situations";
+import { getProject, type ProjectDetail, ProjectRefused } from "./store";
 
 /**
  * Screen 16d — the décompte final, against the database.
@@ -27,6 +27,8 @@ export type NextFinalAccount = {
   projectId: string;
   currency: string;
   account: FinalAccount;
+  /** The marché this décompte closes. Null when the project names none. */
+  contractDocumentId: string | null;
   /** The décompte still open, which the screen rewrites instead of opening another. */
   draft: { documentId: string; issuedOn: string | null } | null;
   /** One is already issued: the marché is closed and this screen is a record. */
@@ -64,8 +66,17 @@ async function situationsOf(projectId: string): Promise<FinalAccountSituation[]>
   return rows;
 }
 
-export async function nextFinalAccount(projectId: string): Promise<NextFinalAccount | null> {
-  const p = await getProject(projectId);
+/**
+ * `loaded` is the project the caller already has. Screen 16 reads it once for
+ * the page and would otherwise read it a second time for this panel — and
+ * `getProject` is fourteen queries, so passing what you have is not a
+ * micro-optimisation, it is half the page.
+ */
+export async function nextFinalAccount(
+  projectId: string,
+  loaded?: ProjectDetail | null,
+): Promise<NextFinalAccount | null> {
+  const p = loaded ?? (await getProject(projectId));
   if (!p) return null;
 
   const account = finalAccountOf({
@@ -79,37 +90,26 @@ export async function nextFinalAccount(projectId: string): Promise<NextFinalAcco
     retentionReleased: "0",
   });
 
+  // The link is to the CONTRACT, not to the project: `document_link` joins two
+  // documents, and the marché is the document a décompte closes. WHICH
+  // document it is, not what it is worth — composing the bordereau here would
+  // be six round trips to learn one id.
+  const target = await contractDocumentIdOf(projectId);
+
+  const draft = target ? await oneDecompte(target, "draft") : null;
+  const issued = target ? await oneDecompte(target, "issued") : null;
+
   return {
     projectId,
     currency: p.currency,
     account,
-    draft: await draftFor(projectId),
-    issued: await issuedFor(projectId),
+    contractDocumentId: target,
+    draft: draft ? { documentId: draft.id, issuedOn: draft.issuedOn } : null,
+    issued: issued
+      ? { documentId: issued.id, number: issued.number, issuedOn: issued.issuedOn }
+      : null,
     nextNumber: await peekNumber("final_account"),
   };
-}
-
-/**
- * The link is to the CONTRACT, not to the project: `document_link` joins two
- * documents, and the marché is the document a décompte closes.
- */
-async function linkTarget(projectId: string): Promise<string | null> {
-  const contract = await contractOf(projectId);
-  return contract?.documentId ?? null;
-}
-
-async function draftFor(projectId: string) {
-  const target = await linkTarget(projectId);
-  if (!target) return null;
-  const row = await oneDecompte(target, "draft");
-  return row ? { documentId: row.id, issuedOn: row.issuedOn } : null;
-}
-
-async function issuedFor(projectId: string) {
-  const target = await linkTarget(projectId);
-  if (!target) return null;
-  const row = await oneDecompte(target, "issued");
-  return row ? { documentId: row.id, number: row.number, issuedOn: row.issuedOn } : null;
 }
 
 async function oneDecompte(contractDocumentId: string, status: "draft" | "issued") {
@@ -147,7 +147,7 @@ export async function saveFinalAccount(opts: {
   if (next.account.blocked) throw new ProjectRefused(next.account.blocked);
   if (next.issued) throw new ProjectRefused("alreadyClosed");
 
-  const target = await linkTarget(opts.projectId);
+  const target = next.contractDocumentId;
   if (!target) throw new ProjectRefused("noContract");
 
   const [row] = await db

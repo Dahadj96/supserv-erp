@@ -37,4 +37,36 @@ export const schema = {
   ...party,
 };
 
-export const db = drizzle(conn, { schema });
+/**
+ * How many queries have been sent, since somebody last asked.
+ *
+ * A page that opens in a fifth of a second on a mini PC with six users can
+ * still be making ninety queries, and the way that happens is one function
+ * calling another that quietly re-reads what the caller already had. Screen
+ * 16 was doing exactly that: `getProject` composed the marché, and so did the
+ * page, and so did the décompte — three times, each with its own round trip
+ * per avenant.
+ *
+ * So the count is a measurement, not a feeling: `tests/integration/
+ * query-budget.test.ts` holds each of the heavy reads to a ceiling, and a
+ * change that doubles the work fails there rather than being noticed in a
+ * year on a slower disk.
+ */
+let queries = 0;
+
+export function queryCount(): number {
+  return queries;
+}
+
+export function resetQueryCount(): void {
+  queries = 0;
+}
+
+export const db = drizzle(conn, {
+  schema,
+  logger: {
+    logQuery() {
+      queries += 1;
+    },
+  },
+});

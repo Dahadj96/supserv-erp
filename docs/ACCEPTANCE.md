@@ -488,9 +488,17 @@ tells you what you want to hear.
    order under `SIT-{YYYY}-{###}`, submitted and approved with a name, the
    réceptions recorded; the PDF is the wilaya's "partie co-contractant"
    form with the cumulative columns, the retenue de garantie on the base the
-   CCAP names, and the net à payer in words. Still open on the public-works
-   chain, each waiting on a text and a person to confirm it: avenants,
-   révision des prix, pénalités de retard, DGD.
+   CCAP names, and the net à payer in words.
+
+   **Finished on 5 September.** The avenant is the twentieth document kind and
+   composes the marché without touching what was signed; an avenant de
+   prolongation moves the délai and carries no price at all; the pénalités de
+   retard are computed and never applied, and never computed until somebody has
+   read the clause off the CCAP; and the décompte final closes the marché from
+   the situations themselves, with nothing on it typed. Only the **révision des
+   prix** is still open, and it will stay open until somebody types the ONS
+   index values off the bulletin: a révision computed from indices this system
+   guessed would be a claim with no authority behind it.
 14. ~~**"What did this cost last time?" was answered from memory.**~~
    **Closed on 4 September** by `tests/integration/price-history.test.ts`:
    June's offer sold galets at 4 800 on a supplier's 4 000; September's
@@ -500,3 +508,13 @@ tells you what you want to hear.
    is the wording (`significantWords`, all of them, unaccented), because the
    item catalogue is empty; the day lines are matched to items it becomes a
    join.
+
+15. ~~**Nobody has counted what a screen costs.**~~ **Closed on 5 September**
+   by `tests/integration/query-budget.test.ts`. Nothing was slow — six people
+   on a mini PC with Postgres on the same machine — which is exactly why it was
+   worth measuring: screen 16 composed the marché three times and screen 15
+   once per project, so a list of thirty marchés was two hundred queries.
+   `db` now counts queries and each heavy read is held to a ceiling with the
+   measured number beside it. Screen 16: 14 → 9. Screen 15: 12 → 7, and it no
+   longer grows with the number of projects. The décompte: 34 → 14, and 5 when
+   the page passes the project it already has.
