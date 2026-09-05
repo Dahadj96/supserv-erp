@@ -82,3 +82,48 @@ which nothing anywhere mentions. But a column dropped is a migration and a
 decision about a screen that has not been designed, and this audit's first job
 is to make the list visible. The ratchet is what makes sure the list is dealt
 with rather than admired.
+
+---
+
+## What the first day of use changed — 56 → 45 → 26
+
+Three real fixes took it from 56 to 45. Then the list itself was wrong in four
+ways, each found by reading it rather than by running it:
+
+**Better Auth's four tables are not ours to audit.** `src/db/schema/auth.ts`
+says so in its first line: the library writes those rows and expects those
+field names. Auditing them column by column is auditing a library's private
+fields through our own file. A whole-table exemption, not thirteen lines.
+
+**A column with a database default is written by Postgres.** `payment
+.recorded_at` is `defaultNow()` — read everywhere, named in no insert, and
+reported as "read and never written". Only that half is waived: a defaulted
+column nothing reads is still a column nothing reads.
+
+**A shared name was being cleared five times over.** Six tables carry a
+`deleted_by` and only `party` has ever written one. A plain `.deletedBy`
+anywhere marked all six as read — so wiring up ONE would silently clear five
+findings. An audit reporting success it has not earned is the exact failure
+this file exists to catch.
+
+The fix that works is attribution BY FILE: `.deletedBy` counts as a read of
+`party.deleted_by` only where the file also names `party`. Demanding the
+drizzle reference `party.deletedBy` instead was tried and rejected in the same
+sitting — it took the count from 40 to 132, because most reads here are
+`row.thing` off a `select()` with no field list. Ninety of those were columns
+read perfectly well, and an audit that cries wolf gets switched off.
+
+**"Who did it and when" is not the same finding as a dead column.** Thirty-three
+`*_by` / `*_at` / `reason` / `note` columns are written beside an `audit_entry`
+carrying the same actor and the same moment, which screen 61 shows. The column
+is the cheap local copy, read one day by a panel that wants to say "confirmé par
+Amine le 12/06" without joining the trail — which is exactly what screens 16 and
+25 now do. Printed as its own list; not counted.
+
+What is counted is the two classes that have each already cost this ERP a
+feature: **a column nothing mentions at all**, and **a column something READS
+that nothing can write**. `closed_at`, `is_verified` and `reversible_until` were
+all the second kind.
+
+26 today, and the biggest single group is `user_preference` — nine columns and
+a whole table nothing has ever touched.

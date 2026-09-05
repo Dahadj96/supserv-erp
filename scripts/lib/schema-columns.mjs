@@ -37,7 +37,19 @@ export function readSchemaColumns(root = process.cwd()) {
         // Counting is what keeps a nested `{ precision, scale }` or an index
         // callback from being read as a column of its own.
         const column = line.match(COLUMN);
-        if (column) out.push({ file, table: table.name, variable: table.variable, prop: column[1] });
+        if (column) {
+          out.push({
+            file,
+            table: table.name,
+            variable: table.variable,
+            prop: column[1],
+            declaration: line,
+          });
+        } else if (out.length > 0 && out[out.length - 1].table === table.name) {
+          // A declaration prettier wrapped over several lines — `.notNull()`
+          // and `.defaultNow()` land under the name they belong to.
+          out[out.length - 1].declaration += `\n${line}`;
+        }
       }
 
       depth += (line.match(/[{[(]/g) ?? []).length - (line.match(/[}\])]/g) ?? []).length;

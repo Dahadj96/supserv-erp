@@ -684,3 +684,22 @@ tells you what you want to hear.
    the "is there a newer merge on this record?" guard compared a row to its own
    stored timestamp and refused every undo. Postgres keeps microseconds; a
    JavaScript `Date` keeps milliseconds; read back, a row is newer than itself.
+
+   **45 → 26, and not by fixing anything.** Three runs in, the list itself
+   turned out to be wrong in four ways. Better Auth's four tables are
+   its own to write and read — its schema file says so in its first line. A
+   column with a database default is written by Postgres, so `defaultNow()` is
+   not "never written". A name six tables share was being credited to all six
+   by one `.deletedBy` anywhere, so wiring up ONE would have silently cleared
+   five findings — an audit reporting success it has not earned, which is the
+   exact failure it exists to catch; it is now attributed by file, after the
+   strict alternative was tried and took the count to 132 by flagging ninety
+   columns that are read perfectly well. And "who did it and when", recorded on
+   the row beside an `audit_entry` that carries the same actor and the same
+   moment, is printed as its own list of 33 rather than counted.
+
+   What is counted is the two classes that have each already cost this ERP a
+   feature: a column nothing mentions at all, and a column something READS that
+   nothing can write. `closed_at`, `is_verified` and `reversible_until` were
+   every one of them the second kind. The biggest group left is
+   `user_preference` — nine columns and a whole table nothing has touched.

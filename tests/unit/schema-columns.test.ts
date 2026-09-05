@@ -47,6 +47,19 @@ describe("what the schema declares", () => {
     expect(new Set(notes.map((c) => c.table)).size).toBe(notes.length);
   });
 
+  it("keeps each column's own declaration, so a database default can be seen", () => {
+    // `payment.recorded_at` is `defaultNow()`: read everywhere, named in no
+    // insert, and not a defect. Telling the two apart needs the modifiers that
+    // prettier often wraps onto the lines below the name.
+    const recorded = columns.find((c) => c.table === "payment" && c.prop === "recordedAt");
+    expect(recorded?.declaration).toMatch(/defaultNow\(\)/);
+
+    const wrapped = columns.find(
+      (c) => c.table === "person_certification" && c.prop === "personId",
+    );
+    expect(wrapped?.declaration).toMatch(/references/);
+  });
+
   it("looks at the application and not at the tests", () => {
     // The whole point. A column whose only writer is a fixture is a column no
     // screen can set — `closedAt` passed a naive version of this audit because

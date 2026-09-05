@@ -219,7 +219,8 @@ describe("screen 82 — a merge can be put back", () => {
 
   it("says nothing once the thirty days are up", async () => {
     const row = await log();
-    const after = new Date((row?.reversibleUntil as Date).getTime() + 86_400_000);
+    const until = row?.reversibleUntil as Date;
+    const after = new Date(until.getTime() + 86_400_000);
     expect(await reversibleMerge(keptId, after)).toBeNull();
 
     await expect(

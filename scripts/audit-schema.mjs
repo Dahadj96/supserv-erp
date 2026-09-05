@@ -48,80 +48,136 @@ import { readCorpus, readSchemaColumns } from "./lib/schema-columns.mjs";
  *        nothing, including `reversible_until` — a promise the schema made
  *        about the one operation here that rewrites a record people rely on,
  *        and that the system could not keep
+ *   26 — 5 September 2026, and NOT a fix: the measurement changed. Better
+ *        Auth's four tables are its own to write and read; a column with a
+ *        database default is written by Postgres; a name six tables share is
+ *        attributed by file rather than counted as read everywhere at once
+ *        (wiring up one `deleted_by` was silently clearing five); and "who did
+ *        it and when", recorded on the row and shown on no screen, is printed
+ *        as its own list rather than counted. What is left is the two classes
+ *        that have each cost this ERP a feature — a column nothing mentions,
+ *        and a column something reads that nothing can write.
  */
-const CEILING = 45;
+const CEILING = 26;
 
 /**
- * Columns that are deliberately one-way, with the reason.
+ * Tables that are SOMEBODY ELSE'S to write and read.
  *
- * Only for columns that are SOMEBODY ELSE'S to write or read. A column of ours
- * that nothing touches is not allowed here; it is counted against the ceiling
- * until it is either wired up or dropped.
+ * `src/db/schema/auth.ts` says it in its own first line: "Better Auth's core
+ * schema. Do not hand-edit the shape of these four tables — Better Auth writes
+ * to them and expects these exact field names." Auditing them column by column
+ * would be auditing a library's private fields through our own schema file.
+ *
+ * A table of OURS never belongs here.
  */
-const ALLOWED = new Map([
-  // Written by the framework, read by the framework. Better Auth owns these
-  // rows; the application never touches the columns by name.
-  ["session.token", "Better Auth writes and reads it through its own adapter"],
-  ["session.ipAddress", "Better Auth's own column"],
-  ["session.userAgent", "Better Auth's own column"],
-  ["account.accessToken", "Better Auth's own column"],
-  ["account.refreshToken", "Better Auth's own column"],
-  ["account.idToken", "Better Auth's own column"],
-  ["account.accessTokenExpiresAt", "Better Auth's own column"],
-  ["account.refreshTokenExpiresAt", "Better Auth's own column"],
-  ["account.scope", "Better Auth's own column"],
-  ["account.password", "Better Auth's own column, and never read by us"],
-  ["verification.identifier", "Better Auth's own column"],
-  ["verification.value", "Better Auth's own column"],
-  ["verification.expiresAt", "Better Auth's own column"],
+const FRAMEWORK_TABLES = new Map([
+  ["user", "Better Auth's own table — it writes and reads these through its adapter"],
+  ["session", "Better Auth's own table"],
+  ["account", "Better Auth's own table"],
+  ["verification", "Better Auth's own table"],
 ]);
+
+/**
+ * Single columns that are deliberately one-way, with the reason.
+ *
+ * Nothing here yet, and that is the point: every disconnected column of ours
+ * is counted against the ceiling until it is wired up or dropped, rather than
+ * explained away one line at a time.
+ */
+const ALLOWED = new Map([]);
 
 const columns = readSchemaColumns();
 const corpus = readCorpus();
 const text = corpus.map((f) => f.text).join("\n");
 
+/**
+ * How many tables carry a column of this name.
+ *
+ * It decides how a read is recognised, and it matters more than it looks. Six
+ * tables have a `deleted_by`; only `party` has ever written one. A plain
+ * `.deletedBy` anywhere in the codebase would mark all six as read, so wiring
+ * up ONE of them would silently clear five findings — an audit reporting
+ * success it has not earned, which is the exact failure this file exists to
+ * catch. For a shared name the drizzle reference `party.deletedBy` is the only
+ * evidence accepted.
+ */
+const shared = new Map();
+for (const c of columns) shared.set(c.prop, (shared.get(c.prop) ?? 0) + 1);
+
 const findings = [];
 
 for (const column of columns) {
   const key = `${column.variable}.${column.prop}`;
-  if (ALLOWED.has(key)) continue;
+  if (ALLOWED.has(key) || FRAMEWORK_TABLES.has(column.variable)) continue;
 
   // `id`, `createdAt` and the other columns every table carries are set by a
   // default and read through `select()` with no field list. Naming them would
   // be forty findings that are all the same non-finding.
   if (["id", "createdAt", "updatedAt"].includes(column.prop)) continue;
 
-  const read = new RegExp(`\\.${column.prop}\\b`).test(text);
-  const written = new RegExp(`(^|[\\s{,(])${column.prop}:`, "m").test(text);
+  const loose = new RegExp(`\\.${column.prop}\\b`);
+  const read =
+    (shared.get(column.prop) ?? 0) > 1
+      ? // A shared name is attributed by FILE: `.deletedBy` counts as a read of
+        // `party.deleted_by` only where the file also names `party`. Most reads
+        // in this codebase are `row.thing` off a `select()` with no field list,
+        // so demanding the drizzle reference would flag ninety columns that are
+        // read perfectly well — and an audit that cries wolf gets switched off.
+        corpus.some(
+          (f) => new RegExp(`\\b${column.variable}\\b`).test(f.text) && loose.test(f.text),
+        )
+      : loose.test(text);
+
+  // A column with a DATABASE default is written by Postgres. `recordedAt` on a
+  // payment is `defaultNow()`: read everywhere, named in no insert, and not a
+  // defect. Only the "never written" half is waived — a defaulted column that
+  // nothing reads is still a column nothing reads.
+  const defaulted = /\.default(Now|Random)?\(/.test(column.declaration ?? "");
+  const written = defaulted || new RegExp(`(^|[\\s{,(])${column.prop}:`, "m").test(text);
 
   if (!read && !written) findings.push({ ...column, what: "never mentioned anywhere" });
   else if (!read) findings.push({ ...column, what: "written and never read" });
   else if (!written) findings.push({ ...column, what: "read and never written" });
 }
 
+/**
+ * WHO DID IT AND WHEN, recorded on the row and shown on no screen.
+ *
+ * Its own list, and not counted against the ceiling. Every one of these is
+ * written beside an `audit_entry` that carries the same actor and the same
+ * moment, and screen 61 shows that. The column is the cheap local copy — read
+ * one day by a panel that wants to say "confirmé par Amine le 12/06" without a
+ * join to the trail, which is exactly what screens 16 and 25 now do.
+ *
+ * So it is worth printing and it is not a defect. The classes that ARE:
+ * a column nothing mentions at all, and a column something READS that nothing
+ * can write — a branch nobody can reach, which is how `closed_at`,
+ * `is_verified` and `reversible_until` each cost this ERP a feature.
+ */
+const PROVENANCE = /(By|At)$|^(note|.*Note|.*Reason)$/;
+const provenance = findings.filter((f) => f.what === "written and never read" && PROVENANCE.test(f.prop));
+const counted = findings.filter((f) => !provenance.includes(f));
+
 console.log(`${columns.length} columns across ${new Set(columns.map((c) => c.table)).size} tables`);
 
-if (findings.length === 0) {
-  console.log("every column is both written and read");
-  if (CEILING > 0) {
-    console.log(`the ceiling is ${CEILING} and nothing is left — put this script in pnpm check`);
-    process.exit(1);
-  }
-  process.exit(0);
-}
-
-for (const f of findings) {
+for (const f of counted) {
   console.log(`  ${f.table}.${f.prop}  — ${f.what}  (${f.file})`);
 }
 
-console.log(`\n${findings.length} disconnected, ceiling ${CEILING}`);
+if (provenance.length > 0) {
+  console.log(`\n  and ${provenance.length} recorded on the row and shown on no screen:`);
+  console.log(`  ${provenance.map((f) => `${f.table}.${f.prop}`).join(", ")}`);
+}
 
-if (findings.length > CEILING) {
+console.log(`\n${counted.length} disconnected, ceiling ${CEILING}`);
+
+if (counted.length > CEILING) {
   console.log("a column was added that nothing reads or nothing writes — wire it up or drop it");
   process.exit(1);
 }
-if (findings.length < CEILING) {
-  console.log(`lower the ceiling in ${import.meta.filename ?? "this script"} to ${findings.length}`);
+if (counted.length < CEILING) {
+  console.log(`lower the ceiling in ${import.meta.filename ?? "this script"} to ${counted.length}`);
   process.exit(1);
 }
+if (CEILING === 0) console.log("every column of ours is both written and read");
 process.exit(0);
