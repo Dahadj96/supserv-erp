@@ -10,7 +10,7 @@
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
-    "check": "pnpm typecheck && pnpm lint && pnpm audit:actions && pnpm test",
+    "check": "pnpm typecheck && pnpm lint && pnpm audit:actions && pnpm audit:forms && pnpm test",
     "typecheck": "tsc --noEmit",
     "lint": "biome check .",
     "audit:actions": "node scripts/audit-actions.mjs",
@@ -26,7 +26,8 @@
     "db:migrate": "drizzle-kit migrate",
     "db:studio": "drizzle-kit studio",
     "worker": "tsx src/jobs/worker.ts",
-    "catalogue": "tsx --env-file=.env scripts/seed-catalogue.ts"
+    "catalogue": "tsx --env-file=.env scripts/seed-catalogue.ts",
+    "audit:forms": "node scripts/audit-forms.mjs"
   },
   "dependencies": {
     "@dnd-kit/core": "6.3.1",

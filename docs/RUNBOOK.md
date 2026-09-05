@@ -455,6 +455,19 @@ Reads every server action and refuses if one does not check the session and
 a permission. It runs inside `pnpm check`. It cannot say a check is the right
 one; it can say the line exists, which is the bug that had happened 39 times.
 
+### And whether what somebody typed goes anywhere
+
+```
+pnpm audit:forms
+```
+
+Every field on every form, and whether the action it posts to ever looks at it.
+A field named `theirNumber` on the form and read `their_number` in the action
+submits cleanly, redirects cleanly, and drops what was typed — and there is
+nothing on the screen afterwards to say so. 259 fields on 75 forms; the three
+forms handed their action as a prop cannot be followed statically and are named
+in `tests/unit/form-fields.test.ts` rather than counted.
+
 ---
 
 ## 5 · Two modes, one port
