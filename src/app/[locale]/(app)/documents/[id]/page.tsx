@@ -8,6 +8,7 @@ import { Button } from "@/components/ui/button";
 import { type ChecklistRow, checklist, summarise } from "@/documents/checklist";
 import { targetsFor } from "@/documents/conversion";
 import { NotRenderable, render } from "@/documents/engine";
+import { mayDeliverAgainst } from "@/domain/delivery/lines";
 import { deliveryNotesFor } from "@/domain/delivery/store";
 import { setupState } from "@/domain/setup";
 import { Link } from "@/i18n/navigation";
@@ -25,8 +26,13 @@ import { issueDocument } from "./actions";
  */
 export const dynamic = "force-dynamic";
 
-/** What goods can be delivered against — something the client agreed to. */
-const DELIVERABLE = ["quotation", "proforma", "invoice", "situation"];
+/*
+  What goods can be delivered against is `DELIVERABLE_KINDS` in
+  `src/domain/delivery/lines.ts`, and it was a second list typed here that left
+  out `client_order` — the client's own bon de commande, the one document that
+  IS their agreement. The button was missing on exactly the kind the rest of
+  the module says deliveries should hang off.
+*/
 
 export default async function DocumentPage({
   params,
@@ -125,7 +131,7 @@ export default async function DocumentPage({
           ) : null}
           {/* Screen 49. Goods can only be delivered against something the
               client has actually agreed to, and a BL cannot deliver a BL. */}
-          {doc.issued && !doc.situation && DELIVERABLE.includes(doc.kind) ? (
+          {doc.issued && !doc.situation && mayDeliverAgainst(doc.kind) ? (
             <Link href={`/deliveries/new?source=${id}`}>
               <Button variant="secondary">{t("documents.recordDelivery")}</Button>
             </Link>

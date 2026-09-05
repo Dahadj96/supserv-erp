@@ -2870,8 +2870,10 @@
       "sourceNotIssued": "Ce document n'a jamais été émis : il n'y a rien à livrer dessus.",
       "nothingToDeliver": "Saisissez une quantité sur au moins une ligne.",
       "quantityNotPositive": "Une quantité livrée doit être supérieure à zéro.",
-      "alreadySigned": "Un exemplaire signé est déjà au dossier pour ce bon de livraison."
-    }
+      "alreadySigned": "Un exemplaire signé est déjà au dossier pour ce bon de livraison.",
+      "sourceNotDeliverable": "On ne livre pas contre un document de ce type."
+    },
+    "notDeliverable": "On ne fait pas de bon de livraison contre un document de ce type ({kind}). Un BL se fait contre ce que le client a commandé — son bon de commande, un devis, une proforma, une facture ou une situation."
   },
   "newInvoice": {
     "title": "Nouvelle facture — à partir de {number}",

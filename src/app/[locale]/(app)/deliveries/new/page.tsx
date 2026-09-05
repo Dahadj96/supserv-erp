@@ -8,7 +8,7 @@ import { Button } from "@/components/ui/button";
 import { db } from "@/db";
 import { document } from "@/db/schema/document";
 import { party } from "@/db/schema/party";
-import { progress } from "@/domain/delivery/lines";
+import { mayDeliverAgainst, progress } from "@/domain/delivery/lines";
 import { coveredAgainst, sourceLines } from "@/domain/delivery/store";
 import { Link } from "@/i18n/navigation";
 import { startDeliveryAction } from "../actions";
@@ -51,6 +51,37 @@ export default async function NewDeliveryPage({
     .where(eq(document.id, source))
     .limit(1);
   if (!doc) notFound();
+
+  /*
+    THE KIND IS ASKED HERE TOO, and it was asked nowhere.
+
+    The button on screen 18 was the only gate: this page took whatever id was
+    in the query string, so `?source=<a bon de livraison>` opened the form and
+    `startDelivery` — which checked only that the source was issued — made a BL
+    against a BL. The rule lives in one place now and all three ask it.
+
+    A sentence rather than `notFound()`: the person got here from a link, and
+    "this page does not exist" is not what happened.
+  */
+  if (!mayDeliverAgainst(doc.kind)) {
+    return (
+      <main className="min-h-0 flex-1 overflow-auto">
+        <div className="max-w-[720px] px-4 md:px-7 py-8">
+          <h1 className="text-[19px] font-semibold text-ink">{t("deliveries.recordTitle")}</h1>
+          <p className="mt-3 rounded-[var(--radius-control)] bg-warning-bg px-4 py-3 text-tiny leading-relaxed text-warning-ink">
+            {t("deliveries.notDeliverable", {
+              kind: t.has(`docTypes.kind.${doc.kind}`) ? t(`docTypes.kind.${doc.kind}`) : doc.kind,
+            })}
+          </p>
+          <div className="mt-4">
+            <Link href={`/documents/${doc.id}`}>
+              <Button variant="secondary">{t("deliveries.openDocument")}</Button>
+            </Link>
+          </div>
+        </div>
+      </main>
+    );
+  }
 
   const sources = await sourceLines(doc.id);
   const delivered = await coveredAgainst(sources.map((line) => line.lineId));

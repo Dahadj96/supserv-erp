@@ -4,7 +4,7 @@ import { auditEntry } from "@/db/schema/control";
 import { deliveryDetail } from "@/db/schema/delivery";
 import { document, documentLine, documentLink } from "@/db/schema/document";
 import { party } from "@/db/schema/party";
-import type { DeliveredLine, SourceLine } from "./lines";
+import { type DeliveredLine, mayDeliverAgainst, type SourceLine } from "./lines";
 
 /**
  * Screens 49 and 14 — the database half.
@@ -22,6 +22,7 @@ export class CannotDeliver extends Error {
   constructor(
     readonly why:
       | "noSuchDocument"
+      | "sourceNotDeliverable"
       | "sourceNotIssued"
       | "nothingToDeliver"
       | "quantityNotPositive"
@@ -166,6 +167,10 @@ export async function startDelivery(opts: {
 }): Promise<string> {
   const [source] = await db.select().from(document).where(eq(document.id, opts.sourceId)).limit(1);
   if (!source) throw new CannotDeliver("noSuchDocument");
+  // The KIND, and not only the state. A bon de livraison against a bon de
+  // livraison was reachable by typing an id: the button was hidden on the
+  // document screen and nothing behind it asked.
+  if (!mayDeliverAgainst(source.kind)) throw new CannotDeliver("sourceNotDeliverable");
   // Delivering against a draft means delivering against something the client
   // has never agreed to. The STATE, not the number: a client's own order is
   // issued under their reference and may carry no number of ours at all.

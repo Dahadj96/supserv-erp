@@ -5,7 +5,7 @@ import { auditEntry } from "@/db/schema/control";
 import { deliveryDetail } from "@/db/schema/delivery";
 import { document, documentLine, documentLink } from "@/db/schema/document";
 import { party, partyRole } from "@/db/schema/party";
-import { progress } from "@/domain/delivery/lines";
+import { mayDeliverAgainst, progress } from "@/domain/delivery/lines";
 import {
   CannotDeliver,
   coveredAgainst,
@@ -32,6 +32,14 @@ let clientId = "";
 let orderId = "";
 let lineIds: string[] = [];
 const notes: string[] = [];
+/**
+ * Documents made by one test and read by no other.
+ *
+ * `notes` is indexed positionally further down — `notes[1]` is "the first bon
+ * de livraison" — so anything pushed into it by a new test in the middle
+ * silently renumbers every assertion after it. That cost six red tests once.
+ */
+const extra: string[] = [];
 
 beforeAll(async () => {
   const [client] = await db
@@ -82,8 +90,8 @@ beforeAll(async () => {
 });
 
 afterAll(async () => {
-  const all = [orderId, ...notes].filter(Boolean);
-  await db.delete(deliveryDetail).where(inArray(deliveryDetail.documentId, notes));
+  const all = [orderId, ...notes, ...extra].filter(Boolean);
+  await db.delete(deliveryDetail).where(inArray(deliveryDetail.documentId, [...notes, ...extra]));
   await db.delete(documentLink).where(inArray(documentLink.fromDocument, all));
   await db.delete(documentLine).where(inArray(documentLine.documentId, all));
   await db.delete(document).where(inArray(document.id, all));
@@ -117,6 +125,88 @@ describe("recording a delivery", () => {
         actorId: ACTOR,
       }),
     ).rejects.toThrow(CannotDeliver);
+  });
+
+  it("refuses to deliver against a bon de livraison, whatever the id in the URL says", async () => {
+    // The button on screen 18 was the only thing asking about the kind, and
+    // `/deliveries/new?source=<id>` took whatever it was given — so a BL
+    // against a BL was one typed URL away, and `startDelivery` checked the
+    // state and never the kind.
+    const [bl] = await db
+      .insert(document)
+      .values({
+        kind: "delivery_note",
+        number: `BL-${stamp}-9001`,
+        partyId: clientId,
+        locale: "fr",
+        status: "issued",
+        issuedOn: "2026-08-05",
+        totals: {},
+      })
+      .returning({ id: document.id });
+    extra.push(bl?.id as string);
+
+    await expect(
+      startDelivery({
+        sourceId: bl?.id as string,
+        quantities: { [lineIds[0] as string]: "1" },
+        deliverOn: "2026-08-08",
+        actorId: ACTOR,
+      }),
+    ).rejects.toMatchObject({ why: "sourceNotDeliverable" });
+  });
+
+  it("delivers against the client's own bon de commande — the kind the button did not offer", async () => {
+    // `client_order` is what winning looks like (`ORDER_KINDS` in
+    // domain/deal/deal.ts) and what the conversion module says deliveries
+    // should hang off. It was the one sell-side kind missing from the list.
+    expect(mayDeliverAgainst("client_order")).toBe(true);
+
+    const [order] = await db
+      .insert(document)
+      .values({
+        // Their number, not ours: a bon de commande client carries the
+        // client's reference and no series of ours is allocated.
+        kind: "client_order",
+        number: `BC/CLIENT/${stamp}`,
+        partyId: clientId,
+        locale: "fr",
+        status: "issued",
+        issuedOn: "2026-08-02",
+        totals: { totalExcl: "119200" },
+      })
+      .returning({ id: document.id });
+    const orderDocId = order?.id as string;
+    extra.push(orderDocId);
+
+    const [line] = await db
+      .insert(documentLine)
+      .values({
+        documentId: orderDocId,
+        position: 1,
+        lineKind: "item",
+        designation: "Galets de convoyeur Ø108",
+        unit: "U",
+        qty: "40",
+        unitPrice: "2980",
+      })
+      .returning({ id: documentLine.id });
+
+    const id = await startDelivery({
+      sourceId: orderDocId,
+      quantities: { [line?.id as string]: "10" },
+      deliverOn: "2026-08-09",
+      actorId: ACTOR,
+    });
+    extra.push(id);
+
+    const [made] = await db.select().from(document).where(eq(document.id, id)).limit(1);
+    expect(made?.kind).toBe("delivery_note");
+    expect(made?.number, "a draft carries no number — LAW 5").toBeNull();
+
+    const [covers] = await sourceOf(id);
+    expect(covers?.id).toBe(orderDocId);
+    expect(covers?.number, "their reference, kept verbatim").toBe(`BC/CLIENT/${stamp}`);
   });
 
   it("refuses a delivery of nothing", async () => {

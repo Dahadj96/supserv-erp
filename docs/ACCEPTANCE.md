@@ -906,4 +906,34 @@ tells you what you want to hear.
    - `tests/integration/setup.test.ts` :: "refuses a kind that carries the counterparty's number"
    - `tests/integration/setup.test.ts` :: "refuses a second series for a kind that already has one"
    - `tests/integration/setup.test.ts` :: "offers the two a marché needs, and never the ones that are theirs"
-   - `tests/unit/setup-errors.test.ts` :: "seriesInput only produces keys that resolve"
+   - `tests/unit/setup-errors.test.ts` :: "$name only produces keys that resolve"
+
+27. ~~**A bon de livraison could not be raised against the client's own order, and could be raised against a bon de livraison.**~~ **Found and closed on 5 September.**
+   One rule, kept in two halves that did not agree. Screen 18 decided whether
+   to show *Record a delivery* from a list typed into the page —
+   `["quotation", "proforma", "invoice", "situation"]` — and `client_order` was
+   not in it. That is the client's own bon de commande: the one document that
+   IS their agreement, what `ORDER_KINDS` calls winning, and the kind
+   `src/documents/conversion.ts` says in its own words the deliveries and the
+   factures should hang off "rather than off an offer that may have been
+   revised twice since". The button was missing on exactly the kind the flow is
+   built around.
+
+   Behind the button, nothing asked at all. `/deliveries/new?source=<id>` took
+   whatever id was in the query string, and `startDelivery` checked that the
+   source was ISSUED and never checked what it was. So a bon de livraison
+   against a bon de livraison was one typed URL away, and so was one against a
+   credit note or a purchase order.
+
+   `DELIVERABLE_KINDS` lives in `src/domain/delivery/lines.ts` now, with
+   `client_order` at the head of it, and all three ask the same question: the
+   button, the page, and `startDelivery`. `quotation` and `proforma` stay on
+   purpose — a small company in Adrar is told yes on the telephone and the
+   lorry leaves the same afternoon, and a system that demands the bon de
+   commande first is a system people work around. The page refuses in a
+   sentence rather than a 404, because the person got there from a link.
+   See `docs/DECISIONS/2026-09-05-delivering-against-the-right-paper.md`.
+
+   - `tests/integration/delivery.test.ts` :: "refuses to deliver against a bon de livraison, whatever the id in the URL says"
+   - `tests/integration/delivery.test.ts` :: "delivers against the client's own bon de commande — the kind the button did not offer"
+   - `tests/integration/delivery.test.ts` :: "refuses to deliver against something the client never agreed to"

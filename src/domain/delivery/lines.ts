@@ -21,6 +21,45 @@ const d = (value: string | number | null | undefined) => {
   return parsed.isFinite() ? parsed : new Decimal(0);
 };
 
+/**
+ * WHAT A BON DE LIVRAISON CAN BE RAISED AGAINST.
+ *
+ * One list, and it was two halves of one that did not agree. The document
+ * screen decided which kinds showed the "Record a delivery" button from a list
+ * typed into the page; `startDelivery` checked only that the source was
+ * ISSUED, and the /deliveries/new page checked nothing at all. So the button
+ * was missing where it should have been and the URL worked everywhere — a bon
+ * de livraison could be delivered against a bon de livraison by typing an id.
+ *
+ * `client_order` heads the list, and it was the one the button did not offer.
+ * It is the client saying yes — their bon de commande, or our proforma back
+ * with *bon pour accord* on it — and `src/documents/conversion.ts` says in its
+ * own words that "the deliveries and the factures hang off that rather than off
+ * an offer that may have been revised twice since". That is the flow every
+ * sales system runs, and the one kind that expresses it could not start a
+ * delivery from the screen.
+ *
+ * `quotation` and `proforma` stay, deliberately. A small company in Adrar is
+ * told yes on the telephone and the lorry leaves the same afternoon; a system
+ * that demands the bon de commande first is a system people work around. When
+ * the order HAS been recorded, deliver against it — the remaining quantities
+ * are counted there.
+ *
+ * `delivery_note` is not on the list and must never be: a BL cannot deliver a
+ * BL. Neither is `credit_note`, `purchase_order`, or anything we did not sell.
+ */
+export const DELIVERABLE_KINDS = [
+  "client_order",
+  "quotation",
+  "proforma",
+  "invoice",
+  "situation",
+] as const;
+
+export function mayDeliverAgainst(kind: string): boolean {
+  return (DELIVERABLE_KINDS as readonly string[]).includes(kind);
+}
+
 export type SourceLine = {
   lineId: string;
   position: number;

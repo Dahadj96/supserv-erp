@@ -2870,8 +2870,10 @@
       "sourceNotIssued": "That document has never been issued, so there is nothing to deliver against.",
       "nothingToDeliver": "Enter a quantity on at least one line.",
       "quantityNotPositive": "A delivered quantity has to be greater than zero.",
-      "alreadySigned": "A signed copy is already on file for this delivery note."
-    }
+      "alreadySigned": "A signed copy is already on file for this delivery note.",
+      "sourceNotDeliverable": "Goods are not delivered against a document of this kind."
+    },
+    "notDeliverable": "A delivery note is not raised against a document of this kind ({kind}). It is raised against what the client ordered — their purchase order, a quotation, a pro forma, an invoice or a progress statement."
   },
   "newInvoice": {
     "title": "New invoice — from {number}",
