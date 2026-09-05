@@ -70,6 +70,23 @@ For one project with ten prices, two situations and three avenants:
 Screen 15's number is the one that matters most: it no longer grows with the
 number of projects on the page.
 
+And the screens people open all day, which read the whole company rather than
+one project — measured because a list that grows a query per row is fine on a
+demo and unusable in year three. None of them does:
+
+| Read | Queries |
+|---|---|
+| `gather` — screen 03, today | 9 |
+| `report` — screen 04, the dashboard | 5 |
+| `listDeals` — screen 05 | 3 |
+| `billed` — screen 19, the invoices | 1 |
+| `owings` — screen 20, what is owed | 1 |
+
+A sweep for `await db` inside a loop over the whole of `src/domain`,
+`src/documents` and `src/app` found thirteen, and every one of them is a write
+in a seeding or import loop. The read paths were already careful; the three
+that were not were the ones written that same day.
+
 ## What was rejected
 
 **React's `cache()` around `contractOf`.** It would have deduped the three

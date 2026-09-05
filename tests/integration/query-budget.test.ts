@@ -7,8 +7,10 @@ import { document, documentLine, documentLink } from "@/db/schema/document";
 import { party, partyRole } from "@/db/schema/party";
 import { amendmentDetail, project, situationDetail } from "@/db/schema/project";
 import { render } from "@/documents/engine";
-import { createDeal } from "@/domain/deal/deal";
+import { report } from "@/domain/control/reports";
+import { createDeal, listDeals } from "@/domain/deal/deal";
 import { ensureTypesExist } from "@/domain/document-types";
+import { billed, owings } from "@/domain/money/store";
 import { nextFinalAccount } from "@/domain/project/final";
 import {
   nextAmendment,
@@ -17,6 +19,7 @@ import {
   saveSituation,
 } from "@/domain/project/situations";
 import { createProject, getProject, listProjects } from "@/domain/project/store";
+import { gather } from "@/domain/today/gather";
 
 /**
  * What each screen costs, in round trips.
@@ -241,5 +244,46 @@ describe("what a screen costs", () => {
     // Five: the situations, the marché's id, the two décompte lookups, the
     // number it would take. The page reads the project once, not twice.
     expect(n, `nextFinalAccount(loaded) made ${n} queries`).toBeLessThanOrEqual(7);
+  });
+});
+
+/**
+ * And the screens people open all day, whose lists grow with the register.
+ *
+ * These read the whole company, not one project, so the fixture above barely
+ * moves them — the number is what the read costs at all, and the point is that
+ * it does not change when a row is added. A list that grows a query per row is
+ * fine on a demo and unusable in year three.
+ */
+describe("what the lists cost", () => {
+  it("draws today — screen 03, the first page anybody opens", async () => {
+    // 9: one per kind of thing that can be waiting on somebody, and it stays
+    // 9 whether the company has ten of them or ten thousand.
+    const n = await cost(() => gather(new Date("2026-12-01T08:00:00Z")));
+    expect(n, `gather made ${n} queries`).toBeLessThanOrEqual(12);
+  });
+
+  it("draws the enquiries — screen 05", async () => {
+    // 3.
+    const n = await cost(() => listDeals());
+    expect(n, `listDeals made ${n} queries`).toBeLessThanOrEqual(5);
+  });
+
+  it("draws the invoices — screen 19", async () => {
+    // 1. The ageing and the paid state are computed from the row, not fetched.
+    const n = await cost(() => billed());
+    expect(n, `billed made ${n} queries`).toBeLessThanOrEqual(3);
+  });
+
+  it("draws what is owed — screen 20", async () => {
+    // 1.
+    const n = await cost(() => owings());
+    expect(n, `owings made ${n} queries`).toBeLessThanOrEqual(3);
+  });
+
+  it("draws the dashboard — screen 04", async () => {
+    // 5.
+    const n = await cost(() => report(new Date("2026-12-01T08:00:00Z")));
+    expect(n, `report made ${n} queries`).toBeLessThanOrEqual(8);
   });
 });
