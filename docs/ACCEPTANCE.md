@@ -747,3 +747,36 @@ tells you what you want to hear.
    workflow behind it, and it is notification routing that nobody has designed.
    When it is designed the columns come back with the code that reads them,
    which is the whole rule: **wired up or dropped**.
+
+23. ~~**A datasheet had nowhere to go.**~~ **Found and closed on 5 September.**
+   Ratchet **17 → 13**. `item_media` was read in three places — screen 77's
+   table, screen 78's "datasheet held" badge, and `hasDatasheet` — and inserted
+   in none. Every row in the repository came from a test fixture.
+
+   So screen 77's table was always empty, screen 78 said *no datasheet* about
+   every item in the catalogue for ever, and a tender asking for a **fiche
+   technique** had nowhere to keep the answer — the same PDF chased from the
+   supplier again for the next tender, which is the exact cost that screen
+   exists to remove. Its `file_id` pointed at a table `src/domain/files` opens
+   by saying will never exist.
+
+   The row owns its bytes now, as the fourth owner in the files view beside an
+   attachment, a dossier and an import. Screen 77 attaches one; screen 60 lists
+   them; `/api/files/item:<id>` serves them under the same rules as everything
+   else — with `NEEDS` widened to `Permission | null` so that "everybody signed
+   in may read a manufacturer's datasheet" is a decision somebody made rather
+   than a gap. See `docs/DECISIONS/2026-09-05-the-datasheet-had-nowhere-to-go.md`.
+
+   - `tests/integration/item.test.ts` :: "says what it is and where it came from, and neither is guessed"
+   - `tests/integration/item.test.ts` :: "can be opened — the row carries the id the files route takes"
+   - `tests/integration/item.test.ts` :: "puts the bytes where the row says they are"
+   - `tests/integration/item.test.ts` :: "refuses a kind or a provenance nobody declared"
+   - `tests/integration/item.test.ts` :: "refuses an empty file and one over ten megabytes"
+
+   Two columns went the other way in the same commit. `item_media.locked` said
+   "a picture the client sent is locked to the deal it arrived on", which
+   `deal_id` already says — two columns that must agree are one that can be
+   wrong. And `price_quote.evidence_file_id` was written as `null` by both of
+   its callers: nothing here can attach a file to a captured price, and what a
+   price has to say for itself is `is_verbal`, `captured_from` and
+   `captured_place`.

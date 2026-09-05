@@ -1,4 +1,4 @@
-import { CloudOff, Download, FileText, Mail, Table2 } from "lucide-react";
+import { CloudOff, Download, FileText, Mail, Paperclip, Table2 } from "lucide-react";
 import { getFormatter, getTranslations, setRequestLocale } from "next-intl/server";
 import { can } from "@/auth/can";
 import { getSession } from "@/auth/session";
@@ -25,6 +25,8 @@ const ICON: Record<FileKind, typeof Mail> = {
   attachment: Mail,
   dossier: FileText,
   import: Table2,
+  // A datasheet or a certificate against an item — screen 77 attaches them.
+  item: Paperclip,
 };
 
 function isKind(value: string | undefined): value is FileKind {

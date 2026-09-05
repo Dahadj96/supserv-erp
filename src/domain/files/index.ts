@@ -3,6 +3,7 @@ import { db } from "@/db";
 import { intakeDossier } from "@/db/schema/dossier";
 import { importBatch } from "@/db/schema/import";
 import { intakeAttachment, intakeMessage } from "@/db/schema/intake";
+import { item, itemMedia } from "@/db/schema/item";
 
 /**
  * Screen 60 — Files.
@@ -11,16 +12,17 @@ import { intakeAttachment, intakeMessage } from "@/db/schema/intake";
  *
  * Every file the system holds is already recorded by whatever brought it in:
  * an email attachment belongs to a message, a read dossier belongs to itself,
- * a spreadsheet belongs to the import that consumed it. A fourth table
- * duplicating those three would be a table that can disagree with them — the
- * same argument `src/storage/local.ts` makes about the disk, one level up.
+ * a spreadsheet belongs to the import that consumed it, an item's datasheet
+ * belongs to the item. A fifth table duplicating those four would be a table
+ * that can disagree with them — the same argument `src/storage/local.ts` makes
+ * about the disk, one level up.
  *
- * So this file is a VIEW. It reads the three tables that own files and unions
+ * So this file is a VIEW. It reads the four tables that own files and unions
  * them. LAW 1: compute, do not store.
  */
 
 /** Which table the row came from. The id is prefixed with it, so ids are unique. */
-export const FILE_KINDS = ["attachment", "dossier", "import"] as const;
+export const FILE_KINDS = ["attachment", "dossier", "import", "item"] as const;
 export type FileKind = (typeof FILE_KINDS)[number];
 
 /**
@@ -192,11 +194,53 @@ async function importFiles(): Promise<FileRow[]> {
   }));
 }
 
+/**
+ * An item's technical file — the datasheet a tender asked for.
+ *
+ * The row owns its bytes, so unlike an attachment there is no "absent" state:
+ * the path is `not null` because the row is written after the upload landed.
+ */
+async function itemFiles(): Promise<FileRow[]> {
+  const rows = await db
+    .select({
+      id: itemMedia.id,
+      filename: itemMedia.filename,
+      contentType: itemMedia.contentType,
+      bytes: itemMedia.sizeBytes,
+      storagePath: itemMedia.storagePath,
+      at: itemMedia.createdAt,
+      itemId: itemMedia.itemId,
+      code: item.code,
+      designation: item.designation,
+    })
+    .from(itemMedia)
+    .innerJoin(item, eq(item.id, itemMedia.itemId))
+    .orderBy(desc(itemMedia.createdAt));
+
+  return rows.map((r) => ({
+    id: fileId("item", r.id),
+    kind: "item" as const,
+    filename: r.filename,
+    contentType: r.contentType,
+    bytes: r.bytes,
+    storagePath: pathOrNull(r.storagePath),
+    state: "stored" as BytesState,
+    at: r.at,
+    belongsTo: {
+      fallbackKey: "item",
+      label: `${r.code} · ${r.designation}`,
+      labelKey: null,
+      href: `/items/${r.itemId}/technical`,
+    },
+  }));
+}
+
 export async function listFiles(kind?: FileKind): Promise<FileRow[]> {
   const parts = await Promise.all([
     !kind || kind === "attachment" ? attachmentFiles() : Promise.resolve([]),
     !kind || kind === "dossier" ? dossierFiles() : Promise.resolve([]),
     !kind || kind === "import" ? importFiles() : Promise.resolve([]),
+    !kind || kind === "item" ? itemFiles() : Promise.resolve([]),
   ]);
 
   return parts.flat().sort((a, b) => b.at.getTime() - a.at.getTime());
@@ -211,6 +255,7 @@ export async function fileCounts(): Promise<FileCounts> {
     attachment: all.filter((f) => f.kind === "attachment").length,
     dossier: all.filter((f) => f.kind === "dossier").length,
     import: all.filter((f) => f.kind === "import").length,
+    item: all.filter((f) => f.kind === "item").length,
     absent: all.filter((f) => f.state === "absent").length,
   };
 }

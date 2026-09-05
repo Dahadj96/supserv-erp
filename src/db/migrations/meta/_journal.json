@@ -330,6 +330,20 @@
       "when": 1788582687485,
       "tag": "0046_military_vapor",
       "breakpoints": true
+    },
+    {
+      "idx": 47,
+      "version": "7",
+      "when": 1788583618345,
+      "tag": "0047_tidy_sabretooth",
+      "breakpoints": true
+    },
+    {
+      "idx": 48,
+      "version": "7",
+      "when": 1788583645965,
+      "tag": "0048_lumpy_tyger_tiger",
+      "breakpoints": true
     }
   ]
 }

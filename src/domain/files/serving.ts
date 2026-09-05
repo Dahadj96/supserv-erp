@@ -17,13 +17,22 @@ import type { FileKind } from "./index";
  * import spreadsheet is somebody's entire client list, which is a
  * settings-level thing to be handling.
  *
+ * `null` is a decision, not an omission: an item's datasheet is a RECORD, and
+ * records in this ERP are readable by anybody signed in. `src/auth/can.ts`
+ * argues that at length — at six people, records are curated and permissioned
+ * individually, and only two read gates exist (`inbox.view` for raw
+ * correspondence, `offers.margin.view` for cost). A manufacturer's PDF for a
+ * cable is neither. The site foreman who has to fit the thing is exactly who
+ * needs it.
+ *
  * Exhaustive by type, deliberately. A new file kind will not compile until
- * somebody has decided who may read it.
+ * somebody has decided who may read it — including deciding that everybody may.
  */
-export const NEEDS: Record<FileKind, Permission> = {
+export const NEEDS: Record<FileKind, Permission | null> = {
   attachment: "inbox.view",
   dossier: "inbox.view",
   import: "settings.company",
+  item: null,
 };
 
 /**

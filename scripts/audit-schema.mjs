@@ -60,8 +60,13 @@ import { readCorpus, readSchemaColumns } from "./lib/schema-columns.mjs";
  *   17 — 5 September 2026, `user_preference`: nine of its ten columns dropped.
  *        Nothing wrote them, nothing read them, and screen 81's own comment
  *        said as much. Dropping is a fix — the rule is "wired up or dropped".
+ *   13 — 5 September 2026, `item_media`: read by three screens and inserted
+ *        nowhere, with a `file_id` pointing at a table the files module says
+ *        will never exist. It owns its bytes now and screen 77 can attach one.
+ *        `price_quote.evidence_file_id`, written as `null` by both callers,
+ *        dropped in the same commit.
  */
-const CEILING = 17;
+const CEILING = 13;
 
 /**
  * Tables that are SOMEBODY ELSE'S to write and read.

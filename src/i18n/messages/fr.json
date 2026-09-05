@@ -3360,12 +3360,14 @@
       "all": "Tout",
       "attachment": "Pièces jointes",
       "dossier": "Dossiers lus",
-      "import": "Reprises"
+      "import": "Reprises",
+      "item": "Fiches techniques"
     },
     "from": {
       "message": "Un message",
       "dossier": "Un dossier",
-      "import": "Une reprise"
+      "import": "Une reprise",
+      "item": "Un article"
     },
     "column": {
       "name": "Fichier",
@@ -3569,6 +3571,7 @@
       "intake_dossier": "Dossier lu",
       "intake_message": "Message reçu",
       "item_coverage": "Couverture technique",
+      "item_media": "Pièce technique",
       "note": "Note",
       "numbering_series": "Série de numérotation",
       "party": "Société",
@@ -3895,7 +3898,8 @@
       "kind": "Pièce",
       "provenance": "Provenance",
       "from": "De qui",
-      "where": "Où"
+      "where": "Où",
+      "file": "Le fichier"
     },
     "field": {
       "code": "Code",
@@ -3903,6 +3907,22 @@
       "unit": "Unité",
       "brand": "Marque",
       "model": "Modèle"
+    },
+    "recorded": "Enregistré : la pièce est jointe à l'article et servira toutes les affaires suivantes.",
+    "f": {
+      "file": "Le fichier",
+      "where": "D'où elle vient, en clair",
+      "wherePlaceholder": "ENAGEO, par e-mail du 12/06 — ou Ets Chergui, Adrar",
+      "why": "Ce qu'est la pièce et d'où elle vient sont demandés, jamais déduits du nom du fichier : « ce PDF est le certificat du fabricant » est une affirmation, et une affirmation a besoin de quelqu'un derrière elle. 10 Mo au maximum.",
+      "add": "Joindre la pièce"
+    },
+    "error": {
+      "notAllowed": "Votre rôle ne peut pas joindre de pièce.",
+      "empty": "Aucun fichier n'a été choisi.",
+      "tooBig": "Le fichier dépasse 10 Mo. Une fiche technique est un PDF ; au-delà, c'est une erreur.",
+      "badKind": "Dites de quelle pièce il s'agit.",
+      "badProvenance": "Dites d'où vient cette pièce.",
+      "noSuchItem": "Cet article n'existe pas."
     }
   },
   "modules": {

@@ -62,6 +62,10 @@ const EXPECTED: Record<string, string[]> = {
   // has just been handed a welder's habilitation must be able to write it down.
   "candidates/[id]/actions.ts:saveCertificationAction": ["*write"],
   "candidates/[id]/actions.ts:verifyCertificationAction": ["*write"],
+  // A manufacturer's PDF for a cable is a record, not correspondence and not
+  // cost — the two read gates this ERP has. The foreman who fits the thing is
+  // exactly who needs it.
+  "items/[id]/technical/actions.ts:addMediaAction": ["*write"],
   // Screen 74, on a phone: writing down what a shop charges is a note anybody
   // who works here may take. It is marked verbal and confirms nothing.
   "prices/new/actions.ts:capturePriceAction": ["*write"],

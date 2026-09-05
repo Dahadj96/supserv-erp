@@ -262,9 +262,14 @@ export const priceQuote = pgTable("price_quote", {
 
   /** Said, not written. Shown as unconfirmed wherever it appears. */
   isVerbal: boolean("is_verbal").notNull().default(false),
-  /** The proforma, the photo of the price tag, the email. Null for a verbal. */
-  evidenceFileId: uuid("evidence_file_id"),
-
+  /**
+   * There was an `evidence_file_id` here — "the proforma, the photo of the
+   * price tag, the email" — and both places that insert a price quote wrote
+   * `null` into it, because nothing in this ERP can attach a file to a captured
+   * price. Dropped on 5 September 2026. What a price has to say for itself is
+   * `is_verbal` (said, not written), `captured_from` (the paper or the person)
+   * and `captured_place`; those are written, read and shown.
+   */
   capturedBy: text("captured_by"),
   capturedAt: timestamp("captured_at", { withTimezone: true }).notNull().defaultNow(),
   /** "Ets Chergui, Adrar" — screen 86 fills this from your last three visits. */

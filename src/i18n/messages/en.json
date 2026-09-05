@@ -3360,12 +3360,14 @@
       "all": "All",
       "attachment": "Attachments",
       "dossier": "Read dossiers",
-      "import": "Imports"
+      "import": "Imports",
+      "item": "Technical files"
     },
     "from": {
       "message": "A message",
       "dossier": "A dossier",
-      "import": "An import"
+      "import": "An import",
+      "item": "An item"
     },
     "column": {
       "name": "File",
@@ -3569,6 +3571,7 @@
       "intake_dossier": "Read dossier",
       "intake_message": "Received message",
       "item_coverage": "Technical coverage",
+      "item_media": "Technical piece",
       "note": "Note",
       "numbering_series": "Numbering series",
       "party": "Company",
@@ -3895,7 +3898,8 @@
       "kind": "Piece",
       "provenance": "Provenance",
       "from": "From whom",
-      "where": "Where"
+      "where": "Where",
+      "file": "The file"
     },
     "field": {
       "code": "Code",
@@ -3903,6 +3907,22 @@
       "unit": "Unit",
       "brand": "Brand",
       "model": "Model"
+    },
+    "recorded": "Recorded: the piece is attached to the item and serves every enquiry after this one.",
+    "f": {
+      "file": "The file",
+      "where": "Where it came from, in words",
+      "wherePlaceholder": "ENAGEO, by email of 12/06 — or Ets Chergui, Adrar",
+      "why": "What the piece IS and where it came from are asked, never guessed from the filename: \"this PDF is the manufacturer's certificate\" is a claim, and a claim needs somebody behind it. 10 MB at most.",
+      "add": "Attach the piece"
+    },
+    "error": {
+      "notAllowed": "Your role may not attach a piece.",
+      "empty": "No file was chosen.",
+      "tooBig": "The file is over 10 MB. A datasheet is a PDF; beyond that it is a mistake.",
+      "badKind": "Say which kind of piece this is.",
+      "badProvenance": "Say where this piece came from.",
+      "noSuchItem": "That item does not exist."
     }
   },
   "modules": {

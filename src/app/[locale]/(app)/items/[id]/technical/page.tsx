@@ -1,10 +1,14 @@
 import { FileWarning } from "lucide-react";
 import { redirect as hardRedirect, notFound } from "next/navigation";
 import { getTranslations, setRequestLocale } from "next-intl/server";
+import { INPUT } from "@/app/[locale]/(app)/setup/field";
+import { canWrite } from "@/auth/can";
 import { getSession } from "@/auth/session";
 import { Badge } from "@/components/ui/badge";
-import { itemTechnicalFile } from "@/domain/item-technical";
+import { Button } from "@/components/ui/button";
+import { itemTechnicalFile, MEDIA_KINDS, PROVENANCES } from "@/domain/item-technical";
 import { Link } from "@/i18n/navigation";
+import { addMediaAction } from "./actions";
 
 /**
  * Screen 77 — one item's technical file.
@@ -24,10 +28,13 @@ export const dynamic = "force-dynamic";
 
 export default async function ItemTechnicalPage({
   params,
+  searchParams,
 }: {
   params: Promise<{ locale: string; id: string }>;
+  searchParams: Promise<{ recorded?: string; error?: string }>;
 }) {
   const { locale, id } = await params;
+  const { recorded, error } = await searchParams;
   setRequestLocale(locale);
   const t = await getTranslations();
 
@@ -52,6 +59,17 @@ export default async function ItemTechnicalPage({
             t("itemTechnical.noBrand")}
         </p>
       </div>
+
+      {recorded ? (
+        <p className="mx-4 md:mx-7 mt-4 rounded-[var(--radius-control)] bg-good-bg px-4 py-2.5 text-tiny text-good-ink">
+          {t("itemTechnical.recorded")}
+        </p>
+      ) : null}
+      {error ? (
+        <p className="mx-4 md:mx-7 mt-4 rounded-[var(--radius-control)] bg-critical-bg px-4 py-2.5 text-tiny text-critical-ink">
+          {t(`itemTechnical.error.${error}`)}
+        </p>
+      ) : null}
 
       <div className="grid max-w-[1400px] grid-cols-1 md:grid-cols-3 items-start gap-5 px-4 md:px-7 py-6">
         <div className="col-span-1 md:col-span-2 flex flex-col gap-5">
@@ -83,8 +101,11 @@ export default async function ItemTechnicalPage({
                     <th className="px-4 py-2 text-start font-medium text-muted">
                       {t("itemTechnical.column.from")}
                     </th>
-                    <th className="px-5 py-2 text-start font-medium text-muted">
+                    <th className="px-4 py-2 text-start font-medium text-muted">
                       {t("itemTechnical.column.where")}
+                    </th>
+                    <th className="px-5 py-2 text-start font-medium text-muted">
+                      {t("itemTechnical.column.file")}
                     </th>
                   </tr>
                 </thead>
@@ -104,14 +125,107 @@ export default async function ItemTechnicalPage({
                           : row.provenance}
                       </td>
                       <td className="px-4 py-2.5 text-secondary">{row.partyName ?? "—"}</td>
-                      <td className="px-5 py-2.5 text-micro text-muted">
+                      <td className="px-4 py-2.5 text-micro text-muted">
                         {row.capturedAtPlace ?? "—"}
+                      </td>
+                      {/*
+                        THE LINK THAT WAS NOT THERE. This table listed what the
+                        company held and where it came from, and gave no way to
+                        open any of it: the row pointed at a `file_id` in a
+                        table that does not exist, and nothing ever wrote one.
+                      */}
+                      <td className="px-5 py-2.5">
+                        <a
+                          href={`/api/files/${encodeURIComponent(row.fileId)}`}
+                          className="text-tiny text-accent-ink hover:underline"
+                        >
+                          {row.filename}
+                        </a>
+                        {row.sizeBytes ? (
+                          <span className="ms-2 text-micro text-muted">
+                            {Math.max(1, Math.round(row.sizeBytes / 1024))} kB
+                          </span>
+                        ) : null}
                       </td>
                     </tr>
                   ))}
                 </tbody>
               </table>
             )}
+
+            {/*
+              AND THE WAY IN. `item_media` had no insert anywhere in the
+              application: screen 78 said "no datasheet" about every item in the
+              catalogue, for ever, and a tender asking for a fiche technique had
+              nowhere to keep the answer.
+
+              What the file IS and where it came from are asked, never guessed
+              from the name or the content type. "This PDF is the manufacturer's
+              certificate" is a claim, and a claim needs somebody behind it.
+            */}
+            <form
+              action={addMediaAction.bind(null, locale, id)}
+              encType="multipart/form-data"
+              className="grid grid-cols-1 sm:grid-cols-2 gap-3 border-t border-line-subtle px-5 py-4"
+            >
+              <label className="sm:col-span-2">
+                <span className="text-micro text-secondary">{t("itemTechnical.f.file")}</span>
+                <input
+                  type="file"
+                  name="file"
+                  required
+                  className={`${INPUT} mt-1 file:me-3 file:rounded-[var(--radius-control)] file:border-0 file:bg-chip file:px-2 file:py-1 file:text-micro`}
+                />
+              </label>
+              <label>
+                <span className="text-micro text-secondary">{t("itemTechnical.column.kind")}</span>
+                <select name="mediaKind" defaultValue="datasheet" className={`${INPUT} mt-1`}>
+                  {MEDIA_KINDS.map((kind) => (
+                    <option key={kind} value={kind}>
+                      {t.has(`technical.mediaKind.${kind}`)
+                        ? t(`technical.mediaKind.${kind}`)
+                        : kind}
+                    </option>
+                  ))}
+                </select>
+              </label>
+              <label>
+                <span className="text-micro text-secondary">
+                  {t("itemTechnical.column.provenance")}
+                </span>
+                <select name="provenance" defaultValue="manufacturer" className={`${INPUT} mt-1`}>
+                  {PROVENANCES.map((one) => (
+                    <option key={one} value={one}>
+                      {t.has(`technical.provenance.${one}`)
+                        ? t(`technical.provenance.${one}`)
+                        : one}
+                    </option>
+                  ))}
+                </select>
+              </label>
+              <label className="sm:col-span-2">
+                <span className="text-micro text-secondary">{t("itemTechnical.f.where")}</span>
+                <input
+                  name="capturedAtPlace"
+                  placeholder={t("itemTechnical.f.wherePlaceholder")}
+                  className={`${INPUT} mt-1`}
+                />
+              </label>
+              <p className="sm:col-span-2 text-micro leading-relaxed text-muted">
+                {t("itemTechnical.f.why")}
+              </p>
+              <div className="sm:col-span-2 flex">
+                <div className="ms-auto">
+                  <Button
+                    type="submit"
+                    variant="secondary"
+                    disabledReason={canWrite(session.role) ? undefined : t("documents.notAllowed")}
+                  >
+                    {t("itemTechnical.f.add")}
+                  </Button>
+                </div>
+              </div>
+            </form>
           </section>
 
           <section className="rounded-[var(--radius-card)] border border-line bg-surface">

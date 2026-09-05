@@ -32,12 +32,14 @@ export async function GET(_request: Request, ctx: { params: Promise<{ id: string
   const parsed = parseFileId(decoded);
   if (!parsed) return new Response("noSuchFile", { status: 404 });
 
+  // `null` means every signed-in user, which is a decision `NEEDS` explains.
+  // A session with no role at all is still refused: it may do nothing.
   const needed = NEEDS[parsed.kind];
-  if (!session.role || !can(session.role, needed)) {
+  if (!session.role || (needed !== null && !can(session.role, needed))) {
     // 403, not 404. Screen 79's rule — a permission never hides that a thing
     // exists — applies to the API too, and "not found" would send somebody
     // hunting for a file that is sitting right there.
-    return new Response(needed, { status: 403 });
+    return new Response(needed ?? "noRole", { status: 403 });
   }
 
   const row = await fileByIndexId(decoded);
