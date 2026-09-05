@@ -63,7 +63,8 @@ export class DraftRefused extends Error {
       | "alreadyIssued"
       | "noLines"
       | "situationHasItsOwnScreen"
-      | "amendmentHasItsOwnScreen",
+      | "amendmentHasItsOwnScreen"
+      | "finalAccountIsComputed",
   ) {
     super(reason);
   }
@@ -139,6 +140,11 @@ export async function saveDraft(
   // would all come back pointing at nothing, and the avenant would read as
   // forty new prices added to a bordereau it was meant to correct.
   if (record.kind === "amendment") throw new DraftRefused("amendmentHasItsOwnScreen");
+
+  // And a décompte final, for a third version of it: every figure on that page
+  // is arithmetic over the situations, and a person editing one of them by
+  // hand would be signing a total that no longer matches the papers behind it.
+  if (record.kind === "final_account") throw new DraftRefused("finalAccountIsComputed");
 
   const lines = keepable(patch.lines);
   if (lines.length === 0) throw new DraftRefused("noLines");

@@ -4,6 +4,7 @@ import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import { can, canAny } from "@/auth/can";
 import { getSession } from "@/auth/session";
+import { saveFinalAccount } from "@/domain/project/final";
 import {
   recordSituationApproved,
   recordSituationSubmitted,
@@ -265,6 +266,38 @@ export async function crewUpdateAction(locale: string, id: string, form: FormDat
     throw error;
   }
   back(locale, id, "?recorded=crew");
+}
+
+/**
+ * Draw the décompte final, from what the marché's own documents say.
+ *
+ * `invoices.issue`: it is money owed and money received, added up, and the
+ * document catalogue gives the kind the same permission for the same reason.
+ * The form carries one field — the date on the paper. Everything else would be
+ * a figure somebody could type differently from the situations behind it.
+ */
+export async function saveFinalAccountAction(
+  locale: string,
+  id: string,
+  form: FormData,
+): Promise<void> {
+  const session = await getSession();
+  if (!session) redirect(`/${locale}/sign-in`);
+  if (!can(session.role, "invoices.issue")) back(locale, id, "?error=notAllowed");
+
+  let documentId: string;
+  try {
+    documentId = await saveFinalAccount({
+      projectId: id,
+      issuedOn: orNull(str(form, "issuedOn")),
+      actorId: session.userId,
+    });
+  } catch (error) {
+    if (error instanceof ProjectRefused) back(locale, id, `?error=${error.reason}`);
+    throw error;
+  }
+  revalidatePath(`/${locale}/projects/${id}`);
+  redirect(`/${locale}/documents/${documentId}?created=1`);
 }
 
 /**

@@ -133,6 +133,8 @@ export const ISSUE_PERMISSION: Record<string, Permission> = {
   // An avenant changes what the client committed to, which is the same act as
   // recording the commitment: the Commercial's.
   amendment: "offers.issue",
+  // The décompte final is money owed and money received, added up. Compta's.
+  final_account: "invoices.issue",
   // What leaves the warehouse and what is signed off on site.
   delivery_note: "deliveries.issue",
   work_order: "works.issue",

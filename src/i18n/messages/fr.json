@@ -1025,7 +1025,8 @@
       "attestation": "Attestation",
       "official_letter": "Lettre officielle",
       "cover_letter": "Lettre d'accompagnement",
-      "amendment": "Avenant"
+      "amendment": "Avenant",
+      "final_account": "Décompte final"
     },
     "draft": "Brouillon — non émise",
     "forClient": "Pour {client}",
@@ -1577,7 +1578,8 @@
       "attestation": "Attestation",
       "official_letter": "Lettre officielle",
       "cover_letter": "Lettre d'accompagnement",
-      "amendment": "Avenant"
+      "amendment": "Avenant",
+      "final_account": "Décompte final"
     },
     "neverChange": "Des règles qui ne changent jamais",
     "never": {
@@ -1773,7 +1775,8 @@
       "noLines": "Un document demande au moins une ligne avec une désignation et une quantité.",
       "noSuchDocument": "Ce document n'existe plus.",
       "situationHasItsOwnScreen": "Une situation se modifie face au marché, sur la page du projet, pas ici.",
-      "amendmentHasItsOwnScreen": "Un avenant s'écrit face au bordereau du marché, sur la page du projet, pas ici."
+      "amendmentHasItsOwnScreen": "Un avenant s'écrit face au bordereau du marché, sur la page du projet, pas ici.",
+      "finalAccountIsComputed": "Un décompte final est le calcul des situations. Il n'y a rien à y modifier — il se refait sur la page du projet."
     },
     "settlement": "Mode de règlement",
     "settlementUnsaid": "Non précisé",
@@ -4698,7 +4701,12 @@
       "alreadyLeft": "Cette personne est déjà partie.",
       "leftBeforeArrival": "Personne ne part avant d'être arrivé.",
       "noContract": "Désignez d'abord le DQE contractuel sur le projet.",
-      "badPenaltyBase": "Les pénalités se calculent sur le HT ou sur le TTC — le CCAP dit lequel."
+      "badPenaltyBase": "Les pénalités se calculent sur le HT ou sur le TTC — le CCAP dit lequel.",
+      "noSituations": "Aucune situation n'a été établie sur ce marché.",
+      "situationUnissued": "Une situation est encore au brouillon.",
+      "situationUnapproved": "Une situation est émise et non signée.",
+      "noReception": "Les travaux ne sont pas encore réceptionnés.",
+      "alreadyClosed": "Ce marché a déjà un décompte final émis."
     },
     "physical": {
       "title": "Avancement physique",
@@ -4900,6 +4908,32 @@
       "capPct": "Plafond, % du marché",
       "base": "Pénalités calculées sur",
       "theirWords": "Le CCAP dit : {text}"
+    }
+  },
+  "final": {
+    "title": "Décompte final",
+    "theDraft": "le brouillon",
+    "draw": "L'établir",
+    "redraw": "Le refaire",
+    "issuedOn": "Date sur le papier",
+    "why": "Rien n'y est saisi : ce sont les situations, ce que chacune a retenu et récupéré, ce qui a été réglé dessus et ce que la clause du CCAP autorise — additionnés. Le refaire remplace le brouillon ouvert.",
+    "retentionComesBack": "{amount} de retenue de garantie sont encore détenus et reviennent à la réception définitive.",
+    "row": {
+      "works": "Travaux certifiés (TTC)",
+      "advance": "Avance récupérée",
+      "retention": "Retenue de garantie",
+      "netCertified": "Net certifié",
+      "paid": "Déjà réglé",
+      "penalty": "Pénalités de retard",
+      "balance": "Solde restant dû par le client"
+    },
+    "blocked": {
+      "noSituations": "Aucune situation n'a été établie sur ce marché : il n'y a rien à additionner.",
+      "situationUnissued": "Une situation est encore au brouillon. Un décompte qui laisserait des travaux de côté ne serait pas final.",
+      "situationUnapproved": "Une situation est émise et non signée par le client. Le décompte final l'attend.",
+      "noReception": "Les travaux ne sont pas encore réceptionnés. Enregistrez d'abord le PV de réception provisoire.",
+      "noSeries": "Aucune série de numérotation n'existe pour le décompte final — l'écran 50 la crée, une fois, et le format ne se change plus ensuite.",
+      "alreadyClosed": "Ce marché a déjà un décompte final émis."
     }
   }
 }

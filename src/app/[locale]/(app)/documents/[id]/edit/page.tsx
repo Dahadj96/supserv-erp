@@ -71,6 +71,16 @@ export default async function EditDocumentPage({
       .limit(1);
     if (owner) hardRedirect(`/${locale}/projects/${owner.projectId}/amendment`);
   }
+  // A décompte final is arithmetic over the situations. There is nothing on it
+  // to edit, so the door goes back to the project that computes it.
+  if (record.kind === "final_account" && record.dealId) {
+    const [owner] = await db
+      .select({ projectId: project.id })
+      .from(project)
+      .where(eq(project.dealId, record.dealId))
+      .limit(1);
+    if (owner) hardRedirect(`/${locale}/projects/${owner.projectId}`);
+  }
   const rules = await issuingRules(record.kind);
   const carriesTheirNumber = !(rules?.reservesNumber ?? true);
 

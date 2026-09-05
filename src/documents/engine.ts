@@ -438,9 +438,11 @@ export async function render(request: RenderRequest): Promise<RenderedDocument> 
     /* 6 ── Amount in words, in the document language ----------------------- */
     // A situation is settled at its net à payer — the sum after the retention
     // and the advance — because that is the figure the client's accountant
-    // pays and the one the wilaya's form writes out in words.
+    // pays and the one the wilaya's form writes out in words. A décompte final
+    // for the same reason: nobody is owed its TTC, they are owed the balance.
     amountInWords: amountInWords(
-      record.kind === "situation" && totals.dueNow !== undefined
+      (record.kind === "situation" || record.kind === "final_account") &&
+        totals.dueNow !== undefined
         ? Number(totals.dueNow)
         : grandTotal,
       locale,
@@ -614,10 +616,20 @@ export function totalRows(stored: unknown, locale: string): { label: string; val
   // off it, then what is due.
   push("retention", totals.retention);
   push("advanceDeducted", totals.advanceDeducted);
+  // A décompte final subtracts two more things: what the CCAP's clause allows
+  // the client to apply, and what they have already paid on the way. Absent
+  // from every other kind, and dropped when zero like the rest.
+  push("penalty", totals.penalty);
+  push("alreadyPaid", totals.alreadyPaid);
 
   // Only when something actually moved the figure. "Net à payer" repeated
   // under an identical total is a line that teaches people to skim.
-  if (Number(totals.advanceDeducted ?? 0) !== 0 || Number(totals.retention ?? 0) !== 0) {
+  if (
+    Number(totals.advanceDeducted ?? 0) !== 0 ||
+    Number(totals.retention ?? 0) !== 0 ||
+    Number(totals.penalty ?? 0) !== 0 ||
+    Number(totals.alreadyPaid ?? 0) !== 0
+  ) {
     push("dueNow", totals.dueNow, true);
   }
 

@@ -1025,7 +1025,8 @@
       "attestation": "Attestation",
       "official_letter": "Official letter",
       "cover_letter": "Cover letter",
-      "amendment": "Avenant"
+      "amendment": "Avenant",
+      "final_account": "Décompte final"
     },
     "draft": "Draft — not issued",
     "forClient": "For {client}",
@@ -1577,7 +1578,8 @@
       "attestation": "Attestation",
       "official_letter": "Official letter",
       "cover_letter": "Cover letter",
-      "amendment": "Avenant"
+      "amendment": "Avenant",
+      "final_account": "Décompte final"
     },
     "neverChange": "Rules that never change",
     "never": {
@@ -1773,7 +1775,8 @@
       "noLines": "A document needs at least one line with a description and a quantity.",
       "noSuchDocument": "That document no longer exists.",
       "situationHasItsOwnScreen": "A situation is edited against the marché on the project page, not here.",
-      "amendmentHasItsOwnScreen": "An avenant is written against the marché's bordereau on the project page, not here."
+      "amendmentHasItsOwnScreen": "An avenant is written against the marché's bordereau on the project page, not here.",
+      "finalAccountIsComputed": "A final account is arithmetic over the situations. There is nothing on it to edit — it is drawn again on the project page."
     },
     "settlement": "Payment method",
     "settlementUnsaid": "Not stated",
@@ -4698,7 +4701,12 @@
       "alreadyLeft": "They have already left.",
       "leftBeforeArrival": "Nobody leaves before they arrive.",
       "noContract": "Name the DQE contractuel on the project first.",
-      "badPenaltyBase": "Penalties are taken on the HT or on the TTC — the CCAP says which."
+      "badPenaltyBase": "Penalties are taken on the HT or on the TTC — the CCAP says which.",
+      "noSituations": "No situation has been raised on this marché.",
+      "situationUnissued": "A situation is still a draft.",
+      "situationUnapproved": "A situation is issued and not signed.",
+      "noReception": "The work has not been accepted yet.",
+      "alreadyClosed": "This marché already has a final account issued."
     },
     "physical": {
       "title": "Physical progress",
@@ -4900,6 +4908,32 @@
       "capPct": "Ceiling, % of the marché",
       "base": "Penalties taken on",
       "theirWords": "The CCAP says: {text}"
+    }
+  },
+  "final": {
+    "title": "Final account",
+    "theDraft": "the draft",
+    "draw": "Draw it",
+    "redraw": "Draw it again",
+    "issuedOn": "Date on the paper",
+    "why": "Nothing on it is typed: it is the situations, what each one withheld and recovered, what has been paid against them, and what the CCAP's clause allows — added up. Drawing it again replaces the open draft.",
+    "retentionComesBack": "{amount} of retention is still held, and comes back at the réception définitive.",
+    "row": {
+      "works": "Works certified (incl. VAT)",
+      "advance": "Advance recovered",
+      "retention": "Retention withheld",
+      "netCertified": "Net certified",
+      "paid": "Already paid",
+      "penalty": "Late penalties",
+      "balance": "Balance the client still owes"
+    },
+    "blocked": {
+      "noSituations": "No situation has been raised on this marché, so there is nothing to add up.",
+      "situationUnissued": "A situation is still a draft. A final account that left work out would not be final.",
+      "situationUnapproved": "A situation has been issued and not signed by the client. The final account waits for it.",
+      "noReception": "The work has not been accepted yet. Record the PV de réception provisoire first.",
+      "noSeries": "No numbering series exists for the final account — screen 50 creates it, once, and the pattern cannot be changed afterwards.",
+      "alreadyClosed": "This marché already has a final account issued."
     }
   }
 }

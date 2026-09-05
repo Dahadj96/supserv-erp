@@ -131,6 +131,30 @@ export const SEED_TYPES: SeedType[] = [
     pattern: "SIT/{YYYY}/{###}",
   },
   {
+    /**
+     * DÉCOMPTE FINAL — the one page that closes a marché.
+     *
+     * The twenty-first kind. Everything on it is arithmetic over documents
+     * this system already issued: the situations, what each withheld, what was
+     * paid against them, and what the CCAP's penalty clause comes to. Nothing
+     * on it is typed, which is the whole point — the four figures a wilaya's
+     * accountant checks come from the same papers in their own file.
+     *
+     * It is the *projet de décompte final* the entreprise submits, not the
+     * décompte général et définitif itself: that one is drawn by the service
+     * contractant and notified to us, and is a paper we record rather than
+     * produce.
+     */
+    kind: "final_account",
+    family: "sell",
+    legalValue: "accounting",
+    numbering: "reservedOnIssue",
+    convertsTo: [],
+    languages: ["fr"],
+    active: true,
+    pattern: "DEC/{YYYY}/{###}",
+  },
+  {
     kind: "credit_note",
     family: "sell",
     legalValue: "accounting",

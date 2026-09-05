@@ -291,6 +291,26 @@ read the clause off the CCAP. See
 - `tests/integration/situation-flow.test.ts` :: "moves the délai once issued, and the penalty stops with it"
 - `tests/integration/situation-flow.test.ts` :: "names both avenants on the next situation's form"
 
+And the page that closes it — the décompte final, where nothing is typed: the
+situations added up, less the advance, the retention, what has been paid and
+what the clause allows. See
+`docs/DECISIONS/2026-09-05-the-page-that-closes-a-marche.md`:
+
+- `tests/unit/final-account.test.ts` :: "refuses to draw one at all with no situations"
+- `tests/unit/final-account.test.ts` :: "refuses while a situation is still a draft"
+- `tests/unit/final-account.test.ts` :: "refuses while a situation is issued and unsigned"
+- `tests/unit/final-account.test.ts` :: "refuses before the work has been accepted"
+- `tests/unit/final-account.test.ts` :: "adds up the situations and nothing else"
+- `tests/unit/final-account.test.ts` :: "counts the advance recovered and the retention withheld separately"
+- `tests/unit/final-account.test.ts` :: "leaves the balance the client still owes"
+- `tests/unit/final-account.test.ts` :: "shows the retention as money to come back, not money lost"
+- `tests/unit/final-account.test.ts` :: "takes the penalty off the balance, and only when it is known"
+- `tests/integration/situation-flow.test.ts` :: "waits for the client's signature on every one of them"
+- `tests/integration/situation-flow.test.ts` :: "adds up the four situations and nothing else"
+- `tests/integration/situation-flow.test.ts` :: "is written as a draft nobody typed, naming the papers it adds up"
+- `tests/integration/situation-flow.test.ts` :: "cannot be edited by hand, because every figure on it is computed"
+- `tests/integration/situation-flow.test.ts` :: "is issued under a number of ours, and closes the marché"
+
 And screens 24, 25 and 26 — `/personnel-requests` was the third dead link in
 the rail, and a certification that lapses before a man is due on site is the
 same rule for the third time:

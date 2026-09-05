@@ -239,7 +239,11 @@ export const documentLink = pgTable(
       .notNull()
       .references(() => document.id),
     /** A proforma may NEVER carry `settles`. Enforced by trigger. */
-    relation: text("relation").notNull(), // converted_to | covers | credits | settles
+    relation: text("relation").notNull(),
+    // converted_to | covers | credits | settles | amends | closes
+    //
+    // `amends` — an avenant on the marché it changes.
+    // `closes` — the décompte final on the marché it settles.
   },
   (t) => [primaryKey({ columns: [t.fromDocument, t.toDocument, t.relation] })],
 );

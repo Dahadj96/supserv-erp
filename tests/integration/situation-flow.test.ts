@@ -4,7 +4,7 @@ import { afterAll, beforeAll, describe, expect, it } from "vitest";
 import { db } from "@/db";
 import { auditEntry } from "@/db/schema/control";
 import { deal } from "@/db/schema/deal";
-import { document, documentLine, documentLink } from "@/db/schema/document";
+import { document, documentLine, documentLink, numberingSeries } from "@/db/schema/document";
 import { party, partyRole } from "@/db/schema/party";
 import { project, situationDetail } from "@/db/schema/project";
 import { DraftRefused, saveDraft } from "@/documents/draft";
@@ -12,6 +12,7 @@ import { render } from "@/documents/engine";
 import { toPdf } from "@/documents/pdf";
 import { createDeal } from "@/domain/deal/deal";
 import { ensureTypesExist } from "@/domain/document-types";
+import { nextFinalAccount, saveFinalAccount } from "@/domain/project/final";
 import {
   amendmentDeltas,
   contractOf,
@@ -810,5 +811,147 @@ describe("the réceptions", () => {
     const p = await getProject(projectId, new Date("2026-12-01T00:00:00Z"));
     expect(p?.state).toBe("warranty");
     expect(p?.retentionReleases).toEqual({ on: "2027-11-28", basis: "provisional" });
+  });
+});
+
+/**
+ * The décompte final.
+ *
+ * The page that closes the marché: every situation added up, less the advance
+ * recovered, less the retention withheld, less what the client has paid and
+ * what the CCAP's clause allows. Nothing on it is typed, which is why every
+ * figure below can be checked against the four situations above it.
+ */
+describe("the décompte final", () => {
+  let decompte = "";
+
+  async function situationNo(sequence: number): Promise<string> {
+    const [row] = await db
+      .select({ id: situationDetail.documentId })
+      .from(situationDetail)
+      .where(and(eq(situationDetail.projectId, projectId), eq(situationDetail.sequence, sequence)))
+      .limit(1);
+    return row?.id as string;
+  }
+
+  it("cannot be drawn while a situation is still a draft", async () => {
+    const next = await nextFinalAccount(projectId);
+    expect(next?.account.blocked).toBe("situationUnissued");
+    await expect(
+      saveFinalAccount({ projectId, issuedOn: null, actorId: ACTOR }),
+    ).rejects.toMatchObject({ reason: "situationUnissued" });
+  });
+
+  it("waits for the client's signature on every one of them", async () => {
+    await render({ documentId: await situationNo(4), purpose: "issue", actorId: ACTOR });
+    // n° 1 was signed above; 2, 3 and 4 were issued and never signed.
+    expect((await nextFinalAccount(projectId))?.account.blocked).toBe("situationUnapproved");
+
+    for (const sequence of [2, 3, 4]) {
+      const documentId = await situationNo(sequence);
+      await recordSituationSubmitted({ documentId, on: "2026-11-03", actorId: ACTOR });
+      await recordSituationApproved({
+        documentId,
+        on: "2026-11-15",
+        by: "M. Kaddour, subdivisionnaire",
+        actorId: ACTOR,
+      });
+    }
+    expect((await nextFinalAccount(projectId))?.account.blocked).toBeNull();
+  });
+
+  it("adds up the four situations and nothing else", async () => {
+    const next = await nextFinalAccount(projectId);
+    const a = next?.account;
+    expect(a?.counted).toHaveLength(4);
+    // 1 560 000 + 940 000 + 1 200 + 264 000
+    expect(a?.worksExcl).toBe("2765200.00");
+    expect(a?.worksIncl).toBe("3290588.00");
+    // Only n° 2 recovered any advance.
+    expect(a?.advanceRecovered).toBe("100000.00");
+    // 5 % of the HT of each, which is what the CCAP said.
+    expect(a?.retentionHeld).toBe("138260.00");
+    expect(a?.netCertified).toBe("3052328.00");
+    // Nothing has been paid in this test, and the work was accepted in time.
+    expect(a?.paid).toBe("0.00");
+    expect(a?.penalty).toBe("0.00");
+    expect(a?.balance).toBe("3052328.00");
+    expect(a?.retentionToRelease).toBe("138260.00");
+  });
+
+  it("is written as a draft nobody typed, naming the papers it adds up", async () => {
+    // The series is a decision the Gérant makes once on screen 50; the test
+    // makes it here for the same reason it exists there.
+    await db
+      .insert(numberingSeries)
+      .values({ kind: "final_account", pattern: "DEC/{YYYY}/{###}" })
+      .onConflictDoNothing();
+
+    decompte = await saveFinalAccount({
+      projectId,
+      issuedOn: "2026-12-02",
+      actorId: ACTOR,
+    });
+    created.push(decompte);
+
+    const lines = await db
+      .select()
+      .from(documentLine)
+      .where(eq(documentLine.documentId, decompte))
+      .orderBy(asc(documentLine.position));
+    expect(lines).toHaveLength(4);
+    expect(lines[0]?.designation).toContain("Situation n° 1");
+    expect(lines[0]?.reference).toMatch(/^SIT-2026-\d{3}$/);
+
+    const [row] = await db.select().from(document).where(eq(document.id, decompte));
+    expect(row?.status).toBe("draft");
+    const totals = row?.totals as Record<string, string>;
+    expect(totals.totalIncl).toBe("3290588.00");
+    expect(totals.retention).toBe("138260.00");
+    expect(totals.advanceDeducted).toBe("100000.00");
+    expect(totals.dueNow).toBe("3052328.00");
+
+    // `closes`, on the marché itself.
+    const [link] = await db
+      .select()
+      .from(documentLink)
+      .where(and(eq(documentLink.fromDocument, decompte), eq(documentLink.relation, "closes")));
+    expect(link?.toDocument).toBe(contractId);
+
+    // Drawing it again rewrites the same draft rather than opening a second.
+    expect(await saveFinalAccount({ projectId, issuedOn: "2026-12-02", actorId: ACTOR })).toBe(
+      decompte,
+    );
+  });
+
+  it("cannot be edited by hand, because every figure on it is computed", async () => {
+    await expect(
+      saveDraft(
+        decompte,
+        { lines: [{ lineKind: "item", designation: "x", qty: "1", unitPrice: "1" }] },
+        ACTOR,
+      ),
+    ).rejects.toMatchObject({ reason: "finalAccountIsComputed" });
+  });
+
+  it("is issued under a number of ours, and closes the marché", async () => {
+    const out = await render({ documentId: decompte, purpose: "issue", actorId: ACTOR });
+    expect(out.number).toMatch(/^DEC\/2026\/\d{3}$/);
+    // The totals block subtracts in the order a reader subtracts in.
+    expect(out.totals.map((t) => t.label)).toEqual([
+      "totalExcl",
+      "totalVat",
+      "totalIncl",
+      "retention",
+      "advanceDeducted",
+      "dueNow",
+    ]);
+    const pdf = await toPdf(out);
+    expect(pdf.subarray(0, 4).toString()).toBe("%PDF");
+    writeFileSync(".logs/decompte-final.pdf", pdf);
+
+    await expect(
+      saveFinalAccount({ projectId, issuedOn: null, actorId: ACTOR }),
+    ).rejects.toMatchObject({ reason: "alreadyClosed" });
   });
 });

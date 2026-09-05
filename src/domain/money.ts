@@ -37,6 +37,17 @@ export type Totals = {
    * said what it is taken on — see `retentionBase` on `computeTotals`.
    */
   retention: string;
+  /**
+   * Pénalités de retard, and what the client has already paid on the way.
+   *
+   * Both belong to ONE kind — the décompte final, which closes a marché by
+   * subtracting everything from the value of the work. `computeTotals` never
+   * sets them: a penalty is a figure the CCAP allows the client to apply, not
+   * an arithmetic of ours, and money received is a fact of the payment
+   * register. See `finalAccountOf`.
+   */
+  penalty?: string;
+  alreadyPaid?: string;
   /** What the client actually has to pay on this document. */
   dueNow: string;
   /** Shown, never subtracted — see the note on `computeTotals`. */

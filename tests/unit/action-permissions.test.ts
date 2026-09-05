@@ -130,6 +130,8 @@ const EXPECTED: Record<string, string[]> = {
   // An avenant changes what the CLIENT committed to, which is the Commercial's
   // act and not the site's — the same permission the kind takes to be issued.
   "projects/[id]/actions.ts:saveAmendmentAction": ["offers.issue"],
+  // The décompte final is money owed and money received, added up: compta's.
+  "projects/[id]/actions.ts:saveFinalAccountAction": ["invoices.issue"],
   // The signed paper reaches the office as often as the site, so either.
   "projects/[id]/actions.ts:situationApprovedAction": ["invoices.issue", "works.issue"],
   "projects/[id]/actions.ts:situationSubmittedAction": ["invoices.issue", "works.issue"],

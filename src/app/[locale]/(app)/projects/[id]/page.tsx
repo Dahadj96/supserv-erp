@@ -10,6 +10,7 @@ import { Button } from "@/components/ui/button";
 import { listPeople } from "@/domain/people";
 import type { CautionState, CrewState } from "@/domain/project/cautions";
 import { needsAttention } from "@/domain/project/cautions";
+import { nextFinalAccount } from "@/domain/project/final";
 import type { SituationState } from "@/domain/project/progress";
 import { contractCandidates, contractOf, withAmendments } from "@/domain/project/situations";
 import { getProject } from "@/domain/project/store";
@@ -17,6 +18,7 @@ import { Link } from "@/i18n/navigation";
 import {
   crewAction,
   crewUpdateAction,
+  saveFinalAccountAction,
   situationApprovedAction,
   situationSubmittedAction,
 } from "./actions";
@@ -77,10 +79,11 @@ export default async function ProjectPage({
 
   const p = await getProject(id);
   if (!p) notFound();
-  const [contracts, people, contract] = await Promise.all([
+  const [contracts, people, contract, final] = await Promise.all([
     contractCandidates(p.dealId),
     listPeople("all", 300),
     contractOf(id),
+    nextFinalAccount(id),
   ]);
   // What is under contract TODAY: the marché the person typed, plus what each
   // avenant added. Progress against the original would read past 100%.
@@ -757,6 +760,109 @@ export default async function ProjectPage({
               <p className="mt-2 text-micro leading-relaxed text-secondary">
                 {t("penalty.f.theirWords", { text: p.latePenaltyText })}
               </p>
+            ) : null}
+          </section>
+
+          {/*
+            THE DÉCOMPTE FINAL — the page that closes the marché. Nothing on it
+            is typed: it is the situations, what each withheld, what was paid
+            against them and what the clause allows, added up. The button is a
+            date and a signature away from a paper the wilaya can check against
+            its own file.
+          */}
+          <section className="rounded-[var(--radius-card)] border border-line bg-surface p-5">
+            <div className="flex items-baseline gap-3">
+              <h2 className="text-tiny font-semibold text-ink">{t("final.title")}</h2>
+              {final?.issued ? (
+                <Link
+                  href={`/documents/${final.issued.documentId}`}
+                  className="ms-auto text-micro text-accent-ink hover:underline"
+                >
+                  {final.issued.number ?? t("final.theDraft")}
+                </Link>
+              ) : final?.draft ? (
+                <Link
+                  href={`/documents/${final.draft.documentId}`}
+                  className="ms-auto text-micro text-accent-ink hover:underline"
+                >
+                  {t("final.theDraft")}
+                </Link>
+              ) : null}
+            </div>
+
+            {final && !final.account.blocked ? (
+              <>
+                <dl className="mt-3">
+                  {[
+                    { key: "works", value: final.account.worksIncl },
+                    { key: "advance", value: `− ${money(final.account.advanceRecovered)}` },
+                    { key: "retention", value: `− ${money(final.account.retentionHeld)}` },
+                    { key: "netCertified", value: final.account.netCertified },
+                    { key: "paid", value: `− ${money(final.account.paid)}` },
+                    { key: "penalty", value: `− ${money(final.account.penalty)}` },
+                  ].map((row) => (
+                    <div
+                      key={row.key}
+                      className="flex items-baseline gap-3 border-b border-line-subtle py-2 last:border-0"
+                    >
+                      <dt className="shrink-0 text-tiny text-secondary">
+                        {t(`final.row.${row.key}`)}
+                      </dt>
+                      <dd className="ms-auto text-end text-tiny tabular-nums text-ink">
+                        {row.value.startsWith("−") ? row.value : money(row.value)}
+                      </dd>
+                    </div>
+                  ))}
+                </dl>
+                <div className="mt-3 flex items-baseline gap-3 border-t border-line pt-3">
+                  <span className="text-tiny font-semibold text-ink">{t("final.row.balance")}</span>
+                  <span className="ms-auto text-[15px] font-semibold tabular-nums text-ink">
+                    {money(final.account.balance)} {p.currency}
+                  </span>
+                </div>
+                <p className="mt-2 text-micro leading-relaxed text-muted">
+                  {t("final.retentionComesBack", {
+                    amount: `${money(final.account.retentionToRelease)} ${p.currency}`,
+                  })}
+                </p>
+              </>
+            ) : (
+              <p className="mt-2 text-micro leading-relaxed text-muted">
+                {final ? t(`final.blocked.${final.account.blocked}`) : "—"}
+              </p>
+            )}
+
+            {final && !final.issued ? (
+              <form
+                action={saveFinalAccountAction.bind(null, locale, id)}
+                className="mt-3 flex flex-wrap items-end gap-2 border-t border-line-subtle pt-3"
+              >
+                <label className="w-[160px]">
+                  <span className="text-micro text-secondary">{t("final.issuedOn")}</span>
+                  <input
+                    type="date"
+                    name="issuedOn"
+                    defaultValue={final.draft?.issuedOn ?? new Date().toISOString().slice(0, 10)}
+                    className={`${INPUT} mt-1`}
+                  />
+                </label>
+                <Button
+                  type="submit"
+                  variant="secondary"
+                  disabledReason={
+                    !can(session.role, "invoices.issue")
+                      ? t("documents.notAllowed")
+                      : final.account.blocked
+                        ? t(`final.blocked.${final.account.blocked}`)
+                        : !final.nextNumber
+                          ? t("final.blocked.noSeries")
+                          : undefined
+                  }
+                >
+                  {final.draft ? t("final.redraw") : t("final.draw")}
+                </Button>
+                <p className="basis-full text-micro leading-relaxed text-muted">{t("final.why")}</p>
+              </form>
             ) : null}
           </section>
 

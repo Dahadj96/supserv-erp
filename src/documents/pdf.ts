@@ -155,6 +155,7 @@ const TITLES: Record<string, { fr: string; en: string }> = {
   credit_note: { fr: "AVOIR", en: "CREDIT NOTE" },
   situation: { fr: "SITUATION DE TRAVAUX", en: "PROGRESS STATEMENT" },
   amendment: { fr: "AVENANT AU MARCHÉ", en: "CONTRACT AMENDMENT" },
+  final_account: { fr: "DÉCOMPTE FINAL", en: "FINAL ACCOUNT" },
 };
 
 /**
@@ -243,6 +244,7 @@ const WORDS = {
     option: "option",
     draft: "BROUILLON — SANS VALEUR",
     inWords: "Arrêtée la présente facture à la somme de :",
+    finalAccountInWords: "Arrêté le présent décompte au solde de :",
     settlement: "Mode de règlement",
     domiciliation: "Domiciliation bancaire",
     // An avenant lists only the prices it moves, so its own total is not the
@@ -267,6 +269,8 @@ const WORDS = {
       stampDuty: "Droit de timbre",
       advanceDeducted: "Avance déduite",
       retention: "Retenue de garantie",
+      penalty: "Pénalités de retard",
+      alreadyPaid: "Déjà réglé",
       discountTotal: "Remise",
       dueNow: "Net à payer",
       optionsExcl: "Options non comprises (HT)",
@@ -283,6 +287,7 @@ const WORDS = {
     option: "option",
     draft: "DRAFT — NOT VALID",
     inWords: "The present invoice is settled at the sum of:",
+    finalAccountInWords: "This final account is settled at the balance of:",
     settlement: "Payment method",
     domiciliation: "Bank details",
     amendment: {
@@ -305,6 +310,8 @@ const WORDS = {
       stampDuty: "Stamp duty",
       advanceDeducted: "Advance deducted",
       retention: "Retention",
+      penalty: "Late penalties",
+      alreadyPaid: "Already paid",
       discountTotal: "Discount",
       dueNow: "Net payable",
       optionsExcl: "Options not included (excl. VAT)",
@@ -452,6 +459,8 @@ export async function toPdf(doc: RenderedDocument): Promise<Buffer> {
     "totalIncl",
     "retention",
     "advanceDeducted",
+    "penalty",
+    "alreadyPaid",
     "dueNow",
     "optionsExcl",
   ];
@@ -540,7 +549,11 @@ export async function toPdf(doc: RenderedDocument): Promise<Buffer> {
       ? doc.amendment.incidenceNegative
         ? w.amendment.inWordsLess
         : w.amendment.inWords
-      : w.inWords,
+      : // A décompte final is not a facture and is not settled at its TTC:
+        // what is owed on it is the balance, and the sentence says so.
+        doc.kind === "final_account"
+        ? w.finalAccountInWords
+        : w.inWords,
     {
       size: 8,
       color: MUTED,
