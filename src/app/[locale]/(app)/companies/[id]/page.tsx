@@ -3,10 +3,12 @@ import { getTranslations, setRequestLocale } from "next-intl/server";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { deletedPartyNotice } from "@/domain/deletion";
+import { reversibleMerge } from "@/domain/merge";
 import { getParty, listContacts } from "@/domain/party";
 import { Link, redirect } from "@/i18n/navigation";
 import { addCompanyAlias } from "../actions";
 import { archiveCompany, discardCompany, restoreCompany } from "../delete-actions";
+import { unmergeCompanies } from "../merge-actions";
 
 export const dynamic = "force-dynamic";
 
@@ -24,10 +26,11 @@ export default async function CompanyPage({
   searchParams,
 }: {
   params: Promise<{ locale: string; id: string }>;
-  searchParams: Promise<{ blocked?: string }>;
+  searchParams: Promise<{ blocked?: string; unmerged?: string; unmergeBlocked?: string }>;
 }) {
   const { locale, id } = await params;
-  const { blocked } = await searchParams;
+  const { blocked, unmerged, unmergeBlocked } = await searchParams;
+  const undone = unmerged === "1";
   setRequestLocale(locale);
   const t = await getTranslations();
 
@@ -68,7 +71,7 @@ export default async function CompanyPage({
     );
   }
 
-  const contacts = await listContacts(id);
+  const [contacts, reversible] = await Promise.all([listContacts(id), reversibleMerge(id)]);
 
   return (
     <main className="min-h-0 flex-1 overflow-auto">
@@ -101,6 +104,45 @@ export default async function CompanyPage({
           </Link>
         </div>
       </div>
+
+      {/*
+        A MERGE IS THE ONE OPERATION HERE THAT REWRITES A RECORD PEOPLE RELY ON.
+        `reversible_until` sat on `merge_log` from the first day with nothing
+        reading it — a promise the schema made and the system could not keep.
+        The banner is on the KEPT company because that is the record somebody is
+        looking at when they notice the name is wrong, usually because a client
+        has just queried a facture.
+      */}
+      {undone ? (
+        <p className="mx-4 md:mx-7 mt-4 rounded-[var(--radius-control)] bg-good-bg px-4 py-2.5 text-tiny text-good-ink">
+          {t("merge.undone")}
+        </p>
+      ) : null}
+      {unmergeBlocked ? (
+        <p className="mx-4 md:mx-7 mt-4 rounded-[var(--radius-control)] bg-critical-bg px-4 py-2.5 text-tiny text-critical-ink">
+          {t(`merge.blocked.${unmergeBlocked}`)}
+        </p>
+      ) : null}
+      {reversible ? (
+        <div className="mx-4 md:mx-7 mt-4 flex flex-wrap items-center gap-3 rounded-[var(--radius-control)] border border-warning bg-warning-bg px-4 py-3">
+          <p className="min-w-0 flex-1 text-tiny leading-relaxed text-warning-ink">
+            {t("merge.reversible", {
+              code: reversible.retiredCode,
+              name: reversible.retiredName,
+              who: reversible.mergedByName ?? t("merge.someone"),
+              on: reversible.mergedAt.toLocaleDateString(locale === "fr" ? "fr-DZ" : "en-GB"),
+              until: (reversible.reversibleUntil ?? reversible.mergedAt).toLocaleDateString(
+                locale === "fr" ? "fr-DZ" : "en-GB",
+              ),
+            })}
+          </p>
+          <form action={unmergeCompanies.bind(null, locale, reversible.mergeLogId, id)}>
+            <Button type="submit" variant="secondary">
+              {t("merge.undo")}
+            </Button>
+          </form>
+        </div>
+      ) : null}
 
       <div className="grid max-w-[1100px] grid-cols-1 md:grid-cols-3 gap-5 px-4 md:px-7 py-6">
         <section className="col-span-1 md:col-span-2 rounded-[var(--radius-card)] border border-line bg-surface p-5">

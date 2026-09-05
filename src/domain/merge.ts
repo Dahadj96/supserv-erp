@@ -1,5 +1,7 @@
-import { and, eq, isNull, sql } from "drizzle-orm";
+import { and, desc, eq, gt, inArray, isNotNull, isNull, ne, sql } from "drizzle-orm";
+import { alias } from "drizzle-orm/pg-core";
 import { db } from "@/db";
+import { user } from "@/db/schema/auth";
 import { auditEntry, duplicateDismissal, mergeLog } from "@/db/schema/control";
 import { party, partyAlias, person } from "@/db/schema/party";
 
@@ -100,7 +102,36 @@ export function nameFromEmail(email: string): string | null {
     .join(" ");
 }
 
+/**
+ * How long a merge can be put back.
+ *
+ * Thirty days, and the window is real rather than decorative: the column
+ * `reversible_until` existed from the first day with nothing reading it. Long
+ * enough that the person who notices — often the client, on a facture with the
+ * wrong name — has time to say so; short enough that "reversible" does not
+ * become a promise about a company that has traded under the merged record for
+ * a year.
+ */
 const REVERSIBLE_DAYS = 30;
+
+/** What `merge_log.reverses` holds. Everything the undo needs, nothing else. */
+export type Reversal = {
+  /** The kept row's values BEFORE the merge, for the fields it changed. */
+  keptBefore: Record<string, unknown>;
+  /** The aliases THIS merge added — not the ones already on the kept row. */
+  aliasesAdded: string[];
+  /** The contact made from the losing email address, if one was made. */
+  contactCreatedId: string | null;
+};
+
+export class MergeRefused extends Error {
+  constructor(
+    readonly reason: "noSuchMerge" | "windowClosed" | "alreadyReversed" | "notLast" | "notRecorded",
+  ) {
+    super(reason);
+    this.name = "MergeRefused";
+  }
+}
 
 export async function mergeParties(opts: {
   keptId: string;
@@ -155,16 +186,16 @@ export async function mergeParties(opts: {
     ];
 
     const toAdd: string[] = [];
-    for (const alias of candidates) {
-      const key = alias.toLowerCase();
+    for (const candidate of candidates) {
+      const key = candidate.toLowerCase();
       if (existing.has(key) || key === kept.legalName.toLowerCase()) continue;
       existing.add(key);
-      toAdd.push(alias);
+      toAdd.push(candidate);
     }
     if (toAdd.length > 0) {
       await tx
         .insert(partyAlias)
-        .values(toAdd.map((alias) => ({ partyId: keptId, alias, source: "merge" })))
+        .values(toAdd.map((one) => ({ partyId: keptId, alias: one, source: "merge" })))
         .onConflictDoNothing();
     }
 
@@ -211,8 +242,17 @@ export async function mergeParties(opts: {
         keptId,
         retiredId,
         fieldChoices: choices,
-        movedCounts: {},
         mergedBy: actorId,
+        // Everything the undo needs, and nothing it does not: the kept row's
+        // values BEFORE this merge changed them, the aliases this merge added
+        // (not the ones already there), and the contact it created if it did.
+        reverses: {
+          keptBefore: Object.fromEntries(
+            Object.keys(updates).map((field) => [field, (kept as Record<string, unknown>)[field]]),
+          ),
+          aliasesAdded: toAdd,
+          contactCreatedId: contactCreated?.id ?? null,
+        } satisfies Reversal,
         reversibleUntil: sql`now() + interval '${sql.raw(String(REVERSIBLE_DAYS))} days'`,
       })
       .returning({ id: mergeLog.id });
@@ -235,6 +275,178 @@ export async function mergeParties(opts: {
       contactCreated,
       mergeLogId: logged?.id ?? "",
     };
+  });
+}
+
+export type ReversibleMerge = {
+  mergeLogId: string;
+  keptId: string;
+  keptCode: string;
+  keptName: string;
+  retiredId: string;
+  retiredCode: string;
+  retiredName: string;
+  mergedAt: Date;
+  reversibleUntil: Date | null;
+  mergedByName: string | null;
+};
+
+/**
+ * The merge on this company that can still be put back, if there is one.
+ *
+ * Screen 82 shows it as a banner on the KEPT company, because that is the
+ * record somebody is looking at when they notice the name is wrong. Only the
+ * most recent, and only while the window is open: two merges deep, undoing the
+ * older one first would restore fields the newer one has since changed.
+ */
+export async function reversibleMerge(
+  keptId: string,
+  now = new Date(),
+): Promise<ReversibleMerge | null> {
+  const retired = alias(party, "retired");
+
+  const [row] = await db
+    .select({
+      mergeLogId: mergeLog.id,
+      keptId: mergeLog.keptId,
+      keptCode: party.code,
+      keptName: party.legalName,
+      retiredId: mergeLog.retiredId,
+      retiredCode: retired.code,
+      retiredName: retired.legalName,
+      mergedAt: mergeLog.mergedAt,
+      reversibleUntil: mergeLog.reversibleUntil,
+      mergedByName: user.name,
+    })
+    .from(mergeLog)
+    .innerJoin(party, eq(party.id, mergeLog.keptId))
+    .innerJoin(retired, eq(retired.id, mergeLog.retiredId))
+    .leftJoin(user, eq(user.id, mergeLog.mergedBy))
+    .where(
+      and(
+        eq(mergeLog.keptId, keptId),
+        isNull(mergeLog.reversedAt),
+        // A merge made before this was recorded cannot be put back, so the
+        // banner does not offer it. See `notRecorded`.
+        isNotNull(mergeLog.reverses),
+      ),
+    )
+    .orderBy(desc(mergeLog.mergedAt))
+    .limit(1);
+
+  if (!row) return null;
+  if (row.reversibleUntil && row.reversibleUntil.getTime() < now.getTime()) return null;
+  return row;
+}
+
+/**
+ * Put a merge back.
+ *
+ * The kept row's fields return to what they were, the aliases this merge added
+ * go, the contact it made from the losing email address is retired, and the
+ * retired company stops being retired. The log row STAYS, marked reversed:
+ * the merge happened, and a record of it disappearing would be the second
+ * wrong thing done to the same pair of companies.
+ *
+ * Refused once something newer has been done to the kept company by another
+ * merge — undoing the older one would restore fields the newer one changed.
+ */
+export async function unmergeParties(opts: {
+  mergeLogId: string;
+  actorId: string;
+  now?: Date;
+}): Promise<{ keptId: string; retiredId: string }> {
+  const now = opts.now ?? new Date();
+
+  return db.transaction(async (tx) => {
+    const [log] = await tx.select().from(mergeLog).where(eq(mergeLog.id, opts.mergeLogId)).limit(1);
+    if (!log) throw new MergeRefused("noSuchMerge");
+    if (log.reversedAt) throw new MergeRefused("alreadyReversed");
+    if (log.reversibleUntil && log.reversibleUntil.getTime() < now.getTime()) {
+      throw new MergeRefused("windowClosed");
+    }
+
+    const [newer] = await tx
+      .select({ id: mergeLog.id })
+      .from(mergeLog)
+      .where(
+        and(
+          eq(mergeLog.keptId, log.keptId),
+          isNull(mergeLog.reversedAt),
+          // NOT the row itself, said with the id rather than left to the
+          // comparison: Postgres keeps microseconds and a JavaScript Date has
+          // milliseconds, so a row read back and compared to its own stored
+          // timestamp is newer than itself.
+          ne(mergeLog.id, log.id),
+          gt(mergeLog.mergedAt, log.mergedAt),
+        ),
+      )
+      .limit(1);
+    if (newer) throw new MergeRefused("notLast");
+
+    /*
+      A merge made before this column existed. Clearing `superseded_by` and
+      leaving the fields and the aliases as the merge left them would be a
+      partial undo presented as a whole one — the worst of the three states.
+      There is exactly one such row, made while this was being built.
+    */
+    const reversal = (log.reverses ?? null) as Reversal | null;
+    if (!reversal) throw new MergeRefused("notRecorded");
+
+    // 1. The kept row's own fields, back to what they were. A merge that chose
+    //    nothing from the retired row changed nothing here, and this is empty.
+    if (Object.keys(reversal.keptBefore).length > 0) {
+      await tx.update(party).set(reversal.keptBefore).where(eq(party.id, log.keptId));
+    }
+
+    // 2. The aliases THIS merge added. Only those, and only the ones it wrote:
+    //    an alias somebody typed by hand afterwards is theirs, not the merge's.
+    if (reversal.aliasesAdded.length > 0) {
+      await tx
+        .delete(partyAlias)
+        .where(
+          and(
+            eq(partyAlias.partyId, log.keptId),
+            eq(partyAlias.source, "merge"),
+            inArray(partyAlias.alias, reversal.aliasesAdded),
+          ),
+        );
+    }
+
+    // 3. The contact made from the losing email address. Retired, not deleted —
+    //    somebody may have written to them in the meantime, and the note would
+    //    lose its person.
+    if (reversal?.contactCreatedId) {
+      await tx
+        .update(person)
+        .set({
+          deletedAt: now,
+          deletedBy: opts.actorId,
+          deleteReason: "merge reversed",
+        })
+        .where(and(eq(person.id, reversal.contactCreatedId), isNull(person.deletedAt)));
+    }
+
+    // 4. And the company stops being retired.
+    await tx.update(party).set({ supersededBy: null }).where(eq(party.id, log.retiredId));
+
+    await tx
+      .update(mergeLog)
+      .set({ reversedAt: now, reversedBy: opts.actorId })
+      .where(eq(mergeLog.id, log.id));
+
+    await tx.insert(auditEntry).values({
+      actorId: opts.actorId,
+      actorKind: "user",
+      entity: "party",
+      entityId: log.retiredId,
+      action: "update",
+      before: { supersededBy: log.keptId },
+      after: { supersededBy: null, mergeReversed: log.id },
+      sourceScreen: "82",
+    });
+
+    return { keptId: log.keptId, retiredId: log.retiredId };
   });
 }
 

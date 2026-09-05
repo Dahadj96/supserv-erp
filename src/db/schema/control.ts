@@ -23,10 +23,27 @@ export const mergeLog = pgTable("merge_log", {
   retiredId: uuid("retired_id").notNull(),
   /** Every field chosen, so "who decided this?" has an answer. */
   fieldChoices: jsonb("field_choices").notNull(),
-  movedCounts: jsonb("moved_counts").notNull(),
   mergedBy: text("merged_by"),
   mergedAt: timestamp("merged_at", { withTimezone: true }).notNull().defaultNow(),
+
+  /**
+   * WHAT IT WOULD TAKE TO PUT THIS BACK.
+   *
+   * `reversible_until` sat here from the first day with nothing reading it: a
+   * promise the system made on a table and could not keep, on the one
+   * operation in this ERP that quietly rewrites a record people rely on. A
+   * merge run on the wrong pair at four o'clock cost a company its own name.
+   *
+   * Reversing is possible precisely BECAUSE nothing is repointed (see
+   * `domain/merge.ts`): a merge is the kept row's fields, the aliases added,
+   * one contact possibly created, and a `superseded_by` pointer. What was not
+   * recorded was the kept row's values BEFORE — which is all this holds.
+   */
+  reverses: jsonb("reverses"),
   reversibleUntil: timestamp("reversible_until", { withTimezone: true }),
+  /** Set when it HAS been put back. The log row stays: the merge happened. */
+  reversedAt: timestamp("reversed_at", { withTimezone: true }),
+  reversedBy: text("reversed_by"),
 });
 
 /**

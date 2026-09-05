@@ -278,6 +278,17 @@
     "leftIsKept": "the left one is kept, and it keeps its reference",
     "keepThisOne": "keep this one",
     "mergeIn": "merge in",
+    "reversible": "{code} — {name} was merged into this record by {who} on {on}. The merge can be put back until {until}: the fields it took return to what they were, and the company becomes a record of its own again.",
+    "undo": "Put the merge back",
+    "undone": "Merge reversed: the company is a record of its own again and the fields it took have gone back to what they were.",
+    "someone": "a user since removed",
+    "blocked": {
+      "noSuchMerge": "That merge does not exist.",
+      "windowClosed": "The window has closed. The merge stays in the log, but it is no longer undone from here.",
+      "alreadyReversed": "That merge has already been put back.",
+      "notLast": "A newer merge touches this same record. Put that one back first, or fields it changed would be overwritten.",
+      "notRecorded": "This merge is older than the record of what it would take to undo it. Half-undoing it would be worse: the fields it took and the aliases it added would stay as they are."
+    },
     "field": {
       "legalName": "Legal name",
       "aliases": "Also known as",

@@ -653,3 +653,34 @@ tells you what you want to hear.
    files with `git grep -l` — **tracked files only**. Both new server actions
    were invisible to both until somebody staged them, which is after the review
    and not before. The reader now passes `--untracked`.
+
+20. ~~**A merge could not be put back.**~~ **Found and closed on 5 September**,
+   by the same audit. `merge_log` had eight columns and the application read
+   none of them. The one that mattered was **`reversible_until`**: a promise
+   made in the schema, about the one operation in this ERP that quietly
+   rewrites a record other people rely on, that nothing could keep.
+
+   Screen 84 SUGGESTS duplicate pairs, so somebody will eventually confirm one
+   they should not have. That merge took a company's payment terms, its
+   address, possibly its legal name, and retired the other record behind a
+   `superseded_by` pointer — and there was no way back. The first person to
+   notice is usually the client, on a facture with the wrong name.
+
+   It is cheap to reverse only because `domain/merge.ts` repoints nothing: a
+   merge is the kept row's fields, the aliases it added, one contact possibly
+   created, and a pointer. What nobody had written down was what those fields
+   were BEFORE. `merge_log.reverses` holds that and nothing else. Thirty days,
+   on the kept company's page, `merge.execute` — the permission that made it.
+   See `docs/DECISIONS/2026-09-05-putting-a-merge-back.md`.
+
+   - `tests/integration/merge.test.ts` :: "offers the undo on the surviving record, naming what was merged in"
+   - `tests/integration/merge.test.ts` :: "says nothing once the thirty days are up"
+   - `tests/integration/merge.test.ts` :: "puts the fields back, drops the aliases it added, and frees the company"
+   - `tests/integration/merge.test.ts` :: "keeps the log row, marked reversed — the merge still happened"
+   - `tests/integration/merge.test.ts` :: "will not be put back twice"
+   - `tests/integration/merge.test.ts` :: "finds both companies again, separately"
+
+   Ratchet **50 → 45**. And a bug worth writing down, found by its own test:
+   the "is there a newer merge on this record?" guard compared a row to its own
+   stored timestamp and refused every undo. Postgres keeps microseconds; a
+   JavaScript `Date` keeps milliseconds; read back, a row is newer than itself.

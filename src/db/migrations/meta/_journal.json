@@ -309,6 +309,20 @@
       "when": 1788578191607,
       "tag": "0043_productive_imperial_guard",
       "breakpoints": true
+    },
+    {
+      "idx": 44,
+      "version": "7",
+      "when": 1788579528463,
+      "tag": "0044_clear_moondragon",
+      "breakpoints": true
+    },
+    {
+      "idx": 45,
+      "version": "7",
+      "when": 1788579543563,
+      "tag": "0045_soft_garia",
+      "breakpoints": true
     }
   ]
 }

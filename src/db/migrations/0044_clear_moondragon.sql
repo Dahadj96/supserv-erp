@@ -1,0 +1,1 @@
+ALTER TABLE "merge_log" DROP COLUMN "moved_counts";

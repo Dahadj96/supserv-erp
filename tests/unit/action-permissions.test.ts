@@ -72,6 +72,10 @@ const EXPECTED: Record<string, string[]> = {
   "companies/delete-actions.ts:restoreCompany": ["records.delete"],
   "companies/merge-actions.ts:mergeCompanies": ["merge.execute"],
   "companies/merge-actions.ts:notADuplicate": ["merge.execute"],
+  // Putting one back is the same act of judgement about the same two
+  // companies, so it is the same permission. A window only the Gérant can use
+  // is a window that stays shut while he is in Adrar.
+  "companies/merge-actions.ts:unmergeCompanies": ["merge.execute"],
 
   // ── The sell side ────────────────────────────────────────────────────────
   "deals/[id]/actions.ts:decideAction": ["offers.issue"],

@@ -278,6 +278,17 @@
     "leftIsKept": "celle de gauche est conservée, avec sa référence",
     "keepThisOne": "conserver celle-ci",
     "mergeIn": "à fusionner",
+    "reversible": "{code} — {name} a été fusionnée dans cette fiche par {who} le {on}. La fusion peut être annulée jusqu'au {until} : les champs repris reviennent à ce qu'ils étaient et la société redevient une fiche à part entière.",
+    "undo": "Annuler la fusion",
+    "undone": "Fusion annulée : la société a été rétablie et les champs repris sont revenus à ce qu'ils étaient.",
+    "someone": "un utilisateur retiré depuis",
+    "blocked": {
+      "noSuchMerge": "Cette fusion n'existe pas.",
+      "windowClosed": "Le délai d'annulation est passé. La fusion reste dans le journal, mais elle ne se défait plus ici.",
+      "alreadyReversed": "Cette fusion a déjà été annulée.",
+      "notLast": "Une fusion plus récente porte sur cette même fiche. Annulez la plus récente d'abord, sinon des champs qu'elle a changés seraient réécrits.",
+      "notRecorded": "Cette fusion est antérieure à l'enregistrement de ce qu'il faudrait pour la défaire. La défaire à moitié serait pire : les champs repris et les alias resteraient tels quels."
+    },
     "field": {
       "legalName": "Raison sociale",
       "aliases": "Aussi appelée",

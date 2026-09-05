@@ -4,7 +4,7 @@ import { db } from "@/db";
 import { auditEntry, mergeLog } from "@/db/schema/control";
 import { document } from "@/db/schema/document";
 import { party, partyAlias, person } from "@/db/schema/party";
-import { mergeParties } from "@/domain/merge";
+import { MergeRefused, mergeParties, reversibleMerge, unmergeParties } from "@/domain/merge";
 import { searchParties } from "@/domain/search";
 
 /**
@@ -188,5 +188,130 @@ describe("screen 84 — the losing email becomes a contact", () => {
       .from(person)
       .where(eq(person.email, "contact@touatgaz.dz"));
     expect(invented).toBeUndefined();
+  });
+});
+
+/**
+ * Putting it back.
+ *
+ * `reversible_until` sat on `merge_log` from the first day and nothing read it:
+ * a promise the schema made about the one operation in this ERP that quietly
+ * rewrites a record people rely on. A merge run on the wrong pair at four
+ * o'clock cost a company its own name, and there was nothing to do about it.
+ *
+ * These run last on purpose: they undo the merge the tests above made.
+ */
+describe("screen 82 — a merge can be put back", () => {
+  async function log() {
+    const [row] = await db.select().from(mergeLog).where(eq(mergeLog.keptId, keptId));
+    return row;
+  }
+
+  it("offers the undo on the surviving record, naming what was merged in", async () => {
+    const offer = await reversibleMerge(keptId);
+    expect(offer?.retiredCode).toBe(RETIRED);
+    expect(offer?.keptCode).toBe(KEPT);
+    // The actor is a test string, not a user row: LEFT join, so the offer
+    // survives an id that no longer resolves to a person.
+    expect(offer?.mergedByName).toBeNull();
+    expect(offer?.reversibleUntil).toBeTruthy();
+  });
+
+  it("says nothing once the thirty days are up", async () => {
+    const row = await log();
+    const after = new Date((row?.reversibleUntil as Date).getTime() + 86_400_000);
+    expect(await reversibleMerge(keptId, after)).toBeNull();
+
+    await expect(
+      unmergeParties({ mergeLogId: row?.id as string, actorId: ACTOR, now: after }),
+    ).rejects.toMatchObject({ reason: "windowClosed" });
+  });
+
+  it("refuses one made before the system knew what undoing it would take", async () => {
+    // Exactly one such row exists on the application database, made while this
+    // was being built. Clearing the pointer and leaving the fields and the
+    // aliases as the merge left them is a partial undo presented as a whole
+    // one — the worst of the three states.
+    const row = await log();
+    await db
+      .update(mergeLog)
+      .set({ reverses: null })
+      .where(eq(mergeLog.id, row?.id as string));
+
+    expect(await reversibleMerge(keptId), "the banner must not offer it").toBeNull();
+    await expect(
+      unmergeParties({ mergeLogId: row?.id as string, actorId: ACTOR }),
+    ).rejects.toMatchObject({ reason: "notRecorded" });
+
+    await db
+      .update(mergeLog)
+      .set({ reverses: row?.reverses })
+      .where(eq(mergeLog.id, row?.id as string));
+  });
+
+  it("refuses a merge nobody made", async () => {
+    await expect(
+      unmergeParties({ mergeLogId: "00000000-0000-4000-8000-000000000000", actorId: ACTOR }),
+    ).rejects.toBeInstanceOf(MergeRefused);
+  });
+
+  it("puts the fields back, drops the aliases it added, and frees the company", async () => {
+    const row = await log();
+    await unmergeParties({ mergeLogId: row?.id as string, actorId: ACTOR });
+
+    // 1. The field the merge took from the retired row.
+    const [kept] = await db.select().from(party).where(eq(party.id, keptId));
+    expect(kept?.paymentTerms).toBe("Virement 45 jours");
+    // And nothing the merge never touched.
+    expect(kept?.nif).toBe("000116001234567");
+    expect(kept?.address).toBe("Zone industrielle, Adrar");
+
+    // 2. The aliases IT added — not the two that were typed by hand.
+    const aliases = (
+      await db
+        .select({ alias: partyAlias.alias })
+        .from(partyAlias)
+        .where(eq(partyAlias.partyId, keptId))
+    ).map((r) => r.alias);
+    expect(aliases).toEqual(expect.arrayContaining(["Touat Gaz", "GTG"]));
+    expect(aliases).not.toEqual(expect.arrayContaining([RETIRED, "TOUATGAZ", "TouatGaz JV"]));
+
+    // 3. The contact made from the losing email address — retired, not
+    //    deleted: somebody may have written to them in the meantime.
+    const [contact] = await db
+      .select()
+      .from(person)
+      .where(eq(person.email, "m.belkacem@touatgaz.dz"));
+    expect(contact?.deletedAt).toBeTruthy();
+    expect(contact?.deleteReason).toBe("merge reversed");
+
+    // 4. And the company is a record of its own again.
+    const [retired] = await db.select().from(party).where(eq(party.id, retiredId));
+    expect(retired?.supersededBy).toBeNull();
+  });
+
+  it("keeps the log row, marked reversed — the merge still happened", async () => {
+    const row = await log();
+    expect(row?.reversedAt).toBeTruthy();
+    expect(row?.reversedBy).toBe(ACTOR);
+    // The choices are still there. A record of the merge disappearing would be
+    // the second wrong thing done to the same pair of companies.
+    expect(row?.fieldChoices).toEqual({ paymentTerms: "retired" });
+  });
+
+  it("will not be put back twice", async () => {
+    const row = await log();
+    await expect(
+      unmergeParties({ mergeLogId: row?.id as string, actorId: ACTOR }),
+    ).rejects.toMatchObject({ reason: "alreadyReversed" });
+    expect(await reversibleMerge(keptId)).toBeNull();
+  });
+
+  it("finds both companies again, separately", async () => {
+    // The whole point, from the outside: the search that returned one row
+    // returns two.
+    const hits = await searchParties("TOUATGAZ");
+    const ours = hits.filter((h) => [KEPT, RETIRED].includes(h.code));
+    expect(ours.map((h) => h.code).sort()).toEqual([KEPT, RETIRED].sort());
   });
 });

@@ -44,8 +44,12 @@ import { readCorpus, readSchemaColumns } from "./lib/schema-columns.mjs";
  *        could write a man's tickets at all, and `is_verified` was a boolean no
  *        screen could set, so every habilitation in the company read "Non
  *        contrôlée" for ever
+ *   45 — 5 September 2026, `merge_log`: the whole table was written and read by
+ *        nothing, including `reversible_until` — a promise the schema made
+ *        about the one operation here that rewrites a record people rely on,
+ *        and that the system could not keep
  */
-const CEILING = 50;
+const CEILING = 45;
 
 /**
  * Columns that are deliberately one-way, with the reason.

@@ -3,7 +3,13 @@
 import { revalidatePath } from "next/cache";
 import { can } from "@/auth/can";
 import { getSession } from "@/auth/session";
-import { dismissDuplicate, type FieldChoices, mergeParties } from "@/domain/merge";
+import {
+  dismissDuplicate,
+  type FieldChoices,
+  MergeRefused,
+  mergeParties,
+  unmergeParties,
+} from "@/domain/merge";
 import { MERGE_FIELDS } from "@/domain/merge-preview";
 import { redirect } from "@/i18n/navigation";
 
@@ -44,6 +50,33 @@ export async function mergeCompanies(
 
   revalidatePath(`/${locale}/companies`);
   redirect({ href: `/companies/${keptId}?merged=1`, locale });
+}
+
+/**
+ * Put a merge back — screen 82's banner, within the thirty-day window.
+ *
+ * `merge.execute`, the same permission that made it: undoing a merge is the
+ * same act of judgement about the same two companies, and a window that only
+ * the Gérant can use is a window that stays shut while he is in Adrar.
+ */
+export async function unmergeCompanies(locale: string, mergeLogId: string, keptId: string) {
+  const session = await requireMerger(locale);
+
+  try {
+    await unmergeParties({ mergeLogId, actorId: session.userId });
+  } catch (error) {
+    if (error instanceof MergeRefused) {
+      // Its own parameter: `blocked` on this page already means the bin
+      // refusing a delete, and two meanings on one key is how a banner ends up
+      // saying the wrong thing about the right refusal.
+      redirect({ href: `/companies/${keptId}?unmergeBlocked=${error.reason}`, locale });
+      return;
+    }
+    throw error;
+  }
+
+  revalidatePath(`/${locale}/companies`);
+  redirect({ href: `/companies/${keptId}?unmerged=1`, locale });
 }
 
 /** "Not a duplicate" is remembered, so the same pair is never suggested again. */
