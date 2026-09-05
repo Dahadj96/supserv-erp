@@ -56,6 +56,21 @@ describe("what the status column says", () => {
     );
   });
 
+  it("calls a situation paid when the client has paid what it asked for", () => {
+    // 1 856 400 of work, 78 000 held back as retenue de garantie under the
+    // CCAP: a client who transferred the 1 778 400 has paid. Against the TTC
+    // this sat at "partPaid" for a year and was chased.
+    const situation = facts({
+      kind: "situation",
+      totalIncl: "1856400",
+      owedNow: "1778400",
+      paid: "1778400",
+    });
+    expect(paidStateOf(situation)).toBe("paid");
+    expect(paidStateOf({ ...situation, paid: "1000000" })).toBe("partPaid");
+    expect(paidStateOf({ ...situation, paid: "0" })).toBe("unpaid");
+  });
+
   it("treats an unnumbered document as a draft whatever its status says", () => {
     // LAW 5 — the number IS the issue. A row claiming to be issued without one
     // is a row somebody's import wrote, not a document a client has seen.

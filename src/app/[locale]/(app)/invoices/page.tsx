@@ -3,7 +3,7 @@ import { getTranslations, setRequestLocale } from "next-intl/server";
 import { Badge, type BadgeTone } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { formatMoney } from "@/domain/money";
-import { ageOf, daysLate } from "@/domain/money/ageing";
+import { ageOf, balanceOf, daysLate } from "@/domain/money/ageing";
 import { isOwing, over90, type PaidState, paidStateOf } from "@/domain/money/invoices";
 import { billed, owings } from "@/domain/money/store";
 import { Link } from "@/i18n/navigation";
@@ -57,7 +57,10 @@ export default async function InvoicesPage({
       state,
       ageDays: ageOf(row.issuedOn, today),
       lateDays: daysLate(row.dueOn, today),
-      balance: (Number(row.totalIncl) - Number(row.paid)).toFixed(2),
+      // What the paper ASKED for, less what came in. On a situation that is
+      // its net à payer: the retenue de garantie the client is holding under
+      // the CCAP is not an unpaid balance. See `Owing.owedNow`.
+      balance: balanceOf(row),
     };
   });
 

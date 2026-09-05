@@ -61,6 +61,53 @@ describe("balance is computed, and overdue is not a state", () => {
   });
 });
 
+/**
+ * A situation de travaux bills the work in full and the client keeps back the
+ * retenue de garantie. Counting its TTC as owed made the ERP chase a wilaya
+ * for money the CCAP says they may hold.
+ */
+describe("a paper that asks for less than it is worth", () => {
+  const situation = {
+    // 1 856 400 of work, 78 000 of retention, 100 000 of advance recovered.
+    totalIncl: "1856400",
+    owedNow: "1678400",
+    dueOn: day(8, 10),
+  };
+
+  it("is settled when the client has paid what it asked for", () => {
+    expect(balanceOf({ ...situation, paid: "1678400" })).toBe("0.00");
+    expect(isOverdue({ ...situation, paid: "1678400" }, TODAY)).toBe(false);
+  });
+
+  it("does not become a debt because the retention is still held", () => {
+    // The old arithmetic left 178 000 outstanding, ninety days old, on a
+    // situation the client had paid to the centime.
+    expect(balanceOf({ totalIncl: "1856400", paid: "1678400" })).toBe("178000.00");
+  });
+
+  it("still shows what is actually late when part of the net is unpaid", () => {
+    expect(balanceOf({ ...situation, paid: "1000000" })).toBe("678400.00");
+    expect(isOverdue({ ...situation, paid: "1000000" }, TODAY)).toBe(true);
+  });
+
+  it("leaves every ordinary invoice exactly as it was", () => {
+    // No `owedNow`: the TTC is what was asked for, which is the common case.
+    expect(balanceOf({ totalIncl: "5640000", paid: "1000000" })).toBe("4640000.00");
+  });
+
+  it("keeps a retention-holding situation out of the ageing report", () => {
+    const report = ageingOf(
+      [
+        owing({ ...situation, paid: "1678400" }),
+        owing({ totalIncl: "200000", paid: "0", issuedOn: day(4, 12) }),
+      ],
+      TODAY,
+    );
+    expect(report.invoices).toBe(1);
+    expect(report.total).toBe("200000.00");
+  });
+});
+
 describe("two clocks, kept apart", () => {
   it("ages from the issue date and counts lateness from the due date", () => {
     // Issued 12 April, due 12 May, and screen 20 shows this one as 128 d.

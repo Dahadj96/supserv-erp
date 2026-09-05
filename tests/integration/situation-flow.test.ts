@@ -12,6 +12,8 @@ import { render } from "@/documents/engine";
 import { toPdf } from "@/documents/pdf";
 import { createDeal } from "@/domain/deal/deal";
 import { ensureTypesExist } from "@/domain/document-types";
+import { balanceOf, type Owing } from "@/domain/money/ageing";
+import { owings } from "@/domain/money/store";
 import { nextFinalAccount, saveFinalAccount } from "@/domain/project/final";
 import {
   amendmentDeltas,
@@ -340,6 +342,15 @@ describe("situation n° 1", () => {
       by: "M. Kaddour, subdivisionnaire",
       actorId: ACTOR,
     });
+
+    // What the client OWES on it is the net à payer, not the TTC: the 78 000
+    // of retenue de garantie they are holding under the CCAP is not a debt,
+    // and counting it as one had screen 20 chasing a wilaya for it.
+    const ledger = await owings();
+    const owed = ledger.find((o) => o.documentId === first);
+    expect(owed?.totalIncl).toBe("1856400.00");
+    expect(owed?.owedNow).toBe("1778400.00");
+    expect(balanceOf(owed as Owing)).toBe("1778400.00");
 
     const p = await getProject(projectId, new Date("2026-08-01T00:00:00Z"));
     expect(p?.progress.situations[0]?.state).toBe("approved");

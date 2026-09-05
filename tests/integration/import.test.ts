@@ -298,7 +298,14 @@ describe("screen 62 — bring what you already have", () => {
   });
 
   it("writes down what the import did, and what it could not read", async () => {
-    const [logged] = await db.select().from(auditEntry).where(eq(auditEntry.actorId, ACTOR));
+    // THE FIRST batch's entry, named. `where(actorId)` alone returns whichever
+    // row Postgres hands back first, and by now this actor has written four —
+    // so it passed alone and failed in the suite, which is the worst kind of
+    // test there is.
+    const [logged] = await db
+      .select()
+      .from(auditEntry)
+      .where(and(eq(auditEntry.actorId, ACTOR), eq(auditEntry.entityId, batchIds[0] as string)));
     expect(logged?.entity).toBe("import_batch");
     expect(logged?.sourceScreen).toBe("62");
     const after = logged?.after as { problems?: Record<string, number> };

@@ -72,7 +72,7 @@ export async function owings(opts: { partyId?: string } = {}): Promise<Owing[]> 
     );
 
   return rows.map((row) => {
-    const totals = (row.totals ?? {}) as { totalIncl?: string };
+    const totals = (row.totals ?? {}) as { totalIncl?: string; dueNow?: string };
     return {
       documentId: row.documentId,
       number: row.number,
@@ -81,6 +81,10 @@ export async function owings(opts: { partyId?: string } = {}): Promise<Owing[]> 
       issuedOn: row.issuedOn ? new Date(`${row.issuedOn}T00:00:00Z`) : null,
       dueOn: row.dueOn ? new Date(`${row.dueOn}T00:00:00Z`) : null,
       totalIncl: totals.totalIncl ?? "0",
+      // A situation's net à payer — see `Owing.owedNow`. On every ordinary
+      // invoice this IS the TTC, so nothing about screens 19 and 20 changes
+      // except that a client holding a retenue de garantie is no longer late.
+      owedNow: totals.dueNow,
       paid: row.paid,
       currency: row.currency,
       lastRelanceAt: row.lastRelanceAt ? new Date(row.lastRelanceAt) : null,
@@ -522,6 +526,8 @@ export type BilledRow = {
   dueOn: Date | null;
   currency: string;
   totalIncl: string;
+  /** What it asks for today — a situation's net à payer. See `Owing.owedNow`. */
+  owedNow?: string;
   paid: string;
 };
 
@@ -559,7 +565,11 @@ export async function billed(): Promise<BilledRow[]> {
     .orderBy(desc(document.createdAt));
 
   return rows.map((row) => {
-    const totals = (row.totals ?? {}) as { totalIncl?: string; totalExcl?: string };
+    const totals = (row.totals ?? {}) as {
+      totalIncl?: string;
+      totalExcl?: string;
+      dueNow?: string;
+    };
     return {
       documentId: row.documentId,
       kind: row.kind,
@@ -573,6 +583,7 @@ export async function billed(): Promise<BilledRow[]> {
       dueOn: row.dueOn ? new Date(`${row.dueOn}T00:00:00Z`) : null,
       currency: row.currency,
       totalIncl: totals.totalIncl ?? totals.totalExcl ?? "0",
+      owedNow: totals.dueNow,
       paid: row.paid,
     };
   });

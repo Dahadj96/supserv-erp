@@ -51,6 +51,8 @@ export type InvoiceFacts = {
   /** Null until it is issued. LAW 5 — the number IS the issue. */
   number: string | null;
   totalIncl: string;
+  /** What the paper asks for today — see `Owing.owedNow`. */
+  owedNow?: string;
   /** Sum of everything allocated against it. */
   paid: string;
 };
@@ -62,7 +64,10 @@ export function paidStateOf(facts: InvoiceFacts): PaidState {
   if (facts.status === "credited") return "credited";
   if (facts.status === "written_off") return "writtenOff";
 
-  const total = d(facts.totalIncl);
+  // What the paper ASKS FOR, which on a situation is its net à payer: a client
+  // who transferred it in full has paid, and the retenue de garantie they are
+  // holding is not an unpaid invoice.
+  const total = d(facts.owedNow ?? facts.totalIncl);
   const paid = d(facts.paid);
   // Greater-or-equal, not equal: an overpayment of eighty centimes is paid,
   // and an invoice that will not go green until somebody hand-edits a figure

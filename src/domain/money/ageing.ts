@@ -56,7 +56,27 @@ export type Owing = {
   clientName: string;
   issuedOn: Date | null;
   dueOn: Date | null;
+  /** The value of the work, VAT and stamp duty included. */
   totalIncl: string;
+  /**
+   * WHAT THIS PAPER ASKS THE CLIENT TO PAY, which on a situation de travaux is
+   * not its TTC.
+   *
+   * A situation bills the work in full and the client keeps back the retenue
+   * de garantie — 5 % of it, for a year after the réception — and any advance
+   * already invoiced. The figure at the foot of the wilaya's own form is the
+   * NET À PAYER, and that is the sum they transfer.
+   *
+   * Counting the TTC as owed made the ERP chase a client for money the CCAP
+   * says they may hold: a situation paid to the centime showed a balance equal
+   * to the retention, aged into the over-90 column, and could be picked as the
+   * most neglected invoice in the company. The retenue comes back on its own
+   * paper — a `retention_release` — and is owed from the day that is issued.
+   *
+   * Absent on a document whose totals carry no `dueNow`, and the TTC then is
+   * what is owed, which is every ordinary invoice.
+   */
+  owedNow?: string;
   /** Sum of everything allocated against it. */
   paid: string;
   currency: string;
@@ -65,8 +85,11 @@ export type Owing = {
 };
 
 /** What is still owed. Computed, never read from a column. */
-export function balanceOf(owing: Pick<Owing, "totalIncl" | "paid">): string {
-  return d(owing.totalIncl).minus(d(owing.paid)).toDecimalPlaces(2).toFixed(2);
+export function balanceOf(owing: Pick<Owing, "totalIncl" | "owedNow" | "paid">): string {
+  return d(owing.owedNow ?? owing.totalIncl)
+    .minus(d(owing.paid))
+    .toDecimalPlaces(2)
+    .toFixed(2);
 }
 
 /** How long the money has been out: days since the invoice was ISSUED. */
@@ -90,7 +113,7 @@ export function daysLate(dueOn: Date | null, today: Date): number {
 
 /** LAW 1 — nothing transitions an invoice to overdue. A date passes. */
 export function isOverdue(
-  owing: Pick<Owing, "dueOn" | "totalIncl" | "paid">,
+  owing: Pick<Owing, "dueOn" | "totalIncl" | "owedNow" | "paid">,
   today: Date,
 ): boolean {
   return daysLate(owing.dueOn, today) > 0 && d(balanceOf(owing)).greaterThan(0);

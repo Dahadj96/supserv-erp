@@ -509,7 +509,26 @@ tells you what you want to hear.
    item catalogue is empty; the day lines are matched to items it becomes a
    join.
 
-15. ~~**Nobody has counted what a screen costs.**~~ **Closed on 5 September**
+15. ~~**The retenue de garantie was being chased as an unpaid invoice.**~~
+   **Found and closed on 5 September.** Screens 19 and 20 read what a client
+   owes from a document's TTC. On a situation de travaux that is not what the
+   paper asks for: the client keeps back the retention under the CCAP, and the
+   net à payer is what they transfer. So a situation paid to the centime showed
+   a balance equal to the retention, aged into the over-90 column, and could be
+   named on screen 20's banner as the most neglected invoice in the company —
+   with the relance machinery ready to chase a wilaya for money their own
+   contract says they may hold. `Owing.owedNow` is what the paper asks for; on
+   an ordinary invoice it IS the TTC and nothing changed. See
+   `docs/DECISIONS/2026-09-05-the-retention-was-being-chased.md`:
+
+   - `tests/unit/ageing.test.ts` :: "is settled when the client has paid what it asked for"
+   - `tests/unit/ageing.test.ts` :: "does not become a debt because the retention is still held"
+   - `tests/unit/ageing.test.ts` :: "still shows what is actually late when part of the net is unpaid"
+   - `tests/unit/ageing.test.ts` :: "leaves every ordinary invoice exactly as it was"
+   - `tests/unit/ageing.test.ts` :: "keeps a retention-holding situation out of the ageing report"
+   - `tests/unit/invoice-state.test.ts` :: "calls a situation paid when the client has paid what it asked for"
+   - `tests/integration/situation-flow.test.ts` :: "is issued with a number of ours, then submitted, then approved — in that order"
+16. ~~**Nobody has counted what a screen costs.**~~ **Closed on 5 September**
    by `tests/integration/query-budget.test.ts`. Nothing was slow — six people
    on a mini PC with Postgres on the same machine — which is exactly why it was
    worth measuring: screen 16 composed the marché three times and screen 15
