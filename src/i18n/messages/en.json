@@ -87,9 +87,6 @@
     "rowsPerPage": "Rows per page",
     "previous": "Previous page",
     "next": "Next page",
-    "assignTo": "Assign to…",
-    "addTag": "Add a tag",
-    "markWaiting": "Mark waiting on",
     "export": "Export"
   },
   "deals": {

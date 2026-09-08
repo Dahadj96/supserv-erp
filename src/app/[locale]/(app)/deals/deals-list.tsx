@@ -2,7 +2,7 @@
 
 import { useTranslations } from "next-intl";
 import type { BulkAction, ColumnDef, FilterField, SavedView } from "@/components/data";
-import { DataTable } from "@/components/data";
+import { DataTable, downloadCsv, toCsv } from "@/components/data";
 import { Badge } from "@/components/ui/badge";
 
 export type DealRow = {
@@ -136,12 +136,40 @@ const SEED_VIEWS: (Omit<SavedView, "name" | "question"> & {
   },
 ];
 
-/** Only what is safe in bulk. No send, issue, cancel or delete — ever. */
-const BULK: BulkAction[] = [
-  { key: "assign", labelKey: "list.assignTo", run: () => {} },
-  { key: "tag", labelKey: "list.addTag", run: () => {} },
-  { key: "waiting", labelKey: "list.markWaiting", run: () => {} },
-  { key: "export", labelKey: "list.export", run: () => {} },
+/**
+ * Only what is safe in bulk. No send, issue, cancel or delete — ever, and
+ * `bulk-bar.tsx` says why.
+ *
+ * Three of the four that used to be here had `run: () => {}`. Ticking rows put
+ * the bar on screen and pressing them did nothing, silently, which is the one
+ * thing worse than the button not being there. They are gone rather than
+ * stubbed, and each for its own reason:
+ *
+ *  - **Add a tag** — there is no tag. No table, no column, nothing to write.
+ *  - **Mark waiting on** — screen 58 is computed. `src/domain/waiting/gather.ts`
+ *    reads silences that already exist — a sourcing request with no response, an
+ *    invoice with a balance, a bon de livraison with no signed copy back — and
+ *    stores nothing. A deal has no waiting flag to set, and adding one would be
+ *    a stored state that time changes (LAW 1). The honest answer is that this
+ *    label promised something the design deliberately does not do.
+ *  - **Assign to** — `deal.owner_id` is real, so this one is buildable, but not
+ *    from a bar of plain buttons: assigning needs a person to pick a person, a
+ *    server action and a permission. It returns with that, not before.
+ *
+ * Export stays, and now exports.
+ */
+const bulkActions = (t: (key: string) => string): BulkAction<DealRow>[] => [
+  {
+    key: "export",
+    labelKey: "list.export",
+    run: (_ids, { rows, columns }) => {
+      // Not translated, and dated rather than timestamped: two people exporting
+      // the same list on the same day should recognise each other's file in a
+      // shared folder.
+      const day = new Date().toISOString().slice(0, 10);
+      downloadCsv(`deals-${day}.csv`, toCsv(rows, columns, t));
+    },
+  },
 ];
 
 export function DealsList({ rows, total }: { rows: DealRow[]; total: number }) {
@@ -160,7 +188,7 @@ export function DealsList({ rows, total }: { rows: DealRow[]; total: number }) {
       columns={COLUMNS}
       filterFields={FILTERS}
       savedViews={views}
-      bulkActions={BULK}
+      bulkActions={bulkActions((key) => t(key))}
       getRowHref={(row) => `/deals/${row.id}`}
       emptyState={
         <>

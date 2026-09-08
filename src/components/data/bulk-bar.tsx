@@ -2,24 +2,30 @@
 
 import { useTranslations } from "next-intl";
 import { Button } from "@/components/ui/button";
-import type { BulkAction } from "./types";
+import type { BulkAction, BulkContext } from "./types";
 
 /**
  * Screen 79. The bar appears when you tick rows, and only offers what is safe
- * in bulk: assign, tag, mark waiting, export — things you can undo, or that
- * change nothing a client will ever see.
+ * in bulk — things you can undo, or that change nothing a client will ever see.
  *
  * Send, issue, cancel and delete are deliberately absent. Anything that leaves
  * the building or cannot be undone happens one record at a time, with its own
  * confirmation. Do not add them here.
+ *
+ * The other half of that rule, learned late: an action listed here must do what
+ * its label says the moment it is visible. A button that returns in a later
+ * phase costs more trust than a button that is not there yet.
  */
-export function BulkBar({
+export function BulkBar<Row>({
   selectedIds,
   actions,
+  context,
   onClear,
 }: {
   selectedIds: string[];
-  actions: BulkAction[];
+  actions: BulkAction<Row>[];
+  /** The ticked rows and the visible columns — see `BulkContext`. */
+  context: BulkContext<Row>;
   onClear: () => void;
 }) {
   const t = useTranslations();
@@ -37,7 +43,7 @@ export function BulkBar({
           size="small"
           variant="ghost"
           className="text-on-ink hover:bg-ink-hover"
-          onClick={() => action.run(selectedIds)}
+          onClick={() => action.run(selectedIds, context)}
         >
           {t(action.labelKey)}
         </Button>

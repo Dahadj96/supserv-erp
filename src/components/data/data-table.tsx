@@ -33,7 +33,7 @@ export function DataTable<Row extends { id: string }>({
   columns: ColumnDef<Row>[];
   filterFields?: FilterField[];
   savedViews?: SavedView[];
-  bulkActions?: BulkAction[];
+  bulkActions?: BulkAction<Row>[];
   emptyState: ReactNode;
   getRowHref?: (row: Row) => string;
 }) {
@@ -48,6 +48,10 @@ export function DataTable<Row extends { id: string }>({
     () => columns.filter((c) => visible.includes(c.key)),
     [columns, visible],
   );
+  // The rows behind the ticked ids. A bulk action gets the records, not just
+  // their ids, because the one that exists — export — has to write what is on
+  // screen and the table is the only thing that knows what that is.
+  const picked = useMemo(() => rows.filter((row) => selected.includes(row.id)), [rows, selected]);
   const isFiltered = Object.values(list.filter).some((v) => v.length > 0);
   const allTicked = rows.length > 0 && selected.length === rows.length;
 
@@ -204,7 +208,12 @@ export function DataTable<Row extends { id: string }>({
         )}
       </div>
 
-      <BulkBar selectedIds={selected} actions={bulkActions} onClear={() => setSelected([])} />
+      <BulkBar
+        selectedIds={selected}
+        actions={bulkActions}
+        context={{ rows: picked, columns: shownColumns }}
+        onClear={() => setSelected([])}
+      />
 
       <Pagination
         page={list.page}

@@ -39,15 +39,32 @@ export type FilterValue = Record<string, string[]>;
 export type SortSpec = { key: string; direction: "asc" | "desc" } | null;
 
 /**
- * Only what is safe in bulk. Assign, tag, mark waiting, export — things you can
- * undo, or that change nothing a client will ever see. Send, issue, cancel and
- * delete are never here: anything that leaves the building or cannot be undone
- * happens one record at a time, with its own confirmation.
+ * What only the table knows, handed to the action that needs it: the ticked
+ * rows themselves, in the order they are on screen, and the columns actually
+ * being shown. Export is written against this — a file that does not match the
+ * screen it came from is a file nobody trusts twice.
  */
-export type BulkAction = {
+export type BulkContext<Row> = {
+  rows: Row[];
+  columns: ColumnDef<Row>[];
+};
+
+/**
+ * Only what is safe in bulk — things you can undo, or that change nothing a
+ * client will ever see. Send, issue, cancel and delete are never here: anything
+ * that leaves the building or cannot be undone happens one record at a time,
+ * with its own confirmation.
+ *
+ * Export is the one that exists today. Assign, tag and mark-waiting were
+ * declared here for a year with an empty `run`, which is worse than an absent
+ * button: `tag` has no table behind it, and "waiting on" is computed from
+ * silences rather than stored (`src/domain/waiting/`), so there is nothing on a
+ * deal to mark. They come back when the domain can answer them.
+ */
+export type BulkAction<Row = unknown> = {
   key: string;
   labelKey: string;
-  run: (selectedIds: string[]) => void | Promise<void>;
+  run: (selectedIds: string[], context: BulkContext<Row>) => void | Promise<void>;
 };
 
 export type SavedView = {
