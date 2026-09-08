@@ -140,7 +140,7 @@ Facts learned the hard way. Do not rediscover them.
   second, issue a fourth; the series reads 0001–0004 and 0002 is an avoir.
   Add that test to `tests/` if it does not exist.
 
-- [~] **0.9 · A binned draft must not be picked as "the draft on this deal"**
+- [x] **0.9 · A binned draft must not be picked as "the draft on this deal"**
   `src/domain/tender/bpu-store.ts:186, 522, 560` find the working quotation by
   `number is null`, so a discarded draft is still a candidate. Harmless while
   the bin is empty; the first time somebody bins a draft quotation and then
@@ -439,11 +439,12 @@ One `liveDocument` clause each, plus a look at the screen it feeds:
 | `src/domain/merge-preview.ts:131` | "what moves" when two companies merge |
 | `src/domain/delivery/store.ts:351` | delivery notes, listed with no number filter |
 | `src/domain/project/final.ts:118`, `retention.ts:152`, `situations.ts:941` | draft décomptes finaux, retention releases and avenants |
-| `src/domain/tender/bpu-store.ts:186, 522, 560` | the sharpest one: these find "the draft quotation on this deal" by `number is null` in order to write BPU prices into it, and a binned draft is still the row they pick |
+| ~~`src/domain/tender/bpu-store.ts:186, 522, 560`~~ | **done in 0.9** — plus a fourth site this list missed, the erratum's `draftLinesLosingPrice` count |
 
 None of this is wrong today — the bin is empty until somebody uses it — but the
-BPU one writes prices into a binned draft the first time both features meet on
-the same enquiry.
+BPU one wrote prices into a binned draft the first time both features met on
+the same enquiry, which is why it went first (0.9). The rest still stand, and
+none of them writes.
 
 ---
 
@@ -479,3 +480,4 @@ carries this out; anything written before 3.3 ships should already use it.
 | 2026-09-08 | 0.4 | `db50f51` | The sweep. A **person** can now be discarded and restored — `person.deleted_at` had been migrated since phase 1 with twelve queries filtering it and nothing writing it — with a Remove on every contact row of screen 22 and every row of screen 51, greyed with the reason when the person has not left a site crew (`peopleOnSite`). A **note** likewise on screen 56, the one row on a timeline nothing else holds a copy of: your own note is yours, anybody else's takes `records.delete`, and the timeline says once why only notes carry the control. A **payment** gets the opposite answer — present, grey and permanent, naming re-allocation and the avoir as what to do instead. The company discard on screen 22 stopped refusing after the press: `issuedDocumentCount` is exported so the grey button and the refusal run one query. The bin holds five kinds and dispatches restore through a table. `RulePopover` still has zero callers, deliberately — none of these five refusals is a `blocking_rule` row with an authority, and inventing one to give the component a caller would be asserting a law on our own authority. Four paths left silent are named under Known gaps. |
 | 2026-09-08 | 0.3 | `47612a8` | `BinRow` gains a `kind` discriminator — company, deal or document; `listBin()` queries the three tables and sorts once across the whole set, newest first, rather than kind by kind. Restore dispatches to `restoreCompany` / `restoreDealAction` / `restoreDocumentAction`, all three still listed in the permission table. Each row leads with a neutral `Badge` naming its kind; a company and a draft link back to pages that render for a binned row, an enquiry does not because `getDeal` filters `deleted_at`. EN + FR copy for the three kind labels and "No number". `BIN_DAYS` untouched — and the fact that nothing purges at day 30 is now written under Known gaps rather than fixed, because destroying data is Abdou's decision. |
 | 2026-09-08 | 0.5 | `1dfc939` | Export implemented, the other three removed rather than stubbed. `src/components/data/export-csv.ts` writes the ticked rows with the columns the table is showing — semicolon-separated with a BOM, because Excel in a French locale splits on `;` and reads UTF-8 as Windows-1252 without one; the header comes from the caller's translator (LAW 4) and the cell text is walked out of the rendered node, so the file says what the screen says. `BulkAction` gains the row type and a `BulkContext` — ticked records plus visible columns — since only the table knows what is on screen. **Tag** removed: there is no tag table. **Mark waiting on** removed: screen 58 is computed from silences (`domain/waiting/gather.ts` stores nothing), so there is no flag to set and a flag would be a stored state time changes (LAW 1). **Assign to** removed until it has a person picker, an action and a permission — `deal.owner_id` is real, a bar of plain buttons is not enough to write it. No bulk delete; `bulk-bar.tsx` now also states that a listed action must work the moment it is visible. Three message keys deleted from both files. |
+| 2026-09-08 | 0.9 | `b58e432` | `liveDocument` on all four `number is null` lookups in `bpu-store.ts` — the queue named three, and the fourth (`reviewErratum`'s `draftLinesLosingPrice`) would have made screen 42 overstate what an erratum costs. The one that mattered is `applyErratum`, which cleared `unit_price` on every draft line on the enquiry including binned ones; `bpu()`'s `draftOfferId` was the other, sending "Build the offer" into the bin. `tests/integration/bpu-binned-draft.test.ts` proves it: four of its five assertions fail with the clause removed, including the binned row's price being cleared. Survey as asked — `src/documents/` has no lookup of this shape (every query there is by id, which must stay so a binned draft keeps its page); `offersForDeal()` and `draftOffers()` in `src/domain/offer/` already had the clause from 0.1, and `build.ts` inserts rather than looks up. |
