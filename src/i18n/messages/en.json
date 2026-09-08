@@ -1387,6 +1387,10 @@
       "assistant": {
         "name": "The assistant",
         "what": "What it can read, what it can propose, and what it cannot do"
+      },
+      "clear": {
+        "name": "Clear my test data",
+        "what": "Everything typed before a moment you choose goes to the 30-day bin, in one act. Never anything issued."
       }
     }
   },
@@ -3661,7 +3665,8 @@
       "personnel_request": "Personnel request",
       "personnel_candidate": "Shortlist entry",
       "bpu_mapping": "column mapping",
-      "bpu_erratum": "bordereau erratum"
+      "bpu_erratum": "bordereau erratum",
+      "sweep": "Bulk clear"
     },
     "action": {
       "alias": {
@@ -3706,7 +3711,8 @@
       "settle": "Settled",
       "erratum": "applied an erratum",
       "importBpu": "imported the bordereau",
-      "applyLastPrices": "applied the last prices paid"
+      "applyLastPrices": "applied the last prices paid",
+      "sweep": "Cleared in one act"
     }
   },
   "complianceNow": {
@@ -5083,6 +5089,49 @@
       "allAsked": "Every dinar held has already been asked for. The marché closes when the money arrives.",
       "noContract": "This project is not attached to a marché, so there is no document to attach the demand to.",
       "noSeries": "No numbering series exists for the retention release — screen 50 creates it, once, and the pattern cannot be changed afterwards."
+    }
+  },
+  "clearData": {
+    "title": "Clear my test data",
+    "subtitle": "Put everything typed before a moment you choose in the bin, in one act",
+    "whatItDoes": "Learning a system means typing into it. This puts every company, deal, draft document and person created before a moment you choose into the 30-day bin — one line in the audit log for each, and one for this act. Nothing is deleted: everything it takes is on the Deleted page and comes back with one press for 30 days.",
+    "neverTouches": "It never touches an issued document, or anything carrying one: a company or a deal with a sent invoice, quotation or delivery note is left exactly as it is and counted below. It also leaves alone what you have archived, what is already in the bin, your payments, your notes and your mail.",
+    "notAllowed": "Only the Gérant may do this. It is the same permission as putting one company in the bin, because it is that act repeated.",
+    "cutOff": "Everything created before",
+    "cutOffHelp": "Default: midnight this morning — so nothing you have done today is included.",
+    "preview": "Show me what would go",
+    "previewTitle": "What would go, for everything created before {when}",
+    "previewNothing": "Nothing created before that moment can go. Either there is nothing there, or everything there carries paper — the list below says which.",
+    "count": {
+      "company": "{count, plural, =0 {No companies} =1 {1 company} other {# companies}}",
+      "deal": "{count, plural, =0 {No deals} =1 {1 deal} other {# deals}}",
+      "document": "{count, plural, =0 {No drafts} =1 {1 draft document} other {# draft documents}}",
+      "person": "{count, plural, =0 {No people} =1 {1 person} other {# people}}"
+    },
+    "andMore": "and {count} more",
+    "skippedTitle": "{count, plural, =1 {1 record will not be touched} other {# records will not be touched}}",
+    "skip": {
+      "companyIssued": "{count, plural, =1 {1 company has issued a document} other {# companies have issued a document}}, so they stay. Archive one instead if you no longer work with it.",
+      "companyAttached": "{count, plural, =1 {1 company still has a deal, draft or contact} other {# companies still have a deal, draft or contact}} created after your cut-off, so they stay — nothing is left pointing at a company in the bin.",
+      "dealIssued": "{count, plural, =1 {1 deal carries an issued document} other {# deals carry an issued document}}, so they stay. A sent invoice must keep resolving.",
+      "dealAttached": "{count, plural, =1 {1 deal still has a draft} other {# deals still have a draft}} created after your cut-off, so they stay.",
+      "documentIssued": "{count, plural, =1 {1 issued document} other {# issued documents}} from before your cut-off will not be touched. An issued document is never deleted — the correction is an avoir.",
+      "personOnSite": "{count, plural, =1 {1 person has not left a site crew} other {# people have not left a site crew}}, so the name stays. Take them off the crew first.",
+      "failed": "{count, plural, =1 {1 {kind} refused} other {# {kind} records refused}} between the preview and the press, and was left as it was."
+    },
+    "reason": "Why (kept on every record, and shown in the bin)",
+    "defaultReason": "Cleared with the test data",
+    "confirmWord": "CLEAR",
+    "confirmBody": "{count, plural, =1 {1 record goes to the bin} other {# records go to the bin}}, restorable for 30 days. Type {word} to confirm.",
+    "confirmLabel": "Type {word}",
+    "action": "Put them in the bin",
+    "doneTitle": "Done",
+    "doneBody": "{count, plural, =0 {Nothing was taken} =1 {1 record is now in the bin} other {# records are now in the bin}}, for everything created before {when}. Restorable for 30 days.",
+    "openBin": "Open the bin",
+    "error": {
+      "badDate": "That is not a moment this can read. Pick a date and a time.",
+      "notConfirmed": "Nothing was touched: the confirmation word was not typed exactly.",
+      "notAllowed": "Only the Gérant may clear records."
     }
   }
 }

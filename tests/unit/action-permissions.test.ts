@@ -102,6 +102,14 @@ const EXPECTED: Record<string, string[]> = {
   // they put paper into it. Only a draft can go at all (LAW 5).
   "documents/[id]/delete-actions.ts:discardDocumentAction": ["records.delete"],
   "documents/[id]/delete-actions.ts:restoreDocumentAction": ["records.delete"],
+  // The whole of the above, once, on everything older than a moment somebody
+  // chose. `records.delete` and nothing wider: a sweep is the Gérant's press on
+  // the bin repeated, not a new kind of power, and it goes through the same four
+  // discard functions so every guard those carry still refuses. `previewSweep`
+  // writes nothing at all and still asks — reading how much of this database
+  // one press would empty is not a thing a Commercial needs to know.
+  "settings/clear/actions.ts:clearTestData": ["records.delete"],
+  "settings/clear/actions.ts:previewSweep": ["records.delete"],
   "companies/delete-actions.ts:discardCompany": ["records.delete"],
   "companies/delete-actions.ts:restoreCompany": ["records.delete"],
   "companies/merge-actions.ts:mergeCompanies": ["merge.execute"],

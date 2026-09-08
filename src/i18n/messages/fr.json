@@ -1387,6 +1387,10 @@
       "assistant": {
         "name": "L'assistant",
         "what": "Ce qu'il peut lire, ce qu'il peut proposer, et ce qu'il ne peut pas faire"
+      },
+      "clear": {
+        "name": "Effacer mes données d'essai",
+        "what": "Tout ce qui a été saisi avant un moment que vous choisissez part à la corbeille de 30 jours, en une fois. Jamais rien d'émis."
       }
     }
   },
@@ -3661,7 +3665,8 @@
       "personnel_request": "Demande de personnel",
       "personnel_candidate": "Ligne de liste restreinte",
       "bpu_mapping": "correspondance de colonnes",
-      "bpu_erratum": "erratum au bordereau"
+      "bpu_erratum": "erratum au bordereau",
+      "sweep": "Effacement groupé"
     },
     "action": {
       "alias": {
@@ -3706,7 +3711,8 @@
       "settle": "Soldé",
       "erratum": "a appliqué un erratum",
       "importBpu": "a importé le bordereau",
-      "applyLastPrices": "a repris les derniers prix payés"
+      "applyLastPrices": "a repris les derniers prix payés",
+      "sweep": "Effacé en une fois"
     }
   },
   "complianceNow": {
@@ -5083,6 +5089,49 @@
       "allAsked": "Toute la retenue détenue a déjà fait l'objet d'une demande. Le marché se clôturera quand l'argent arrivera.",
       "noContract": "Ce projet n'est rattaché à aucun marché : il n'y a pas de pièce à laquelle rattacher la demande.",
       "noSeries": "Aucune série de numérotation n'existe pour la levée de retenue — l'écran 50 la crée, une fois, et le format ne se change plus ensuite."
+    }
+  },
+  "clearData": {
+    "title": "Effacer mes données d'essai",
+    "subtitle": "Mettre à la corbeille, en une fois, tout ce qui a été saisi avant un moment que vous choisissez",
+    "whatItDoes": "Apprendre un système, c'est y saisir des choses. Ceci met à la corbeille de 30 jours chaque société, affaire, brouillon de document et personne créés avant un moment que vous choisissez — une ligne au journal pour chacun, et une pour cet acte. Rien n'est supprimé : tout se retrouve sur la page Supprimés et revient d'une pression pendant 30 jours.",
+    "neverTouches": "Cela ne touche jamais un document émis, ni ce qui en porte un : une société ou une affaire avec une facture, un devis ou un bon de livraison envoyé reste telle quelle et est comptée ci-dessous. Sont également laissés de côté ce que vous avez archivé, ce qui est déjà à la corbeille, vos règlements, vos notes et votre courrier.",
+    "notAllowed": "Seul le Gérant peut le faire. C'est la même permission que mettre une société à la corbeille, parce que c'est ce geste répété.",
+    "cutOff": "Tout ce qui a été créé avant",
+    "cutOffHelp": "Par défaut : minuit ce matin — rien de ce que vous avez fait aujourd'hui n'est concerné.",
+    "preview": "Montrez-moi ce qui partirait",
+    "previewTitle": "Ce qui partirait, pour tout ce qui a été créé avant le {when}",
+    "previewNothing": "Rien de créé avant ce moment ne peut partir. Soit il n'y a rien, soit tout porte du papier — la liste ci-dessous dit laquelle des deux.",
+    "count": {
+      "company": "{count, plural, =0 {Aucune société} =1 {1 société} other {# sociétés}}",
+      "deal": "{count, plural, =0 {Aucune affaire} =1 {1 affaire} other {# affaires}}",
+      "document": "{count, plural, =0 {Aucun brouillon} =1 {1 brouillon de document} other {# brouillons de document}}",
+      "person": "{count, plural, =0 {Aucune personne} =1 {1 personne} other {# personnes}}"
+    },
+    "andMore": "et {count} de plus",
+    "skippedTitle": "{count, plural, =1 {1 enregistrement ne sera pas touché} other {# enregistrements ne seront pas touchés}}",
+    "skip": {
+      "companyIssued": "{count, plural, =1 {1 société a émis un document} other {# sociétés ont émis un document}}, elles restent donc. Archivez-la plutôt si vous ne travaillez plus avec elle.",
+      "companyAttached": "{count, plural, =1 {1 société a encore une affaire, un brouillon ou un contact} other {# sociétés ont encore une affaire, un brouillon ou un contact}} créé après votre date de coupure, elles restent donc — rien ne pointe vers une société à la corbeille.",
+      "dealIssued": "{count, plural, =1 {1 affaire porte un document émis} other {# affaires portent un document émis}}, elles restent donc. Une facture envoyée doit continuer à se résoudre.",
+      "dealAttached": "{count, plural, =1 {1 affaire a encore un brouillon} other {# affaires ont encore un brouillon}} créé après votre date de coupure, elles restent donc.",
+      "documentIssued": "{count, plural, =1 {1 document émis} other {# documents émis}} antérieur à votre date de coupure ne sera pas touché. Un document émis n'est jamais supprimé — la correction est un avoir.",
+      "personOnSite": "{count, plural, =1 {1 personne n'a pas quitté l'équipe d'un chantier} other {# personnes n'ont pas quitté l'équipe d'un chantier}}, le nom reste donc. Retirez-les de l'équipe d'abord.",
+      "failed": "{count, plural, =1 {1 {kind} a refusé} other {# enregistrements {kind} ont refusé}} entre l'aperçu et la validation, et est resté tel quel."
+    },
+    "reason": "Pourquoi (conservé sur chaque enregistrement, et affiché dans la corbeille)",
+    "defaultReason": "Effacé avec les données d'essai",
+    "confirmWord": "EFFACER",
+    "confirmBody": "{count, plural, =1 {1 enregistrement part à la corbeille} other {# enregistrements partent à la corbeille}}, restaurables pendant 30 jours. Tapez {word} pour confirmer.",
+    "confirmLabel": "Tapez {word}",
+    "action": "Les mettre à la corbeille",
+    "doneTitle": "C'est fait",
+    "doneBody": "{count, plural, =0 {Rien n'a été pris} =1 {1 enregistrement est maintenant à la corbeille} other {# enregistrements sont maintenant à la corbeille}}, pour tout ce qui a été créé avant le {when}. Restaurables pendant 30 jours.",
+    "openBin": "Ouvrir la corbeille",
+    "error": {
+      "badDate": "Ce n'est pas un moment lisible. Choisissez une date et une heure.",
+      "notConfirmed": "Rien n'a été touché : le mot de confirmation n'a pas été tapé exactement.",
+      "notAllowed": "Seul le Gérant peut effacer des enregistrements."
     }
   }
 }

@@ -134,6 +134,9 @@ export default async function SettingsPage({ params }: { params: Promise<{ local
       entries: [
         { key: "compliance", href: "/settings/compliance", state: null },
         { key: "bin", href: "/settings/bin", state: null },
+        // Beside the bin, because it is the same act and lands in the same
+        // place: everything this takes is on that page for thirty days.
+        { key: "clear", href: "/settings/clear", state: null },
         // The count is entries, and it is never a to-do: an empty audit log on
         // a system that has issued documents would be the alarming reading.
         { key: "audit", href: "/settings/audit", state: some(audited?.n ?? 0) },
