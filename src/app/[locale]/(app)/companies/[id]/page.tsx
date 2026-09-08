@@ -1,8 +1,11 @@
 import { notFound } from "next/navigation";
 import { getTranslations, setRequestLocale } from "next-intl/server";
+import { discardPersonAction } from "@/app/[locale]/(app)/contacts/delete-actions";
+import { can } from "@/auth/can";
+import { getSession } from "@/auth/session";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { deletedPartyNotice } from "@/domain/deletion";
+import { deletedPartyNotice, issuedDocumentCount, peopleOnSite } from "@/domain/deletion";
 import { reversibleMerge } from "@/domain/merge";
 import { getParty, listContacts } from "@/domain/party";
 import { Link, redirect } from "@/i18n/navigation";
@@ -71,7 +74,32 @@ export default async function CompanyPage({
     );
   }
 
-  const [contacts, reversible] = await Promise.all([listContacts(id), reversibleMerge(id)]);
+  const [contacts, reversible, issued] = await Promise.all([
+    listContacts(id),
+    reversibleMerge(id),
+    issuedDocumentCount(id),
+  ]);
+
+  /**
+   * Screen 83's two buttons, greyed rather than left to refuse after the press.
+   *
+   * Both of these used to submit, be turned away by `discardParty`, and come
+   * back with a banner. That is a refusal a person only meets by trying, and
+   * the rule is that a control which already knows it will refuse says so while
+   * it is still grey. `issuedDocumentCount` is the same query the refusal runs,
+   * so the button and the domain cannot disagree.
+   */
+  const session = await getSession();
+  const mayDelete = session?.role ? can(session.role, "records.delete") : false;
+  const notAllowed = mayDelete ? undefined : t("bin.notAllowed");
+  const discardBlockedBy = notAllowed ?? (issued > 0 ? t("bin.cannotDiscardIssued") : undefined);
+
+  /**
+   * And the same question for each contact: a name is binnable unless the
+   * person is still on a site crew. It is one query for the whole panel rather
+   * than one per row.
+   */
+  const onSite = await peopleOnSite(contacts.map((c) => c.id));
 
   return (
     <main className="min-h-0 flex-1 overflow-auto">
@@ -207,6 +235,16 @@ export default async function CompanyPage({
 
         <section className="col-span-1 md:col-span-3 rounded-[var(--radius-card)] border border-line bg-surface p-5">
           <h2 className="text-tiny font-semibold text-ink">{t("nav.contacts")}</h2>
+          {blocked === "onSite" ? (
+            <p className="mt-3 rounded-[var(--radius-control)] bg-warning-bg px-3 py-2 text-micro text-warning-ink">
+              {t("bin.blockedByCrew")}
+            </p>
+          ) : null}
+          {blocked === "notAllowed" ? (
+            <p className="mt-3 rounded-[var(--radius-control)] bg-warning-bg px-3 py-2 text-micro text-warning-ink">
+              {t("bin.notAllowed")}
+            </p>
+          ) : null}
           {contacts.length === 0 ? (
             <p className="mt-2 text-micro text-muted">{t("company.noContacts")}</p>
           ) : (
@@ -217,6 +255,7 @@ export default async function CompanyPage({
                   <th className="py-2 text-start font-medium">{t("company.contactTrade")}</th>
                   <th className="py-2 text-start font-medium">{t("company.email")}</th>
                   <th className="py-2 text-start font-medium">{t("company.phone")}</th>
+                  <th className="py-2 text-end font-medium">{t("bin.remove")}</th>
                 </tr>
               </thead>
               <tbody>
@@ -232,6 +271,33 @@ export default async function CompanyPage({
                     </td>
                     <td className="py-2 text-secondary">{c.email || "—"}</td>
                     <td className="py-2 text-secondary">{c.phone || "—"}</td>
+                    {/*
+                      A name is the cheapest row in this system to create and,
+                      until now, the only one that could never be removed. It
+                      goes to the bin for 30 days like everything else — and the
+                      button is present and grey when it may not, so the reason
+                      is readable rather than absent.
+                    */}
+                    <td className="py-2 text-end">
+                      <form action={discardPersonAction.bind(null, locale)}>
+                        <input type="hidden" name="id" value={c.id} />
+                        <input type="hidden" name="back" value={`/companies/${id}`} />
+                        <input type="hidden" name="screen" value="22" />
+                        <Button
+                          type="submit"
+                          variant="ghost"
+                          size="small"
+                          disabledReason={
+                            notAllowed ??
+                            ((onSite.get(c.id) ?? 0) > 0
+                              ? t("bin.personOnSite", { count: onSite.get(c.id) ?? 0 })
+                              : undefined)
+                          }
+                        >
+                          {t("bin.remove")}
+                        </Button>
+                      </form>
+                    </td>
                   </tr>
                 ))}
               </tbody>
@@ -263,13 +329,13 @@ export default async function CompanyPage({
                   className="h-[34px] w-[320px] rounded-[var(--radius-control)] border border-line bg-surface px-2.5 text-tiny outline-none focus:border-ink"
                 />
               </label>
-              <Button type="submit" variant="danger">
+              <Button type="submit" variant="danger" disabledReason={discardBlockedBy}>
                 {t("bin.discard")}
               </Button>
             </form>
 
             <form action={archiveCompany.bind(null, locale, id)}>
-              <Button type="submit" variant="secondary">
+              <Button type="submit" variant="secondary" disabledReason={notAllowed}>
                 {t("bin.archive")}
               </Button>
             </form>

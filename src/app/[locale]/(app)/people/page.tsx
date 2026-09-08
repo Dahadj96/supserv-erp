@@ -1,6 +1,9 @@
 import { asc } from "drizzle-orm";
 import { Info } from "lucide-react";
 import { getTranslations, setRequestLocale } from "next-intl/server";
+import { discardPersonAction } from "@/app/[locale]/(app)/contacts/delete-actions";
+import { can } from "@/auth/can";
+import { getSession } from "@/auth/session";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { db } from "@/db";
@@ -26,12 +29,15 @@ export default async function PeoplePage({
   searchParams,
 }: {
   params: Promise<{ locale: string }>;
-  searchParams: Promise<{ facet?: string; error?: string }>;
+  searchParams: Promise<{ facet?: string; error?: string; blocked?: string }>;
 }) {
   const { locale } = await params;
-  const { facet: raw, error } = await searchParams;
+  const { facet: raw, error, blocked } = await searchParams;
   setRequestLocale(locale);
   const t = await getTranslations();
+
+  const session = await getSession();
+  const mayDelete = session?.role ? can(session.role, "records.delete") : false;
 
   const facet = isPeopleFacet(raw) ? raw : "all";
   const [rows, counts, employers] = await Promise.all([
@@ -71,6 +77,19 @@ export default async function PeoplePage({
         </p>
       ) : null}
 
+      {/* The grey button submits — `aria-disabled`, not `disabled` — so every
+          reason it was grey comes back as a sentence rather than a 500. */}
+      {blocked === "onSite" ? (
+        <p className="mx-4 md:mx-7 mt-5 rounded-[var(--radius-control)] bg-warning-bg px-3 py-2 text-micro text-warning-ink">
+          {t("bin.blockedByCrew")}
+        </p>
+      ) : null}
+      {blocked === "notAllowed" ? (
+        <p className="mx-4 md:mx-7 mt-5 rounded-[var(--radius-control)] bg-warning-bg px-3 py-2 text-micro text-warning-ink">
+          {t("bin.notAllowed")}
+        </p>
+      ) : null}
+
       <div className="mx-4 md:mx-7 mt-5 flex items-start gap-3 rounded-[var(--radius-control)] border border-accent bg-accent-bg px-4 py-3">
         <Info className="mt-px size-4 shrink-0 text-accent-ink" aria-hidden />
         <p className="text-tiny leading-relaxed text-accent-ink">{t("people.directlyBanner")}</p>
@@ -97,7 +116,12 @@ export default async function PeoplePage({
         })}
       </div>
 
-      <PeopleList rows={rows} total={counts.all} />
+      <PeopleList
+        rows={rows}
+        total={counts.all}
+        discard={discardPersonAction.bind(null, locale)}
+        notAllowed={mayDelete ? undefined : t("bin.notAllowed")}
+      />
 
       <div className="grid max-w-[1400px] grid-cols-1 md:grid-cols-3 items-start gap-5 px-4 md:px-7 pb-8">
         <div className="col-span-1 md:col-span-2">

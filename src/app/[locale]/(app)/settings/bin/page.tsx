@@ -1,23 +1,37 @@
 import { getTranslations, setRequestLocale } from "next-intl/server";
 import { restoreCompany } from "@/app/[locale]/(app)/companies/delete-actions";
+import { restorePersonAction } from "@/app/[locale]/(app)/contacts/delete-actions";
 import { restoreDealAction } from "@/app/[locale]/(app)/deals/[id]/delete-actions";
+import { restoreNoteAction } from "@/app/[locale]/(app)/deals/[id]/timeline/delete-actions";
 import { restoreDocumentAction } from "@/app/[locale]/(app)/documents/[id]/delete-actions";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { listBin } from "@/domain/deletion";
+import { type BinKind, listBin } from "@/domain/deletion";
 import { Link } from "@/i18n/navigation";
 
 /**
  * Screen 83 — the bin. Restorable for 30 days, then the record is gone but its
  * audit trail is not.
  *
- * It holds three kinds now: a company, an enquiry and a draft document. Each
- * one restores through the action that owns it — the three were written
+ * It holds five kinds now: a company, a deal, a draft document, a person and a
+ * note. Each one restores through the action that owns it — each was written
  * separately and each knows where to land afterwards — so this screen
  * dispatches on the row's kind rather than sending everything to
  * `restoreCompany` and hoping.
  */
 export const dynamic = "force-dynamic";
+
+/**
+ * One restore per kind, named in one place. A `bind` chain of five ternaries is
+ * how the fourth kind gets quietly appended to the wrong action.
+ */
+const RESTORE: Record<BinKind, (locale: string, id: string) => () => Promise<void>> = {
+  company: (locale, id) => restoreCompany.bind(null, locale, id),
+  deal: (locale, id) => restoreDealAction.bind(null, locale, id),
+  document: (locale, id) => restoreDocumentAction.bind(null, locale, id),
+  person: (locale, id) => restorePersonAction.bind(null, locale, id),
+  note: (locale, id) => restoreNoteAction.bind(null, locale, id),
+};
 
 export default async function BinPage({ params }: { params: Promise<{ locale: string }> }) {
   const { locale } = await params;
@@ -27,24 +41,28 @@ export default async function BinPage({ params }: { params: Promise<{ locale: st
   const rows = await listBin();
   const fmt = (d: Date) => d.toLocaleDateString(locale === "fr" ? "fr-DZ" : "en-GB");
 
+  /**
+   * What this row is, said in a word. Written out rather than built from a
+   * template literal so `tests/unit/messages.test.ts` can see the keys, and
+   * left on the neutral tone: `good`, `warning` and `critical` mean a state in
+   * this design system, and "this is a document" is not a state.
+   */
+  const KIND_LABEL: Record<BinKind, string> = {
+    company: t("bin.kind.company"),
+    deal: t("bin.kind.deal"),
+    document: t("bin.kind.document"),
+    person: t("bin.kind.person"),
+    note: t("bin.kind.note"),
+  };
+
   const shown = rows.map((row) => ({
     ...row,
 
-    /**
-     * What this row is, said in a word. Written out rather than built from a
-     * template literal so `tests/unit/messages.test.ts` can see the keys, and
-     * left on the neutral tone: `good`, `warning` and `critical` mean a state
-     * in this design system, and "this is a document" is not a state.
-     */
-    kindLabel:
-      row.kind === "company"
-        ? t("bin.kind.company")
-        : row.kind === "deal"
-          ? t("bin.kind.deal")
-          : t("bin.kind.document"),
+    kindLabel: KIND_LABEL[row.kind],
 
-    // A company and an enquiry arrive as text a person typed. A document
-    // arrives as its kind, which is a key with a name in each language.
+    // A company, a deal, a name and a note all arrive as text a person typed.
+    // A document arrives as its kind, which is a key with a name in each
+    // language.
     label:
       row.kind === "document"
         ? t.has(`documents.kind.${row.what}`)
@@ -56,8 +74,10 @@ export default async function BinPage({ params }: { params: Promise<{ locale: st
      * A row is a link only where the page it points at still renders. A binned
      * company's does — screen 83's "never a blank 404" notice lives there — and
      * so does a binned draft's, which offers Restore in place. `getDeal`
-     * filters `deleted_at`, so a binned enquiry has no page at all: linking it
+     * filters `deleted_at`, so a binned deal has no page at all: linking it
      * would be a 404, which is the one thing this screen exists to prevent.
+     * Neither does a binned person — screens 76 and 51 are lists, and a person
+     * has never had a page of their own — and a note has never had one either.
      */
     href:
       row.kind === "company"
@@ -66,12 +86,7 @@ export default async function BinPage({ params }: { params: Promise<{ locale: st
           ? `/documents/${row.id}`
           : null,
 
-    restore:
-      row.kind === "company"
-        ? restoreCompany.bind(null, locale, row.id)
-        : row.kind === "deal"
-          ? restoreDealAction.bind(null, locale, row.id)
-          : restoreDocumentAction.bind(null, locale, row.id),
+    restore: RESTORE[row.kind](locale, row.id),
   }));
 
   return (

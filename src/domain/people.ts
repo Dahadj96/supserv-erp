@@ -4,6 +4,7 @@ import { db } from "@/db";
 import { auditEntry } from "@/db/schema/control";
 import { party, person, personCertification } from "@/db/schema/party";
 import { CONTACT_RELATIONSHIP } from "./contact";
+import { peopleOnSite } from "./deletion";
 
 /**
  * Screen 51 — People.
@@ -48,6 +49,14 @@ export type PersonRow = {
   wilaya: string | null;
   /** The certification that expires first — the one worth putting on a row. */
   certification: { kind: string; expiresOn: string | null } | null;
+  /**
+   * How many site crews this person has not left. Screen 51 draws the bin
+   * button grey while this is above zero — binning a man who is welding on
+   * Adrar centre today would leave screen 16's crew panel pointing at a row no
+   * list will show. Zero for almost everybody, and it is a count rather than a
+   * flag because the sentence on the grey button says how many.
+   */
+  onSite: number;
 };
 
 /**
@@ -97,7 +106,13 @@ export async function listPeople(facet: PeopleFacet = "all", limit = 200): Promi
     if (!soonest.has(c.personId)) soonest.set(c.personId, { kind: c.kind, expiresOn: c.expiresOn });
   }
 
-  return rows.map((r) => ({ ...r, certification: soonest.get(r.id) ?? null }));
+  const onSite = await peopleOnSite(rows.map((r) => r.id));
+
+  return rows.map((r) => ({
+    ...r,
+    certification: soonest.get(r.id) ?? null,
+    onSite: onSite.get(r.id) ?? 0,
+  }));
 }
 
 export type PeopleCounts = Record<PeopleFacet, number>;

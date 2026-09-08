@@ -219,7 +219,9 @@
     "kind": {
       "company": "Société",
       "deal": "Affaire",
-      "document": "Brouillon"
+      "document": "Brouillon",
+      "person": "Personne",
+      "note": "Note"
     },
     "noNumber": "Sans numéro",
     "when": "Quand",
@@ -236,7 +238,12 @@
     "goneTitle": "{code} — {name} a été supprimée",
     "goneBody": "Retirée le {date}. Vous avez {days} jours pour la restaurer.",
     "reasonGiven": "Motif indiqué : {reason}",
-    "afterThirtyDays": "Après 30 jours la fiche est retirée mais l'entrée du journal reste. Dans deux ans, vous pourrez encore savoir qu'elle a existé et pourquoi elle est partie."
+    "afterThirtyDays": "Après 30 jours la fiche est retirée mais l'entrée du journal reste. Dans deux ans, vous pourrez encore savoir qu'elle a existé et pourquoi elle est partie.",
+    "remove": "Retirer",
+    "notAllowed": "Seul le Gérant peut mettre une fiche à la corbeille.",
+    "cannotDiscardIssued": "Cette société porte des documents émis : elle ne peut pas aller à la corbeille. Archivez-la — elle sort des listes et chaque document continue de résoudre.",
+    "personOnSite": "{count, plural, =1 {Encore dans l’équipe d’un chantier.} other {Encore dans l’équipe de # chantiers.}} Retirez-la du chantier d’abord, puis retirez le nom.",
+    "blockedByCrew": "Cette personne n’a pas quitté l’équipe d’un chantier : le nom reste. Retirez-la de l’équipe sur la page du chantier, puis retirez le nom ici."
   },
   "companies": {
     "code": "Code",
@@ -2712,7 +2719,8 @@
       "exceedsPayment": "Cela affecte plus que le montant reçu.",
       "exceedsBalance": "C'est plus que ce que cette facture doit encore."
     },
-    "seeAgeing": "Balance âgée et relances"
+    "seeAgeing": "Balance âgée et relances",
+    "neverRemoved": "L’argent arrivé en banque ne se retire jamais. Un règlement imputé sur la mauvaise facture se réimpute ; un montant qui n’aurait jamais dû être facturé se corrige par un avoir."
   },
   "convert": {
     "title": "Convertir {number} en {kind}",
@@ -3299,8 +3307,12 @@
     "noEventTable": "Il n'y a pas de table d'évènements. Chaque ligne sauf une note est lue depuis l'enregistrement qui la détient déjà — le message, l'offre, le document, le journal. Une seconde copie de chacune, ce serait deux versions de chaque fait, sans moyen de savoir laquelle s'est produite le jour où elles divergent.",
     "error": {
       "empty": "Une note sans mots n'enregistre que le fait d'avoir ouvert la boîte.",
-      "noSuchDeal": "Cette affaire n'existe plus."
-    }
+      "noSuchDeal": "Cette affaire n'existe plus.",
+      "notYourNote": "Cette note est de quelqu’un d’autre, et retirer la note d’une autre personne demande le Gérant."
+    },
+    "removed": "Note retirée. Elle est à la corbeille pendant 30 jours.",
+    "notYours": "Cette note est de quelqu’un d’autre. Seul le Gérant retire la note d’une autre personne.",
+    "onlyNotesGo": "Seule une note se retire ici. Tout le reste de cette liste est la copie d’un enregistrement qui a son propre écran, et se retire là-bas."
   },
   "message": {
     "previous": "Plus récent",

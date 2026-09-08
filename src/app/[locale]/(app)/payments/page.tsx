@@ -2,6 +2,7 @@ import { redirect as hardRedirect } from "next/navigation";
 import { getTranslations, setRequestLocale } from "next-intl/server";
 import { getSession } from "@/auth/session";
 import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
 import { profile } from "@/domain/compliance-profile";
 import { formatMoney } from "@/domain/money";
 import { ageingOf, ageOf, balanceOf } from "@/domain/money/ageing";
@@ -239,9 +240,10 @@ export default async function PaymentsPage({
                         {t("payments.reference")}
                       </th>
                       <th className="py-2 pe-4 text-end font-medium">{t("payments.amount")}</th>
-                      <th className="py-2 pe-5 text-end font-medium">
+                      <th className="py-2 pe-4 text-end font-medium">
                         {t("payments.balanceLeft")}
                       </th>
+                      <th className="py-2 pe-5 text-end font-medium">{t("bin.remove")}</th>
                     </tr>
                   </thead>
                   <tbody>
@@ -280,7 +282,7 @@ export default async function PaymentsPage({
                           <td className="py-2.5 pe-4 text-end tabular-nums text-ink">
                             {money(row.amount, row.currency)}
                           </td>
-                          <td className="py-2.5 pe-5 text-end tabular-nums text-secondary">
+                          <td className="py-2.5 pe-4 text-end tabular-nums text-secondary">
                             {/*
                               The invoice's balance TODAY, not at the moment this
                               payment landed. A later payment moves it, and
@@ -303,6 +305,30 @@ export default async function PaymentsPage({
                                 })}
                               </span>
                             ) : null}
+                          </td>
+                          {/*
+                            PRESENT AND GREY, AND IT WILL NEVER BE ANYTHING ELSE.
+
+                            A payment is a thing that happened at the bank. It is
+                            not a row somebody typed and may untype: the money
+                            arrived, the statement says so, and a system where
+                            what arrived can be made to disappear is a system
+                            nobody can reconcile against a bank.
+
+                            So this is not a control waiting on a feature. It is
+                            the refusal, said where somebody looks for the
+                            button — with what to do instead, because a wrong
+                            amount and a wrong allocation are two different
+                            mistakes with two different answers.
+                          */}
+                          <td className="py-2.5 pe-5 text-end">
+                            <Button
+                              variant="ghost"
+                              size="small"
+                              disabledReason={t("payments.neverRemoved")}
+                            >
+                              {t("bin.remove")}
+                            </Button>
                           </td>
                         </tr>
                       );

@@ -219,7 +219,9 @@
     "kind": {
       "company": "Company",
       "deal": "Deal",
-      "document": "Draft"
+      "document": "Draft",
+      "person": "Person",
+      "note": "Note"
     },
     "noNumber": "No number",
     "when": "When",
@@ -236,7 +238,12 @@
     "goneTitle": "{code} — {name} was deleted",
     "goneBody": "Removed on {date}. You have {days} days to bring it back.",
     "reasonGiven": "Reason given: {reason}",
-    "afterThirtyDays": "After 30 days the record is removed but the audit entry stays. In two years you can still find out that it existed and why it went."
+    "afterThirtyDays": "After 30 days the record is removed but the audit entry stays. In two years you can still find out that it existed and why it went.",
+    "remove": "Remove",
+    "notAllowed": "Only the Gérant may put records in the bin.",
+    "cannotDiscardIssued": "This company has issued documents, so it cannot go in the bin. Archive it instead — it leaves the lists and every document still resolves.",
+    "personOnSite": "{count, plural, =1 {Still on the crew of one site.} other {Still on the crew of # sites.}} Take them off the site first, then remove the name.",
+    "blockedByCrew": "That person has not left a site crew, so the name stays. Take them off the crew on the site page, then remove the name here."
   },
   "companies": {
     "code": "Code",
@@ -2712,7 +2719,8 @@
       "exceedsPayment": "That allocates more than the payment received.",
       "exceedsBalance": "That is more than this invoice still owes."
     },
-    "seeAgeing": "Ageing and relances"
+    "seeAgeing": "Ageing and relances",
+    "neverRemoved": "Money that arrived at the bank is never removed. A payment against the wrong invoice is re-allocated; an amount that should never have been invoiced is corrected by an avoir."
   },
   "convert": {
     "title": "Convert {number} into a {kind}",
@@ -3299,8 +3307,12 @@
     "noEventTable": "There is no event table. Every row but a note is read from the record that already holds it — the message, the quote, the document, the log. A second copy of each would be two versions of every fact, and no way to tell which one happened on the day they disagree.",
     "error": {
       "empty": "A note with no words records that you opened the box.",
-      "noSuchDeal": "That enquiry no longer exists."
-    }
+      "noSuchDeal": "That enquiry no longer exists.",
+      "notYourNote": "Somebody else wrote that note, and removing another person’s note takes the Gérant."
+    },
+    "removed": "Note removed. It is in the bin for 30 days.",
+    "notYours": "Somebody else wrote this note. Only the Gérant removes another person’s note.",
+    "onlyNotesGo": "Only a note can be removed here. Everything else on this list is a copy of a record with a screen of its own, and is removed there."
   },
   "message": {
     "previous": "Newer",

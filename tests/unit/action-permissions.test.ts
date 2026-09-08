@@ -77,10 +77,26 @@ const EXPECTED: Record<string, string[]> = {
   // wrapping them, because each already knows where to land afterwards — and
   // each stays listed here, so a restore can never quietly lose its check.
   "companies/delete-actions.ts:archiveCompany": ["records.delete"],
+  // The same permission on a person — a buyer at a client, or a welder. Screens
+  // 76 and 51 read one table and press one action. It refuses while the person
+  // has not left a site crew: screen 16 still draws them, and a crew panel
+  // pointing at a binned row is worse than a name nobody removed.
+  "contacts/delete-actions.ts:discardPersonAction": ["records.delete"],
+  "contacts/delete-actions.ts:restorePersonAction": ["records.delete"],
   // The same permission on an enquiry. Screen 06's bin button: an enquiry
   // carrying an issued document refuses, because LAW 5 outranks tidiness.
   "deals/[id]/delete-actions.ts:discardDealAction": ["records.delete"],
   "deals/[id]/delete-actions.ts:restoreDealAction": ["records.delete"],
+  // AND WIDER THAN THIS LINE SAYS, on purpose. `discardNoteAction` lets the
+  // AUTHOR of a note bin their own without any permission at all, and asks
+  // `records.delete` only for somebody else's. Writing a note takes `canWrite`
+  // — everybody but `lecture` — while `records.delete` is the Gérant's alone,
+  // so the narrow rule would leave a Commercial in Adrar waiting for the office
+  // to fix their own typo. Restoring is not widened: the bin is one screen that
+  // dispatches five kinds of row, and it holds the Gérant's permission for all
+  // of them.
+  "deals/[id]/timeline/delete-actions.ts:discardNoteAction": ["records.delete"],
+  "deals/[id]/timeline/delete-actions.ts:restoreNoteAction": ["records.delete"],
   // And on a document — `records.delete`, not the kind's issue permission: may
   // this person take a row out of the world is a different question from may
   // they put paper into it. Only a draft can go at all (LAW 5).

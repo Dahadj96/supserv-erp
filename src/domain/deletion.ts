@@ -1,9 +1,11 @@
-import { and, eq, isNotNull, isNull, sql } from "drizzle-orm";
+import { and, eq, inArray, isNotNull, isNull, sql } from "drizzle-orm";
 import { db } from "@/db";
 import { auditEntry } from "@/db/schema/control";
 import { deal } from "@/db/schema/deal";
 import { document } from "@/db/schema/document";
-import { party } from "@/db/schema/party";
+import { note } from "@/db/schema/note";
+import { party, person } from "@/db/schema/party";
+import { projectCrew } from "@/db/schema/project";
 
 /**
  * Screen 83 — three words that are not the same.
@@ -29,7 +31,13 @@ export class NotDiscardable extends Error {
   }
 }
 
-async function issuedDocumentCount(partyId: string): Promise<number> {
+/**
+ * Exported because screen 22 asks the same question the refusal asks, one
+ * moment earlier. The button there used to submit, be refused and come back
+ * with a banner; a control that can already know it will refuse should say so
+ * while it is still grey. One query, one rule, two callers that cannot disagree.
+ */
+export async function issuedDocumentCount(partyId: string): Promise<number> {
   const rows = await db
     .select({ n: sql<number>`count(*)::int` })
     .from(document)
@@ -302,12 +310,199 @@ export async function restoreDocument(opts: { id: string; actorId: string }) {
 }
 
 /**
- * Screen 83 holds three kinds of record now, and a person who has just lost
- * one does not remember which kind it was — that is the whole reason to open a
+ * The same three words, applied to a person — a buyer at a client, a welder, a
+ * candidate who never called back. Screens 76 and 51.
+ *
+ * This is where the junk is heaviest, and by design. A name is the cheapest row
+ * in this system to create: `newContact` and `addPerson` both ask for two
+ * fields and no permission beyond being able to write at all, because a name
+ * given on the phone has to be writable before it is forgotten. What that buys
+ * is a list that only ever grows — every misspelling, every duplicate, every
+ * person typed while learning the screen. `person.deleted_at` has been migrated
+ * since phase 1 and twelve queries already filter on it. Nothing wrote it.
+ *
+ * The refusal here is not about issued paper. A person is never the
+ * counterparty on a document — a company is — so the guard that stops a company
+ * and an enquiry has nothing to bite on. It is about a man standing on a site.
+ * `project_crew` points at `person.id`, and screen 16 answers "who is on Adrar
+ * centre today, and whose habilitation expires this month" out of it. Binning
+ * somebody who has not left the crew makes that answer point at a row no list
+ * will show, so the refusal names the fix instead: take them off the crew
+ * first, then bin the name.
+ */
+export class PersonOnSite extends Error {
+  constructor(readonly siteCount: number) {
+    super("personIsOnSite");
+  }
+}
+
+/**
+ * How many sites each of these people has not left. Batched, because both
+ * screens that offer the control render a list, and asking per row would be one
+ * query per name on a page that already has one.
+ */
+export async function peopleOnSite(ids: string[]): Promise<Map<string, number>> {
+  if (ids.length === 0) return new Map();
+
+  const rows = await db
+    .select({ personId: projectCrew.personId, n: sql<number>`count(*)::int` })
+    .from(projectCrew)
+    // `left_on` is the only column that says somebody has gone. A crew row with
+    // no `on_site_since` is somebody put forward and not yet there, and screen
+    // 16 draws that as its own state — proposed is not absent.
+    .where(and(inArray(projectCrew.personId, ids), isNull(projectCrew.leftOn)))
+    .groupBy(projectCrew.personId);
+
+  return new Map(rows.map((r) => [r.personId, r.n]));
+}
+
+export async function discardPerson(opts: {
+  id: string;
+  reason: string;
+  actorId: string;
+  fromWhere?: string;
+}) {
+  const onSite = (await peopleOnSite([opts.id])).get(opts.id) ?? 0;
+  if (onSite > 0) throw new PersonOnSite(onSite);
+
+  const [before] = await db.select().from(person).where(eq(person.id, opts.id)).limit(1);
+  if (!before) throw new Error("No such person");
+  if (before.deletedAt) return;
+
+  await db
+    .update(person)
+    .set({
+      deletedAt: new Date(),
+      deletedBy: opts.actorId,
+      deleteReason: opts.reason.trim() || null,
+    })
+    .where(eq(person.id, opts.id));
+
+  await db.insert(auditEntry).values({
+    actorId: opts.actorId,
+    entity: "person",
+    entityId: opts.id,
+    action: "discard",
+    before: { fullName: before.fullName, trade: before.trade },
+    reason: opts.reason.trim() || null,
+    sourceScreen: opts.fromWhere ?? "76",
+  });
+}
+
+export async function restorePerson(opts: { id: string; actorId: string }) {
+  const [before] = await db.select().from(person).where(eq(person.id, opts.id)).limit(1);
+  if (!before?.deletedAt) return;
+
+  await db
+    .update(person)
+    .set({ deletedAt: null, deletedBy: null, deleteReason: null })
+    .where(eq(person.id, opts.id));
+
+  await db.insert(auditEntry).values({
+    actorId: opts.actorId,
+    entity: "person",
+    entityId: opts.id,
+    action: "restore",
+    after: { fullName: before.fullName, trade: before.trade },
+    sourceScreen: "83",
+  });
+}
+
+/**
+ * And to a note — the one row on a deal timeline that nothing else in the
+ * system holds a copy of. Screen 56.
+ *
+ * Everything else on that page is derived: a message arrived, a quote came
+ * back, a document was issued. A note exists because somebody put the phone
+ * down and typed it, which is also why it is the row most likely to be wrong —
+ * the wrong deal, the wrong date, half a sentence sent by an accidental Enter.
+ * Until now it could be written and never unwritten.
+ *
+ * Who may bin one is not the same question as who may bin a company. Writing a
+ * note takes `canWrite` — everybody but `lecture` — and `records.delete` is the
+ * Gérant's alone, so a rule of "only the Gérant" would mean a Commercial who
+ * mistypes their own note in Adrar waits for somebody in the office to fix it.
+ * So: your own note is yours, and anybody else's takes `records.delete`. The
+ * caller decides that, because the permission table lives in `src/auth/can.ts`
+ * and this file does not read roles.
+ */
+export class NotYourNote extends Error {
+  constructor(readonly authorId: string) {
+    super("notYourNote");
+  }
+}
+
+export async function discardNote(opts: {
+  id: string;
+  reason: string;
+  actorId: string;
+  /** True when the caller holds `records.delete`. Everybody else: own notes. */
+  anyAuthor: boolean;
+  fromWhere?: string;
+}): Promise<{ entity: string; entityId: string }> {
+  const [before] = await db.select().from(note).where(eq(note.id, opts.id)).limit(1);
+  if (!before) throw new Error("No such note");
+  if (!opts.anyAuthor && before.authorId !== opts.actorId) {
+    throw new NotYourNote(before.authorId);
+  }
+  if (before.deletedAt) return { entity: before.entity, entityId: before.entityId };
+
+  await db
+    .update(note)
+    .set({
+      deletedAt: new Date(),
+      deletedBy: opts.actorId,
+      deleteReason: opts.reason.trim() || null,
+    })
+    .where(eq(note.id, opts.id));
+
+  await db.insert(auditEntry).values({
+    actorId: opts.actorId,
+    entity: "note",
+    entityId: opts.id,
+    action: "discard",
+    // What it said and what it was about. The body is the whole record, so the
+    // audit entry keeps the first line of it: in two years "a note was removed"
+    // answers nothing, and "a note reading 'deposit window is 08:00' was
+    // removed from AFF-0231" answers the question somebody is asking.
+    before: {
+      about: `${before.entity}:${before.entityId}`,
+      kind: before.kind,
+      said: before.body.slice(0, 200),
+    },
+    reason: opts.reason.trim() || null,
+    sourceScreen: opts.fromWhere ?? "56",
+  });
+
+  return { entity: before.entity, entityId: before.entityId };
+}
+
+export async function restoreNote(opts: { id: string; actorId: string }) {
+  const [before] = await db.select().from(note).where(eq(note.id, opts.id)).limit(1);
+  if (!before?.deletedAt) return;
+
+  await db
+    .update(note)
+    .set({ deletedAt: null, deletedBy: null, deleteReason: null })
+    .where(eq(note.id, opts.id));
+
+  await db.insert(auditEntry).values({
+    actorId: opts.actorId,
+    entity: "note",
+    entityId: opts.id,
+    action: "restore",
+    after: { about: `${before.entity}:${before.entityId}`, kind: before.kind },
+    sourceScreen: "83",
+  });
+}
+
+/**
+ * Screen 83 holds five kinds of record now, and a person who has just lost one
+ * does not remember which kind it was — that is the whole reason to open a
  * bin. So a row says what it is, and carries the least a person needs to
  * recognise it without clicking.
  */
-export type BinKind = "company" | "deal" | "document";
+export type BinKind = "company" | "deal" | "document" | "person" | "note";
 
 export type BinRow = {
   kind: BinKind;
@@ -320,10 +515,11 @@ export type BinRow = {
    */
   what: string;
   /**
-   * What identifies it beside the label: a company's code, an enquiry's ref.
-   * Empty for a document — a draft is discardable precisely because it never
-   * took a number, so there is nothing to print here and the screen says that
-   * in words rather than leaving a gap.
+   * What identifies it beside the label: a company's code, a deal's ref, a
+   * person's trade. Empty for a document — a draft is discardable precisely
+   * because it never took a number, so there is nothing to print here and the
+   * screen says that in words rather than leaving a gap — and empty for a note,
+   * whose first line IS the label and which has never had a second identifier.
    */
   code: string;
   deletedAt: Date;
@@ -353,14 +549,14 @@ function binRow(
 /** Screen 83 — "restorable for 30 days, then the record is gone but its audit trail is not". */
 export async function listBin(): Promise<BinRow[]> {
   /**
-   * Three queries and one sort rather than one SQL union: the three tables have
-   * three shapes, a union would need every column cast to a common one for no
+   * Five queries and one sort rather than one SQL union: the five tables have
+   * five shapes, a union would need every column cast to a common one for no
    * gain, and the bin holds what a handful of people binned in the last thirty
    * days. What matters is that the order is across the whole set — a company
-   * binned this morning sits above an enquiry binned last week, rather than
-   * each kind being sorted under its own heading.
+   * binned this morning sits above a deal binned last week, rather than each
+   * kind being sorted under its own heading.
    */
-  const [parties, deals, documents] = await Promise.all([
+  const [parties, deals, documents, people, notes] = await Promise.all([
     db
       .select({
         id: party.id,
@@ -390,12 +586,37 @@ export async function listBin(): Promise<BinRow[]> {
       })
       .from(document)
       .where(isNotNull(document.deletedAt)),
+    db
+      .select({
+        id: person.id,
+        what: person.fullName,
+        code: person.trade,
+        deletedAt: person.deletedAt,
+        reason: person.deleteReason,
+      })
+      .from(person)
+      .where(isNotNull(person.deletedAt)),
+    db
+      .select({
+        id: note.id,
+        what: note.body,
+        deletedAt: note.deletedAt,
+        reason: note.deleteReason,
+      })
+      .from(note)
+      .where(isNotNull(note.deletedAt)),
   ]);
 
   return [
     ...parties.map((r) => binRow("company", r)),
     ...deals.map((r) => binRow("deal", r)),
     ...documents.map((r) => binRow("document", { ...r, code: "" })),
+    ...people.map((r) => binRow("person", r)),
+    // A note is its body. One line of it is what a person recognises, and the
+    // whole of it would be a paragraph in a table cell.
+    ...notes.map((r) =>
+      binRow("note", { ...r, what: r.what.split("\n")[0]?.slice(0, 120) ?? "", code: "" }),
+    ),
   ].sort((a, b) => b.deletedAt.getTime() - a.deletedAt.getTime());
 }
 

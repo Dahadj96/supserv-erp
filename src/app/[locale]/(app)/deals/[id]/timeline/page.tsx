@@ -3,6 +3,7 @@ import { ArrowDownLeft, ArrowUpRight, Cog, PenLine } from "lucide-react";
 import { redirect as hardRedirect, notFound } from "next/navigation";
 import { getTranslations, setRequestLocale } from "next-intl/server";
 import { INPUT } from "@/app/[locale]/(app)/setup/field";
+import { can } from "@/auth/can";
 import { getSession } from "@/auth/session";
 import { Badge, type BadgeTone } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -15,6 +16,7 @@ import { byDay, countSides, type EventSide, lastMove } from "@/domain/timeline/e
 import { timelineFor } from "@/domain/timeline/gather";
 import { Link } from "@/i18n/navigation";
 import { addNoteAction } from "./actions";
+import { discardNoteAction } from "./delete-actions";
 
 /**
  * Screen 56 — the deal timeline. "Everything about it is on this page."
@@ -47,10 +49,10 @@ export default async function TimelinePage({
   searchParams,
 }: {
   params: Promise<{ locale: string; id: string }>;
-  searchParams: Promise<{ noted?: string; error?: string }>;
+  searchParams: Promise<{ noted?: string; error?: string; removed?: string }>;
 }) {
   const { locale, id } = await params;
-  const { noted, error } = await searchParams;
+  const { noted, error, removed } = await searchParams;
   setRequestLocale(locale);
   const t = await getTranslations();
 
@@ -80,6 +82,22 @@ export default async function TimelinePage({
     .where(eq(deal.id, id))
     .limit(1);
   if (!row) notFound();
+
+  /**
+   * Unwriting a note. Screen 83's rule, on the one row here that is not a copy
+   * of something else.
+   *
+   * Every other row on this page — a message, a quote, a document, an audit
+   * entry — is read from a record with a screen of its own, and is removed
+   * there or not at all. A note is only ever here, so until now it could be
+   * written and never unwritten: the wrong deal, the wrong date, half a
+   * sentence sent by an accidental Enter, permanent.
+   *
+   * Your own note is yours. Anybody else's takes `records.delete`, which is the
+   * Gérant's — and the button is drawn grey with that sentence rather than
+   * left out, so the rule is readable from the row it applies to.
+   */
+  const mayDeleteAnyNote = session.role ? can(session.role, "records.delete") : false;
 
   const events = await timelineFor(id);
   const days = byDay(events);
@@ -142,6 +160,11 @@ export default async function TimelinePage({
           {t("timeline.noted")}
         </p>
       ) : null}
+      {removed ? (
+        <p className="mx-4 mt-4 rounded-[var(--radius-control)] bg-good-bg px-4 py-2.5 text-tiny text-good-ink md:mx-7">
+          {t("timeline.removed")}
+        </p>
+      ) : null}
       {error ? (
         <p className="mx-4 mt-4 rounded-[var(--radius-control)] bg-critical-bg px-4 py-2.5 text-tiny text-critical-ink md:mx-7">
           {t.has(`timeline.error.${error}`) ? t(`timeline.error.${error}`) : error}
@@ -158,6 +181,13 @@ export default async function TimelinePage({
               <span className="ms-auto text-micro text-muted">
                 {t("timeline.nEvents", { n: counts.total })} · {t("timeline.newestFirst")}
               </span>
+              {/* Why only notes carry a Remove: everything else on this page is
+                  a copy of a record that has its own screen, and is removed
+                  there. Said once, here, rather than left as an absence on
+                  every other row. */}
+              <p className="w-full text-micro leading-relaxed text-muted">
+                {t("timeline.onlyNotesGo")}
+              </p>
             </div>
 
             {days.length === 0 ? (
@@ -220,6 +250,30 @@ export default async function TimelinePage({
                               >
                                 {t("timeline.open")}
                               </Link>
+                            ) : null}
+                            {event.id.startsWith("note:") ? (
+                              <form
+                                action={discardNoteAction.bind(null, locale, id)}
+                                className="shrink-0 self-center"
+                              >
+                                <input
+                                  type="hidden"
+                                  name="noteId"
+                                  value={event.id.slice("note:".length)}
+                                />
+                                <Button
+                                  type="submit"
+                                  variant="ghost"
+                                  size="small"
+                                  disabledReason={
+                                    mayDeleteAnyNote || event.actor === session.userId
+                                      ? undefined
+                                      : t("timeline.notYours")
+                                  }
+                                >
+                                  {t("bin.remove")}
+                                </Button>
+                              </form>
                             ) : null}
                           </li>
                         );
