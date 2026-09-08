@@ -140,6 +140,16 @@ Facts learned the hard way. Do not rediscover them.
   second, issue a fourth; the series reads 0001–0004 and 0002 is an avoir.
   Add that test to `tests/` if it does not exist.
 
+- [ ] **0.9 · A binned draft must not be picked as "the draft on this deal"**
+  `src/domain/tender/bpu-store.ts:186, 522, 560` find the working quotation by
+  `number is null`, so a discarded draft is still a candidate. Harmless while
+  the bin is empty; the first time somebody bins a draft quotation and then
+  imports a BPU on the same enquiry, the prices land in a binned document.
+  Add the `liveDocument` clause and a test that proves a binned draft is
+  skipped. Whoever takes this should read screen 42 first.
+  *Done when:* importing a BPU on an enquiry whose draft quotation is in the
+  bin creates or picks a live draft, and a test covers it.
+
 ## WAVE 1 — make the envelope readable
 
 Strictly sequential. Each step is useless without the one above it.
