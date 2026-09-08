@@ -1073,6 +1073,8 @@
     },
     "localeFromClient": "The language of a document comes from the client record, never from whoever is signed in.",
     "error": {
+      "documentIsIssued": "This document has been issued, so it cannot go in the bin. Correct it with an avoir, which carries its own number and leaves this one standing.",
+      "notAllowedToDelete": "Only the Gérant may put records in the bin.",
       "noSuchDocument": "That document no longer exists.",
       "noCounterparty": "That document has no client.",
       "notAllowed": "Your role may not issue this kind of document.",
@@ -1110,6 +1112,17 @@
       "touched": "Prices",
       "touchedValue": "{changed} changed, {added} new",
       "why": "An avenant states only the prices it moves, so its own total is the value of those prices. Every situation raised after it is issued bills against the amended bordereau."
+    },
+    "discard": {
+      "title": "Put this draft in the bin",
+      "what": "For a draft that should never have existed — the wrong client, a duplicate, one typed while learning the screen. A draft only: once a document is issued it carries a number somebody else has seen, and the correction is an avoir, never a deletion. Restorable for 30 days.",
+      "reason": "Why is it going? This is kept.",
+      "action": "Put in the bin",
+      "restore": "Take it back out of the bin",
+      "notAllowed": "Only the Gérant may put records in the bin.",
+      "issued": "This document has been issued. An issued document is never deleted — correct it with an avoir, which carries its own number and leaves this one standing.",
+      "inBin": "This draft is in the bin. Nothing was deleted — take it back out below.",
+      "inBinBecause": "This draft is in the bin: {reason}. Nothing was deleted — take it back out below."
     }
   },
   "checklist": {

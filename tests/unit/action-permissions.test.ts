@@ -77,6 +77,11 @@ const EXPECTED: Record<string, string[]> = {
   // carrying an issued document refuses, because LAW 5 outranks tidiness.
   "deals/[id]/delete-actions.ts:discardDealAction": ["records.delete"],
   "deals/[id]/delete-actions.ts:restoreDealAction": ["records.delete"],
+  // And on a document — `records.delete`, not the kind's issue permission: may
+  // this person take a row out of the world is a different question from may
+  // they put paper into it. Only a draft can go at all (LAW 5).
+  "documents/[id]/delete-actions.ts:discardDocumentAction": ["records.delete"],
+  "documents/[id]/delete-actions.ts:restoreDocumentAction": ["records.delete"],
   "companies/delete-actions.ts:discardCompany": ["records.delete"],
   "companies/delete-actions.ts:restoreCompany": ["records.delete"],
   "companies/merge-actions.ts:mergeCompanies": ["merge.execute"],

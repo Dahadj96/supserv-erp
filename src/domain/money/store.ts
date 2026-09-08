@@ -4,6 +4,7 @@ import { auditEntry } from "@/db/schema/control";
 import { document } from "@/db/schema/document";
 import { payment, paymentAllocation, relance, relanceStep } from "@/db/schema/money";
 import { party } from "@/db/schema/party";
+import { liveDocument } from "@/domain/deletion";
 import { payables } from "@/domain/purchase/store";
 import { balanceOf, type Owing } from "./ageing";
 import type { Received, Settlement } from "./collection";
@@ -577,7 +578,10 @@ export async function billed(): Promise<BilledRow[]> {
     })
     .from(document)
     .innerJoin(party, eq(party.id, document.partyId))
-    .where(inArray(document.kind, BILLED_KINDS))
+    // Unlike `owings`, this list shows drafts — a proforma nobody has issued is
+    // exactly what screen 17 is for — so it is the one money query that has to
+    // say the bin out loud.
+    .where(and(inArray(document.kind, BILLED_KINDS), liveDocument))
     .orderBy(desc(document.createdAt));
 
   return rows.map((row) => {

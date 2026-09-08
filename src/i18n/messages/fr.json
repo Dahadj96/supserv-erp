@@ -1073,6 +1073,8 @@
     },
     "localeFromClient": "La langue d'un document vient de la fiche du client, jamais de la personne connectée.",
     "error": {
+      "documentIsIssued": "Ce document est émis : il ne peut pas aller à la corbeille. Corrigez-le par un avoir, qui porte son propre numéro et laisse celui-ci en place.",
+      "notAllowedToDelete": "Seul le Gérant peut mettre une fiche à la corbeille.",
       "noSuchDocument": "Ce document n'existe plus.",
       "noCounterparty": "Ce document n'a pas de client.",
       "notAllowed": "Votre rôle ne permet pas d'émettre ce type de document.",
@@ -1110,6 +1112,17 @@
       "touched": "Prix",
       "touchedValue": "{changed} modifié(s), {added} nouveau(x)",
       "why": "Un avenant ne porte que les prix qu'il déplace : son propre total est la valeur de ces prix. Toute situation postérieure à son émission facture sur le bordereau modifié."
+    },
+    "discard": {
+      "title": "Mettre ce brouillon à la corbeille",
+      "what": "Pour un brouillon qui n’aurait jamais dû exister — le mauvais client, un doublon, un essai fait en apprenant l’écran. Un brouillon seulement : dès qu’un document est émis il porte un numéro que quelqu’un d’autre a vu, et la correction est un avoir, jamais une suppression. Récupérable pendant 30 jours.",
+      "reason": "Pourquoi part-il ? Ceci est conservé.",
+      "action": "Mettre à la corbeille",
+      "restore": "Le sortir de la corbeille",
+      "notAllowed": "Seul le Gérant peut mettre une fiche à la corbeille.",
+      "issued": "Ce document est émis. Un document émis ne se supprime jamais — corrigez-le par un avoir, qui porte son propre numéro et laisse celui-ci en place.",
+      "inBin": "Ce brouillon est à la corbeille. Rien n’a été supprimé — ressortez-le ci-dessous.",
+      "inBinBecause": "Ce brouillon est à la corbeille : {reason}. Rien n’a été supprimé — ressortez-le ci-dessous."
     }
   },
   "checklist": {

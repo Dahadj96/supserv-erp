@@ -143,6 +143,24 @@ export const document = pgTable(
     renderSnapshot: jsonb("render_snapshot"),
 
     createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
+
+    /**
+     * The thirty-day bin — and the one table where these three columns are
+     * expected to stay null on almost every row.
+     *
+     * Only a document that never became one can ever reach them: `number is
+     * null and locked_at is null`. The moment either is set the paper exists
+     * outside this building — a client holds a copy, a series has counted it —
+     * and LAW 5 says it is not deleted, ever, by anybody. The correction is an
+     * avoir carrying its own number, not a row going quiet.
+     *
+     * So this is here for the draft that should never have existed: the
+     * duplicate, the wrong client, the one typed while learning the screen.
+     * `discardDocument` refuses on exactly that pair, and refuses out loud.
+     */
+    deletedAt: timestamp("deleted_at", { withTimezone: true }),
+    deletedBy: text("deleted_by"),
+    deleteReason: text("delete_reason"),
   },
   (table) => [
     /**

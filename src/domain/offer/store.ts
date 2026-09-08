@@ -5,6 +5,7 @@ import { deal } from "@/db/schema/deal";
 import { document, documentLine } from "@/db/schema/document";
 import { party } from "@/db/schema/party";
 import { technicalFile } from "@/domain/deal/technical-store";
+import { liveDocument } from "@/domain/deletion";
 import { marginPct, summariseMargin } from "./margin";
 import { type SubmitFacts, submitChecks } from "./submit";
 
@@ -41,7 +42,9 @@ export async function listOffers(opts: { limit?: number } = {}) {
     .from(document)
     .innerJoin(party, eq(party.id, document.partyId))
     .leftJoin(deal, eq(deal.id, document.dealId))
-    .where(inArray(document.kind, ["quotation", "proforma"]))
+    // A draft in the bin is not an offer anybody is working on. `liveDocument`
+    // rather than a hand-written `isNull` so this list and the bin cannot drift.
+    .where(and(inArray(document.kind, ["quotation", "proforma"]), liveDocument))
     .orderBy(desc(document.createdAt))
     .limit(opts.limit ?? 100);
 
@@ -212,7 +215,13 @@ export async function offersForDeal(dealId: string) {
       createdAt: document.createdAt,
     })
     .from(document)
-    .where(and(eq(document.dealId, dealId), inArray(document.kind, ["quotation", "proforma"])))
+    .where(
+      and(
+        eq(document.dealId, dealId),
+        inArray(document.kind, ["quotation", "proforma"]),
+        liveDocument,
+      ),
+    )
     .orderBy(desc(document.createdAt));
 }
 
@@ -221,5 +230,7 @@ export async function draftOffers() {
   return db
     .select({ id: document.id })
     .from(document)
-    .where(and(inArray(document.kind, ["quotation", "proforma"]), isNull(document.number)));
+    .where(
+      and(inArray(document.kind, ["quotation", "proforma"]), isNull(document.number), liveDocument),
+    );
 }

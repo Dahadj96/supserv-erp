@@ -1,18 +1,21 @@
 import { Check, CircleAlert, CircleX, Minus } from "lucide-react";
 import { redirect as hardRedirect, notFound } from "next/navigation";
 import { getTranslations, setRequestLocale } from "next-intl/server";
-import { mayIssue } from "@/auth/can";
+import { INPUT } from "@/app/[locale]/(app)/setup/field";
+import { can, mayIssue } from "@/auth/can";
 import { getSession } from "@/auth/session";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { type ChecklistRow, checklist, summarise } from "@/documents/checklist";
 import { targetsFor } from "@/documents/conversion";
 import { NotRenderable, render } from "@/documents/engine";
+import { documentBinState } from "@/domain/deletion";
 import { mayDeliverAgainst } from "@/domain/delivery/lines";
 import { deliveryNotesFor } from "@/domain/delivery/store";
 import { setupState } from "@/domain/setup";
 import { Link } from "@/i18n/navigation";
 import { fileIssuedDocument, issueDocument } from "./actions";
+import { discardDocumentAction, restoreDocumentAction } from "./delete-actions";
 
 /**
  * Screen 18 — the document, and the ten things we checked before offering to
@@ -71,6 +74,25 @@ export default async function DocumentPage({
   const notes = doc.issued ? await deliveryNotesFor(id) : [];
   const setup = await setupState();
   const allowed = mayIssue(session.role, doc.kind);
+
+  /**
+   * Screen 83's button, present and grey — and on this screen the grey is the
+   * whole lesson.
+   *
+   * Every other record refuses the bin because of what hangs off it. A
+   * document refuses because of what it is: a number was allocated, a client
+   * holds a copy, and LAW 5 says the correction is an avoir and not a row
+   * going quiet. Hiding the button would leave a person hunting for a delete
+   * that does not exist. Showing it grey, with that sentence on it, teaches
+   * the rule once and answers the question every time it is asked again.
+   */
+  const bin = await documentBinState(id);
+  const mayDelete = session.role ? can(session.role, "records.delete") : false;
+  const discardBlockedBy = !mayDelete
+    ? t("documents.discard.notAllowed")
+    : !bin.discardable
+      ? t("documents.discard.issued")
+      : undefined;
 
   // LAW 5 first, then who you are, then day one, then the rules. The order is
   // the order the refusals actually happen in, so the reason on the button is
@@ -239,6 +261,47 @@ export default async function DocumentPage({
           {doc.amendment ? <AmendmentPanel a={doc.amendment} t={t} /> : null}
           <BeforeIssuing rows={rows} summary={summary} t={t} />
           <Output doc={doc} t={t} />
+
+          <section className="rounded-[var(--radius-card)] border border-line bg-surface p-5">
+            <h2 className="text-tiny font-semibold text-ink">{t("documents.discard.title")}</h2>
+            <p className="mt-1 text-micro leading-relaxed text-secondary">
+              {t("documents.discard.what")}
+            </p>
+
+            {bin.deletedAt ? (
+              <>
+                <p className="mt-3 rounded-[var(--radius-control)] border border-warning bg-warning-bg p-3 text-micro leading-relaxed text-warning-ink">
+                  {bin.reason
+                    ? t("documents.discard.inBinBecause", { reason: bin.reason })
+                    : t("documents.discard.inBin")}
+                </p>
+                <form
+                  action={restoreDocumentAction.bind(null, locale, id)}
+                  className="mt-3 flex justify-end"
+                >
+                  <Button
+                    type="submit"
+                    variant="secondary"
+                    disabledReason={mayDelete ? undefined : t("documents.discard.notAllowed")}
+                  >
+                    {t("documents.discard.restore")}
+                  </Button>
+                </form>
+              </>
+            ) : (
+              <form action={discardDocumentAction.bind(null, locale, id)} className="mt-3">
+                <label className="block">
+                  <span className="text-micro text-secondary">{t("documents.discard.reason")}</span>
+                  <input name="reason" className={`${INPUT} mt-1`} />
+                </label>
+                <div className="mt-3 flex justify-end">
+                  <Button type="submit" variant="danger" disabledReason={discardBlockedBy}>
+                    {t("documents.discard.action")}
+                  </Button>
+                </div>
+              </form>
+            )}
+          </section>
         </div>
       </div>
     </main>
