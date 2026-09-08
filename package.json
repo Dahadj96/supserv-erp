@@ -25,7 +25,7 @@
     "db:generate": "drizzle-kit generate",
     "db:migrate": "drizzle-kit migrate",
     "db:studio": "drizzle-kit studio",
-    "worker": "tsx src/jobs/worker.ts",
+    "worker": "tsx --env-file=.env src/jobs/worker.ts",
     "catalogue": "tsx --env-file=.env scripts/seed-catalogue.ts",
     "audit:forms": "node scripts/audit-forms.mjs",
     "audit:schema": "node scripts/audit-schema.mjs",
