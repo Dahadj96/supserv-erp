@@ -79,10 +79,35 @@ import { readCorpus, readSchemaColumns } from "./lib/schema-columns.mjs";
  *        banner names the fields a merge took, which is the question that
  *        column was written to answer.
  *
- * THE CEILING IS NOUGHT, so this is a gate now and not a ratchet: any column
- * this ERP adds and does not use fails the build the day it is added.
+ *   12 — 8 September 2026. NOT twelve new ones: twelve that were always there
+ *        and could not be seen. The reader was blind to twenty-one of the
+ *        sixty-eight tables — every one declared in the wrapped three-argument
+ *        form, which is to say every table somebody had bothered to index:
+ *        `document`, `document_line`, `audit_entry`, `payment_allocation`,
+ *        `numbering_series`, `party_role`. 545 columns of 716.
+ *
+ *        So "0 disconnected, every column of ours is both written and read" was
+ *        a sentence about two thirds of the schema, printed for a fortnight,
+ *        and this script was made a GATE on the strength of it. The reader is
+ *        fixed and `tests/unit/schema-columns.test.ts` now counts the tables
+ *        the schema declares rather than checking a threshold a broken parser
+ *        still clears.
+ *
+ *        First on the list is `document.series_id`, mentioned nowhere — which
+ *        is why a yearly numbering series has never once reset: `last_year`
+ *        joins on it, finds nothing, and the reset condition is never true.
+ *        Found by a reviewer reading the code, three days after this gate
+ *        reported the schema clean.
+ *
+ *   11 — 8 September 2026, an hour later. `document.series_id` is written in
+ *        the same transaction that takes the number, so a yearly series can
+ *        reset. The first of the twelve, closed by the commit that hardened
+ *        issuance.
+ *
+ * A CEILING AGAIN, NOT A GATE, and deliberately: eleven real findings are not
+ * fixed by lowering a number. Each comes down the way the others did.
  */
-const CEILING = 0;
+const CEILING = 11;
 
 /**
  * Tables that are SOMEBODY ELSE'S to write and read.

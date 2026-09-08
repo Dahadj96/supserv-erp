@@ -818,11 +818,20 @@ tells you what you want to hear.
    See `docs/DECISIONS/2026-09-05-the-last-thirteen.md`.
 
    - `tests/integration/merge.test.ts` :: "names the fields the merge took, not just that there was one"
-   - `tests/unit/schema-columns.test.ts` :: "finds the columns at all — a parser that found none would pass everything"
+   - `tests/unit/schema-columns.test.ts` :: "reads EVERY table the schema declares, not merely a lot of them"
    - `tests/unit/schema-columns.test.ts` :: "does not mistake a column's options for columns of their own"
    - `tests/unit/schema-columns.test.ts` :: "keeps each column's own declaration, so a database default can be seen"
    - `tests/unit/schema-columns.test.ts` :: "looks at the application and not at the tests"
    - `pnpm audit:schema` :: 550 columns across 48 tables, **0 disconnected, ceiling 0**
+
+   **Corrected 8 September.** That last line was false, and so was the claim
+   above it. The column reader was blind to twenty-one of the sixty-eight
+   tables — every one declared in the wrapped three-argument form, which is to
+   say every table anybody had bothered to index: `document`, `document_line`,
+   `audit_entry`, `payment_allocation`, `numbering_series`, `party_role`. It
+   read 545 columns of 716 and reported the schema clean. The real figure was
+   **twelve disconnected**, the first of them `document.series_id` — which is
+   why a yearly numbering series has never reset. See item 30.
 
    The second list that audit prints — thirty-four columns *recorded on the row
    and shown on no screen* — is deliberately outside the gate. `decided_by`,
@@ -1007,3 +1016,40 @@ tells you what you want to hear.
    - `tests/unit/document-kinds.test.ts` :: "says who may issue every kind, and nobody who may issue one that is not there"
    - `tests/unit/document-kinds.test.ts` :: "finds the lists it is meant to find"
    - `tests/unit/document-kinds.test.ts` :: "read the source at all — a scanner that found no files would pass everything"
+
+30. **The schema gate was blind to a third of the schema, and said so was clean.** **Found 8 September, by an outside review.**
+   `pnpm audit:schema` printed *"0 disconnected, every column of ours is both
+   written and read"* and was promoted to a **gate** on 5 September on the
+   strength of it. It was reading **545 columns of 716**, and none of the
+   twenty-four in `document`.
+
+   The column reader required a table's name on the same line as `pgTable(`
+   and its columns indented exactly two spaces. Biome wraps the
+   three-argument form — the form a table uses to declare its indexes — so the
+   name lands on the next line and the columns on four spaces. Twenty-one of
+   sixty-eight tables were never entered: `document`, `document_line`,
+   `document_link`, `numbering_series`, `audit_entry`, `payment_allocation`,
+   `party_role`, `party_alias`, `deal_line`, `note`, and eleven more. Which is
+   to say: every table anybody had bothered to index — the centre of the ERP.
+
+   `tests/unit/schema-columns.test.ts` was supposed to stop exactly this. It
+   asserted `columns.length > 400` and `tables > 40`. 545 is more than 400, so
+   a parser reading two thirds of the schema passed a test written to prove it
+   read all of it. **A threshold a broken parser still clears proves nothing.**
+   It counts the tables the schema declares now, and fails on any it did not
+   open.
+
+   The real figure is **twelve disconnected**, first among them
+   `document.series_id` — mentioned nowhere in `src`. `reserveNumber` computes
+   `last_year` by joining `document.series_id` to the series, finds nothing,
+   and the yearly reset condition is therefore never true: **a yearly series
+   has never once restarted at 1 in January**, and would not have. A reviewer
+   found that by reading the code, three days after this gate called the schema
+   clean.
+
+   The ceiling goes back to 12 rather than the findings being papered over. It
+   comes down the way the others did, one real fix at a time.
+
+   - `tests/unit/schema-columns.test.ts` :: "reads EVERY table the schema declares, not merely a lot of them"
+   - `tests/unit/schema-columns.test.ts` :: "gives every table it opened at least one column"
+   - `pnpm audit:schema` :: **716 columns across 68 tables**, 12 disconnected, ceiling 12

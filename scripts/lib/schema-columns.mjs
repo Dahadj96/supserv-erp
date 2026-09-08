@@ -11,7 +11,34 @@ import { join } from "node:path";
  */
 const SCHEMA_DIR = "src/db/schema";
 
-const COLUMN = /^ {2}(\w+):\s*(?:\w+)\(/;
+/*
+  TWO OR FOUR SPACES, because there are two shapes of table and this only ever
+  read one of them.
+
+    pgTable("project", { … })                    <- columns at two spaces
+    pgTable(                                     <- Biome wraps the three-arg
+      "document",                                   form, so its columns sit
+      { … },                                        at four, and its NAME is
+      (t) => [index(…)],                            not on the pgTable line
+    )
+
+  The three-argument form is how a table declares its indexes, so the tables
+  that were invisible were exactly the ones somebody had bothered to index:
+  `document`, `document_line`, `audit_entry`, `payment_allocation`,
+  `numbering_series`, `party_role` — twenty-one of sixty-eight, a third of the
+  schema and most of its centre.
+
+  `pnpm audit:schema` reported "0 disconnected, every column of ours is both
+  written and read" the whole time. It was reading 545 of 716 columns and none
+  of the document table's twenty-four, which is why `document.series_id` —
+  written by nothing, read by the yearly-reset query — sailed through a gate
+  built to catch precisely that. A reviewer found it by reading the code.
+
+  The depth check below is what keeps this honest at four spaces: a nested
+  `{ precision, scale }` sits at depth three and an index callback carries no
+  `name: type(` at all.
+*/
+const COLUMN = /^ {2,4}(\w+):\s*(?:\w+)\(/;
 
 export function readSchemaColumns(root = process.cwd()) {
   const dir = join(root, SCHEMA_DIR);
@@ -26,12 +53,19 @@ export function readSchemaColumns(root = process.cwd()) {
 
     for (const line of lines) {
       if (!table) {
-        const start = line.match(/^export const (\w+) = pgTable\(\s*"([^"]+)"/);
+        // The name comes on this line or the next one — see COLUMN above. A
+        // regex that demanded it here skipped the table entirely and, because
+        // `table` stayed null, every column in it with it.
+        const start = line.match(/^export const (\w+) = pgTable\((?:\s*"([^"]+)")?/);
         if (!start) continue;
-        table = { variable: start[1], name: start[2] };
+        table = { variable: start[1], name: start[2] ?? null };
         // The pgTable line opens `(` and usually `{` too, so it is counted
         // like any other: the column object sits at depth 2 from here.
         depth = 0;
+      } else if (table.name === null) {
+        // The wrapped form: the very next line carries the name.
+        const named = line.match(/^\s*"([^"]+)"/);
+        if (named) table.name = named[1];
       } else if (depth === 2) {
         // Depth 2 is inside the column object: `pgTable(` is one, `{` is two.
         // Counting is what keeps a nested `{ precision, scale }` or an index

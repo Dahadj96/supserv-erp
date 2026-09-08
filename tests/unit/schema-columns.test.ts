@@ -1,5 +1,9 @@
+import { readdirSync, readFileSync } from "node:fs";
+import { join, resolve } from "node:path";
 import { describe, expect, it } from "vitest";
 import { readCorpus, readSchemaColumns } from "../../scripts/lib/schema-columns.mjs";
+
+const SCHEMA_DIR = resolve(import.meta.dirname, "../../src/db/schema");
 
 /**
  * Every column, and whether the application is joined up to it.
@@ -21,9 +25,47 @@ const columns = readSchemaColumns();
 const corpus = readCorpus();
 
 describe("what the schema declares", () => {
-  it("finds the columns at all — a parser that found none would pass everything", () => {
-    expect(columns.length).toBeGreaterThan(400);
-    expect(new Set(columns.map((c) => c.table)).size).toBeGreaterThan(40);
+  it("reads EVERY table the schema declares, not merely a lot of them", () => {
+    /*
+      THIS TEST USED TO SAY `toBeGreaterThan(400)` AND `toBeGreaterThan(40)`,
+      and it passed for a fortnight while the parser was blind to twenty-one of
+      the sixty-eight tables — `document`, `document_line`, `audit_entry`,
+      `payment_allocation`, `numbering_series`, `party_role` among them. Every
+      table declared in the wrapped three-argument form, which is to say every
+      table somebody had bothered to index.
+
+      545 columns of 716 is more than 400, so the threshold was met and the
+      gate reported "0 disconnected, every column of ours is both written and
+      read" while never looking at the centre of the schema. `pnpm
+      audit:schema` was made a GATE on that reading. A reviewer found
+      `document.series_id` — written by nothing — by reading the code.
+
+      A number a parser cannot fail to reach proves nothing. The count comes
+      from the schema files themselves now, so the only way to pass is to
+      actually read them all.
+    */
+    const declared = new Set<string>();
+    for (const file of readdirSync(SCHEMA_DIR)) {
+      if (!file.endsWith(".ts")) continue;
+      const text = readFileSync(join(SCHEMA_DIR, file), "utf8");
+      for (const m of text.matchAll(/pgTable\(\s*"([a-z_]+)"/g)) declared.add(m[1] as string);
+    }
+
+    const seen = new Set(columns.map((c) => c.table));
+    const missed = [...declared].filter((t) => !seen.has(t));
+
+    expect(declared.size, "no tables found — the reader itself is broken").toBeGreaterThan(60);
+    expect(missed, "tables the column reader never opened").toEqual([]);
+  });
+
+  it("gives every table it opened at least one column", () => {
+    // A table entered and left empty is the same blindness wearing a different
+    // hat: it would count towards the total above and contribute nothing.
+    const byTable = new Map<string, number>();
+    for (const c of columns) byTable.set(c.table, (byTable.get(c.table) ?? 0) + 1);
+    const empty = [...byTable].filter(([, n]) => n === 0).map(([t]) => t);
+    expect(empty).toEqual([]);
+    expect(byTable.get("document"), "the table the whole ERP turns on").toBeGreaterThan(20);
   });
 
   it("reads a column the ordinary way, with its property name and its table", () => {
