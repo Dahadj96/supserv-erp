@@ -155,10 +155,9 @@ export function progressOf(opts: {
   const retentionReleased = d(opts.retentionReleased);
   const retentionOutstanding = Decimal.max(retentionHeld.minus(retentionReleased), 0);
 
-  const financialPercent =
-    contract && contract.greaterThan(0)
-      ? Math.min(Math.floor(approved.dividedBy(contract).times(100).toNumber()), 100)
-      : null;
+  const financialPercent = contract?.greaterThan(0)
+    ? Math.min(Math.floor(approved.dividedBy(contract).times(100).toNumber()), 100)
+    : null;
 
   const aheadOfBilling =
     financialPercent !== null && opts.physicalPercent !== null

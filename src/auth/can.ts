@@ -63,7 +63,6 @@ export const ROLES = {
   gerant: [...PERMISSIONS],
   commercial: [
     "inbox.view",
-    "offers.margin.view",
     "offers.issue",
     "deliveries.issue",
     "works.issue",

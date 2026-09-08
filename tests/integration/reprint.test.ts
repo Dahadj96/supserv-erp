@@ -211,6 +211,28 @@ describe("reprinting an issued document", () => {
     await db.delete(bankAccount).where(eq(bankAccount.bankName, "TESTRPT BEA"));
   });
 
+  it("still prints the counterparty identity that was issued", async () => {
+    await db
+      .update(party)
+      .set({
+        legalName: "CLIENT REPRINT RENAMED",
+        address: "Nouvelle adresse client, Oran",
+        nif: "000116008888888",
+      })
+      .where(eq(party.id, clientId));
+
+    const reprint = await render({ documentId: id, purpose: "preview", actorId: ACTOR });
+    expect(reprint.counterparty.legalName).toBe("CLIENT REPRINT");
+    expect(reprint.counterparty.address).toBe("Alger");
+    expect(reprint.counterparty.nif).toBe("000116009999999");
+
+    const text = await pdfText(await toPdf(reprint));
+    expect(text).toContain("CLIENT REPRINT");
+    expect(text).toContain("Alger");
+    expect(text).not.toContain("CLIENT REPRINT RENAMED");
+    expect(text).not.toContain("Nouvelle adresse client");
+  });
+
   it("gives a NEW document the new address, because it has promised nobody anything", async () => {
     const fresh = await makeDraft();
     const preview = await render({ documentId: fresh, purpose: "preview", actorId: ACTOR });

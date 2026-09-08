@@ -12,7 +12,7 @@ import { mayDeliverAgainst } from "@/domain/delivery/lines";
 import { deliveryNotesFor } from "@/domain/delivery/store";
 import { setupState } from "@/domain/setup";
 import { Link } from "@/i18n/navigation";
-import { issueDocument } from "./actions";
+import { fileIssuedDocument, issueDocument } from "./actions";
 
 /**
  * Screen 18 — the document, and the ten things we checked before offering to
@@ -41,13 +41,14 @@ export default async function DocumentPage({
   params: Promise<{ locale: string; id: string }>;
   searchParams: Promise<{
     issued?: string;
+    filed?: string;
     converted?: string;
     error?: string;
     rule?: string;
   }>;
 }) {
   const { locale, id } = await params;
-  const { issued, converted, error, rule } = await searchParams;
+  const { issued, filed, converted, error, rule } = await searchParams;
   setRequestLocale(locale);
   const t = await getTranslations();
 
@@ -154,17 +155,33 @@ export default async function DocumentPage({
           <Button variant="secondary" disabledReason={t("documents.sendUnavailable")}>
             {t("documents.sendByEmail")}
           </Button>
-          <form action={issueDocument.bind(null, locale, id)}>
-            <Button type="submit" variant="primary" disabledReason={disabledReason}>
-              {t("documents.issue")}
-            </Button>
-          </form>
+          {doc.issued ? (
+            allowed ? (
+              <form action={fileIssuedDocument.bind(null, locale, id)}>
+                <Button type="submit" variant="secondary">
+                  {t("documents.fileAgain")}
+                </Button>
+              </form>
+            ) : null
+          ) : (
+            <form action={issueDocument.bind(null, locale, id)}>
+              <Button type="submit" variant="primary" disabledReason={disabledReason}>
+                {t("documents.issue")}
+              </Button>
+            </form>
+          )}
         </div>
       </div>
 
       {issued ? (
         <p className="mx-4 md:mx-7 mt-4 rounded-[var(--radius-control)] bg-good-bg px-4 py-2.5 text-tiny text-good-ink">
           {t("documents.issuedOk", { number: doc.number ?? "" })}
+        </p>
+      ) : null}
+
+      {filed ? (
+        <p className="mx-4 md:mx-7 mt-4 rounded-[var(--radius-control)] bg-good-bg px-4 py-2.5 text-tiny text-good-ink">
+          {t("documents.filedOk")}
         </p>
       ) : null}
 

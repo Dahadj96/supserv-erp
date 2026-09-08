@@ -1402,7 +1402,7 @@ export async function amendmentImpact(documentId: string): Promise<AmendmentImpa
     .from(document)
     .where(eq(document.id, documentId))
     .limit(1);
-  if (!me || me.kind !== "amendment") return null;
+  if (me?.kind !== "amendment") return null;
 
   const [link] = await db
     .select({ contractDocumentId: documentLink.toDocument })

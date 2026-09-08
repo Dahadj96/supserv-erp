@@ -212,6 +212,7 @@ export class NotRenderable extends Error {
  */
 type Snapshot = {
   company: typeof companyIdentity.$inferSelect | null;
+  counterparty?: typeof party.$inferSelect;
   bank: typeof bankAccount.$inferSelect | null;
   templateId: string | null;
   templateVersion: number;
@@ -276,6 +277,10 @@ export async function render(request: RenderRequest): Promise<RenderedDocument> 
   // the snapshot it froze at issue, and master data is only consulted for a
   // document that has not been sent to anybody yet.
   const frozen = record.renderSnapshot as Snapshot | null;
+  // Old snapshots predate the counterparty copy. They continue to render from
+  // the live row; every document issued from this version onward freezes both
+  // parties, because changing a client's NIF must not rewrite an old invoice.
+  const renderedCounterparty = frozen?.counterparty ?? counterparty;
 
   const company = frozen
     ? frozen.company
@@ -310,7 +315,7 @@ export async function render(request: RenderRequest): Promise<RenderedDocument> 
   const findings = await check({
     kind: record.kind,
     company: company ?? null,
-    counterparty,
+    counterparty: renderedCounterparty,
     total: grandTotal,
     // What the draft says about itself, unless the caller knows better. Two
     // callers used to pass `false` here unconditionally, which meant the cash
@@ -354,6 +359,7 @@ export async function render(request: RenderRequest): Promise<RenderedDocument> 
     // it printed.
     const snapshot: Snapshot = {
       company: company ?? null,
+      counterparty,
       bank: bank ?? null,
       templateId: chosen?.id ?? null,
       templateVersion,
@@ -373,14 +379,25 @@ export async function render(request: RenderRequest): Promise<RenderedDocument> 
     if (reservesNumber) {
       number = await db.transaction(async (tx) => {
         const allocated = await reserveNumber(tx, record.kind, issuedOn);
-        await tx
+        const updated = await tx
           .update(document)
-          .set({ ...issuedFields, number: allocated })
-          .where(eq(document.id, record.id));
-        return allocated;
+          .set({
+            ...issuedFields,
+            number: allocated.number,
+            seriesId: allocated.seriesId,
+          })
+          .where(and(eq(document.id, record.id), eq(document.status, "draft")))
+          .returning({ id: document.id });
+        if (updated.length !== 1) throw new NotRenderable("alreadyIssued");
+        return allocated.number;
       });
     } else {
-      await db.update(document).set(issuedFields).where(eq(document.id, record.id));
+      const updated = await db
+        .update(document)
+        .set(issuedFields)
+        .where(and(eq(document.id, record.id), eq(document.status, "draft")))
+        .returning({ id: document.id });
+      if (updated.length !== 1) throw new NotRenderable("alreadyIssued");
     }
   }
 
@@ -408,11 +425,11 @@ export async function render(request: RenderRequest): Promise<RenderedDocument> 
       email: company?.email ?? null,
     },
     counterparty: {
-      legalName: counterparty.legalName,
-      address: counterparty.address,
-      nif: counterparty.nif,
-      nis: counterparty.nis,
-      rc: counterparty.rc,
+      legalName: renderedCounterparty.legalName,
+      address: renderedCounterparty.address,
+      nif: renderedCounterparty.nif,
+      nis: renderedCounterparty.nis,
+      rc: renderedCounterparty.rc,
     },
     bank: bank ? { bankName: bank.bankName, rib: bank.rib, agency: bank.agency } : null,
 

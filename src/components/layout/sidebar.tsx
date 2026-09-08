@@ -1,6 +1,6 @@
 "use client";
 
-import { NavList } from "./nav-list";
+import { type NavCounts, NavList } from "./nav-list";
 
 /**
  * Figma: component `Sidebar` on page v5, which 79 screens instance.
@@ -9,7 +9,15 @@ import { NavList } from "./nav-list";
  * The destinations themselves live in `nav-list.tsx`, because the phone drawer
  * shows the same ones and one list cannot disagree with itself.
  */
-export function Sidebar({ displayName, roleLabel }: { displayName: string; roleLabel: string }) {
+export function Sidebar({
+  displayName,
+  roleLabel,
+  counts,
+}: {
+  displayName: string;
+  roleLabel: string;
+  counts: NavCounts;
+}) {
   const initials = displayName
     .split(/[\s.]+/)
     .filter(Boolean)
@@ -41,7 +49,7 @@ export function Sidebar({ displayName, roleLabel }: { displayName: string; roleL
         below an edge nothing could scroll past. The footer stays pinned.
       */}
       <nav className="min-h-0 flex-1 overflow-y-auto px-3 pb-2">
-        <NavList />
+        <NavList counts={counts} />
       </nav>
 
       <div className="flex h-[55px] shrink-0 items-center gap-3 border-t border-line-subtle ps-4">

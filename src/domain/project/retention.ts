@@ -136,7 +136,7 @@ export async function retentionReturned(projectIds: string[]): Promise<Map<strin
 
   for (const p of projects) {
     const back = p.contractId ? byContract.get(p.contractId) : undefined;
-    if (back && back.greaterThan(0)) out.set(p.projectId, back.toFixed(2));
+    if (back?.greaterThan(0)) out.set(p.projectId, back.toFixed(2));
   }
   return out;
 }

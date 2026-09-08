@@ -4,7 +4,7 @@ import { Menu, X } from "lucide-react";
 import { useTranslations } from "next-intl";
 import { useEffect, useState } from "react";
 import { usePathname } from "@/i18n/navigation";
-import { NavList } from "./nav-list";
+import { type NavCounts, NavList } from "./nav-list";
 
 /**
  * Screen 86, second half — how you get anywhere from a phone.
@@ -18,7 +18,15 @@ import { NavList } from "./nav-list";
  * So: the same `NavList` the rail draws, as a drawer. Not a second navigation —
  * the same one, in the shape a phone can hold.
  */
-export function PhoneMenu({ displayName, roleLabel }: { displayName: string; roleLabel: string }) {
+export function PhoneMenu({
+  displayName,
+  roleLabel,
+  counts,
+}: {
+  displayName: string;
+  roleLabel: string;
+  counts: NavCounts;
+}) {
   const t = useTranslations();
   const pathname = usePathname();
   const [open, setOpen] = useState(false);
@@ -99,7 +107,7 @@ export function PhoneMenu({ displayName, roleLabel }: { displayName: string; rol
             </div>
 
             <nav className="min-h-0 flex-1 overflow-y-auto px-3 pb-3 text-tiny">
-              <NavList onNavigate={() => setOpen(false)} />
+              <NavList counts={counts} onNavigate={() => setOpen(false)} />
             </nav>
 
             <div className="flex h-[55px] shrink-0 items-center gap-3 border-t border-line-subtle px-4">

@@ -1047,6 +1047,8 @@
     "draft": "Draft — not issued",
     "forClient": "For {client}",
     "downloadPdf": "Download PDF",
+    "fileAgain": "File PDF again",
+    "filedOk": "The archived PDF was rebuilt from the issued snapshot.",
     "sendByEmail": "Send by email",
     "sendUnavailable": "Sending is not available yet — the shared mailbox has not been scoped to a single account.",
     "issue": "Issue",
@@ -1076,6 +1078,8 @@
       "notAllowed": "Your role may not issue this kind of document.",
       "setupIncomplete": "Day one is not finished, so nothing can be issued yet.",
       "alreadyIssued": "That document has already been issued.",
+      "filingFailed": "The document was issued, but its archived PDF could not be saved. Use File PDF again to retry.",
+      "notIssued": "Only an issued document can be filed.",
       "blocked": "A confirmed rule refused this document",
       "complianceBlocked": "A confirmed rule refused this document.",
       "previousSituationNotIssued": "The previous situation is still a draft. Issue it first — the cumul précédent depends on it."

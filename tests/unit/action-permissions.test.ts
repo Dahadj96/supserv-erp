@@ -110,6 +110,7 @@ const EXPECTED: Record<string, string[]> = {
   "sourcing/[id]/actions.ts:orderAction": ["purchase.order.issue"],
 
   // ── Documents: the permission depends on the KIND ────────────────────────
+  "documents/[id]/actions.ts:fileIssuedDocument": ["*issue"],
   "documents/[id]/actions.ts:issueDocument": ["*issue"],
   "documents/[id]/convert/actions.ts:convertAction": ["*issue"],
   "documents/[id]/edit/actions.ts:saveDraftAction": ["*issue"],

@@ -1047,6 +1047,8 @@
     "draft": "Brouillon — non émise",
     "forClient": "Pour {client}",
     "downloadPdf": "Télécharger le PDF",
+    "fileAgain": "Reclasser le PDF",
+    "filedOk": "Le PDF archivé a été recréé à partir de l'instantané émis.",
     "sendByEmail": "Envoyer par e-mail",
     "sendUnavailable": "L'envoi n'est pas encore disponible — la boîte partagée n'a pas été restreinte à un seul compte.",
     "issue": "Émettre",
@@ -1076,6 +1078,8 @@
       "notAllowed": "Votre rôle ne permet pas d'émettre ce type de document.",
       "setupIncomplete": "Le premier jour n'est pas terminé : rien ne peut encore être émis.",
       "alreadyIssued": "Ce document a déjà été émis.",
+      "filingFailed": "Le document a été émis, mais son PDF archivé n'a pas pu être enregistré. Utilisez Reclasser le PDF pour réessayer.",
+      "notIssued": "Seul un document émis peut être classé.",
       "blocked": "Une règle confirmée a refusé ce document",
       "complianceBlocked": "Une règle confirmée a refusé ce document.",
       "previousSituationNotIssued": "La situation précédente est encore un brouillon. Émettez-la d'abord — le cumul précédent en dépend."

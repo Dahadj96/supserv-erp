@@ -19,14 +19,9 @@ import { applyMarginAction, markSubmittedAction, setLineAction } from "./actions
  *
  * A NOTE ON WHO SEES COST. The frame's banner says "Cost and margin columns are
  * visible because you are signed in as Gérant. The Commercial role sees selling
- * price only." The permission table in `src/auth/can.ts` disagrees — it grants
- * `offers.margin.view` to `commercial` and to `compta` as well.
- *
- * This screen follows `can()`, because a permission table is the one place that
- * question should be answered and a second answer hardcoded here is how the two
- * come to disagree. Which of them is RIGHT is a decision about who in this
- * company sees margin, and that belongs to the Gérant, not to me. It is
- * recorded in docs/DECISIONS as an open question.
+ * price only." `offers.margin.view` is the single implementation of that rule:
+ * the Gérant and Compta hold it; Commercial does not. Commercial can still type
+ * a selling price, while pricing from a cost-derived margin remains restricted.
  */
 export const dynamic = "force-dynamic";
 

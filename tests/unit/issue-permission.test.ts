@@ -48,6 +48,8 @@ describe("every document kind has an owner", () => {
     expect(mayIssue("commercial", "quotation")).toBe(true);
     expect(mayIssue("commercial", "client_order")).toBe(true);
     expect(mayIssue("commercial", "invoice")).toBe(false);
+    expect(can("commercial", "offers.margin.view")).toBe(false);
+    expect(can("gerant", "offers.margin.view")).toBe(true);
     expect(mayIssue("compta", "invoice")).toBe(true);
     expect(mayIssue("compta", "credit_note")).toBe(true);
     expect(mayIssue("compta", "purchase_order")).toBe(false);

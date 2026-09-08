@@ -46,6 +46,7 @@ async function pdfText(bytes: Buffer): Promise<string> {
  * real kind and puts back exactly what it found instead.
  */
 const KIND = "invoice";
+const RESET_KIND = "test_yearly_reset";
 
 /**
  * The whole row, not a boolean.
@@ -136,6 +137,7 @@ beforeAll(async () => {
     .where(eq(blockingRule.code, "invoice.stampDutyThreshold"));
 
   await db.delete(numberingSeries).where(eq(numberingSeries.kind, KIND));
+  await db.delete(numberingSeries).where(eq(numberingSeries.kind, RESET_KIND));
   await db
     .insert(numberingSeries)
     .values({ kind: KIND, pattern: "SUP/{YYYY}/{####}", reset: "yearly", nextValue: 42 });
@@ -184,6 +186,7 @@ afterAll(async () => {
     await db.delete(documentLine).where(inArray(documentLine.documentId, docIds));
     await db.delete(document).where(inArray(document.id, docIds));
   }
+  await db.delete(numberingSeries).where(eq(numberingSeries.kind, RESET_KIND));
   await db.delete(numberingSeries).where(eq(numberingSeries.kind, KIND));
   if (existingSeries) {
     await db.insert(numberingSeries).values(existingSeries);
@@ -314,6 +317,7 @@ describe("screen 70 — one engine", () => {
     expect(row?.status).toBe("issued");
     expect(row?.lockedAt, "LAW 5 — frozen at issue").not.toBeNull();
     expect(row?.number).toBe(out.number);
+    expect(row?.seriesId, "the document remembers which register issued its number").not.toBeNull();
   });
 
   it("refuses to issue the same document twice", async () => {
@@ -339,6 +343,81 @@ describe("screen 70 — one engine", () => {
 
     const seen = numbers.map((n) => n.number);
     expect(new Set(seen).size, "three issues, three numbers").toBe(3);
+  });
+
+  it("issues the same document exactly once under a race", async () => {
+    const id = await makeDocument(clientId, "fr");
+    const before = await peekNumber(KIND);
+
+    const attempts = await Promise.allSettled([
+      render({ documentId: id, purpose: "issue", actorId: ACTOR }),
+      render({ documentId: id, purpose: "issue", actorId: ACTOR }),
+    ]);
+
+    expect(attempts.filter((attempt) => attempt.status === "fulfilled")).toHaveLength(1);
+    expect(attempts.filter((attempt) => attempt.status === "rejected")).toHaveLength(1);
+
+    const [row] = await db.select().from(document).where(eq(document.id, id));
+    expect(row?.status).toBe("issued");
+    expect(row?.number).toBe(before);
+    expect(await peekNumber(KIND)).not.toBe(before);
+
+    const issued = await db.select().from(auditEntry).where(eq(auditEntry.entityId, id));
+    expect(issued.filter((entry) => entry.action === "issue")).toHaveLength(1);
+  });
+
+  it("restarts a yearly series after remembering the previous year's register", async () => {
+    const [series] = await db
+      .insert(numberingSeries)
+      .values({
+        kind: RESET_KIND,
+        pattern: "YEAR/{YYYY}/{####}",
+        reset: "yearly",
+        nextValue: 99,
+      })
+      .returning();
+
+    const [previous] = await db
+      .insert(document)
+      .values({
+        kind: RESET_KIND,
+        partyId: clientId,
+        locale: "fr",
+        status: "issued",
+        number: "YEAR/2025/0098",
+        issuedOn: "2025-12-31",
+        seriesId: series?.id,
+        lockedAt: new Date("2025-12-31T12:00:00Z"),
+        totals: {},
+      })
+      .returning({ id: document.id });
+    docIds.push(previous?.id as string);
+
+    const [current] = await db
+      .insert(document)
+      .values({
+        kind: RESET_KIND,
+        partyId: clientId,
+        locale: "fr",
+        status: "draft",
+        issuedOn: "2026-01-02",
+        totals: {},
+      })
+      .returning({ id: document.id });
+    docIds.push(current?.id as string);
+
+    const out = await render({
+      documentId: current?.id as string,
+      purpose: "issue",
+      actorId: ACTOR,
+    });
+
+    expect(out.number).toBe("YEAR/2026/0001");
+    const [row] = await db
+      .select()
+      .from(document)
+      .where(eq(document.id, current?.id as string));
+    expect(row?.seriesId).toBe(series?.id);
   });
 
   it("writes who issued it and from which template", async () => {

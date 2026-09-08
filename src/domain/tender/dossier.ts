@@ -108,7 +108,7 @@ export function pieceState(opts: {
   }
 
   // Asked for, backed by a company paper nobody has filed.
-  if (!credential || !credential.fileId) {
+  if (!credential?.fileId) {
     return {
       state: "missing",
       expiresOn: null,

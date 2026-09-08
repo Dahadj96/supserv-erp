@@ -1,12 +1,18 @@
 import { redirect } from "next/navigation";
 import { getTranslations, setRequestLocale } from "next-intl/server";
 import type { ReactNode } from "react";
+import { can } from "@/auth/can";
 import { getSession } from "@/auth/session";
+import type { NavCounts } from "@/components/layout/nav-list";
 import { PhoneBar } from "@/components/layout/phone-bar";
 import { Sidebar } from "@/components/layout/sidebar";
 import { Topbar } from "@/components/layout/topbar";
 import { StateBlock } from "@/components/ui/state-block";
+import { threadCounts } from "@/domain/conversation/store";
+import { inboxCounts } from "@/domain/intake/inbox";
 import { unreadCount } from "@/domain/notify/store";
+import { gather } from "@/domain/today/gather";
+import { today } from "@/domain/today/list";
 
 /**
  * Everything behind sign-in. The shell is written ONCE here — Figma page v5 has
@@ -48,17 +54,30 @@ export default async function AppLayout({
 
   // The bell's dot was hardcoded red on every screen. Counted here instead, on
   // the server, so it is either a real number or nothing at all.
-  const unread = await unreadCount(session.userId);
+  const mayReadInbox = can(session.role, "inbox.view");
+  const now = new Date();
+  const [unread, todayItems, inbox, conversations] = await Promise.all([
+    unreadCount(session.userId, now),
+    gather(now),
+    mayReadInbox ? inboxCounts() : Promise.resolve(null),
+    mayReadInbox ? threadCounts() : Promise.resolve(null),
+  ]);
+  const navCounts: NavCounts = {
+    today: today(todayItems, now).count,
+    ...(inbox ? { inbox: inbox.unread } : {}),
+    ...(conversations ? { conversations: conversations.needsReply } : {}),
+  };
 
   return (
     <div className="flex h-screen">
-      <Sidebar displayName={session.displayName} roleLabel={roleLabel} />
+      <Sidebar displayName={session.displayName} roleLabel={roleLabel} counts={navCounts} />
       <div className="flex min-w-0 flex-1 flex-col">
         <Topbar
           displayName={session.displayName}
           role={session.role}
           locale={locale}
           unread={unread}
+          navCounts={navCounts}
         />
         {children}
         {/* Screen 86. Below `md` only, and only the four things a phone is for. */}

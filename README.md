@@ -38,7 +38,15 @@ mid-install. Back up by pushing to GitHub, not by syncing the folder.
 | `docs/DECISIONS/` | One file per decision, dated |
 | `docs/READY.md` · `docs/START-HERE.md` | Older setup notes. See the status below first |
 
-## Status — read this before believing `CLAUDE.md`
+## Current status
+
+**Last verified: 2026-09-08 · 123 test files and 1,608 tests passing.**
+
+See `CLAUDE.md` and `docs/ACCEPTANCE.md` for the current implementation and
+acceptance status. The phase notes below are retained as the historical snapshot
+from 2026-08-22; their counts and “not started” statements are no longer current.
+
+## Historical status — 2026-08-22
 
 `CLAUDE.md` describes the repository as it is **meant** to be. This section says
 where it actually is, and is updated at the end of every phase.

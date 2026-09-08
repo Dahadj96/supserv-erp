@@ -8,6 +8,7 @@ import { setUiLocale, signOut } from "@/auth/actions";
 import type { Role } from "@/auth/can";
 import { Link, usePathname } from "@/i18n/navigation";
 import { NAV_GROUPS } from "./nav-items";
+import type { NavCounts } from "./nav-list";
 import { PhoneMenu } from "./phone-menu";
 
 /**
@@ -23,12 +24,14 @@ export function Topbar({
   role,
   locale,
   unread,
+  navCounts,
 }: {
   displayName: string;
   role: Role;
   locale: string;
   /** Counted on the server, in the layout. Zero hides the dot entirely. */
   unread: number;
+  navCounts: NavCounts;
 }) {
   const t = useTranslations();
   const tNav = useTranslations("nav");
@@ -52,7 +55,7 @@ export function Topbar({
   return (
     <header className="relative flex h-[58px] shrink-0 items-center gap-3 border-b border-line-subtle bg-surface pe-4 ps-4 md:ps-7">
       {/* Below `md` the rail is gone; this is the door to the same list. */}
-      <PhoneMenu displayName={displayName} roleLabel={t(`auth.roles.${role}`)} />
+      <PhoneMenu displayName={displayName} roleLabel={t(`auth.roles.${role}`)} counts={navCounts} />
 
       {/*
         Hidden below `sm`. Every page states its own name in an h1 an inch

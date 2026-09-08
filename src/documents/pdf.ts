@@ -150,7 +150,7 @@ function rule(ctx: Ctx, from = MARGIN, to = A4.width - MARGIN) {
 const TITLES: Record<string, { fr: string; en: string }> = {
   invoice: { fr: "FACTURE", en: "INVOICE" },
   proforma: { fr: "FACTURE PROFORMA", en: "PROFORMA INVOICE" },
-  offer: { fr: "OFFRE COMMERCIALE", en: "COMMERCIAL OFFER" },
+  quotation: { fr: "DEVIS", en: "QUOTATION" },
   delivery_note: { fr: "BON DE LIVRAISON", en: "DELIVERY NOTE" },
   credit_note: { fr: "AVOIR", en: "CREDIT NOTE" },
   situation: { fr: "SITUATION DE TRAVAUX", en: "PROGRESS STATEMENT" },

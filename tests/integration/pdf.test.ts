@@ -127,6 +127,14 @@ describe("the only file that draws a PDF", () => {
     expect(text).not.toContain("SUP/2026/0043");
   });
 
+  it("calls a quotation a devis rather than printing its internal kind", async () => {
+    const text = await textOf(
+      await toPdf({ ...SAMPLE, kind: "quotation", number: "DEV/2026/0043" }),
+    );
+    expect(text).toContain("DEVIS");
+    expect(text).not.toContain("quotation");
+  });
+
   it("renders the same document in English for a counterparty who reads English", async () => {
     const english = await toPdf({
       ...SAMPLE,

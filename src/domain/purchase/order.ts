@@ -127,7 +127,7 @@ async function linked(orderId: string, kind: string) {
 
 export async function purchaseOrder(id: string): Promise<PurchaseOrderView | null> {
   const [order] = await db.select().from(document).where(eq(document.id, id)).limit(1);
-  if (!order || order.kind !== "purchase_order") return null;
+  if (order?.kind !== "purchase_order") return null;
 
   const [supplier] = await db
     .select({

@@ -5,6 +5,15 @@ import { Badge } from "@/components/ui/badge";
 import { Link, usePathname } from "@/i18n/navigation";
 import { NAV_GROUPS } from "./nav-items";
 
+/** The live values computed by the server shell. Missing and zero hide a badge. */
+export type NavCounts = Partial<Record<"today" | "inbox" | "conversations", number>>;
+
+const COUNT_TONE = {
+  today: "neutral",
+  inbox: "critical",
+  conversations: "critical",
+} as const;
+
 /**
  * The twenty-four destinations, drawn once.
  *
@@ -13,16 +22,16 @@ import { NAV_GROUPS } from "./nav-items";
  * second place for "active" to be decided differently, and the first thing
  * that drifts is which row is highlighted.
  *
- * Counts are placeholders until the queries exist — LAW 1 says they are
- * computed, never stored, so they will arrive from the server, not a column.
+ * Counts are computed by the server layout from the same domain functions as
+ * their destination pages. A missing or zero count draws no urgency badge.
  */
-const COUNTS: Record<string, { value: number; tone: "neutral" | "critical" }> = {
-  today: { value: 7, tone: "neutral" },
-  inbox: { value: 12, tone: "critical" },
-  conversations: { value: 9, tone: "critical" },
-};
-
-export function NavList({ onNavigate }: { onNavigate?: () => void }) {
+export function NavList({
+  counts = {},
+  onNavigate,
+}: {
+  counts?: NavCounts;
+  onNavigate?: () => void;
+}) {
   const t = useTranslations("nav");
   const pathname = usePathname();
 
@@ -37,7 +46,7 @@ export function NavList({ onNavigate }: { onNavigate?: () => void }) {
           ) : null}
           {group.entries.map((entry) => {
             const active = pathname === entry.href || pathname.startsWith(`${entry.href}/`);
-            const count = entry.badge ? COUNTS[entry.badge] : undefined;
+            const count = entry.badge ? counts[entry.badge] : undefined;
             return (
               <Link
                 key={entry.key}
@@ -54,12 +63,15 @@ export function NavList({ onNavigate }: { onNavigate?: () => void }) {
               >
                 <entry.icon className="size-4 shrink-0" aria-hidden />
                 <span className="truncate">{t(entry.messageKey)}</span>
-                {count ? (
+                {entry.badge && count ? (
                   <span className="ms-auto">
                     {/* On the active row the pill sits on ink, so a solid ink
                         pill would vanish — the soft chip is the readable one. */}
-                    <Badge tone={active ? "neutral" : count.tone} fill={active ? "soft" : "solid"}>
-                      {count.value}
+                    <Badge
+                      tone={active ? "neutral" : COUNT_TONE[entry.badge]}
+                      fill={active ? "soft" : "solid"}
+                    >
+                      {count}
                     </Badge>
                   </span>
                 ) : null}

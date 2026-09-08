@@ -35,7 +35,9 @@ type Tx = Parameters<Parameters<typeof db.transaction>[0]>[0];
  * costs nothing at six users and is the difference between a series you can
  * defend and one you cannot.
  */
-export async function reserveNumber(tx: Tx, kind: string, on: Date): Promise<string> {
+export type ReservedNumber = { number: string; seriesId: string };
+
+export async function reserveNumber(tx: Tx, kind: string, on: Date): Promise<ReservedNumber> {
   const rows = await tx.execute<{
     id: string;
     pattern: string;
@@ -68,7 +70,10 @@ export async function reserveNumber(tx: Tx, kind: string, on: Date): Promise<str
     .set({ nextValue: value + 1 })
     .where(eq(numberingSeries.id, series.id));
 
-  return formatNumber(series.pattern, value, year);
+  return {
+    number: formatNumber(series.pattern, value, year),
+    seriesId: series.id,
+  };
 }
 
 /** What the next number WOULD be. Reserves nothing — screen 70 is explicit. */

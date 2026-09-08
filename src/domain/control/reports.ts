@@ -1,4 +1,4 @@
-import { and, desc, eq, inArray, isNotNull, sql } from "drizzle-orm";
+import { and, desc, inArray, isNotNull, sql } from "drizzle-orm";
 import { db } from "@/db";
 import { deal } from "@/db/schema/deal";
 import { document } from "@/db/schema/document";
