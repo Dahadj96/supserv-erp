@@ -120,7 +120,7 @@ Facts learned the hard way. Do not rediscover them.
   `bulk-bar.tsx` forbids it on purpose.
   *Done when:* every visible bulk action does what its label says.
 
-- [ ] **0.6 · Clear my test data**
+- [x] **0.6 · Clear my test data**
   A gérant-only action that **discards** — never `DELETE`s — every party,
   deal and draft document created before a chosen timestamp, writing one
   audit entry per record. Put it on `/settings` behind a typed confirmation.
@@ -404,6 +404,25 @@ a system where it can be is a system nobody can reconcile against a statement.
 Screen 19 now says so on a permanently grey button rather than by having no
 button. Do not "finish" that column.
 
+### 0.6 — what the sweep leaves for a person, on purpose
+
+Three things `/settings/clear` deliberately does not do. None is a bug; each is
+a decision waiting on Abdou using it for a week first.
+
+- **It never purges.** Everything it takes sits in the bin, and nothing empties
+  the bin at day 30 — the same gap 0.3 wrote down. A sweep of two hundred rows
+  makes that visible for the first time, and it is still Abdou's decision what
+  actually goes at day 30 and what stays.
+- **It does not sweep notes.** A note is the only row on a timeline that nothing
+  else in the system holds a copy of, and it is reached through the record it is
+  about, so a note on a binned deal is already out of sight. Sweeping them would
+  be the one irrecoverable thing in the act.
+- **The upward refusal has no override.** A company with a deal typed after the
+  cut-off is skipped, and the only way through is to move the cut-off or bin
+  that deal by hand. That is the right default; if Abdou finds himself moving
+  the cut-off repeatedly to catch one company, a "take it and its children too"
+  checkbox is the change, and it needs to be asked for rather than assumed.
+
 ### 0.1 — `liveDocument` covers three query sites, not thirty-four
 
 `src/domain/deletion.ts` exports `liveDocument` (`document.deleted_at is null`).
@@ -481,3 +500,4 @@ carries this out; anything written before 3.3 ships should already use it.
 | 2026-09-08 | 0.3 | `47612a8` | `BinRow` gains a `kind` discriminator — company, deal or document; `listBin()` queries the three tables and sorts once across the whole set, newest first, rather than kind by kind. Restore dispatches to `restoreCompany` / `restoreDealAction` / `restoreDocumentAction`, all three still listed in the permission table. Each row leads with a neutral `Badge` naming its kind; a company and a draft link back to pages that render for a binned row, an enquiry does not because `getDeal` filters `deleted_at`. EN + FR copy for the three kind labels and "No number". `BIN_DAYS` untouched — and the fact that nothing purges at day 30 is now written under Known gaps rather than fixed, because destroying data is Abdou's decision. |
 | 2026-09-08 | 0.5 | `1dfc939` | Export implemented, the other three removed rather than stubbed. `src/components/data/export-csv.ts` writes the ticked rows with the columns the table is showing — semicolon-separated with a BOM, because Excel in a French locale splits on `;` and reads UTF-8 as Windows-1252 without one; the header comes from the caller's translator (LAW 4) and the cell text is walked out of the rendered node, so the file says what the screen says. `BulkAction` gains the row type and a `BulkContext` — ticked records plus visible columns — since only the table knows what is on screen. **Tag** removed: there is no tag table. **Mark waiting on** removed: screen 58 is computed from silences (`domain/waiting/gather.ts` stores nothing), so there is no flag to set and a flag would be a stored state time changes (LAW 1). **Assign to** removed until it has a person picker, an action and a permission — `deal.owner_id` is real, a bar of plain buttons is not enough to write it. No bulk delete; `bulk-bar.tsx` now also states that a listed action must work the moment it is visible. Three message keys deleted from both files. |
 | 2026-09-08 | 0.9 | `b58e432` | `liveDocument` on all four `number is null` lookups in `bpu-store.ts` — the queue named three, and the fourth (`reviewErratum`'s `draftLinesLosingPrice`) would have made screen 42 overstate what an erratum costs. The one that mattered is `applyErratum`, which cleared `unit_price` on every draft line on the enquiry including binned ones; `bpu()`'s `draftOfferId` was the other, sending "Build the offer" into the bin. `tests/integration/bpu-binned-draft.test.ts` proves it: four of its five assertions fail with the clause removed, including the binned row's price being cleared. Survey as asked — `src/documents/` has no lookup of this shape (every query there is by id, which must stay so a binned draft keeps its page); `offersForDeal()` and `draftOffers()` in `src/domain/offer/` already had the clause from 0.1, and `build.ts` inserts rather than looks up. |
+| 2026-09-08 | 0.6 | `6405226` | `/settings/clear`, reached from the settings hub beside the bin. `src/domain/sweep.ts` plans and runs it: pick a moment, see the counts and the first five of each kind, type CLEAR (EFFACER in French, compared against the reader's own message file), and every company, deal, draft document and person created before it goes to the 30-day bin. It discards through `discardParty` / `discardDeal` / `discardDocument` / `discardPerson` — no new UPDATE, so every guard still refuses and every audit entry is still written. **It does not cascade**: the four passes run child first — documents, deals, people, companies — and refuse UPWARDS, so a company or a deal that still has a live child the cut-off does not cover is skipped and counted. A cut-off is a moment somebody chose, not a tree, and cascading would let "before 1 September" reach a deal typed yesterday. Anything issued is skipped and named. Archived, merged and already-binned rows are not candidates; **notes are not swept** — a note is the only row a timeline holds no other copy of. One audit entry per record plus one `sweep` entry carrying the cut-off, the counts and every refusal, written last so screen 32 shows it above its own consequences. `tests/integration/sweep.test.ts` dates its fixtures in the year 2000 and cuts at June 2000 — the suite shares one database and a sweep is global, so a cut-off of "now" in a test would bin every other file's fixtures. |
