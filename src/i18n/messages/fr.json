@@ -1094,7 +1094,14 @@
       "notIssued": "Seul un document émis peut être classé.",
       "blocked": "Une règle confirmée a refusé ce document",
       "complianceBlocked": "Une règle confirmée a refusé ce document.",
-      "previousSituationNotIssued": "La situation précédente est encore un brouillon. Émettez-la d'abord — le cumul précédent en dépend."
+      "previousSituationNotIssued": "La situation précédente est encore un brouillon. Émettez-la d'abord — le cumul précédent en dépend.",
+      "notAllowedToCancel": "Seul le Gérant peut annuler une facture émise.",
+      "cancelNotIssued": "Ce document n’est pas émis : il n’y a rien à annuler par un avoir.",
+      "cancelWrongKind": "Ce type de document ne s’annule pas par un avoir.",
+      "cancelAlreadyCredited": "Cette facture a déjà été annulée par un avoir.",
+      "cancelReasonRequired": "Un avoir doit dire pourquoi. Saisissez le motif — il est imprimé sur le document et conservé.",
+      "cancelNothingToCopy": "Ce document n’a aucune ligne chiffrée : un avoir n’aurait rien à créditer.",
+      "noCreditNoteSeries": "La série des avoirs n’est pas configurée : aucun numéro n’a pu être attribué. Rien n’a été annulé."
     },
     "edit": "Modifier",
     "convert": "Convertir",
@@ -1133,6 +1140,22 @@
       "issued": "Ce document est émis. Un document émis ne se supprime jamais — corrigez-le par un avoir, qui porte son propre numéro et laisse celui-ci en place.",
       "inBin": "Ce brouillon est à la corbeille. Rien n’a été supprimé — ressortez-le ci-dessous.",
       "inBinBecause": "Ce brouillon est à la corbeille : {reason}. Rien n’a été supprimé — ressortez-le ci-dessous."
+    },
+    "cancel": {
+      "title": "Annuler cette facture par un avoir",
+      "what": "Une facture émise ne se modifie jamais et ne se supprime jamais. L’annulation établit une facture d’avoir — un second document, avec son propre numéro dans sa propre série — qui constate que la facture est annulée. La facture garde son numéro, garde ses lignes et reste dans la série ; l’avoir prend le numéro suivant de la série des avoirs. Rien n’est retiré d’aucun des deux registres.",
+      "reason": "Pourquoi est-elle annulée ? Ce motif est imprimé sur l’avoir et conservé.",
+      "action": "Annuler par un avoir",
+      "notAllowed": "Seul le Gérant peut annuler une facture émise.",
+      "wrongKind": "Ce type de document ne s’annule pas par un avoir. Un avoir porte sur une facture ; tout autre document se corrige en émettant celui qui le remplace.",
+      "notIssued": "Ce document n’est pas encore émis : il n’y a rien à annuler. Un brouillon se modifie, ou se met à la corbeille.",
+      "alreadyCredited": "Cette facture a déjà été annulée. Une facture n’est créditée qu’une fois — un second avoir consommerait un second numéro sur le même papier.",
+      "noSeries": "La série des avoirs n’est pas configurée : aucun numéro ne peut lui être attribué. Configurez-la d’abord dans Réglages → types de documents.",
+      "cancelledBy": "Annulée par l’avoir {number}. Cette facture n’est pas supprimée : elle garde son numéro et reste dans la série, et l’avoir porte le sien.",
+      "cancels": "Cet avoir annule la facture {number}. Cette facture garde son numéro et reste dans la série ; celui-ci porte le sien.",
+      "openAvoir": "Ouvrir l’avoir",
+      "openCredited": "Ouvrir la facture",
+      "noNumber": "sans numéro"
     }
   },
   "checklist": {
@@ -3712,7 +3735,8 @@
       "erratum": "a appliqué un erratum",
       "importBpu": "a importé le bordereau",
       "applyLastPrices": "a repris les derniers prix payés",
-      "sweep": "Effacé en une fois"
+      "sweep": "Effacé en une fois",
+      "credit": "Annulé par un avoir"
     }
   },
   "complianceNow": {

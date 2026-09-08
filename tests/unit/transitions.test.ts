@@ -244,8 +244,12 @@ describe("every status written in src/ is a declared state", () => {
 });
 
 describe("states nothing writes are named as such", () => {
-  it("document: credited and written_off are read everywhere and written nowhere", () => {
-    expect(MACHINES.document.unwritten).toEqual(["credited", "written_off"]);
+  it("document: written_off is read everywhere and written nowhere", () => {
+    // `credited` was on this list until 8 September 2026 and is not any more —
+    // `cancelByCreditNote` writes it, which is what task 0.8 built. The list
+    // shrinking is the point: it is the difference between a state the design
+    // names and a state something in this codebase produces.
+    expect(MACHINES.document.unwritten).toEqual(["written_off"]);
 
     const written = new Set<string>();
     for (const file of walk(join(root, "src"))) {

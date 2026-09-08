@@ -70,10 +70,14 @@ export const MACHINES = {
       credited: [],
       written_off: [],
     },
-    // Both read in a dozen places — `paidStateOf`, the invoice list's tones,
-    // the delivery and relance queries — and written by nothing. The avoir flow
-    // that would set `credited` does not exist yet.
-    unwritten: ["credited", "written_off"],
+    // `credited` came off this list on 8 September 2026, when
+    // `cancelByCreditNote` (src/documents/credit.ts) started writing it: an
+    // issued invoice cancelled by an avoir moves here and stops being owed.
+    // `written_off` is still read in a dozen places — `paidStateOf`, the
+    // invoice list's tones, `owings`, `settlements` — and written by nothing:
+    // giving up on a debt is a decision with tax consequences and it has not
+    // been asked for.
+    unwritten: ["written_off"],
     // Phase 5 moved paid-ness to arithmetic over `payment_allocation`. Rows
     // written before that still say this; `paidStateOf` ignores them.
     legacy: ["paid", "part_paid"],

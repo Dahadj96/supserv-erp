@@ -1094,7 +1094,14 @@
       "notIssued": "Only an issued document can be filed.",
       "blocked": "A confirmed rule refused this document",
       "complianceBlocked": "A confirmed rule refused this document.",
-      "previousSituationNotIssued": "The previous situation is still a draft. Issue it first — the cumul précédent depends on it."
+      "previousSituationNotIssued": "The previous situation is still a draft. Issue it first — the cumul précédent depends on it.",
+      "notAllowedToCancel": "Only the Gérant may cancel an issued invoice.",
+      "cancelNotIssued": "That document has not been issued, so there is nothing to cancel with an avoir.",
+      "cancelWrongKind": "That kind of document is not cancelled by an avoir.",
+      "cancelAlreadyCredited": "That invoice has already been cancelled by an avoir.",
+      "cancelReasonRequired": "An avoir has to say why. Type the reason — it is printed on the document and kept.",
+      "cancelNothingToCopy": "That document has no priced lines, so there is nothing for an avoir to credit.",
+      "noCreditNoteSeries": "The avoir series has not been set up, so no number could be allocated. Nothing was cancelled."
     },
     "edit": "Edit",
     "convert": "Convert",
@@ -1133,6 +1140,22 @@
       "issued": "This document has been issued. An issued document is never deleted — correct it with an avoir, which carries its own number and leaves this one standing.",
       "inBin": "This draft is in the bin. Nothing was deleted — take it back out below.",
       "inBinBecause": "This draft is in the bin: {reason}. Nothing was deleted — take it back out below."
+    },
+    "cancel": {
+      "title": "Cancel this invoice with an avoir",
+      "what": "An issued invoice is never edited and never deleted. Cancelling raises a facture d'avoir — a second document, with its own number in its own series — that states the invoice is void. The invoice keeps its number, keeps its lines and stays in the series; the avoir takes the next number in the avoir series. Nothing is removed from either register.",
+      "reason": "Why is it being cancelled? This is printed on the avoir and kept.",
+      "action": "Cancel with an avoir",
+      "notAllowed": "Only the Gérant may cancel an issued invoice.",
+      "wrongKind": "This kind of document is not cancelled by an avoir. An avoir credits an invoice; anything else is corrected by issuing the document that supersedes it.",
+      "notIssued": "This document has not been issued yet, so there is nothing to cancel. A draft is edited, or put in the bin.",
+      "alreadyCredited": "This invoice has already been cancelled. An invoice is credited once — a second avoir would spend a second number against the same paper.",
+      "noSeries": "The avoir series has not been set up, so no number can be allocated to one. Set it up in Settings → document types first.",
+      "cancelledBy": "Cancelled by avoir {number}. This invoice is not deleted: it keeps its number and stays in the series, and the avoir carries its own.",
+      "cancels": "This avoir cancels invoice {number}. That invoice keeps its number and stays in the series; this one carries its own.",
+      "openAvoir": "Open the avoir",
+      "openCredited": "Open the invoice",
+      "noNumber": "no number"
     }
   },
   "checklist": {
@@ -3712,7 +3735,8 @@
       "erratum": "applied an erratum",
       "importBpu": "imported the bordereau",
       "applyLastPrices": "applied the last prices paid",
-      "sweep": "Cleared in one act"
+      "sweep": "Cleared in one act",
+      "credit": "Cancelled by avoir"
     }
   },
   "complianceNow": {

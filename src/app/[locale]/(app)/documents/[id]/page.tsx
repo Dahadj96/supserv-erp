@@ -8,6 +8,7 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { type ChecklistRow, checklist, summarise } from "@/documents/checklist";
 import { targetsFor } from "@/documents/conversion";
+import { cancelState } from "@/documents/credit";
 import { NotRenderable, render } from "@/documents/engine";
 import { documentBinState } from "@/domain/deletion";
 import { mayDeliverAgainst } from "@/domain/delivery/lines";
@@ -15,6 +16,7 @@ import { deliveryNotesFor } from "@/domain/delivery/store";
 import { setupState } from "@/domain/setup";
 import { Link } from "@/i18n/navigation";
 import { fileIssuedDocument, issueDocument } from "./actions";
+import { cancelByAvoirAction } from "./cancel-actions";
 import { discardDocumentAction, restoreDocumentAction } from "./delete-actions";
 
 /**
@@ -88,6 +90,27 @@ export default async function DocumentPage({
    */
   const bin = await documentBinState(id);
   const mayDelete = session.role ? can(session.role, "records.delete") : false;
+
+  /**
+   * LAW 5's own sentence, on the screen that has to make it true: "cancelling
+   * writes an avoir". The card is always there — on a draft, on a delivery
+   * note, on the avoir itself — and it greys with the reason rather than
+   * disappearing, because "where is Cancel?" is a question somebody asks once
+   * and "Cancel — this document has not been issued yet" answers it for good.
+   */
+  const cancel = await cancelState(id);
+  const mayCancel = session.role ? can(session.role, "invoices.cancel") : false;
+  const cancelBlockedBy = !mayCancel
+    ? t("documents.cancel.notAllowed")
+    : !cancel.creditable
+      ? t("documents.cancel.wrongKind")
+      : !cancel.issued
+        ? t("documents.cancel.notIssued")
+        : cancel.status !== "issued"
+          ? t("documents.cancel.alreadyCredited")
+          : !cancel.seriesReady
+            ? t("documents.cancel.noSeries")
+            : undefined;
   const discardBlockedBy = !mayDelete
     ? t("documents.discard.notAllowed")
     : !bin.discardable
@@ -261,6 +284,49 @@ export default async function DocumentPage({
           {doc.amendment ? <AmendmentPanel a={doc.amendment} t={t} /> : null}
           <BeforeIssuing rows={rows} summary={summary} t={t} />
           <Output doc={doc} t={t} />
+
+          <section className="rounded-[var(--radius-card)] border border-line bg-surface p-5">
+            <h2 className="text-tiny font-semibold text-ink">{t("documents.cancel.title")}</h2>
+            <p className="mt-1 text-micro leading-relaxed text-secondary">
+              {t("documents.cancel.what")}
+            </p>
+
+            {/* What this avoir cancels — the link read from the avoir's end. */}
+            {cancel.cancels ? (
+              <p className="mt-3 rounded-[var(--radius-control)] bg-accent-bg p-3 text-micro leading-relaxed text-accent-ink">
+                {t("documents.cancel.cancels", {
+                  number: cancel.cancels.number ?? t("documents.cancel.noNumber"),
+                })}{" "}
+                <Link className="font-medium underline" href={`/documents/${cancel.cancels.id}`}>
+                  {t("documents.cancel.openCredited")}
+                </Link>
+              </p>
+            ) : null}
+
+            {/* And the same link read from the invoice's end. */}
+            {cancel.creditNote ? (
+              <p className="mt-3 rounded-[var(--radius-control)] border border-warning bg-warning-bg p-3 text-micro leading-relaxed text-warning-ink">
+                {t("documents.cancel.cancelledBy", {
+                  number: cancel.creditNote.number ?? t("documents.cancel.noNumber"),
+                })}{" "}
+                <Link className="font-medium underline" href={`/documents/${cancel.creditNote.id}`}>
+                  {t("documents.cancel.openAvoir")}
+                </Link>
+              </p>
+            ) : (
+              <form action={cancelByAvoirAction.bind(null, locale, id)} className="mt-3">
+                <label className="block">
+                  <span className="text-micro text-secondary">{t("documents.cancel.reason")}</span>
+                  <input name="reason" required className={`${INPUT} mt-1`} />
+                </label>
+                <div className="mt-3 flex justify-end">
+                  <Button type="submit" variant="danger" disabledReason={cancelBlockedBy}>
+                    {t("documents.cancel.action")}
+                  </Button>
+                </div>
+              </form>
+            )}
+          </section>
 
           <section className="rounded-[var(--radius-card)] border border-line bg-surface p-5">
             <h2 className="text-tiny font-semibold text-ink">{t("documents.discard.title")}</h2>

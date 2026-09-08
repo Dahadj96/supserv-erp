@@ -276,12 +276,41 @@ export const documentLink = pgTable(
     toDocument: uuid("to_document")
       .notNull()
       .references(() => document.id),
-    /** A proforma may NEVER carry `settles`. Enforced by trigger. */
+    /**
+     * A proforma may NEVER carry `settles`.
+     *
+     * That sentence said "Enforced by trigger" from the day this table was
+     * written and no such trigger was ever migrated — see the survey in the
+     * 0.8 note in `docs/FIX-QUEUE.md`. It is left standing as the rule it is,
+     * with the honest word: nothing enforces it yet, and `settles` is written
+     * by nothing either.
+     */
     relation: text("relation").notNull(),
-    // converted_to | covers | credits | settles | amends | closes
+    // converted_to | covers | credits | settles | amends | closes | releases
     //
-    // `amends` — an avenant on the marché it changes.
-    // `closes` — the décompte final on the marché it settles.
+    // `credits`  — the avoir on the invoice it cancels. From the avoir, so the
+    //              new paper names the old one, as `covers` does.
+    // `amends`   — an avenant on the marché it changes.
+    // `closes`   — the décompte final on the marché it settles.
+    // `releases` — the demande de restitution on the marché it draws on.
   },
-  (t) => [primaryKey({ columns: [t.fromDocument, t.toDocument, t.relation] })],
+  (t) => [
+    primaryKey({ columns: [t.fromDocument, t.toDocument, t.relation] }),
+    /**
+     * ONE AVOIR PER INVOICE, said by the database.
+     *
+     * The primary key above allows two different credit notes to credit one
+     * invoice, which is exactly what two people pressing Cancel in the same
+     * second would produce: two numbers spent out of the avoir series against
+     * one facture, and a client holding two papers cancelling the same thing.
+     * `cancelByCreditNote` inserts this link in the SAME transaction that
+     * writes the draft, so the loser of that race is refused before the engine
+     * is ever asked for a number.
+     *
+     * Partial, on `credits` alone: every other relation is many-to-one on
+     * purpose — an order is covered by several delivery notes, a marché is
+     * amended by several avenants.
+     */
+    uniqueIndex("document_credited_once").on(t.toDocument).where(sql`${t.relation} = 'credits'`),
+  ],
 );

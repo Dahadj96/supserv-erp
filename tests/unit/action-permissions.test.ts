@@ -149,6 +149,14 @@ const EXPECTED: Record<string, string[]> = {
   // ── Documents: the permission depends on the KIND ────────────────────────
   "documents/[id]/actions.ts:fileIssuedDocument": ["*issue"],
   "documents/[id]/actions.ts:issueDocument": ["*issue"],
+  // ...except cancelling one, which is not a kind question at all. `*issue`
+  // asks who may put this sort of paper into the world; `invoices.cancel` asks
+  // who may declare a facture void, and only the Gérant may. It is the
+  // stricter of the two — every role that holds it also holds
+  // `invoices.issue`, which is what actually issues the avoir — so checking it
+  // alone checks both. Added 8 September 2026 (task 0.8); until then
+  // `invoices.cancel` was granted to `gerant` and referenced by nothing.
+  "documents/[id]/cancel-actions.ts:cancelByAvoirAction": ["invoices.cancel"],
   "documents/[id]/convert/actions.ts:convertAction": ["*issue"],
   "documents/[id]/edit/actions.ts:saveDraftAction": ["*issue"],
   "documents/new/actions.ts:createDraft": ["*issue"],

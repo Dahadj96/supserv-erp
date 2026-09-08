@@ -1,0 +1,1 @@
+CREATE UNIQUE INDEX "document_credited_once" ON "document_link" USING btree ("to_document") WHERE "document_link"."relation" = 'credits';

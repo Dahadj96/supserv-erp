@@ -38,6 +38,18 @@ describe("every document kind has an owner", () => {
     }
   });
 
+  it("lets whoever may cancel an invoice also issue the avoir that does it", () => {
+    // `cancelByAvoirAction` checks `invoices.cancel` and nothing else, then
+    // issues a `credit_note` through the engine — which needs
+    // `invoices.issue`. If those two ever came apart, the Gérant would be
+    // allowed to press a button that then refused itself.
+    for (const role of Object.keys(ROLES) as Role[]) {
+      if (!can(role, "invoices.cancel")) continue;
+      expect(can(role, "invoices.issue"), role).toBe(true);
+      expect(mayIssue(role, "credit_note"), role).toBe(true);
+    }
+  });
+
   it("keeps the lines between the trades", () => {
     // Site staff deliver and sign off work; they neither quote nor bill.
     expect(mayIssue("chantier", "delivery_note")).toBe(true);

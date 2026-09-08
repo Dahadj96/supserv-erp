@@ -365,6 +365,20 @@
       "when": 1788898295256,
       "tag": "0051_gifted_ted_forrester",
       "breakpoints": true
+    },
+    {
+      "idx": 52,
+      "version": "7",
+      "when": 1788903730587,
+      "tag": "0052_smiling_major_mapleleaf",
+      "breakpoints": true
+    },
+    {
+      "idx": 53,
+      "version": "7",
+      "when": 1788903741599,
+      "tag": "0053_document_immutable_once_issued",
+      "breakpoints": true
     }
   ]
 }
