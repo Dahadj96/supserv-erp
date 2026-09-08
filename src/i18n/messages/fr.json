@@ -216,6 +216,12 @@
     "emptyTitle": "Rien n'a été supprimé",
     "emptyBody": "Tout ce que vous retirez arrive ici d'abord, avec qui l'a retiré et pourquoi.",
     "what": "Quoi",
+    "kind": {
+      "company": "Société",
+      "deal": "Affaire",
+      "document": "Brouillon"
+    },
+    "noNumber": "Sans numéro",
     "when": "Quand",
     "reason": "Motif",
     "reasonPlaceholder": "Pourquoi la retirer ? Ce motif est conservé.",

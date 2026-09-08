@@ -1,4 +1,4 @@
-import { and, desc, eq, isNotNull, isNull, sql } from "drizzle-orm";
+import { and, eq, isNotNull, isNull, sql } from "drizzle-orm";
 import { db } from "@/db";
 import { auditEntry } from "@/db/schema/control";
 import { deal } from "@/db/schema/deal";
@@ -301,41 +301,102 @@ export async function restoreDocument(opts: { id: string; actorId: string }) {
   });
 }
 
+/**
+ * Screen 83 holds three kinds of record now, and a person who has just lost
+ * one does not remember which kind it was — that is the whole reason to open a
+ * bin. So a row says what it is, and carries the least a person needs to
+ * recognise it without clicking.
+ */
+export type BinKind = "company" | "deal" | "document";
+
 export type BinRow = {
+  kind: BinKind;
   id: string;
+  /**
+   * The line the row leads with. A company's legal name and an enquiry's
+   * subject are already human text; a document's is its `kind`, which is a key
+   * and not a word, because a kind has a name in each language and the bin is
+   * not where translation belongs. The screen translates that one.
+   */
   what: string;
+  /**
+   * What identifies it beside the label: a company's code, an enquiry's ref.
+   * Empty for a document — a draft is discardable precisely because it never
+   * took a number, so there is nothing to print here and the screen says that
+   * in words rather than leaving a gap.
+   */
   code: string;
   deletedAt: Date;
   reason: string | null;
   daysLeft: number;
 };
 
+function binRow(
+  kind: BinKind,
+  r: { id: string; what: string; code: string; deletedAt: Date | null; reason: string | null },
+): BinRow {
+  const deletedAt = r.deletedAt as Date;
+  const elapsed = Math.floor((Date.now() - deletedAt.getTime()) / 86_400_000);
+  return {
+    kind,
+    id: r.id,
+    what: r.what,
+    code: r.code,
+    deletedAt,
+    reason: r.reason,
+    // Unchanged, and deliberately: `BIN_DAYS` counts down on screen and
+    // nothing purges at zero. See docs/FIX-QUEUE.md, "Known gaps".
+    daysLeft: Math.max(0, BIN_DAYS - elapsed),
+  };
+}
+
 /** Screen 83 — "restorable for 30 days, then the record is gone but its audit trail is not". */
 export async function listBin(): Promise<BinRow[]> {
-  const rows = await db
-    .select({
-      id: party.id,
-      code: party.code,
-      legalName: party.legalName,
-      deletedAt: party.deletedAt,
-      reason: party.deleteReason,
-    })
-    .from(party)
-    .where(isNotNull(party.deletedAt))
-    .orderBy(desc(party.deletedAt));
+  /**
+   * Three queries and one sort rather than one SQL union: the three tables have
+   * three shapes, a union would need every column cast to a common one for no
+   * gain, and the bin holds what a handful of people binned in the last thirty
+   * days. What matters is that the order is across the whole set — a company
+   * binned this morning sits above an enquiry binned last week, rather than
+   * each kind being sorted under its own heading.
+   */
+  const [parties, deals, documents] = await Promise.all([
+    db
+      .select({
+        id: party.id,
+        what: party.legalName,
+        code: party.code,
+        deletedAt: party.deletedAt,
+        reason: party.deleteReason,
+      })
+      .from(party)
+      .where(isNotNull(party.deletedAt)),
+    db
+      .select({
+        id: deal.id,
+        what: deal.subject,
+        code: deal.ref,
+        deletedAt: deal.deletedAt,
+        reason: deal.deleteReason,
+      })
+      .from(deal)
+      .where(isNotNull(deal.deletedAt)),
+    db
+      .select({
+        id: document.id,
+        what: document.kind,
+        deletedAt: document.deletedAt,
+        reason: document.deleteReason,
+      })
+      .from(document)
+      .where(isNotNull(document.deletedAt)),
+  ]);
 
-  return rows.map((r) => {
-    const deletedAt = r.deletedAt as Date;
-    const elapsed = Math.floor((Date.now() - deletedAt.getTime()) / 86_400_000);
-    return {
-      id: r.id,
-      what: r.legalName,
-      code: r.code,
-      deletedAt,
-      reason: r.reason,
-      daysLeft: Math.max(0, BIN_DAYS - elapsed),
-    };
-  });
+  return [
+    ...parties.map((r) => binRow("company", r)),
+    ...deals.map((r) => binRow("deal", r)),
+    ...documents.map((r) => binRow("document", { ...r, code: "" })),
+  ].sort((a, b) => b.deletedAt.getTime() - a.deletedAt.getTime());
 }
 
 /**

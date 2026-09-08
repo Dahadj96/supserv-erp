@@ -216,6 +216,12 @@
     "emptyTitle": "Nothing has been deleted",
     "emptyBody": "Anything you remove lands here first, with who removed it and why.",
     "what": "What",
+    "kind": {
+      "company": "Company",
+      "deal": "Deal",
+      "document": "Draft"
+    },
+    "noNumber": "No number",
     "when": "When",
     "reason": "Reason",
     "reasonPlaceholder": "Why is it going? This is kept.",

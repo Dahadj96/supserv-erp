@@ -72,6 +72,10 @@ const EXPECTED: Record<string, string[]> = {
   "prices/new/actions.ts:capturePriceAction": ["*write"],
 
   // ── Deleting and merging are the Gérant's, and are their own permissions ──
+  // The three `restore*` entries below are the three the bin dispatches to,
+  // one per kind of row it holds. Screen 83 imports all three rather than
+  // wrapping them, because each already knows where to land afterwards — and
+  // each stays listed here, so a restore can never quietly lose its check.
   "companies/delete-actions.ts:archiveCompany": ["records.delete"],
   // The same permission on an enquiry. Screen 06's bin button: an enquiry
   // carrying an issued document refuses, because LAW 5 outranks tidiness.
