@@ -325,12 +325,18 @@ files and will conflict with everything above.
   a workflow — once 2.1 ships, that instruction becomes true, so update the
   copy to name the button.
 
-- [ ] **3.3 · One word per concept**
-  `enquiry` appears 178 times in `en.json`, `deal` 54, for the same object,
-  while the nav says Deals and the route is `/deals`. Pick one and use it
-  everywhere. Same for Chantiers/Projects, Approvisionnement/Sourcing,
-  Règlements/Payments. **This is a decision, not a preference** — see Needs
-  Abdou.
+- [ ] **3.3 · One word per concept** — *decided, no longer blocked*
+  **Deal**, not enquiry: `enquiry` appears 178 times in `en.json` against 54
+  for `deal`, for the same object, while the nav and the route already say
+  Deals. **Site**, not project, for *Chantier*. French keeps *Affaire* and
+  *Chantier*. Routes do not move — `/projects` keeps its path, because a saved
+  link is worth more than a tidy URL, and the label is what a person reads.
+  Still open and yours to judge: *Sourcing* for *Approvisionnement*, and
+  *Payments* sitting beside *relances* for *Règlements* — pick words in the
+  same pass and say so in the commit.
+  *Done when:* one English word per concept across nav, titles, body copy,
+  empty states and errors, and `grep -c enquiry src/i18n/messages/en.json`
+  returns 0.
 
 - [ ] **3.1 · Rail from 24 rows to about 11**
   Today (absorbing Week and Waiting on as tabs) · Inbox (absorbing Scan,
@@ -401,9 +407,21 @@ the same enquiry.
 
 ## Needs Abdou
 
-- **3.3 — one word per concept.** Which is it: **Deals** or **Enquiries**?
-  (French stays *Affaires* either way.) And is *Chantiers* better in English as
-  **Sites** or **Works**? Answer here and the loop will apply it everywhere.
+*(Nothing outstanding.)*
+
+**Answered 2026-09-08 — the vocabulary is decided.** Abdou chose **Deals** and
+**Sites**. So, in English, everywhere — nav, routes, page titles, body copy,
+empty states, error messages:
+
+| Use | Never |
+|---|---|
+| **Deal** | enquiry, consultation, RFQ *(as the name of the record)* |
+| **Site** | project, chantier *(in English)* |
+
+French is unchanged and stays idiomatic: *Affaire* and *Chantier*. The route
+`/deals` is already right; `/projects` keeps its path — renaming a route breaks
+every saved link for a word, and the label is what a person reads. Task 3.3
+carries this out; anything written before 3.3 ships should already use it.
 
 ---
 
