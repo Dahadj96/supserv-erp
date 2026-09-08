@@ -96,7 +96,7 @@ Facts learned the hard way. Do not rediscover them.
   one shows a greyed button explaining that a correction is an avoir, and
   `pnpm check` is green.
 
-- [ ] **0.3 · Make the bin polymorphic**
+- [x] **0.3 · Make the bin polymorphic**
   `listBin()` hardcodes a `party` select and `settings/bin/page.tsx` binds
   every row to `restoreCompany`. `BinRow.what` is already a generic label —
   add an entity discriminator and dispatch restore on it. Cover party, deal
@@ -362,6 +362,23 @@ files and will conflict with everything above.
 
 Work a later run must finish. Written down rather than left half-done.
 
+### 0.3 — the bin counts down to nothing
+
+`BIN_DAYS` is 30 and is used for exactly one thing: computing `daysLeft` so the
+bin can print "gone in 12 days" and `bin.afterThirtyDays` can say "after 30 days
+the record is removed but the audit entry stays". **Nothing removes it.** There
+is no purge — no job, no cron, no `src/jobs/` at all yet (see 1.3) — so a row
+binned today is still there in a year with a `daysLeft` of `0`, and the sentence
+under the table is the only untrue thing on screen 83.
+
+Deliberately not fixed in 0.3. Writing a purge is a decision about destroying
+data, not a bug fix: it needs Abdou to say what actually goes at day 30 (the row
+itself, or only the fields that identify it), and it must never take an audit
+entry, a number in a series, or anything the row is the last copy of. Until that
+decision exists, the honest options are to soften the copy or to leave the
+countdown as a promise nobody has kept — and softening copy the day before
+somebody writes the purge is its own churn.
+
 ### 0.1 — `liveDocument` covers three query sites, not thirty-four
 
 `src/domain/deletion.ts` exports `liveDocument` (`document.deleted_at is null`).
@@ -434,3 +451,4 @@ carries this out; anything written before 3.3 ships should already use it.
 | 2026-09-08 | 0.7 | `e0771c8` | Landing redirect now `/today`. |
 | 2026-09-08 | 0.2 | `6f557e0` | `discardDeal` / `restoreDeal` in `deletion.ts`, guarded on issued documents; `deals/[id]/delete-actions.ts`; a danger button on screen 06 that greys with a readable reason instead of disappearing; EN + FR copy; permission table updated. Restore is deliberately not on the deal page — `getDeal` filters `deleted_at`, so the bin (0.3) is what calls `restoreDealAction`. |
 | 2026-09-08 | 0.1 | `792daee` | `document` gains `deleted_at` / `deleted_by` / `delete_reason` (migration 0051); `discardDocument` / `restoreDocument` guarded on `number is null AND locked_at is null` with its own `DocumentIsIssued`; `documents/[id]/delete-actions.ts`; a discard card on screen 18 whose button greys with the avoir sentence instead of vanishing, and offers Restore once binned; EN + FR copy; `liveDocument` on the invoices list, the offers list and the enquiry's offers panel. The sites left uncovered are named under Known gaps. |
+| 2026-09-08 | 0.3 | `47612a8` | `BinRow` gains a `kind` discriminator — company, deal or document; `listBin()` queries the three tables and sorts once across the whole set, newest first, rather than kind by kind. Restore dispatches to `restoreCompany` / `restoreDealAction` / `restoreDocumentAction`, all three still listed in the permission table. Each row leads with a neutral `Badge` naming its kind; a company and a draft link back to pages that render for a binned row, an enquiry does not because `getDeal` filters `deleted_at`. EN + FR copy for the three kind labels and "No number". `BIN_DAYS` untouched — and the fact that nothing purges at day 30 is now written under Known gaps rather than fixed, because destroying data is Abdou's decision. |
