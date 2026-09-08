@@ -55,18 +55,21 @@ Facts learned the hard way. Do not rediscover them.
 | Long commands | `pnpm check` takes minutes. Start it redirected to a log — `pnpm check > .logs\check.log 2>&1` — and poll with `read_process_output`, or read the log. |
 | Migrations | `pnpm db:generate` then `pnpm db:migrate`. **Never hand-edit a generated migration.** |
 | New packages | Allowed if free. Add a line to `STACK.md` saying why, with the date. |
+| Biome import order | Biome sorts imports and will fail the gate over it. Run `pnpm format` before `pnpm check`, then `git status --short` before staging — format touches only what it needs, but stage files by name, never `git add -A`. |
+| Scheduled runs | A scheduled run may have no mounted folder, so `device_bash` fails. Everything can be done through Desktop Commander instead: `read_file`, `write_file`, `edit_block`, `start_process`. Do not stop over it. |
+| MCP timeouts | A `start_process` call can time out at the tool layer while the process keeps running on the machine. Do not re-run the command — call `list_sessions`, find the pid, and `read_process_output`. Re-running is how you get "the file is being used by another process". |
 
 ---
 
 ## WAVE 0 — stop the discomfort
 
-- [ ] **0.7 · Land on `/today`, not `/deals`**
+- [x] **0.7 · Land on `/today`, not `/deals`**
   `src/app/[locale]/page.tsx` redirects signed-in users to `/deals`. Change it
   to `/today`. The comment there says `user_preference` will choose it per
   person one day — leave that comment, update it to name the new default.
   *Done when:* signing in lands on Today, and `pnpm check` is green.
 
-- [ ] **0.2 · Discard and restore a deal**
+- [x] **0.2 · Discard and restore a deal**
   `deal.deleted_at` is already migrated and `listDeals` already filters
   `isNull(deal.deletedAt)`. Nothing writes it. Add `discardDeal` and
   `restoreDeal` to `src/domain/deletion.ts`, modelled exactly on
@@ -352,3 +355,6 @@ files and will conflict with everything above.
 | Date | Task | Commit | Note |
 |---|---|---|---|
 | 2026-09-08 | — | `115da43` | Branch `fix/usability-2026-09` opened; in-progress schema-audit work carried over; audit filed. |
+| 2026-09-08 | — | `bbf3d4a` | This queue filed. Baseline `pnpm check` green before any change. |
+| 2026-09-08 | 0.7 | `e0771c8` | Landing redirect now `/today`. |
+| 2026-09-08 | 0.2 | `6f557e0` | `discardDeal` / `restoreDeal` in `deletion.ts`, guarded on issued documents; `deals/[id]/delete-actions.ts`; a danger button on screen 06 that greys with a readable reason instead of disappearing; EN + FR copy; permission table updated. Restore is deliberately not on the deal page — `getDeal` filters `deleted_at`, so the bin (0.3) is what calls `restoreDealAction`. |
