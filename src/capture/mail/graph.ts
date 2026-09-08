@@ -43,6 +43,22 @@ export class MailboxNotScoped extends Error {
 }
 
 /**
+ * Asked for the bytes of an attachment that has none.
+ *
+ * A `referenceAttachment` is a LINK — to OneDrive, to SharePoint, to a
+ * WeTransfer page — and there is nothing in the mailbox to download. Graph
+ * answers `/$value` on one with **405**, which is documented behaviour and not
+ * a failure. It matters here because a client sending a 400 MB dossier as a
+ * OneDrive link is the normal case, not the odd one, and the honest answer is
+ * "the file is not in the mail" rather than a retry loop or an empty file.
+ */
+export class AttachmentHasNoBytes extends Error {
+  constructor(readonly detail: string) {
+    super("attachmentHasNoBytes");
+  }
+}
+
+/**
  * The environment must say, explicitly, that the policy is in place and was
  * tested. A boolean somebody has to type is a poor lock — but it is a lock that
  * cannot be opened by forgetting, which is how this particular mistake happens.
@@ -110,15 +126,42 @@ export type GraphMessage = {
   webLink: string | null;
 };
 
+/**
+ * Which of the three things Graph calls an attachment this row is.
+ *
+ * Not cosmetic: a file has bytes in the mailbox, an Outlook item has bytes but
+ * they are the item serialised as MIME rather than the file somebody attached,
+ * and a reference has no bytes at all. `fetchAttachmentBytes` answers
+ * differently for each.
+ *
+ * It is a `@odata.type` annotation rather than a property, so `$select` does not
+ * govern it and it may be absent on an old or odd response — which is why
+ * nothing here depends on it being present. It is a shortcut, not the source of
+ * truth; Graph's own 405 is.
+ */
+export const FILE_ATTACHMENT = "#microsoft.graph.fileAttachment";
+export const ITEM_ATTACHMENT = "#microsoft.graph.itemAttachment";
+export const REFERENCE_ATTACHMENT = "#microsoft.graph.referenceAttachment";
+
 export type GraphAttachment = {
   id: string;
   name: string;
   contentType: string | null;
   size: number | null;
   isInline: boolean;
+  "@odata.type"?: string | null;
 };
 
-async function get<T>(path: string): Promise<T> {
+/**
+ * One request, one place the 403 is explained.
+ *
+ * `get()` parses JSON; the attachment fetcher wants raw bytes, and a second
+ * `fetch` written beside it would be a second place to forget the scope guard
+ * and the 403 message. So the request is here and the two readers sit on top.
+ * Non-2xx is returned rather than thrown, because `/$value` has a status —
+ * 405 — that is an answer rather than a failure.
+ */
+async function request(path: string): Promise<Response> {
   const res = await fetch(`${GRAPH}${path}`, {
     headers: { authorization: `Bearer ${await token()}` },
   });
@@ -133,6 +176,11 @@ async function get<T>(path: string): Promise<T> {
         "replacing it. See docs/MAILBOX-ACCESS.md.",
     );
   }
+  return res;
+}
+
+async function get<T>(path: string): Promise<T> {
+  const res = await request(path);
   if (!res.ok) throw new Error(`Graph ${path} failed: ${res.status}`);
   return (await res.json()) as T;
 }
@@ -185,6 +233,90 @@ export async function fetchAttachments(messageId: string): Promise<GraphAttachme
   );
   // Inline images are the signature block, not an attachment anybody sent.
   return data.value.filter((a) => !a.isInline);
+}
+
+export type AttachmentBytes = {
+  bytes: Buffer;
+  /**
+   * What Graph said it handed over. For a file this is its original content
+   * type; for an Outlook item it is the MIME type of the serialisation.
+   */
+  contentType: string;
+  /**
+   * `file` — the bytes are the file somebody attached.
+   * `item`  — the bytes are a contact, event or message serialised as MIME
+   *           (vCard, iCal, rfc822). Storing them is right; treating them as
+   *           the attached *file* is not.
+   */
+  kind: "file" | "item";
+};
+
+/**
+ * The bytes of one attachment.
+ *
+ * `/$value`, never `contentBytes`. `contentBytes` comes back inside the JSON of
+ * the attachments list, base64-encoded, and Graph stops populating it somewhere
+ * around 4 MB — so a list-and-decode implementation works on every test message
+ * anybody sends themselves and silently returns nothing for the 12 MB CCTP that
+ * is the entire reason this exists. `/$value` streams the real thing at any
+ * size.
+ *
+ * The three attachment kinds are answered separately, because they are three
+ * different things and only one of them is a file:
+ *
+ *   fileAttachment       the file itself, at its original content type.
+ *   itemAttachment       an attached contact, event or message, returned by
+ *                        Graph in MIME format — vCard, iCal, rfc822.
+ *   referenceAttachment  a link to OneDrive or SharePoint. There are no bytes
+ *                        in the mailbox and Graph answers 405. That is refused
+ *                        by name rather than retried, because retrying a 405
+ *                        forever is what a job queue does with an error it was
+ *                        not told about (1.3).
+ */
+export async function fetchAttachmentBytes(
+  messageId: string,
+  attachmentId: string,
+  odataType?: string | null,
+): Promise<AttachmentBytes> {
+  const address = assertScoped();
+
+  // Known from the listing: refuse without spending a request.
+  if (odataType === REFERENCE_ATTACHMENT) {
+    throw new AttachmentHasNoBytes(
+      "This attachment is a link to a file in the cloud, not a file in the message. " +
+        "Graph holds no bytes for it — open it from the original mail.",
+    );
+  }
+
+  // Graph ids are long and base64-ish and can carry characters a path segment
+  // reads as structure. The listing call above predates this and has never been
+  // bitten; a new caller should still not depend on that luck.
+  const path =
+    `/users/${encodeURIComponent(address)}/messages/${encodeURIComponent(messageId)}` +
+    `/attachments/${encodeURIComponent(attachmentId)}/$value`;
+
+  const res = await request(path);
+
+  // Documented: `$value` on a reference attachment is 405. Reached when the
+  // listing did not carry `@odata.type`, so the shortcut above could not fire.
+  if (res.status === 405) {
+    throw new AttachmentHasNoBytes(
+      "Graph refuses the contents of this attachment (405), which is how it says the " +
+        "attachment is a link to a file in the cloud rather than a file in the message.",
+    );
+  }
+  if (!res.ok) throw new Error(`Graph ${path} failed: ${res.status}`);
+
+  const bytes = Buffer.from(await res.arrayBuffer());
+
+  return {
+    bytes,
+    // The header is what Graph actually sent. Nothing here invents a type from
+    // the file name — that is a guess, and `looksLike` already does the guessing
+    // where a guess is wanted.
+    contentType: res.headers.get("content-type") ?? "application/octet-stream",
+    kind: odataType === ITEM_ATTACHMENT ? "item" : "file",
+  };
 }
 
 /**
