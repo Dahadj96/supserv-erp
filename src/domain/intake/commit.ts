@@ -1,10 +1,11 @@
-import { eq } from "drizzle-orm";
+import { and, eq, isNull, sql } from "drizzle-orm";
 import { db } from "@/db";
 import { auditEntry } from "@/db/schema/control";
 import { intakeMessage } from "@/db/schema/intake";
-import { person } from "@/db/schema/party";
+import { party, person } from "@/db/schema/party";
 import { createDeal } from "../deal/deal";
 import { nameFromEmail } from "../merge";
+import { createParty } from "../party";
 import type { RoutedTo } from "./routing";
 
 /**
@@ -276,4 +277,175 @@ export async function commitEnquiry(opts: {
   });
 
   return dealId;
+}
+
+/**
+ * The company an enquiry is for, when the sender is attached to none.
+ *
+ * WHY THIS EXISTS. `commitEnquiry` refuses without a company and says so, and
+ * the comment above it sent people "one step earlier — link them to a company
+ * as a contact first". That step did not exist. `commitContact` also requires a
+ * `partyId`, and screen 02 only ever offered it when the sender was ALREADY
+ * matched to a company. So a first RFQ, arriving at an ERP with no companies in
+ * it yet, was a dead end: a greyed button whose only explanation was a tooltip.
+ *
+ * That is the normal way work arrives here. An enquiry from somebody new is not
+ * an edge case — for a company bidding on marchés publics it is most of the
+ * post — and an ERP that requires the client to have been registered in advance
+ * is one people work around by answering in Word.
+ *
+ * WHAT IT WILL NOT DO. It does not invent the company. Either a person picked
+ * an existing one from the look-alikes the screen showed them, or they read a
+ * name in a field and submitted it. `createParty` needs nothing but that name
+ * and a role — its own comment explains why the décret 05-468 fields stay
+ * optional here and the rule bites at invoice time instead.
+ *
+ * The address becomes the COMPANY's only when it is a role mailbox.
+ * `contact@` and `commercial@` belong to the company; `m.belkacem@` belongs to
+ * a man who may leave, and putting his address on the company record is how a
+ * facture ends up going to somebody who left in 2024. `nameFromEmail` already
+ * knows the difference — it returns null for exactly the role mailboxes — so
+ * the two readings stay one list.
+ */
+export async function attachSenderCompany(opts: {
+  messageId: string;
+  actorId: string;
+  /** An existing company the person chose. */
+  partyId?: string;
+  /** Or the name they typed for a new one. */
+  legalName?: string;
+}): Promise<string> {
+  const [message] = await db
+    .select()
+    .from(intakeMessage)
+    .where(eq(intakeMessage.id, opts.messageId))
+    .limit(1);
+  if (!message) throw new Error("noSuchMessage");
+
+  let partyId = opts.partyId?.trim() || null;
+
+  if (partyId) {
+    const [chosen] = await db
+      .select({ id: party.id })
+      .from(party)
+      .where(eq(party.id, partyId))
+      .limit(1);
+    if (!chosen) throw new Error("noSuchCompany");
+  } else {
+    const legalName = opts.legalName?.trim() ?? "";
+    if (legalName.length < 2) throw new Error("companyNameRequired");
+
+    const from = message.fromAddress ?? "";
+    const roleMailbox = from.length > 0 && nameFromEmail(from) === null;
+
+    const created = await createParty(
+      {
+        legalName,
+        roles: ["client"],
+        email: roleMailbox ? from : "",
+        docLocale: "fr",
+        emailLocale: "fr",
+        currency: "DZD",
+      },
+      opts.actorId,
+    );
+    partyId = created.id;
+  }
+
+  /*
+    AND THE PERSON WHO WROTE IT, saved under that company.
+
+    Asked for in those words: "there is no quickly create company and save
+    contact, so I can create the enquiry". Three records are wanted and it was
+    three screens, two of which could not be reached from here.
+
+    Nothing is invented. The name is the one on the email, the address is one
+    that demonstrably reaches them because they used it, and `verifiedAt` means
+    exactly that on screen 76. The TRADE is not guessed — it is left as
+    `unspecified`, the same word `commitContact` writes when the job box is
+    blank, because a job title read off a subject line is worse than an empty
+    field somebody fills in later.
+
+    A role mailbox produces no person at all: `nameFromEmail` returns null for
+    `commercial@`, and a contact card called "Commercial" is one somebody will
+    eventually address an email to.
+  */
+  let personId = message.personId;
+
+  if (!personId) {
+    const from = (message.fromAddress ?? "").trim();
+
+    /*
+      THE ADDRESS DECIDES WHETHER THERE IS A PERSON. The display name only
+      decides what to call them.
+
+      Written the other way round first — `fromName || nameFromEmail(from)` —
+      and a test caught it: `commercial@touatgaz.dz` arrives with "TOUATGAZ" in
+      the display name, so the role-mailbox guard was skipped and the ERP would
+      have recorded a man called TOUATGAZ, employed by TOUATGAZ. A company's
+      own name in the From line is the commonest display name there is.
+    */
+    const human = from ? nameFromEmail(from) : null;
+    const fullName = human ? message.fromName?.trim() || human : null;
+
+    if (fullName) {
+      const [already] = from
+        ? await db
+            .select({ id: person.id })
+            .from(person)
+            .where(
+              and(sql`lower(${person.email}) = ${from.toLowerCase()}`, isNull(person.deletedAt)),
+            )
+            .limit(1)
+        : [];
+
+      if (already) {
+        personId = already.id;
+        /*
+          FILED, if they were loose.
+
+          A person can already be on file with this address and no employer —
+          typed into screen 51 by hand, or left behind by a company that was
+          merged away. Reusing them and not filing them leaves the contact
+          exactly as unattached as the message was, which is the bug this
+          whole function exists to end. A test caught it.
+
+          Somebody who already HAS an employer keeps it: moving a man between
+          companies because he sent an email is a decision, and it is not this
+          function's to make.
+        */
+        await db
+          .update(person)
+          .set({ employerPartyId: partyId, lastContactAt: message.receivedAt })
+          .where(and(eq(person.id, already.id), isNull(person.employerPartyId)));
+      } else {
+        const [created] = await db
+          .insert(person)
+          .values({
+            fullName,
+            trade: "unspecified",
+            email: from || null,
+            employerPartyId: partyId,
+            source: "direct",
+            relationship: "external",
+            verifiedAt: new Date(),
+            lastContactAt: message.receivedAt,
+          })
+          .returning({ id: person.id });
+        personId = created?.id ?? null;
+      }
+    }
+  }
+
+  // The message now knows whose it is. Until this line existed, `party_id` was
+  // written once by `identifySender` at INGEST and never again — so a company
+  // created five minutes after the email arrived could not be found by it, and
+  // the screen went on saying the sender belonged to nobody however many
+  // companies and contacts somebody typed in by hand.
+  await db
+    .update(intakeMessage)
+    .set({ partyId, personId })
+    .where(eq(intakeMessage.id, opts.messageId));
+
+  return partyId;
 }

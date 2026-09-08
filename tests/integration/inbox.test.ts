@@ -3,9 +3,14 @@ import { afterAll, beforeAll, describe, expect, it } from "vitest";
 import { db } from "@/db";
 import { auditEntry } from "@/db/schema/control";
 import { intakeChannel, intakeMessage } from "@/db/schema/intake";
-import { party, partyRole, person } from "@/db/schema/party";
+import { partyRole, party as partySchema, person } from "@/db/schema/party";
 import { ensureIntakeConfigured } from "@/domain/intake/channels";
-import { commitAvailability, commitCandidate, commitContact } from "@/domain/intake/commit";
+import {
+  attachSenderCompany,
+  commitAvailability,
+  commitCandidate,
+  commitContact,
+} from "@/domain/intake/commit";
 import {
   dismiss,
   expiringSoon,
@@ -28,17 +33,42 @@ const ACTOR = "test-inbox-actor";
 let clientId: string;
 const messageIds: string[] = [];
 const personIds: string[] = [];
+/** Companies made by the tests below, cleared the same way they were made. */
+const partyIds: string[] = [];
 
 const hoursFromNow = (h: number) => new Date(Date.now() + h * 3_600_000);
 
 beforeAll(async () => {
   await ensureIntakeConfigured();
-  await db.delete(party).where(eq(party.code, CLIENT));
+
+  /*
+    THE ROWS THAT POINT AT IT FIRST.
+
+    This deleted the company and nothing else, so the first run that failed
+    part-way left a `party_role` behind — and every run after it died in
+    `beforeAll` with a foreign-key violation, which reads as seventeen skipped
+    tests and no clue why. A teardown that only works when the tests passed is
+    a teardown that stops working exactly when it is needed.
+  */
+  const stale = await db
+    .select({ id: partySchema.id })
+    .from(partySchema)
+    .where(eq(partySchema.code, CLIENT));
+
+  if (stale.length > 0) {
+    const ids = stale.map((r) => r.id);
+    await db
+      .update(person)
+      .set({ employerPartyId: null })
+      .where(inArray(person.employerPartyId, ids));
+    await db.delete(partyRole).where(inArray(partyRole.partyId, ids));
+    await db.delete(partySchema).where(inArray(partySchema.id, ids));
+  }
 
   const [c] = await db
-    .insert(party)
+    .insert(partySchema)
     .values({ code: CLIENT, legalName: "URBACON TEST", email: "contact@urbacon-test.dz" })
-    .returning({ id: party.id });
+    .returning({ id: partySchema.id });
   clientId = c?.id as string;
   await db.insert(partyRole).values({ partyId: clientId, role: "client" });
 
@@ -93,6 +123,51 @@ beforeAll(async () => {
         // The confidence floor stopped this one. It belongs in "needs a human".
         raw: { downgraded: true },
       },
+      /*
+        APPENDED, and that is not tidiness.
+
+        The tests above index this array positionally — `messageIds[3]` is "the
+        downgraded one" — so a fixture inserted in the middle silently
+        renumbers every assertion after it. Three of them went red that way in
+        another file this morning.
+      */
+      {
+        // An RFQ from a company nobody has ever recorded: the shape that had
+        // no way through the screen at all.
+        channelKey: "mailbox",
+        externalId: "TEST-IN-5",
+        receivedAt: hoursFromNow(-3),
+        fromAddress: "commercial@touatgaz-test.dz",
+        fromName: "TOUATGAZ",
+        subject: "Demande de prix - galets de convoyeur",
+        classifiedAs: "enquiry",
+        confidence: "0.880",
+        raw: { downgraded: false },
+      },
+      {
+        // The same, written by a man rather than by a role mailbox.
+        channelKey: "mailbox",
+        externalId: "TEST-IN-6",
+        receivedAt: hoursFromNow(-4),
+        fromAddress: "m.belkacem@sonelgaz-test.dz",
+        fromName: "M. Belkacem",
+        subject: "Consultation - roulements",
+        classifiedAs: "enquiry",
+        confidence: "0.870",
+        raw: { downgraded: false },
+      },
+      {
+        // For choosing a company that already exists, and for the refusals.
+        channelKey: "mailbox",
+        externalId: "TEST-IN-7",
+        receivedAt: hoursFromNow(-6),
+        fromAddress: "achats@hasnaoui-test.dz",
+        fromName: "HASNAOUI",
+        subject: "Demande de cotation - vannes",
+        classifiedAs: "enquiry",
+        confidence: "0.860",
+        raw: { downgraded: false },
+      },
     ])
     .returning({ id: intakeMessage.id });
   messageIds.push(...rows.map((r) => r.id));
@@ -100,10 +175,24 @@ beforeAll(async () => {
 
 afterAll(async () => {
   await db.delete(auditEntry).where(eq(auditEntry.actorId, ACTOR));
-  await db.delete(person).where(inArray(person.id, personIds));
+  // The MESSAGES first, then the people. A message points at the contact it
+  // created now — `intake_message.person_id` — so deleting the person first
+  // fails on a foreign key, and the whole file reports as failed with every
+  // test inside it green.
   await db.delete(intakeMessage).where(like(intakeMessage.externalId, "TEST-IN-%"));
+  await db.delete(person).where(inArray(person.id, personIds));
+  if (partyIds.length > 0) {
+    // A contact created by these tests is employed by one of these companies,
+    // and a company cannot be deleted while somebody works there.
+    await db
+      .update(person)
+      .set({ employerPartyId: null })
+      .where(inArray(person.employerPartyId, partyIds));
+    await db.delete(partyRole).where(inArray(partyRole.partyId, partyIds));
+    await db.delete(partySchema).where(inArray(partySchema.id, partyIds));
+  }
   await db.delete(partyRole).where(eq(partyRole.partyId, clientId));
-  await db.delete(party).where(eq(party.code, CLIENT));
+  await db.delete(partySchema).where(eq(partySchema.code, CLIENT));
 });
 
 describe("screen 02 — nothing expires unread", () => {
@@ -232,6 +321,168 @@ describe("screen 02 — nothing expires unread", () => {
       available: false,
       blocker: "inbox.blocked.needsInvoicePicker",
     });
+  });
+
+  /**
+   * The dead end, and it was the first thing a new ERP met.
+   *
+   * `commitEnquiry` needs a company and said so — in a tooltip — and pointed
+   * at "link them to a company first", a step that only existed once the
+   * company was already there. With nothing in the system yet, a first RFQ
+   * could not be opened by any route. `attachSenderCompany` is that step.
+   */
+  it("makes the company from the name a person typed, and hangs the message on it", async () => {
+    const [message] = await db
+      .select()
+      .from(intakeMessage)
+      .where(eq(intakeMessage.externalId, "TEST-IN-5"));
+    expect(message?.partyId, "the fixture is the case: attached to nobody").toBeNull();
+
+    const partyId = await attachSenderCompany({
+      messageId: message?.id as string,
+      actorId: ACTOR,
+      legalName: "TOUATGAZ TEST",
+    });
+    partyIds.push(partyId);
+
+    const [made] = await db.select().from(partySchema).where(eq(partySchema.id, partyId));
+    expect(made?.legalName).toBe("TOUATGAZ TEST");
+    expect(made?.code, "a client code, allocated like any other").toMatch(/^CL-\d{4}$/);
+    // Nothing else is demanded. `createParty` says why: a company arrives from
+    // an email long before anybody has its NIF, and the rule bites at invoice
+    // time instead.
+    expect(made?.nif).toBeNull();
+    expect(made?.rc).toBeNull();
+
+    const [role] = await db.select().from(partyRole).where(eq(partyRole.partyId, partyId));
+    expect(role?.role).toBe("client");
+
+    const [after] = await db
+      .select()
+      .from(intakeMessage)
+      .where(eq(intakeMessage.id, message?.id as string));
+    expect(after?.partyId, "and the message knows whose it is now").toBe(partyId);
+  });
+
+  it("puts a role mailbox on the company, and a man's own address on nothing", async () => {
+    // `commercial@` is the company's address and will still reach it when
+    // whoever reads it leaves. `m.belkacem@` is one man's, and a facture sent
+    // to it in 2028 goes nowhere.
+    const [byRole] = await db
+      .select()
+      .from(partySchema)
+      .where(eq(partySchema.legalName, "TOUATGAZ TEST"));
+    expect(byRole?.email).toBe("commercial@touatgaz-test.dz");
+
+    const [message] = await db
+      .select()
+      .from(intakeMessage)
+      .where(eq(intakeMessage.externalId, "TEST-IN-6"));
+
+    const partyId = await attachSenderCompany({
+      messageId: message?.id as string,
+      actorId: ACTOR,
+      legalName: "SONELGAZ TEST",
+    });
+    partyIds.push(partyId);
+
+    const [byPerson] = await db.select().from(partySchema).where(eq(partySchema.id, partyId));
+    expect(byPerson?.email, "his address is his, not the company's").toBeNull();
+  });
+
+  it("saves the sender as a contact under the company, in the same press", async () => {
+    /*
+      "There is no quickly create company and save contact, so I can create the
+      enquiry." Three records were wanted and it was three screens, two of them
+      unreachable from here.
+
+      The trade is NOT guessed. `unspecified` is the same word `commitContact`
+      writes when the job box is left blank: a job title read off a subject
+      line is worse than a field somebody fills in later.
+    */
+    const [message] = await db
+      .select()
+      .from(intakeMessage)
+      .where(eq(intakeMessage.externalId, "TEST-IN-6"));
+
+    const [contact] = await db
+      .select()
+      .from(person)
+      .where(eq(person.email, "m.belkacem@sonelgaz-test.dz"));
+
+    expect(contact?.fullName, "the name on the email, not one invented").toBe("M. Belkacem");
+    expect(contact?.trade).toBe("unspecified");
+    expect(contact?.relationship).toBe("external");
+    // They wrote to us, so the address demonstrably reaches them.
+    expect(contact?.verifiedAt).not.toBeNull();
+
+    const [company] = await db
+      .select()
+      .from(partySchema)
+      .where(eq(partySchema.legalName, "SONELGAZ TEST"));
+    expect(contact?.employerPartyId, "filed under the company, not loose").toBe(company?.id);
+
+    const [after] = await db
+      .select()
+      .from(intakeMessage)
+      .where(eq(intakeMessage.id, message?.id as string));
+    expect(after?.personId, "and the message points at them").toBe(contact?.id);
+    if (contact?.id) personIds.push(contact.id);
+  });
+
+  it("invents nobody from a role mailbox", async () => {
+    // `commercial@touatgaz-test.dz` is a role, not a human, and a contact card
+    // called "Commercial" is one somebody will address an email to.
+    const [contact] = await db
+      .select()
+      .from(person)
+      .where(eq(person.email, "commercial@touatgaz-test.dz"));
+    expect(contact, "no person, and the company keeps the address instead").toBeUndefined();
+  });
+
+  it("uses the company somebody picked rather than making a second one", async () => {
+    const [message] = await db
+      .select()
+      .from(intakeMessage)
+      .where(eq(intakeMessage.externalId, "TEST-IN-7"));
+
+    const partyId = await attachSenderCompany({
+      messageId: message?.id as string,
+      actorId: ACTOR,
+      partyId: clientId,
+      // Ignored: a company was chosen, so nothing is created.
+      legalName: "SHOULD NOT BE CREATED",
+    });
+
+    expect(partyId).toBe(clientId);
+    const strays = await db
+      .select()
+      .from(partySchema)
+      .where(eq(partySchema.legalName, "SHOULD NOT BE CREATED"));
+    expect(strays, "picking one must never also make one").toHaveLength(0);
+  });
+
+  it("refuses a name too short to be one, and a company that is gone", async () => {
+    const [message] = await db
+      .select()
+      .from(intakeMessage)
+      .where(eq(intakeMessage.externalId, "TEST-IN-7"));
+
+    await expect(
+      attachSenderCompany({ messageId: message?.id as string, actorId: ACTOR, legalName: "X" }),
+    ).rejects.toThrow(/companyNameRequired/);
+
+    await expect(
+      attachSenderCompany({ messageId: message?.id as string, actorId: ACTOR }),
+    ).rejects.toThrow(/companyNameRequired/);
+
+    await expect(
+      attachSenderCompany({
+        messageId: message?.id as string,
+        actorId: ACTOR,
+        partyId: "00000000-0000-4000-8000-000000000000",
+      }),
+    ).rejects.toThrow(/noSuchCompany/);
   });
 
   it("knows the mailbox channel exists", async () => {

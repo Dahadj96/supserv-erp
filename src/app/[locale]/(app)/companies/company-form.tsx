@@ -52,16 +52,39 @@ export async function CompanyForm({
   action,
   values = {},
   submitLabel,
+  error,
 }: {
   action: (formData: FormData) => void | Promise<void>;
   values?: Values;
   submitLabel: string;
+  /** A message key from `partyInput`, when the last attempt was refused. */
+  error?: string;
 }) {
   const t = await getTranslations();
   const roles = values.roles ?? [];
 
   return (
     <form action={action} className="flex flex-col gap-5">
+      {/*
+        THIS FORM COULD NOT REPORT A SINGLE REFUSAL.
+
+        `createCompany` called `partyInput.parse` with nothing around it, so a
+        company with no role ticked - the default state of this fieldset on a
+        new company - threw inside the server action. The person saw the page
+        do nothing, pressed the button again, and got nothing again. It is the
+        first form anybody meets after day one, and the Gerant's report of it
+        was "I cannot create an enquiry", two screens downstream.
+
+        `t.has` guards the lookup because a schema can produce a message Zod
+        wrote in English, and printing that is still better than printing a key.
+      */}
+      {error ? (
+        <p className="rounded-[var(--radius-control)] bg-critical-bg px-4 py-2.5 text-tiny leading-relaxed text-critical-ink">
+          {t.has(`company.error.${error}`)
+            ? t(`company.error.${error}`)
+            : t("company.error.invalid")}
+        </p>
+      ) : null}
       <section className="rounded-[var(--radius-card)] border border-line bg-surface p-5">
         <h2 className="text-tiny font-semibold text-ink">{t("company.identity")}</h2>
         <p className="mt-1 text-micro text-secondary">{t("company.identityHelp")}</p>

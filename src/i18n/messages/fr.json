@@ -201,7 +201,14 @@
     "contactName": "Nom",
     "contactTrade": "Fonction",
     "tradeUnspecified": "à préciser",
-    "scorecard": "Fiche fournisseur"
+    "scorecard": "Fiche fournisseur",
+    "error": {
+      "legalNameTooShort": "La raison sociale est obligatoire — deux caractères au moins.",
+      "roleRequired": "Cochez au moins un rôle : cette société est un client, un fournisseur, ou les deux.",
+      "nifFifteenDigits": "Le NIF fait quinze chiffres, sans espaces. Laissez-le vide si vous ne l'avez pas encore.",
+      "emailInvalid": "Cette adresse e-mail ne semble pas correcte.",
+      "invalid": "Le formulaire n'a pas été accepté. Vérifiez les champs marqués obligatoires."
+    }
   },
   "bin": {
     "title": "Supprimés",
@@ -670,8 +677,7 @@
     "notPermitted": "Votre rôle ne permet pas d'ouvrir la boîte de réception. Elle contient tout ce qui arrive dans la boîte de la société avant le moindre tri — demandes, CV, factures et courriers indésirables — elle est donc réservée au Gérant, au commercial, aux achats et à la comptabilité. Les enregistrements qui en découlent sont sur les écrans que vous avez déjà.",
     "blocked": {
       "needsSourcingPicker": "Les demandes de prix existent, mais cet écran ne peut pas encore dire à laquelle ce devis répond — et le rattacher à la mauvaise demande ferait chiffrer une offre sur le mauvais devis.",
-      "needsInvoicePicker": "Les factures et les règlements existent, mais la facture réglée doit être choisie, pas devinée d'après un montant dans un objet de message.",
-      "senderHasNoCompany": "Une demande a besoin d'un client, et cet expéditeur n'est rattaché à aucune société. Ajoutez-le d'abord comme contact sous la bonne société, et ceci fonctionnera."
+      "needsInvoicePicker": "Les factures et les règlements existent, mais la facture réglée doit être choisie, pas devinée d'après un montant dans un objet de message."
     },
     "attachment": {
       "cv": "CV",
@@ -3276,7 +3282,26 @@
     "reclassify": "Changer la nature",
     "apply": "Appliquer",
     "deadline": "Échéance",
-    "openInOutlook": "Ouvrir l'original dans Outlook"
+    "openInOutlook": "Ouvrir l'original dans Outlook",
+    "noCompanyYet": "{sender} n'est rattaché à aucune société. Créez-la ici : le nom suffit. Le NIF et le RC se remplissent plus tard, et c'est la facture qui les exigera, pas cet écran.",
+    "alreadyOnFile": "Déjà au fichier, et qui ressemble :",
+    "useCompany": "{name} ({code})",
+    "orNewCompany": "Ou une nouvelle société",
+    "companyName": "Société du client",
+    "companyNamePlaceholder": "Raison sociale",
+    "companyNameHelp": "Proposé d'après le domaine de l'expéditeur. Corrigez-le : c'est le nom qui sera imprimé sur les documents.",
+    "enquiryName": "Nom de l'affaire",
+    "createCompanyAndOpen": "Créer la société et ouvrir l'affaire",
+    "error": {
+      "companyNameRequired": "Donnez un nom à la société — deux caractères au moins.",
+      "legalNameTooShort": "Donnez un nom à la société — deux caractères au moins.",
+      "subjectRequired": "Donnez un nom à l'affaire.",
+      "noSuchCompany": "Cette société n'existe plus.",
+      "companyRequired": "Cette affaire a besoin d'une société cliente."
+    },
+    "thisIsProbably": "Cette adresse correspond à une société déjà enregistrée :",
+    "useCompanyAndOpen": "C'est {name} — ouvrir l'affaire",
+    "whatThisDoes": "Crée la société, enregistre l'expéditeur comme contact chez elle, et ouvre l'affaire. Une seule fois."
   },
   "conversations": {
     "subtitle": "Tout ce qu'un client ou un fournisseur a dit, au même endroit · {needReply, plural, =0 {rien n'attend de réponse} one {# attend une réponse} other {# attendent une réponse}}",

@@ -3,8 +3,15 @@ import { createCompany } from "../actions";
 import { CompanyForm } from "../company-form";
 
 /** Screen 22, the empty case — the first thing this system could not do. */
-export default async function NewCompanyPage({ params }: { params: Promise<{ locale: string }> }) {
+export default async function NewCompanyPage({
+  params,
+  searchParams,
+}: {
+  params: Promise<{ locale: string }>;
+  searchParams: Promise<{ error?: string }>;
+}) {
   const { locale } = await params;
+  const { error } = await searchParams;
   setRequestLocale(locale);
   const t = await getTranslations();
 
@@ -16,7 +23,20 @@ export default async function NewCompanyPage({ params }: { params: Promise<{ loc
       </div>
 
       <div className="max-w-[900px] px-4 md:px-7 py-6">
-        <CompanyForm action={createCompany.bind(null, locale)} submitLabel={t("company.create")} />
+        {/*
+          CLIENT, ticked. A role is required and none was ticked by default, so
+          the commonest possible action - recording the company that just sent
+          an enquiry - failed on the field furthest from what the person came
+          here to type. It is a checkbox they can see and untick; a supplier is
+          two clicks and a supplier who is also a client is what the fieldset
+          is for.
+        */}
+        <CompanyForm
+          action={createCompany.bind(null, locale)}
+          values={{ roles: ["client"] }}
+          submitLabel={t("company.create")}
+          error={error}
+        />
       </div>
     </main>
   );

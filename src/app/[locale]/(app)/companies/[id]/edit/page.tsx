@@ -8,10 +8,13 @@ export const dynamic = "force-dynamic";
 
 export default async function EditCompanyPage({
   params,
+  searchParams,
 }: {
   params: Promise<{ locale: string; id: string }>;
+  searchParams: Promise<{ error?: string }>;
 }) {
   const { locale, id } = await params;
+  const { error } = await searchParams;
   setRequestLocale(locale);
   const t = await getTranslations();
 
@@ -32,6 +35,7 @@ export default async function EditCompanyPage({
           action={updateCompany.bind(null, locale, id)}
           values={company}
           submitLabel={t("common.save")}
+          error={error}
         />
       </div>
     </main>

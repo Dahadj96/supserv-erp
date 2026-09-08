@@ -3,16 +3,27 @@ import { notFound } from "next/navigation";
 import { getFormatter, getTranslations, setRequestLocale } from "next-intl/server";
 import { can } from "@/auth/can";
 import { getSession } from "@/auth/session";
+import { companyNameFromEmail, resolveSender } from "@/capture/quick";
 import { Badge, type BadgeTone } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { commitAvailability } from "@/domain/intake/commit";
 import { markRead } from "@/domain/intake/inbox";
 import { messageDetail, neighbours } from "@/domain/intake/message";
 import { ROUTED_TO } from "@/domain/intake/routing";
+import { searchParties } from "@/domain/search";
 import { Link } from "@/i18n/navigation";
-import { createEnquiryFrom, dismissMessage, setClassification } from "../actions";
+import {
+  createEnquiryFrom,
+  dismissMessage,
+  setClassification,
+  startEnquiryWithCompany,
+} from "../actions";
 
 /** Same colours as the list, so a message does not change identity when opened. */
+/** The one input style this screen uses, so the three fields cannot drift. */
+const FIELD =
+  "h-[28px] w-full rounded-[var(--radius-control)] border border-line bg-surface px-2 text-micro outline-none focus:border-ink";
+
 const TYPE_TONE: Record<string, BadgeTone> = {
   enquiry: "accent",
   tender: "accent",
@@ -32,10 +43,13 @@ const TYPE_TONE: Record<string, BadgeTone> = {
  */
 export default async function MessagePage({
   params,
+  searchParams,
 }: {
   params: Promise<{ locale: string; id: string }>;
+  searchParams: Promise<{ error?: string }>;
 }) {
   const { locale, id } = await params;
+  const { error } = await searchParams;
   setRequestLocale(locale);
 
   const t = await getTranslations();
@@ -74,6 +88,41 @@ export default async function MessagePage({
     message.classifiedAs === "enquiry" || message.classifiedAs === "tender"
       ? message.classifiedAs
       : null;
+
+  /*
+    AN ENQUIRY FROM SOMEBODY WE HAVE NEVER RECORDED.
+
+    This was the dead end. `commitEnquiry` needs a company, said so in a
+    tooltip, and pointed at a step — "link them to a company first" — that only
+    existed once the company was already there. With no companies in the system
+    at all, the first RFQ could not be opened by any route.
+
+    So the screen asks the question instead of refusing: a name, prefilled from
+    the sender's domain, and — when anything already on file resembles it — the
+    look-alikes first, because screen 84 exists to clean up the duplicates this
+    is the easiest place in the ERP to create.
+  */
+  const needsCompany = dealKind !== null && available && message.partyId === null;
+
+  /*
+    ASKED AGAIN, NOW.
+
+    `identifySender` runs ONCE, when the mail is fetched, and writes
+    `intake_message.party_id`. Nothing ever re-runs it. So somebody who read
+    "the sender is not linked to a company", went and created that company, and
+    came back, was told the same thing — and would have been told it for ever,
+    because the answer was decided before the company existed.
+
+    This is the same matcher, asked at the moment somebody is looking at the
+    screen: the person's own address, then the company's, then the domain.
+  */
+  const nowResolves = needsCompany ? await resolveSender(message.fromAddress) : null;
+
+  // And by name, for a company recorded without an email address on it — the
+  // matcher above has nothing to match in that case, and the name usually does.
+  const suggestedName = needsCompany ? (companyNameFromEmail(message.fromAddress) ?? "") : "";
+  const byName = suggestedName ? await searchParties(suggestedName, 4) : [];
+  const lookAlikes = byName.filter((hit) => hit.id !== nowResolves?.id);
 
   const when = format.dateTime(message.receivedAt, {
     day: "2-digit",
@@ -245,6 +294,12 @@ export default async function MessagePage({
               {t("message.whatNext")}
             </h2>
 
+            {error ? (
+              <p className="mt-2 rounded-[var(--radius-control)] bg-critical-bg px-3 py-2 text-micro leading-relaxed text-critical-ink">
+                {t.has(`message.error.${error}`) ? t(`message.error.${error}`) : error}
+              </p>
+            ) : null}
+
             <div className="mt-2.5 flex flex-col items-start gap-2">
               {dealKind && available && message.partyId ? (
                 <form action={createEnquiryFrom.bind(null, locale, id, dealKind)}>
@@ -260,19 +315,122 @@ export default async function MessagePage({
                     {t(`inbox.action.${message.classifiedAs}`)}
                   </Button>
                 </form>
+              ) : needsCompany && dealKind ? (
+                <div className="w-full">
+                  <p className="text-micro leading-relaxed text-secondary">
+                    {t("message.noCompanyYet", {
+                      sender: message.fromAddress ?? message.fromName ?? "",
+                    })}
+                  </p>
+
+                  {nowResolves ? (
+                    <div className="mt-2.5">
+                      {/* Found by the matcher, not by spelling. Offered rather
+                          than applied: LAW 2, and the domain pass can be wrong
+                          when two companies share one. */}
+                      <p className="text-micro text-muted">{t("message.thisIsProbably")}</p>
+                      <form
+                        action={startEnquiryWithCompany.bind(null, locale, id, dealKind)}
+                        className="mt-1.5"
+                      >
+                        <input type="hidden" name="partyId" value={nowResolves.id} />
+                        <input type="hidden" name="subject" value={message.subject ?? ""} />
+                        <Button type="submit" variant="primary" size="small">
+                          {t("message.useCompanyAndOpen", { name: nowResolves.name })}
+                        </Button>
+                      </form>
+                    </div>
+                  ) : null}
+
+                  {lookAlikes.length > 0 ? (
+                    <div className="mt-2.5">
+                      {/* The duplicates this screen would otherwise create are
+                          the expensive kind: a facture goes out under one
+                          spelling and the relance under the other. */}
+                      <p className="text-micro text-muted">{t("message.alreadyOnFile")}</p>
+                      <ul className="mt-1.5 flex flex-col items-start gap-1">
+                        {lookAlikes.map((hit) => (
+                          <li key={hit.id}>
+                            <form action={startEnquiryWithCompany.bind(null, locale, id, dealKind)}>
+                              <input type="hidden" name="partyId" value={hit.id} />
+                              <input type="hidden" name="subject" value={message.subject ?? ""} />
+                              <Button type="submit" variant="secondary" size="small">
+                                {t("message.useCompany", {
+                                  name: hit.legalName,
+                                  code: hit.code,
+                                })}
+                              </Button>
+                            </form>
+                          </li>
+                        ))}
+                      </ul>
+                    </div>
+                  ) : null}
+
+                  <form
+                    action={startEnquiryWithCompany.bind(null, locale, id, dealKind)}
+                    className="mt-3 flex flex-col gap-2"
+                  >
+                    <div>
+                      <label
+                        htmlFor="legalName"
+                        className="block text-micro uppercase tracking-wide text-muted"
+                      >
+                        {lookAlikes.length > 0
+                          ? t("message.orNewCompany")
+                          : t("message.companyName")}
+                      </label>
+                      {/* Prefilled from the sender's domain and edited freely.
+                          A name somebody reads and submits is a name somebody
+                          gave; nothing here is created from a guess alone. */}
+                      <input
+                        id="legalName"
+                        name="legalName"
+                        required
+                        minLength={2}
+                        defaultValue={suggestedName}
+                        placeholder={t("message.companyNamePlaceholder")}
+                        className={`mt-1 ${FIELD}`}
+                      />
+                      <p className="mt-1 text-micro leading-relaxed text-muted">
+                        {t("message.companyNameHelp")}
+                      </p>
+                    </div>
+
+                    <div>
+                      <label
+                        htmlFor="subject"
+                        className="block text-micro uppercase tracking-wide text-muted"
+                      >
+                        {t("message.enquiryName")}
+                      </label>
+                      <input
+                        id="subject"
+                        name="subject"
+                        required
+                        defaultValue={message.subject ?? ""}
+                        className={`mt-1 ${FIELD}`}
+                      />
+                    </div>
+
+                    <Button
+                      type="submit"
+                      variant={nowResolves ? "secondary" : "primary"}
+                      size="small"
+                      className="self-start"
+                    >
+                      {t("message.createCompanyAndOpen")}
+                    </Button>
+                    <p className="text-micro leading-relaxed text-muted">
+                      {t("message.whatThisDoes")}
+                    </p>
+                  </form>
+                </div>
               ) : (
                 <Button
                   variant="primary"
                   size="small"
-                  disabledReason={
-                    // A deal needs a client, and this sender is attached to no
-                    // company. The fix is one step earlier, so say which step.
-                    dealKind && available
-                      ? t("inbox.blocked.senderHasNoCompany")
-                      : blocker
-                        ? t(blocker)
-                        : t("inbox.nothingToCreate")
-                  }
+                  disabledReason={blocker ? t(blocker) : t("inbox.nothingToCreate")}
                 >
                   {t(`inbox.action.${message.classifiedAs ?? "needsReview"}`)}
                 </Button>

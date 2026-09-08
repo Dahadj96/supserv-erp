@@ -35,6 +35,7 @@ const EXPECTED: Record<string, string[]> = {
   "inbox/actions.ts:dismissMessage": ["inbox.view"],
   "inbox/actions.ts:openMessage": ["inbox.view"],
   "inbox/actions.ts:setClassification": ["inbox.view"],
+  "inbox/actions.ts:startEnquiryWithCompany": ["inbox.view"],
   "inbox/actions.ts:syncMailbox": ["inbox.view"],
   "inbox/dossier/[id]/review/actions.ts:confirm": ["inbox.view"],
   "inbox/dossier/[id]/review/actions.ts:confirmAll": ["inbox.view"],

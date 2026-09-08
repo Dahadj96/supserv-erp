@@ -4,7 +4,12 @@ import { revalidatePath } from "next/cache";
 import { can } from "@/auth/can";
 import { getSession } from "@/auth/session";
 import { MailboxNotScoped } from "@/capture/mail/graph";
-import { commitCandidate, commitContact, commitEnquiry } from "@/domain/intake/commit";
+import {
+  attachSenderCompany,
+  commitCandidate,
+  commitContact,
+  commitEnquiry,
+} from "@/domain/intake/commit";
 import { dismiss, markRead, reclassify } from "@/domain/intake/inbox";
 import { pollMailbox } from "@/domain/intake/mailbox";
 import { ROUTED_TO, type RoutedTo } from "@/domain/intake/routing";
@@ -111,6 +116,61 @@ export async function createEnquiryFrom(
   } catch (error) {
     const reason = error instanceof Error ? error.message : "";
     if (reason === "companyRequired" || reason === "subjectRequired") {
+      redirect({ href: `/inbox/${id}?error=${reason}`, locale });
+      return;
+    }
+    throw error;
+  }
+  revalidatePath(`/${locale}/inbox`);
+  redirect({ href: `/deals/${dealId}`, locale });
+}
+
+/**
+ * The same button, for a sender attached to no company yet.
+ *
+ * One press does both halves — name the company, then open the enquiry —
+ * because they are one decision. Splitting them is what the screen used to do
+ * by saying "link them to a company first", and the step it sent people to did
+ * not exist.
+ *
+ * `partyId` when the person picked one of the look-alikes the screen offered;
+ * `legalName` when they typed a name instead. Never both, and the screen only
+ * ever sends one.
+ */
+export async function startEnquiryWithCompany(
+  locale: string,
+  id: string,
+  kind: "enquiry" | "tender",
+  formData: FormData,
+) {
+  const session = await requireInbox(locale);
+  let dealId: string;
+  try {
+    const partyId = await attachSenderCompany({
+      messageId: id,
+      actorId: session.userId,
+      partyId: String(formData.get("partyId") ?? "").trim() || undefined,
+      legalName: String(formData.get("legalName") ?? "").trim() || undefined,
+    });
+
+    dealId = await commitEnquiry({
+      messageId: id,
+      actorId: session.userId,
+      kind,
+      partyId,
+      subject: String(formData.get("subject") ?? "").trim() || undefined,
+    });
+  } catch (error) {
+    const reason = error instanceof Error ? error.message : "";
+    // Every one of these has a sentence on the screen. Anything else is a bug
+    // and is allowed to throw, because a 500 that gets fixed beats a form that
+    // quietly does nothing.
+    if (
+      reason === "companyNameRequired" ||
+      reason === "legalNameTooShort" ||
+      reason === "subjectRequired" ||
+      reason === "noSuchCompany"
+    ) {
       redirect({ href: `/inbox/${id}?error=${reason}`, locale });
       return;
     }

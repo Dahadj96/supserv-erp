@@ -1,4 +1,5 @@
 import { describe, expect, it } from "vitest";
+import { companyNameFromEmail } from "@/capture/quick";
 import {
   classify,
   compose,
@@ -214,5 +215,39 @@ describe("folder names are not translated", () => {
 
   it("has nowhere to file something from nobody", () => {
     expect(filingPath({ party: null, shape: "enquiry", year: 2026 })).toBeNull();
+  });
+});
+
+/**
+ * The company name suggested from an address, for a person to correct.
+ *
+ * Screen 02's dead end was an RFQ from a sender attached to no company: the
+ * button was grey, the reason was a tooltip, and the step it pointed at did not
+ * exist. The screen asks for the name now, and asking with the box already
+ * filled in is the difference between one keystroke and retyping what is on
+ * the screen in front of you.
+ *
+ * It is a suggestion and never a record. `resolveSender` above still refuses to
+ * guess WHICH company an address belongs to — this only proposes a word.
+ */
+describe("a company name suggested from an address", () => {
+  it("takes the domain, because that is the company and the local part is a person", () => {
+    expect(companyNameFromEmail("commercial@touatgaz.dz")).toBe("TOUATGAZ");
+    expect(companyNameFromEmail("m.belkacem@touatgaz.dz")).toBe("TOUATGAZ");
+    expect(companyNameFromEmail("Achats@Urbacon.COM.dz")).toBe("URBACON");
+  });
+
+  it("suggests nothing from a free mailbox — gmail.com is not a company", () => {
+    expect(companyNameFromEmail("nedn40527@gmail.com")).toBeNull();
+    expect(companyNameFromEmail("someone@yahoo.fr")).toBeNull();
+    expect(companyNameFromEmail("someone@outlook.com")).toBeNull();
+  });
+
+  it("suggests nothing rather than something useless", () => {
+    expect(companyNameFromEmail(null)).toBeNull();
+    expect(companyNameFromEmail("")).toBeNull();
+    expect(companyNameFromEmail("no-at-sign")).toBeNull();
+    // A single letter is not a name anybody would keep.
+    expect(companyNameFromEmail("a@x.dz")).toBeNull();
   });
 });

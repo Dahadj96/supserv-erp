@@ -279,3 +279,31 @@ function firstLine(text: string): string | null {
   if (!line) return null;
   return line.length > 180 ? `${line.slice(0, 177)}…` : line;
 }
+
+/**
+ * A company NAME suggested from an email address, for a person to correct.
+ *
+ * `resolveSender` above answers "which company is this?" and refuses to guess.
+ * This answers a different question: screen 02 has an RFQ from a sender nobody
+ * has ever recorded, and the person is about to type the company's name into a
+ * box. Starting that box empty when the address says `contact@touatgaz.dz` is
+ * making somebody retype what is already on the screen.
+ *
+ * It is a PREFILL and never a record. The value lands in a field the person
+ * reads, edits and submits, which is what makes it a confirmation rather than
+ * the system inventing a company — the distinction `createParty` refuses to
+ * blur, and the reason "SARL Gmail" is not in anybody's CRM.
+ *
+ * Free-mail domains return null: `gmail.com` is not a company, and offering
+ * "GMAIL" as a name is worse than offering nothing.
+ */
+export function companyNameFromEmail(address: string | null): string | null {
+  const domain = (address ?? "").toLowerCase().trim().split("@")[1];
+  if (!domain || FREE_MAIL.has(domain)) return null;
+
+  // touatgaz.dz, touatgaz.com.dz and touatgaz.co.uk all suggest TOUATGAZ.
+  const label = domain.split(".")[0];
+  if (!label || label.length < 2 || label === "www") return null;
+
+  return label.toUpperCase();
+}

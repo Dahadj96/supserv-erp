@@ -201,7 +201,14 @@
     "contactName": "Name",
     "contactTrade": "Job title",
     "tradeUnspecified": "not specified",
-    "scorecard": "Scorecard"
+    "scorecard": "Scorecard",
+    "error": {
+      "legalNameTooShort": "The legal name is required — two characters at least.",
+      "roleRequired": "Tick at least one role: this company is a client, a supplier, or both.",
+      "nifFifteenDigits": "A NIF is fifteen digits, no spaces. Leave it empty if you do not have it yet.",
+      "emailInvalid": "That email address does not look right.",
+      "invalid": "The form was not accepted. Check the fields marked required."
+    }
   },
   "bin": {
     "title": "Deleted",
@@ -670,8 +677,7 @@
     "notPermitted": "Your role cannot open the Inbox. It holds everything sent to the company mailbox before anybody has sorted it — enquiries, CVs, invoices and spam alike — so it is limited to the Gérant, commercial, purchasing and accounts. The records made from it are on the screens you already have.",
     "blocked": {
       "needsSourcingPicker": "Sourcing requests exist, but this screen cannot yet say which one the quote answers — and attaching it to the wrong request would price an offer from the wrong quote.",
-      "needsInvoicePicker": "Invoices and payments exist, but which invoice this pays has to be chosen, not guessed from an amount in a subject line.",
-      "senderHasNoCompany": "An enquiry needs a client, and this sender is not linked to a company yet. Add them as a contact under the right company first, then this works."
+      "needsInvoicePicker": "Invoices and payments exist, but which invoice this pays has to be chosen, not guessed from an amount in a subject line."
     },
     "attachment": {
       "cv": "CV",
@@ -3276,7 +3282,26 @@
     "reclassify": "Change what it is",
     "apply": "Apply",
     "deadline": "Deadline",
-    "openInOutlook": "Open the original in Outlook"
+    "openInOutlook": "Open the original in Outlook",
+    "noCompanyYet": "{sender} is not attached to any company. Create it here — the name is enough. The NIF and RC come later, and it is the invoice that will ask for them, not this screen.",
+    "alreadyOnFile": "Already on file, and close to this:",
+    "useCompany": "{name} ({code})",
+    "orNewCompany": "Or a new company",
+    "companyName": "The client's company",
+    "companyNamePlaceholder": "Legal name",
+    "companyNameHelp": "Suggested from the sender's domain. Correct it — this is the name that will be printed on the documents.",
+    "enquiryName": "Name of the enquiry",
+    "createCompanyAndOpen": "Create the company and open the enquiry",
+    "error": {
+      "companyNameRequired": "Give the company a name — two characters at least.",
+      "legalNameTooShort": "Give the company a name — two characters at least.",
+      "subjectRequired": "Give the enquiry a name.",
+      "noSuchCompany": "That company no longer exists.",
+      "companyRequired": "This enquiry needs a client company."
+    },
+    "thisIsProbably": "This address matches a company already on file:",
+    "useCompanyAndOpen": "It is {name} — open the enquiry",
+    "whatThisDoes": "Creates the company, saves the sender as a contact under it, and opens the enquiry. Once."
   },
   "conversations": {
     "subtitle": "Everything a client or a supplier has said, in one place · {needReply, plural, =0 {nothing needs a reply} one {# needs a reply} other {# need a reply}}",

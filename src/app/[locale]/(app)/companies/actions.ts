@@ -46,16 +46,55 @@ function parseForm(formData: FormData): PartyInput {
   });
 }
 
+/**
+ * The message key behind a refusal, or null when it was not a validation one.
+ *
+ * `parseForm` threw straight out of the action before this existed. A server
+ * action that throws renders the error boundary, which on a production build
+ * says nothing useful - so a company with no role ticked, which is how the
+ * fieldset starts on a new company, looked exactly like a button that does not
+ * work. Every key here has a sentence under `company.error.*`.
+ */
+function refusal(error: unknown): string | null {
+  if (error instanceof Error && "issues" in error) {
+    const issues = (error as { issues: { message: string }[] }).issues;
+    return issues[0]?.message ?? "invalid";
+  }
+  return null;
+}
+
 export async function createCompany(locale: string, formData: FormData) {
   const session = await requireWriter(locale);
-  const created = await createParty(parseForm(formData), session.userId);
+
+  let input: PartyInput;
+  try {
+    input = parseForm(formData);
+  } catch (error) {
+    const key = refusal(error);
+    if (key === null) throw error;
+    redirect({ href: `/companies/new?error=${key}`, locale });
+    return;
+  }
+
+  const created = await createParty(input, session.userId);
   revalidatePath(`/${locale}/companies`);
   redirect({ href: `/companies/${created.id}`, locale });
 }
 
 export async function updateCompany(locale: string, id: string, formData: FormData) {
   const session = await requireWriter(locale);
-  await updateParty(id, parseForm(formData), session.userId);
+
+  let input: PartyInput;
+  try {
+    input = parseForm(formData);
+  } catch (error) {
+    const key = refusal(error);
+    if (key === null) throw error;
+    redirect({ href: `/companies/${id}/edit?error=${key}`, locale });
+    return;
+  }
+
+  await updateParty(id, input, session.userId);
   revalidatePath(`/${locale}/companies/${id}`);
   redirect({ href: `/companies/${id}`, locale });
 }
