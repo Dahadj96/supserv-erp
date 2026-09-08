@@ -386,6 +386,13 @@
       "when": 1788905341952,
       "tag": "0054_furry_sharon_ventura",
       "breakpoints": true
+    },
+    {
+      "idx": 55,
+      "version": "7",
+      "when": 1788906138694,
+      "tag": "0055_outstanding_star_brand",
+      "breakpoints": true
     }
   ]
 }

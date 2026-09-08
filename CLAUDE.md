@@ -232,6 +232,8 @@ be rebuildable from the repository alone.
 ```bash
 docker compose -f docker-compose.dev.yml up -d   # Postgres only (dev machine)
 pnpm dev            # local, both locales
+pnpm worker         # background jobs: the mailbox poll and attachment downloads.
+                    # In dev this is a second terminal; compose runs it as a service.
 pnpm check          # types + lint + unit. Run before every commit
 pnpm test:e2e       # the five journeys
 pnpm db:generate    # drizzle-kit generate after a schema change

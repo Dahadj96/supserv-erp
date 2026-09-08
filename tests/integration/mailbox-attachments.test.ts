@@ -6,25 +6,28 @@ import { db } from "@/db";
 import { auditEntry } from "@/db/schema/control";
 import { intakeAttachment, intakeMessage } from "@/db/schema/intake";
 import { fileByIndexId } from "@/domain/files";
-import { MAILBOX, pollMailbox } from "@/domain/intake/mailbox";
+import { fetchAttachmentFor } from "@/domain/intake/attachments";
+import { pollMailbox } from "@/domain/intake/mailbox";
+import { enqueue, QUEUES } from "@/jobs/queue";
 import { storageFor } from "@/storage";
 import { sha256 } from "@/storage/local";
 
 /**
- * 1.2 — the envelope stops being a list of names.
+ * 1.2 and 1.3 — the envelope stops being a list of names, and stops being
+ * something a person waits for.
  *
- * Before this, `intake_attachment` held a filename and a null `storage_path`
+ * Before these, `intake_attachment` held a filename and a null `storage_path`
  * forever, `/api/files/attachment:<id>` answered 409 for every attachment the
  * company had ever been sent, and the only way to read a CCTP was Outlook.
  *
- * What is worth pinning is not "a file was written". It is that the three
- * outcomes stay distinguishable — bytes stored, nothing to store, could not
- * store — because 1.3 turns exactly this into a retrying job, and a job that
- * cannot tell a OneDrive link from a flaky link retries the link forever.
+ * The poll now only NOTICES files; a job fetches them. So the two halves are
+ * tested where they are: that the poll queues exactly what can be fetched, and
+ * that fetching keeps its outcomes distinguishable — because the worker retries
+ * `failed` and must never retry `linked`, `gone` or `already`.
  */
 
 vi.mock("@/capture/mail/graph", async (importOriginal) => {
-  // The real error classes: `fetchInto` dispatches on `instanceof`, so a mock
+  // The real error classes: the fetcher dispatches on `instanceof`, so a mock
   // that invented its own would prove nothing about the code under test.
   const actual = await importOriginal<typeof import("@/capture/mail/graph")>();
   return {
@@ -35,13 +38,20 @@ vi.mock("@/capture/mail/graph", async (importOriginal) => {
   };
 });
 
+// The queue itself is not under test here, and starting pg-boss would create
+// its schema in the shared test database for the sake of counting two calls.
+vi.mock("@/jobs/queue", async (importOriginal) => {
+  const actual = await importOriginal<typeof import("@/jobs/queue")>();
+  return { ...actual, enqueue: vi.fn().mockResolvedValue("job-id") };
+});
+
 const graph = await import("@/capture/mail/graph");
 const { AttachmentHasNoBytes, REFERENCE_ATTACHMENT } = graph;
 
 const stamp = Date.now().toString().slice(-6);
 const ACTOR = "test-mailbox-attachments";
 
-/** The bytes of the "dossier" — a real digest, so sha256 is checked and not echoed. */
+/** The bytes of the "dossier" — real content, so the digest is checked and not echoed. */
 const CCTP = Buffer.from(`%PDF-1.4 cahier des charges ${stamp}`, "utf8");
 
 const message = (n: number, subject: string) => ({
@@ -83,20 +93,22 @@ beforeAll(async () => {
     return [attachment("bordereau.pdf")];
   });
 
+  // Dispatched on the attachment id, because the job fetches by id alone — ten
+  // minutes later, the listing that knew the kind is long gone.
   vi.mocked(graph.fetchAttachmentBytes).mockImplementation(
-    async (_messageId: string, _attachmentId: string, odataType?: string | null) => {
-      if (odataType === REFERENCE_ATTACHMENT) {
+    async (_messageId: string, attachmentId: string) => {
+      if (attachmentId.endsWith("dossier.pdf")) {
         throw new AttachmentHasNoBytes("This attachment is a link to a file in the cloud.");
       }
-      if (_messageId.endsWith("-3")) throw new Error("Graph /users/… failed: 500");
+      if (attachmentId.endsWith("bordereau.pdf")) throw new Error("Graph /users/… failed: 500");
       return { bytes: CCTP, contentType: "application/pdf", kind: "file" as const };
     },
   );
 
   await pollMailbox(ACTOR);
 
-  // Only the three this file put there; the suite shares one database. Ordered
-  // by the Graph id, which ends in 1, 2, 3 — so the index below is the message.
+  // Ordered by the Graph id, which ends in 1, 2, 3 — so the index below is the
+  // message. The suite shares one database, so only these three are taken.
   const mine = await db
     .select({ id: intakeMessage.id })
     .from(intakeMessage)
@@ -127,43 +139,70 @@ afterAll(async () => {
     await rm(resolve(base, "attachments", row.id), { recursive: true, force: true });
   }
 
-  await db.delete(auditEntry).where(inArray(auditEntry.entityId, messageIds));
+  await db
+    .delete(auditEntry)
+    .where(inArray(auditEntry.entityId, messageIds.concat(rows.map((r) => r.id))));
   // `intake_attachment.message_id` is ON DELETE cascade.
   await db.delete(intakeMessage).where(inArray(intakeMessage.id, messageIds));
 });
 
-/** The attachment rows of one of this file's messages, by its subject. */
-async function attachmentsOf(index: number) {
+/** The single attachment of one of this file's three messages. */
+async function attachmentOf(index: number) {
   const id = messageIds[index] as string;
-  return db.select().from(intakeAttachment).where(eq(intakeAttachment.messageId, id));
+  const [row] = await db.select().from(intakeAttachment).where(eq(intakeAttachment.messageId, id));
+  return row;
 }
 
-describe("a file that arrived in the mail", () => {
-  it("has a storage path and a digest, where it had neither", async () => {
-    const [row] = await attachmentsOf(0);
+describe("the poll queues the files rather than waiting for them", () => {
+  it("keeps the id Graph knows the attachment by", async () => {
+    // The job runs later and has nothing else to ask Graph for.
+    expect((await attachmentOf(0))?.externalId).toBe(`graph-att-${stamp}-cctp.pdf`);
+  });
 
-    expect(row?.filename).toBe("cctp.pdf");
-    expect(row?.storagePath).toBe(`attachments/${row?.id}/cctp.pdf`);
-    expect(row?.sha256).toBe(sha256(CCTP));
+  it("queues one retrying job per fetchable attachment", async () => {
+    const rowId = (await attachmentOf(0))?.id;
+    const call = vi
+      .mocked(enqueue)
+      .mock.calls.find(([, data]) => (data as { attachmentId?: string }).attachmentId === rowId);
+
+    expect(call?.[0]).toBe(QUEUES.attachmentFetch);
+    // The singleton key is what stops two overlapping polls queueing the same
+    // file twice; the retry is the fibre link in Adrar going down mid-dossier.
+    expect(call?.[2]).toMatchObject({ singletonKey: rowId, retryLimit: 5, retryBackoff: true });
+  });
+
+  it("never queues a link, because there is nothing to fetch", async () => {
+    const rowId = (await attachmentOf(1))?.id;
+    const queued = vi
+      .mocked(enqueue)
+      .mock.calls.some(([, data]) => (data as { attachmentId?: string }).attachmentId === rowId);
+
+    // Queueing it would be queueing a fact, and the queue would keep asking.
+    expect(queued).toBe(false);
+  });
+});
+
+describe("fetching a file that arrived in the mail", () => {
+  it("writes a storage path and a digest, where there had been neither", async () => {
+    const row = await attachmentOf(0);
+    const result = await fetchAttachmentFor(row?.id as string);
+    expect(result.outcome).toBe("stored");
+
+    const after = await attachmentOf(0);
+    expect(after?.storagePath).toBe(`attachments/${row?.id}/cctp.pdf`);
+    expect(after?.sha256).toBe(sha256(CCTP));
+    // Graph said 4096 — an attachment's size in the mail store carries its
+    // encoding. The row should say what screen 60 will actually hand over.
+    expect(after?.sizeBytes).toBe(CCTP.byteLength);
   });
 
   it("hands back the same bytes it was sent", async () => {
-    const [row] = await attachmentsOf(0);
-    const body = await storageFor("working").get(row?.storagePath as string);
-
-    expect(body.equals(CCTP)).toBe(true);
-  });
-
-  it("records the length of the copy it holds, not the mail store's estimate", async () => {
-    const [row] = await attachmentsOf(0);
-
-    // Graph said 4096 — an attachment's size in the mail store carries its
-    // encoding. The row should say what screen 60 will actually hand over.
-    expect(row?.sizeBytes).toBe(CCTP.byteLength);
+    const row = await attachmentOf(0);
+    expect((await storageFor("working").get(row?.storagePath as string)).equals(CCTP)).toBe(true);
   });
 
   it("is what stops /api/files/attachment:<id> answering 409", async () => {
-    const [row] = await attachmentsOf(0);
+    const row = await attachmentOf(0);
     const found = await fileByIndexId(`attachment:${row?.id}`);
 
     // The route's 409 is `if (!path)` and nothing else. This is that branch,
@@ -173,60 +212,72 @@ describe("a file that arrived in the mail", () => {
       CCTP.byteLength,
     );
   });
-});
 
-describe("a file that did not arrive in the mail", () => {
-  it("keeps a null path for a link, and stores the message anyway", async () => {
-    const [row] = await attachmentsOf(1);
+  it("does not fetch it a second time when the job is delivered twice", async () => {
+    const row = await attachmentOf(0);
+    const calls = vi.mocked(graph.fetchAttachmentBytes).mock.calls.length;
 
-    expect(row?.filename).toBe("dossier.pdf");
-    // Not a failure. There are no bytes in the mailbox to fetch, and the row
-    // saying so is what screen 60 reads to explain itself.
-    expect(row?.storagePath).toBeNull();
-    expect(row?.sha256).toBeNull();
-  });
-
-  it("keeps a null path when the fetch failed, and still stores the message", async () => {
-    const [row] = await attachmentsOf(2);
-
-    // The message is the record that the mail exists. Losing it because an
-    // attachment would not download is the failure this must never become.
-    expect(row?.filename).toBe("bordereau.pdf");
-    expect(row?.storagePath).toBeNull();
+    expect((await fetchAttachmentFor(row?.id as string)).outcome).toBe("already");
+    // A queue may deliver twice. Pulling 12 MB again to write the same bytes
+    // is not free on this link.
+    expect(vi.mocked(graph.fetchAttachmentBytes).mock.calls.length).toBe(calls);
   });
 });
 
-describe("the audit says what happened to the envelope", () => {
-  async function captureFor(index: number) {
+describe("the outcomes the worker decides on", () => {
+  it("a link is answered, not retried", async () => {
+    const row = await attachmentOf(1);
+    const result = await fetchAttachmentFor(row?.id as string);
+
+    expect(result.outcome).toBe("linked");
+    // Not a failure. There are no bytes in the mailbox to fetch, and the null
+    // path is what screen 60 reads to explain itself.
+    expect((await attachmentOf(1))?.storagePath).toBeNull();
+  });
+
+  it("a bad day is a failure, so the worker tries again", async () => {
+    const row = await attachmentOf(2);
+    const result = await fetchAttachmentFor(row?.id as string);
+
+    expect(result.outcome).toBe("failed");
+    expect(result.reason).toContain("500");
+    expect((await attachmentOf(2))?.storagePath).toBeNull();
+  });
+
+  it("a row that is no longer there is gone, not failed", async () => {
+    // The message was dismissed while the job sat in the queue. Retrying it
+    // until the limit runs out would be retrying a deletion.
+    const result = await fetchAttachmentFor("00000000-0000-4000-8000-000000000000");
+    expect(result.outcome).toBe("gone");
+  });
+});
+
+describe("what became of each file is written down", () => {
+  it("leaves a fetch entry naming the outcome, since nothing in this layer logs", async () => {
+    const row = await attachmentOf(2);
+    const entries = await db
+      .select({ after: auditEntry.after })
+      .from(auditEntry)
+      .where(eq(auditEntry.entityId, row?.id as string));
+
+    const outcomes = entries.map((e) => (e.after as { outcome?: string }).outcome);
+    expect(outcomes).toContain("failed");
+
+    const first = entries[0]?.after as { file?: string } | undefined;
+    expect(first?.file).toBe("bordereau.pdf");
+  });
+
+  it("the capture entry says what the poll did with the envelope", async () => {
     const [entry] = await db
       .select({ after: auditEntry.after })
       .from(auditEntry)
-      .where(eq(auditEntry.entityId, messageIds[index] as string));
-    return (entry?.after ?? {}) as {
-      attachments?: {
-        total: number;
-        stored: number;
-        linked: number;
-        failed: number;
-        failures?: { file: string; reason: string }[];
-      };
-    };
-  }
+      .where(eq(auditEntry.entityId, messageIds[1] as string));
 
-  it("counts the one it stored", async () => {
-    expect((await captureFor(0)).attachments).toMatchObject({ total: 1, stored: 1, failed: 0 });
-  });
-
-  it("separates a link from a failure", async () => {
-    // The distinction 1.3 depends on: `failed` is retried, `linked` never is.
-    expect((await captureFor(1)).attachments).toMatchObject({ linked: 1, failed: 0 });
-    expect((await captureFor(2)).attachments).toMatchObject({ linked: 0, failed: 1 });
-  });
-
-  it("names the file that failed and why, since nothing in this layer logs", async () => {
-    const { attachments } = await captureFor(2);
-
-    expect(attachments?.failures?.[0]?.file).toBe("bordereau.pdf");
-    expect(attachments?.failures?.[0]?.reason).toContain("500");
+    const after = entry?.after as { attachments?: object } | undefined;
+    expect(after?.attachments).toMatchObject({
+      total: 1,
+      queued: 0,
+      linked: 1,
+    });
   });
 });

@@ -1,37 +1,20 @@
 import { and, desc, eq, sql } from "drizzle-orm";
 import {
-  AttachmentHasNoBytes,
-  fetchAttachmentBytes,
   fetchAttachments,
   fetchMessagesSince,
-  type GraphAttachment,
   type GraphMessage,
   MailboxNotScoped,
+  REFERENCE_ATTACHMENT,
 } from "@/capture/mail/graph";
 import { db } from "@/db";
 import { auditEntry } from "@/db/schema/control";
 import { intakeAttachment, intakeChannel, intakeMessage } from "@/db/schema/intake";
 import { party, partyRole, person } from "@/db/schema/party";
-import { storageFor } from "@/storage";
-import { sha256 } from "@/storage/local";
+import { type AttachmentFetchJob, enqueue, QUEUES } from "@/jobs/queue";
 import { listRules } from "./channels";
 import { type RoutableMessage, route } from "./routing";
 
 export const MAILBOX = "mailbox";
-
-/**
- * Where an attachment's bytes go. Same shape as `storagePathFor` in
- * `dossier.ts` and in `import/batch.ts`: a folder named after the row that owns
- * the file, and a filename with anything structural taken out of it.
- *
- * Keyed on OUR row id, not on the Graph attachment id. Graph ids are long,
- * base64-ish and change when a message is moved between folders; a path built
- * from one would stop resolving for a reason nobody could see on screen.
- */
-export function storagePathFor(attachmentId: string, filename: string): string {
-  const safe = filename.replace(/[^\w.\- ]+/g, "_").slice(0, 120);
-  return `attachments/${attachmentId}/${safe}`;
-}
 
 /**
  * Screen 02 and 38 — the mailbox poll.
@@ -165,72 +148,6 @@ export async function pollMailbox(actorId = "system"): Promise<PollResult> {
   return result;
 }
 
-type FetchOutcome = { outcome: "stored" | "linked" | "failed"; reason?: string };
-
-/**
- * Fetch one attachment and put it where the ERP can serve it.
- *
- * Three outcomes, and only one of them is a fault:
- *
- *   stored  the bytes are on disk and the row points at them.
- *   linked  the attachment is a link to OneDrive or SharePoint. There is
- *           nothing to fetch, the row keeps a null path on purpose, and screen
- *           60 already says "the file is real, this copy is not".
- *   failed  the network, or Graph, on a bad day.
- *
- * Nothing here throws. An attachment that cannot be fetched must not cost the
- * message it arrived on — the row is the record that the mail exists, the
- * original is still in the mailbox, and the copy can be taken later. Once 1.3
- * moves this into a job, `failed` is what gets retried and `linked` is what
- * must not be.
- */
-async function fetchInto(
-  rowId: string,
-  graphMessageId: string,
-  attachment: GraphAttachment,
-): Promise<FetchOutcome> {
-  try {
-    const got = await fetchAttachmentBytes(
-      graphMessageId,
-      attachment.id,
-      attachment["@odata.type"],
-    );
-    const path = storagePathFor(rowId, attachment.name);
-
-    await storageFor("working").put({ path, body: got.bytes, mime: got.contentType });
-
-    await db
-      .update(intakeAttachment)
-      .set({
-        storagePath: path,
-        sha256: sha256(got.bytes),
-        // Graph's `size` is the attachment as it sits in the mail store, which
-        // includes its encoding overhead. Now that the bytes are here, the row
-        // can say what screen 60 will actually hand over.
-        sizeBytes: got.bytes.byteLength,
-      })
-      .where(eq(intakeAttachment.id, rowId));
-
-    return { outcome: "stored" };
-  } catch (error) {
-    if (error instanceof AttachmentHasNoBytes) {
-      return { outcome: "linked", reason: error.detail };
-    }
-    // Including a scope refusal. A 403 here, after the listing succeeded, is
-    // the Exchange permission cache catching up — a state that clears itself,
-    // and not a reason to abandon the messages this poll has already read.
-    return {
-      outcome: "failed",
-      reason:
-        error instanceof MailboxNotScoped
-          ? error.detail
-          : error instanceof Error
-            ? error.message
-            : "unknown",
-    };
-  }
-}
-
 async function storeOne(
   message: GraphMessage,
   rules: Awaited<ReturnType<typeof listRules>>,
@@ -291,8 +208,7 @@ async function storeOne(
 
   const messageId = row?.id as string;
 
-  const fetched = { stored: 0, linked: 0, failed: 0 };
-  const failures: { file: string; reason: string }[] = [];
+  const files = { total: attachments.length, queued: 0, linked: 0 };
 
   if (attachments.length > 0) {
     // The rows go in first: the path is keyed on the row id, and a row with a
@@ -303,6 +219,7 @@ async function storeOne(
         attachments.map((a, i) => ({
           messageId,
           filename: a.name,
+          externalId: a.id,
           contentType: a.contentType,
           sizeBytes: a.size,
           looksLike: kinds[i] ?? "unknown",
@@ -310,16 +227,30 @@ async function storeOne(
       )
       .returning({ id: intakeAttachment.id });
 
-    // One at a time, deliberately. The office is on a fibre link that goes
-    // down, and a dossier is a dozen files; asking for all of them at once is
-    // how a poll turns into a stall.
     for (const [i, a] of attachments.entries()) {
       const rowId = rows[i]?.id;
       if (!rowId) continue;
 
-      const { outcome, reason } = await fetchInto(rowId, message.id, a);
-      fetched[outcome]++;
-      if (outcome === "failed" && reason) failures.push({ file: a.name, reason });
+      // A reference attachment is a link to OneDrive. There is nothing in the
+      // mailbox to download, so it never becomes a job at all — queueing one
+      // would be queueing a fact, and the queue would keep asking.
+      if (a["@odata.type"] === REFERENCE_ATTACHMENT) {
+        files.linked++;
+        continue;
+      }
+
+      // The bytes are somebody else's problem now, on purpose. The poll's job
+      // is to notice that the mail exists; a twelve-file dossier over a fibre
+      // link that drops must not be something a person waits for, and each
+      // file must be able to fail and be retried on its own.
+      await enqueue(QUEUES.attachmentFetch, { attachmentId: rowId } satisfies AttachmentFetchJob, {
+        // The same attachment must not queue twice if a poll overlaps itself.
+        singletonKey: rowId,
+        retryLimit: 5,
+        retryDelay: 60,
+        retryBackoff: true,
+      });
+      files.queued++;
     }
   }
 
@@ -335,14 +266,11 @@ async function storeOne(
       confidence: decision.confidence,
       rule: decision.rule?.labelKey ?? null,
       downgraded: decision.downgraded,
-      // What happened to the envelope, not just to the letter. Nothing in this
-      // layer logs, and a poll that quietly stored no bytes for a fortnight is
-      // exactly the kind of silence this system is being repaired for.
-      attachments: {
-        total: attachments.length,
-        ...fetched,
-        ...(failures.length > 0 ? { failures } : {}),
-      },
+      // What the poll did with the envelope. What became of each file is on
+      // the attachment's own `fetch` entry, written by the job that fetched
+      // it — nothing in this layer logs, and a capture that quietly stored no
+      // bytes for a fortnight is the kind of silence this repair exists to end.
+      attachments: files,
     },
     sourceScreen: "38",
   });

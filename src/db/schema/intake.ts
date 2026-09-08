@@ -130,6 +130,15 @@ export const intakeAttachment = pgTable("intake_attachment", {
     .notNull()
     .references(() => intakeMessage.id, { onDelete: "cascade" }),
   filename: text("filename").notNull(),
+  /**
+   * The channel's own id for this attachment — for the mailbox, the Graph
+   * attachment id.
+   *
+   * Needed because the bytes are fetched later, by a job, and a job that runs
+   * ten minutes after the poll has nothing else to ask Graph for. Null on rows
+   * captured before this column, and on any channel that has no such id.
+   */
+  externalId: text("external_id"),
   contentType: text("content_type"),
   sizeBytes: integer("size_bytes"),
   /**

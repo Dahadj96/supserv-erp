@@ -30,10 +30,10 @@ export default async function InboxPage({
   searchParams,
 }: {
   params: Promise<{ locale: string }>;
-  searchParams: Promise<{ facet?: string; unread?: string; error?: string; synced?: string }>;
+  searchParams: Promise<{ facet?: string; unread?: string; error?: string; sync?: string }>;
 }) {
   const { locale } = await params;
-  const { facet: raw, unread, error, synced } = await searchParams;
+  const { facet: raw, unread, error, sync } = await searchParams;
   setRequestLocale(locale);
   const t = await getTranslations();
   const format = await getFormatter();
@@ -111,9 +111,9 @@ export default async function InboxPage({
         </div>
       ) : null}
 
-      {synced ? (
+      {sync === "queued" ? (
         <p className="mx-4 md:mx-7 mt-5 rounded-[var(--radius-control)] bg-good-bg px-4 py-2.5 text-tiny text-good-ink">
-          {t("inbox.synced", { count: Number(synced) })}
+          {t("inbox.syncQueued")}
         </p>
       ) : null}
 

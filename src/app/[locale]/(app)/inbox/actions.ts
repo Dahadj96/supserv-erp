@@ -3,7 +3,6 @@
 import { revalidatePath } from "next/cache";
 import { can } from "@/auth/can";
 import { getSession } from "@/auth/session";
-import { MailboxNotScoped } from "@/capture/mail/graph";
 import {
   attachSenderCompany,
   commitCandidate,
@@ -11,9 +10,9 @@ import {
   commitEnquiry,
 } from "@/domain/intake/commit";
 import { dismiss, markRead, reclassify } from "@/domain/intake/inbox";
-import { pollMailbox } from "@/domain/intake/mailbox";
 import { ROUTED_TO, type RoutedTo } from "@/domain/intake/routing";
 import { redirect } from "@/i18n/navigation";
+import { enqueue, QUEUES } from "@/jobs/queue";
 
 /**
  * Screen 02. Triage needs no permission beyond seeing the inbox at all —
@@ -38,22 +37,29 @@ async function requireInbox(locale: string) {
   return session;
 }
 
-/** "Sync now". The only button on the screen that reaches outside the building. */
+/**
+ * "Sync now". The only button on the screen that reaches outside the building —
+ * and, since 1.3, the only one that does not wait for it.
+ *
+ * It asks for a poll rather than performing one. Reading the mailbox means
+ * pulling attachments over a link that goes down, and a person holding a
+ * request open for that is a person watching a spinner and a batch that is lost
+ * when the link drops on file nine of twelve. The worker does it, retries what
+ * fails, and the screen fills in as the files land.
+ *
+ * The singleton key is why pressing it five times is one poll.
+ */
 export async function syncMailbox(locale: string) {
   await requireInbox(locale);
-  try {
-    const result = await pollMailbox("mailbox-poll");
-    revalidatePath(`/${locale}/inbox`);
-    redirect({ href: `/inbox?synced=${result.stored}`, locale });
-  } catch (error) {
-    if (error instanceof MailboxNotScoped) {
-      // Never the detail in a URL — it names the mailbox. The banner on the
-      // channels screen carries the full explanation.
-      redirect({ href: "/inbox?error=mailboxNotScoped", locale });
-      return;
-    }
-    throw error;
-  }
+
+  await enqueue(
+    QUEUES.mailboxPoll,
+    { actorId: "mailbox-poll" },
+    { singletonKey: QUEUES.mailboxPoll },
+  );
+
+  revalidatePath(`/${locale}/inbox`);
+  redirect({ href: "/inbox?sync=queued", locale });
 }
 
 export async function dismissMessage(locale: string, id: string, formData: FormData) {

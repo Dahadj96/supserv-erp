@@ -1,0 +1,1 @@
+ALTER TABLE "intake_attachment" ADD COLUMN "external_id" text;
