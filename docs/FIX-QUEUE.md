@@ -83,7 +83,7 @@ Facts learned the hard way. Do not rediscover them.
   `/deals`, appears in `/settings/bin`, and one with an issued document
   refuses with a reason on screen.
 
-- [ ] **0.1 · Discard a draft document**
+- [x] **0.1 · Discard a draft document**
   `document` has no deletion columns at all. Add `deleted_at` / `deleted_by` /
   `delete_reason` in a new migration. Guard: only when
   `number IS NULL AND locked_at IS NULL` — an issued document is never
@@ -342,6 +342,53 @@ files and will conflict with everything above.
 
 ---
 
+## Known gaps
+
+Work a later run must finish. Written down rather than left half-done.
+
+### 0.1 — `liveDocument` covers three query sites, not thirty-four
+
+`src/domain/deletion.ts` exports `liveDocument` (`document.deleted_at is null`).
+It is applied to the queries that actually list drafts:
+
+- `billed()` — `src/domain/money/store.ts` — the invoices list, screen 17.
+- `listOffers()` and `draftOffers()` — `src/domain/offer/store.ts` — screen 11.
+- `offersForDeal()` — the offers panel on the enquiry, screen 06.
+
+The rest were left alone on purpose, in three groups.
+
+**Already safe — the clause would be true by construction.** These filter
+`number is not null` or `status = 'issued'`, and a discarded row can be neither:
+`owings()` and `settlements()`, `factsFor()` in `deal/deal.ts` (the counts the
+enquiry's stage is derived from), `issuedDocumentCount` and
+`issuedDocumentCountForDeal` in `deletion.ts`, `control/reports.ts`,
+`import/run.ts:406`, `delivery/store.ts:372`, `purchase/store.ts:452`,
+`project/candidates.ts`, the issued reads in `project/situations.ts`,
+`today/gather.ts`, `waiting/gather.ts`.
+
+**Deliberately unfiltered — reads by id.** A binned draft must keep its page or
+nothing could restore it: every `eq(document.id, …)` in `src/documents/` and
+under `documents/[id]/`, and `documentBinState` itself.
+
+**Genuinely uncovered.** A discarded draft can still appear at each of these.
+One `liveDocument` clause each, plus a look at the screen it feeds:
+
+| Site | What it shows |
+|---|---|
+| `src/domain/order/list.ts:64` | the orders list — draft client and supplier orders |
+| `src/domain/timeline/gather.ts:132` | the deal timeline — every document on the enquiry, drafts included |
+| `src/domain/control/compliance-status.ts:87` | the compliance screen's count of drafts that would be refused |
+| `src/domain/merge-preview.ts:131` | "what moves" when two companies merge |
+| `src/domain/delivery/store.ts:351` | delivery notes, listed with no number filter |
+| `src/domain/project/final.ts:118`, `retention.ts:152`, `situations.ts:941` | draft décomptes finaux, retention releases and avenants |
+| `src/domain/tender/bpu-store.ts:186, 522, 560` | the sharpest one: these find "the draft quotation on this deal" by `number is null` in order to write BPU prices into it, and a binned draft is still the row they pick |
+
+None of this is wrong today — the bin is empty until somebody uses it — but the
+BPU one writes prices into a binned draft the first time both features meet on
+the same enquiry.
+
+---
+
 ## Needs Abdou
 
 - **3.3 — one word per concept.** Which is it: **Deals** or **Enquiries**?
@@ -358,3 +405,4 @@ files and will conflict with everything above.
 | 2026-09-08 | — | `bbf3d4a` | This queue filed. Baseline `pnpm check` green before any change. |
 | 2026-09-08 | 0.7 | `e0771c8` | Landing redirect now `/today`. |
 | 2026-09-08 | 0.2 | `6f557e0` | `discardDeal` / `restoreDeal` in `deletion.ts`, guarded on issued documents; `deals/[id]/delete-actions.ts`; a danger button on screen 06 that greys with a readable reason instead of disappearing; EN + FR copy; permission table updated. Restore is deliberately not on the deal page — `getDeal` filters `deleted_at`, so the bin (0.3) is what calls `restoreDealAction`. |
+| 2026-09-08 | 0.1 | `792daee` | `document` gains `deleted_at` / `deleted_by` / `delete_reason` (migration 0051); `discardDocument` / `restoreDocument` guarded on `number is null AND locked_at is null` with its own `DocumentIsIssued`; `documents/[id]/delete-actions.ts`; a discard card on screen 18 whose button greys with the avoir sentence instead of vanishing, and offers Restore once binned; EN + FR copy; `liveDocument` on the invoices list, the offers list and the enquiry's offers panel. The sites left uncovered are named under Known gaps. |
