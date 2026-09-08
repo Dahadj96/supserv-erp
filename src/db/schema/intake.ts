@@ -132,15 +132,22 @@ export const intakeAttachment = pgTable("intake_attachment", {
   filename: text("filename").notNull(),
   contentType: text("content_type"),
   sizeBytes: integer("size_bytes"),
-  /** Where the bytes are. Null while the file is still being fetched. */
+  /**
+   * Where the bytes are.
+   *
+   * Null is a real state and not a fault: the original always stays in the
+   * mailbox, and a reference attachment — a OneDrive link — has no bytes to
+   * fetch at all. `/api/files/attachment:<id>` answers 409 for a null path,
+   * which says "the file is real, this copy is not".
+   */
   storagePath: text("storage_path"),
-  /*
-    There was a `sha256` here and nothing wrote it, because the fetcher that
-    would — the one that pulls an attachment out of Outlook — is not built.
-    `storageFor().put()` already returns the digest, so the column is one line
-    on the day that fetcher lands, and it lands with the code that fills it.
-    Dropped 5 September 2026.
-  */
+  /**
+   * The digest of what was fetched, written beside the path by the code that
+   * stores it. Restored 8 September 2026 with the fetcher whose absence was
+   * the reason it was dropped — the same file arriving twice, from two people
+   * or from a resend, is one set of bytes and this is how that is noticed.
+   */
+  sha256: text("sha256"),
   /** cv | quote | invoice | delivery_note | tender_dossier | unknown */
   looksLike: text("looks_like"),
   createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
