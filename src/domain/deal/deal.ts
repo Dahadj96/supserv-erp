@@ -59,7 +59,26 @@ export const dealInput = z.object({
   deadlineAt: z.date().nullable().default(null),
   submissionMethod: z.enum(SUBMISSION_METHODS).default("unknown"),
   currency: z.string().trim().default("DZD"),
-  ownerId: z.string().uuid().nullable().default(null),
+  /*
+    A USER ID, WHICH IS NOT A UUID, AND NEVER WAS.
+
+    `partyId` and `contactPersonId` above are `uuid` columns of ours, so `.uuid()`
+    is right for them. `owner_id` is `text`, because it holds Better Auth's own
+    id — `QueteTlhahi4jRKa4HM3f5M0DEtJ8YTb`, a 32-character nanoid. Demanding a
+    UUID here meant `createDeal` threw on every call that named a real signed-in
+    person, which is every call a screen can make:
+
+        deals/new/actions.ts   ownerId: session.userId
+        intake/commit.ts       ownerId: opts.actorId
+
+    So an enquiry could not be created by ANY route, from either screen, and the
+    only sign of it was "The server did not respond" on a red panel. Three days
+    were spent on the two dead ends in front of it before anything could get far
+    enough to hit this one.
+
+    Every test passed `ownerId: null`, so the rule was never once exercised.
+  */
+  ownerId: z.string().trim().min(1, "ownerIdRequired").nullable().default(null),
   source: z.string().trim().default("manual"),
   intakeMessageId: z.string().uuid().nullable().default(null),
   expectedValue: z.string().trim().nullable().default(null),

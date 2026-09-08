@@ -2,6 +2,7 @@ import { eq, inArray, like } from "drizzle-orm";
 import { afterAll, beforeAll, describe, expect, it } from "vitest";
 import { db } from "@/db";
 import { auditEntry } from "@/db/schema/control";
+import { deal } from "@/db/schema/deal";
 import { intakeChannel, intakeMessage } from "@/db/schema/intake";
 import { partyRole, party as partySchema, person } from "@/db/schema/party";
 import { ensureIntakeConfigured } from "@/domain/intake/channels";
@@ -10,6 +11,7 @@ import {
   commitAvailability,
   commitCandidate,
   commitContact,
+  commitEnquiry,
 } from "@/domain/intake/commit";
 import {
   dismiss,
@@ -35,6 +37,8 @@ const messageIds: string[] = [];
 const personIds: string[] = [];
 /** Companies made by the tests below, cleared the same way they were made. */
 const partyIds: string[] = [];
+/** Deals made by the tests below. */
+const dealIds: string[] = [];
 
 const hoursFromNow = (h: number) => new Date(Date.now() + h * 3_600_000);
 
@@ -180,6 +184,7 @@ afterAll(async () => {
   // fails on a foreign key, and the whole file reports as failed with every
   // test inside it green.
   await db.delete(intakeMessage).where(like(intakeMessage.externalId, "TEST-IN-%"));
+  if (dealIds.length > 0) await db.delete(deal).where(inArray(deal.id, dealIds));
   await db.delete(person).where(inArray(person.id, personIds));
   if (partyIds.length > 0) {
     // A contact created by these tests is employed by one of these companies,
@@ -362,6 +367,54 @@ describe("screen 02 — nothing expires unread", () => {
       .from(intakeMessage)
       .where(eq(intakeMessage.id, message?.id as string));
     expect(after?.partyId, "and the message knows whose it is now").toBe(partyId);
+  });
+
+  it("goes all the way to a deal, under the id Better Auth actually issues", async () => {
+    /*
+      THE TEST THAT WAS MISSING, and its absence cost three days.
+
+      `dealInput.ownerId` was `z.string().uuid()`. `deal.owner_id` is `text`,
+      because it holds Better Auth's id — a 32-character nanoid, never a UUID —
+      so `createDeal` threw on every call that named a signed-in person. Both
+      screens that can make one do exactly that:
+
+          deals/new/actions.ts   ownerId: session.userId
+          intake/commit.ts       ownerId: opts.actorId
+
+      An enquiry could not be created by ANY route. Every existing test passed
+      `ownerId: null`, so nothing ever exercised the rule, and on the screen it
+      read as "The server did not respond".
+
+      So the actor here is shaped like a REAL one. A test that proves the happy
+      path with a value no user can ever have is a test that proves nothing.
+    */
+    const SESSION_USER = "QueteTlhahi4jRKa4HM3f5M0DEtJ8YTb";
+
+    const [message] = await db
+      .select()
+      .from(intakeMessage)
+      .where(eq(intakeMessage.externalId, "TEST-IN-5"));
+
+    const dealId = await commitEnquiry({
+      messageId: message?.id as string,
+      actorId: SESSION_USER,
+      kind: "enquiry",
+      subject: "Demande de prix - galets de convoyeur",
+    });
+    dealIds.push(dealId);
+
+    const [made] = await db.select().from(deal).where(eq(deal.id, dealId));
+    expect(made?.ownerId, "the person who pressed the button owns it").toBe(SESSION_USER);
+    expect(made?.ref, "and it is numbered").toMatch(/^ENQ-\d{4}-\d{4}$/);
+    // LAW 2 — the deadline was read out of an email by a parser, not agreed.
+    expect(made?.source).toBe("mailbox");
+
+    const [committed] = await db
+      .select()
+      .from(intakeMessage)
+      .where(eq(intakeMessage.id, message?.id as string));
+    expect(committed?.status, "and the message is spent").toBe("committed");
+    expect(committed?.committedEntityId).toBe(dealId);
   });
 
   it("puts a role mailbox on the company, and a man's own address on nothing", async () => {
