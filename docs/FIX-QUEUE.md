@@ -104,7 +104,7 @@ Facts learned the hard way. Do not rediscover them.
   *Done when:* the bin lists all three kinds, each restores correctly, and
   each row still shows its days-left.
 
-- [ ] **0.4 · A grey button with a reason wherever removal refuses**
+- [x] **0.4 · A grey button with a reason wherever removal refuses**
   `RulePopover` has zero callers. `Button`'s `disabledReason` is used for
   issue and send only. Give every removal control a reason instead of an
   absence. `src/domain/rules.ts` no longer exists — do **not** recreate it;
@@ -379,6 +379,31 @@ decision exists, the honest options are to soften the copy or to leave the
 countdown as a promise nobody has kept — and softening copy the day before
 somebody writes the purge is its own churn.
 
+### 0.4 — four removal paths still silent, and one that must stay refused
+
+The sweep covered a person, a note, a payment and the company button. What it
+looked at and deliberately did not change, with the file each lives in:
+
+| Silent path | File | Why it was left |
+|---|---|---|
+| A **site** (`/projects/[id]`) | `src/domain/project/store.ts`, `src/app/[locale]/(app)/projects/[id]/page.tsx` | `project.deleted_at` is migrated and four queries filter it; nothing writes it — the same shape as `person` and `note` before this task, so it is the obvious next one. Left because a site is opened only after a client says yes and then carries situations, a retenue de garantie, cautions and a crew. What a site refuses on is a real question (an issued situation? a caution not yet released?) and answering it by guessing is how a marché ends up in a bin. |
+| A **line on a deal** (`/deals/[id]/items`) | `src/domain/deal/lines.ts` | There is no per-line remove. `replaceLines` re-reads the whole paste on the server and replaces the list, so removing a line means editing the paste and saving — which works, is not obvious, and is not a bin. |
+| A **supplier asked** (`/sourcing/[id]`) | `src/domain/deal/sourcing-store.ts` | A supplier asked by mistake cannot be unasked. `sourcing_request` and `sourcing_response` have no deletion columns at all, so this needs a migration and a decision about what an already-answered request means. |
+| A **price quote** (`/deals/[id]/prices`) | `src/domain/deal/price-store.ts` | `addQuote` writes; nothing removes. No deletion columns. Same migration-sized shape as sourcing, and the two belong in one pass. |
+
+Deliveries and purchase orders are **not** on this list and do not need to be: a
+bon de livraison and a bon de commande are `document` rows, and a draft of
+either already discards through screen 18 (task 0.1).
+
+**And one that is not a gap.** `payment.deleted_at` is migrated and six queries
+in `src/domain/money/store.ts` filter on it, which reads exactly like the
+unfinished bin `deal` and `document` had. It is not. `src/domain/deletion.ts`
+names a recorded payment in the list of things nobody may delete, including the
+Gérant, and money that arrived at the bank is not a row somebody may untype —
+a system where it can be is a system nobody can reconcile against a statement.
+Screen 19 now says so on a permanently grey button rather than by having no
+button. Do not "finish" that column.
+
 ### 0.1 — `liveDocument` covers three query sites, not thirty-four
 
 `src/domain/deletion.ts` exports `liveDocument` (`document.deleted_at is null`).
@@ -451,4 +476,5 @@ carries this out; anything written before 3.3 ships should already use it.
 | 2026-09-08 | 0.7 | `e0771c8` | Landing redirect now `/today`. |
 | 2026-09-08 | 0.2 | `6f557e0` | `discardDeal` / `restoreDeal` in `deletion.ts`, guarded on issued documents; `deals/[id]/delete-actions.ts`; a danger button on screen 06 that greys with a readable reason instead of disappearing; EN + FR copy; permission table updated. Restore is deliberately not on the deal page — `getDeal` filters `deleted_at`, so the bin (0.3) is what calls `restoreDealAction`. |
 | 2026-09-08 | 0.1 | `792daee` | `document` gains `deleted_at` / `deleted_by` / `delete_reason` (migration 0051); `discardDocument` / `restoreDocument` guarded on `number is null AND locked_at is null` with its own `DocumentIsIssued`; `documents/[id]/delete-actions.ts`; a discard card on screen 18 whose button greys with the avoir sentence instead of vanishing, and offers Restore once binned; EN + FR copy; `liveDocument` on the invoices list, the offers list and the enquiry's offers panel. The sites left uncovered are named under Known gaps. |
+| 2026-09-08 | 0.4 | `db50f51` | The sweep. A **person** can now be discarded and restored — `person.deleted_at` had been migrated since phase 1 with twelve queries filtering it and nothing writing it — with a Remove on every contact row of screen 22 and every row of screen 51, greyed with the reason when the person has not left a site crew (`peopleOnSite`). A **note** likewise on screen 56, the one row on a timeline nothing else holds a copy of: your own note is yours, anybody else's takes `records.delete`, and the timeline says once why only notes carry the control. A **payment** gets the opposite answer — present, grey and permanent, naming re-allocation and the avoir as what to do instead. The company discard on screen 22 stopped refusing after the press: `issuedDocumentCount` is exported so the grey button and the refusal run one query. The bin holds five kinds and dispatches restore through a table. `RulePopover` still has zero callers, deliberately — none of these five refusals is a `blocking_rule` row with an authority, and inventing one to give the component a caller would be asserting a law on our own authority. Four paths left silent are named under Known gaps. |
 | 2026-09-08 | 0.3 | `47612a8` | `BinRow` gains a `kind` discriminator — company, deal or document; `listBin()` queries the three tables and sorts once across the whole set, newest first, rather than kind by kind. Restore dispatches to `restoreCompany` / `restoreDealAction` / `restoreDocumentAction`, all three still listed in the permission table. Each row leads with a neutral `Badge` naming its kind; a company and a draft link back to pages that render for a binned row, an enquiry does not because `getDeal` filters `deleted_at`. EN + FR copy for the three kind labels and "No number". `BIN_DAYS` untouched — and the fact that nothing purges at day 30 is now written under Known gaps rather than fixed, because destroying data is Abdou's decision. |
