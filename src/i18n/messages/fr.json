@@ -2069,11 +2069,22 @@
     "lostReason": "Qui l’a emportée, et pourquoi, si vous le savez",
     "reopen": "Rouvrir",
     "lostOn": "Perdue le {when}",
+    "discard": {
+      "title": "Mettre cette consultation à la corbeille",
+      "what": "Pour une fiche qui n’aurait jamais dû exister — une erreur, un doublon, un essai. Perdre une consultation n’est pas cela : une consultation perdue reste dans la liste. Récupérable pendant 30 jours.",
+      "reason": "Pourquoi part-elle ? Ceci est conservé.",
+      "action": "Mettre à la corbeille",
+      "restore": "La sortir de la corbeille",
+      "notAllowed": "Seul le Gérant peut mettre une fiche à la corbeille.",
+      "hasIssued": "Cette consultation porte un document émis. Un document émis ne se supprime jamais — corrigez-le par un avoir."
+    },
     "error": {
       "noSuchDeal": "Cette consultation n’existe plus.",
       "reasonRequired": "Un « sans suite » demande une raison — c’est tout l’intérêt de l’enregistrer.",
       "unknownReason": "Choisissez une des raisons listées pour qu’elle puisse être comptée.",
-      "alreadyClosed": "Celle-ci est déjà terminée. Rouvrez-la d’abord si c’est une erreur."
+      "alreadyClosed": "Celle-ci est déjà terminée. Rouvrez-la d’abord si c’est une erreur.",
+      "notAllowed": "Votre rôle ne permet pas cela.",
+      "hasIssuedDocuments": "Cette consultation porte un document émis, elle ne peut donc pas aller à la corbeille. Un document émis ne se supprime jamais — la correction est un nouveau document."
     }
   },
   "facts": {

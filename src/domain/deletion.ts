@@ -1,6 +1,7 @@
 import { and, desc, eq, isNotNull, isNull, sql } from "drizzle-orm";
 import { db } from "@/db";
 import { auditEntry } from "@/db/schema/control";
+import { deal } from "@/db/schema/deal";
 import { document } from "@/db/schema/document";
 import { party } from "@/db/schema/party";
 
@@ -106,6 +107,84 @@ export async function archiveParty(opts: { id: string; actorId: string }) {
     entityId: opts.id,
     action: "archive",
     sourceScreen: "22",
+  });
+}
+
+/**
+ * The same three words, applied to an enquiry.
+ *
+ * A deal is where the junk accumulates: every mistyped test row, every enquiry
+ * that turned out to be somebody else's, every duplicate created while learning
+ * the screen. `deal.deleted_at` has been migrated since 0015 and `listDeals`
+ * has always filtered on it — nothing wrote it, so the list only ever grew.
+ *
+ * The guard is the same one companies have, for the same reason: an enquiry
+ * that has issued a document is evidence. Migration 0016 set
+ * `document.deal_id` to ON DELETE no action precisely so an enquiry going in
+ * the bin can never take an issued invoice with it, and this refusal is that
+ * rule said out loud rather than left to a foreign key.
+ *
+ * Marking a deal lost is not this. Lost is an outcome — it is a fact about the
+ * world and it stays on the list with a red badge. Discard is "this row should
+ * never have existed", and it belongs in the bin.
+ */
+async function issuedDocumentCountForDeal(dealId: string): Promise<number> {
+  const rows = await db
+    .select({ n: sql<number>`count(*)::int` })
+    .from(document)
+    .where(and(eq(document.dealId, dealId), isNotNull(document.number)));
+  return rows[0]?.n ?? 0;
+}
+
+export async function discardDeal(opts: {
+  id: string;
+  reason: string;
+  actorId: string;
+  fromWhere?: string;
+}) {
+  const issued = await issuedDocumentCountForDeal(opts.id);
+  if (issued > 0) throw new NotDiscardable(issued);
+
+  const [before] = await db.select().from(deal).where(eq(deal.id, opts.id)).limit(1);
+  if (!before) throw new Error("No such enquiry");
+  if (before.deletedAt) return;
+
+  await db
+    .update(deal)
+    .set({
+      deletedAt: new Date(),
+      deletedBy: opts.actorId,
+      deleteReason: opts.reason.trim() || null,
+    })
+    .where(eq(deal.id, opts.id));
+
+  await db.insert(auditEntry).values({
+    actorId: opts.actorId,
+    entity: "deal",
+    entityId: opts.id,
+    action: "discard",
+    before: { ref: before.ref, subject: before.subject },
+    reason: opts.reason.trim() || null,
+    sourceScreen: opts.fromWhere ?? "06",
+  });
+}
+
+export async function restoreDeal(opts: { id: string; actorId: string }) {
+  const [before] = await db.select().from(deal).where(eq(deal.id, opts.id)).limit(1);
+  if (!before?.deletedAt) return;
+
+  await db
+    .update(deal)
+    .set({ deletedAt: null, deletedBy: null, deleteReason: null })
+    .where(eq(deal.id, opts.id));
+
+  await db.insert(auditEntry).values({
+    actorId: opts.actorId,
+    entity: "deal",
+    entityId: opts.id,
+    action: "restore",
+    after: { ref: before.ref, subject: before.subject },
+    sourceScreen: "83",
   });
 }
 

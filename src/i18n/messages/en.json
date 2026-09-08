@@ -2069,11 +2069,22 @@
     "lostReason": "Who won it, and why, if you know",
     "reopen": "Reopen",
     "lostOn": "Lost {when}",
+    "discard": {
+      "title": "Put this enquiry in the bin",
+      "what": "For a row that should never have existed — a mistake, a duplicate, a test. Losing an enquiry is not this: a lost enquiry stays on the list. Restorable for 30 days.",
+      "reason": "Why is it going? This is kept.",
+      "action": "Put in the bin",
+      "restore": "Take it back out of the bin",
+      "notAllowed": "Only the Gérant may put records in the bin.",
+      "hasIssued": "This enquiry has an issued document. An issued document is never deleted — correct it with an avoir instead."
+    },
     "error": {
       "noSuchDeal": "That enquiry no longer exists.",
       "reasonRequired": "A no-bid needs a reason — that is the point of recording it.",
       "unknownReason": "Choose one of the listed reasons so it can be counted later.",
-      "alreadyClosed": "This one is already finished. Reopen it first if that is wrong."
+      "alreadyClosed": "This one is already finished. Reopen it first if that is wrong.",
+      "notAllowed": "Your role does not allow that.",
+      "hasIssuedDocuments": "This enquiry has an issued document, so it cannot go in the bin. An issued document is never deleted — correction is a new document."
     }
   },
   "facts": {

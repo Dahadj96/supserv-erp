@@ -73,6 +73,10 @@ const EXPECTED: Record<string, string[]> = {
 
   // ── Deleting and merging are the Gérant's, and are their own permissions ──
   "companies/delete-actions.ts:archiveCompany": ["records.delete"],
+  // The same permission on an enquiry. Screen 06's bin button: an enquiry
+  // carrying an issued document refuses, because LAW 5 outranks tidiness.
+  "deals/[id]/delete-actions.ts:discardDealAction": ["records.delete"],
+  "deals/[id]/delete-actions.ts:restoreDealAction": ["records.delete"],
   "companies/delete-actions.ts:discardCompany": ["records.delete"],
   "companies/delete-actions.ts:restoreCompany": ["records.delete"],
   "companies/merge-actions.ts:mergeCompanies": ["merge.execute"],

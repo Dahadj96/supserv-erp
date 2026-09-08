@@ -3,6 +3,7 @@ import { AlertCircle } from "lucide-react";
 import { redirect as hardRedirect, notFound } from "next/navigation";
 import { getTranslations, setRequestLocale } from "next-intl/server";
 import { INPUT } from "@/app/[locale]/(app)/setup/field";
+import { can } from "@/auth/can";
 import { getSession } from "@/auth/session";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -18,6 +19,7 @@ import { Link } from "@/i18n/navigation";
 import { decideAction, lostAction, reopenAction } from "./actions";
 import { askSuppliersAction } from "./ask-actions";
 import { buildOfferAction } from "./build-actions";
+import { discardDealAction } from "./delete-actions";
 
 /**
  * Screen 06 — the enquiry.
@@ -61,6 +63,24 @@ export default async function EnquiryPage({
   if (!found) notFound();
 
   const { deal: row, clientName, lines, facts, badge, open, deadline } = found;
+
+  /**
+   * Screen 83's button, greyed rather than absent.
+   *
+   * A missing control teaches nothing. Both reasons a person cannot bin an
+   * enquiry are worth reading: one is about their role, the other is LAW 5 —
+   * an enquiry carrying an issued document is evidence, and the fix is an
+   * avoir, not a deletion. The domain refuses either way; this only decides
+   * which sentence to show.
+   */
+  const mayDelete = session.role ? can(session.role, "records.delete") : false;
+  const hasIssuedDocuments =
+    facts.offersIssued > 0 || facts.ordersReceived > 0 || facts.invoicesIssued > 0;
+  const discardBlockedBy = !mayDelete
+    ? t("enquiry.discard.notAllowed")
+    : hasIssuedDocuments
+      ? t("enquiry.discard.hasIssued")
+      : undefined;
 
   const [suppliers, requests, offers, projectOpened] = await Promise.all([
     db
@@ -379,6 +399,27 @@ export default async function EnquiryPage({
               </form>
             </section>
           ) : null}
+
+          <section className="rounded-[var(--radius-card)] border border-line bg-surface p-5">
+            <h2 className="text-tiny font-semibold text-ink">{t("enquiry.discard.title")}</h2>
+            <p className="mt-1 text-micro text-secondary">{t("enquiry.discard.what")}</p>
+            {/*
+              No restore button here: `getDeal` filters on `deleted_at`, so a
+              binned enquiry has no page to put one on. Taking it back out is
+              screen 83's job, and `restoreDealAction` is what the bin calls.
+            */}
+            <form action={discardDealAction.bind(null, locale, id)} className="mt-3">
+              <label className="block">
+                <span className="text-micro text-secondary">{t("enquiry.discard.reason")}</span>
+                <input name="reason" className={`${INPUT} mt-1`} />
+              </label>
+              <div className="mt-3 flex justify-end">
+                <Button type="submit" variant="danger" disabledReason={discardBlockedBy}>
+                  {t("enquiry.discard.action")}
+                </Button>
+              </div>
+            </form>
+          </section>
 
           {open && lines.length > 0 ? (
             <section className="rounded-[var(--radius-card)] border border-line bg-surface p-5">
