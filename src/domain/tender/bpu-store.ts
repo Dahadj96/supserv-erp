@@ -6,6 +6,7 @@ import { document, documentLine } from "@/db/schema/document";
 import { sourcingLine, sourcingRequest, sourcingResponse } from "@/db/schema/sourcing";
 import { bpuErratum, bpuMapping, tender } from "@/db/schema/tender";
 import { recomputeTotals } from "@/documents/totals";
+import { liveDocument } from "@/domain/deletion";
 import { assertTransition } from "../control/transitions";
 import {
   type BpuLine,
@@ -180,12 +181,24 @@ export async function bpu(dealId: string): Promise<BpuView | null> {
     }),
   );
 
-  /** Where "build the financial offer" goes, when there is already a draft. */
+  /**
+   * Where "build the financial offer" goes, when there is already a draft.
+   *
+   * `liveDocument` because a draft can be discarded (screen 18) and a binned
+   * one is still a row with no number. Without the clause this button lands on
+   * a document in the bin, and every price typed there is typed into a row the
+   * offers list does not show.
+   */
   const [draft] = await db
     .select({ id: document.id })
     .from(document)
     .where(
-      and(eq(document.dealId, dealId), eq(document.kind, "quotation"), isNull(document.number)),
+      and(
+        eq(document.dealId, dealId),
+        eq(document.kind, "quotation"),
+        isNull(document.number),
+        liveDocument,
+      ),
     )
     .orderBy(desc(document.createdAt))
     .limit(1);
@@ -383,6 +396,7 @@ export async function reviewErratum(
             and(
               eq(document.dealId, dealId),
               isNull(document.number),
+              liveDocument,
               isNotNull(documentLine.unitPrice),
               inArray(documentLine.dealLineId, losing),
             ),
@@ -508,6 +522,10 @@ export async function applyErratum(opts: {
         .returning({ id: priceQuote.id });
       result.quotesExpired += expired.length;
 
+      // The drafts on this enquiry lose the price on that line — the live ones.
+      // A binned draft is not a working document and nothing here may write to
+      // it; `liveDocument` is what keeps that true now that a draft can be
+      // discarded (screen 18).
       const cleared = await tx
         .update(documentLine)
         .set({ unitPrice: null })
@@ -520,7 +538,9 @@ export async function applyErratum(opts: {
               tx
                 .select({ id: document.id })
                 .from(document)
-                .where(and(eq(document.dealId, opts.dealId), isNull(document.number))),
+                .where(
+                  and(eq(document.dealId, opts.dealId), isNull(document.number), liveDocument),
+                ),
             ),
           ),
         )
@@ -558,7 +578,7 @@ export async function applyErratum(opts: {
     const drafts = await db
       .select({ id: document.id })
       .from(document)
-      .where(and(eq(document.dealId, opts.dealId), isNull(document.number)));
+      .where(and(eq(document.dealId, opts.dealId), isNull(document.number), liveDocument));
     for (const draft of drafts) await recomputeTotals(draft.id);
   }
 
