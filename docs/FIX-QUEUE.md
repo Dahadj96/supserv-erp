@@ -63,6 +63,12 @@ Facts learned the hard way. Do not rediscover them.
 
 ## WAVE 0 — stop the discomfort
 
+**Complete, 8 September 2026.** All nine tasks are `[x]`. What Wave 0 was for
+— nothing removable is silently missing, nothing issued can be un-issued, and
+the last of it, an issued invoice can now be cancelled the only way LAW 5
+allows. What each one deliberately left for later is under Known gaps; the
+questions none of them could answer are under Needs Abdou. Wave 1 is next.
+
 - [x] **0.7 · Land on `/today`, not `/deals`**
   `src/app/[locale]/page.tsx` redirects signed-in users to `/deals`. Change it
   to `/today`. The comment there says `user_preference` will choose it per
@@ -128,7 +134,7 @@ Facts learned the hard way. Do not rediscover them.
   *Done when:* Abdou can empty the hand-typed test junk in one action, and
   every discarded row is restorable from the bin.
 
-- [ ] **0.8 · Cancel an issued invoice by avoir**
+- [x] **0.8 · Cancel an issued invoice by avoir**
   `invoices.cancel` is granted to `gerant` and referenced exactly once — its
   own declaration. Wire it: cancelling an issued invoice generates a
   `credit_note` through `src/documents/` (LAW 3 — one engine), sets the
@@ -423,6 +429,60 @@ a decision waiting on Abdou using it for a week first.
   the cut-off repeatedly to catch one company, a "take it and its children too"
   checkbox is the change, and it needs to be asked for rather than assumed.
 
+### 0.8 — what the avoir does not do, and what the trigger does not cover
+
+**The trigger is on UPDATE only.** Migration 0053 freezes an issued
+document's row against every UPDATE, which is the class of bug LAW 5 is
+about — a new `db.update(document)` written six months from now that nobody
+thinks to guard. It does **not** refuse a `DELETE`. Nothing in `src` deletes
+a document at all, `discardDocument` refuses on `number is null and
+locked_at is null`, and CLAUDE.md forbids a hard DELETE in any migration —
+so the rule is kept, just not by the database. It is not covered because the
+integration suite tears its own fixtures down with real DELETEs against
+`<database>_test`, and a trigger that made the suite unteardownable would
+have been traded for a rule the application already keeps. The same reasoning
+leaves `document_line` alone: `saveDraft` deletes and reinserts lines, and
+the teardowns delete the lines of issued fixtures.
+
+**`render_snapshot` is deliberately not frozen**, and that is worth knowing
+before somebody "finishes" the trigger. It is not only the freeze taken at
+issue: `markSubmitted` (`src/domain/offer/store.ts`, screen 12) records the
+deposit of an offer into it — the place, the hour, the receipt reference —
+which is a fact about an envelope handed over *after* the document was
+issued. Freezing the column would break screen 12 and would be freezing the
+wrong thing. If it ever needs freezing, the submission facts want their own
+columns first.
+
+**`settles` is still enforced by nothing.** `document_link.relation` carried
+the comment "a proforma may NEVER carry `settles`. Enforced by trigger" from
+the day the table was written, and no such trigger was ever migrated. The
+schema now says so in words instead. Nothing writes `settles` either, so it
+is a rule with no subject rather than a hole — but it is the second thing
+this survey found that the schema claimed and the database did not do.
+
+**An avoir passes no compliance check.** `check()` in
+`src/documents/compliance.ts` matches a rule to a document by
+`appliesTo`/`code` prefix, and every rule is keyed `invoice.*` or
+`proforma.*`. A `credit_note` therefore matches none of them and issues
+without the décret 05-468 identity and client-NIF checks the invoice it
+credits had to pass. An avoir is a pièce comptable and almost certainly wants
+the same mentions; keying rules to it is a small change to the seed and a
+question for the accountant at the same time, so it is written here and asked
+under Needs Abdou rather than assumed.
+
+**Only a full credit exists.** `cancelByCreditNote` credits the whole
+invoice, restating its frozen figures exactly, and moves it to `credited`. A
+partial avoir — a returned line, a rebate agreed after the fact — leaves the
+invoice owed for the rest and must NOT move its status, which is different
+arithmetic and a different screen. See Needs Abdou.
+
+**Only `invoice` may be credited**, read off the catalogue (`convertsTo`
+includes `credit_note`) rather than typed as a second list. A situation de
+travaux, an advance invoice and a retention release are all money owed and
+none of them can be cancelled today. That is scope, not oversight: an avoir
+on a situation touches the cumulative columns of every situation after it,
+and guessing at that is how a marché stops reconciling.
+
 ### 0.1 — `liveDocument` covers three query sites, not thirty-four
 
 `src/domain/deletion.ts` exports `liveDocument` (`document.deleted_at is null`).
@@ -469,7 +529,54 @@ none of them writes.
 
 ## Needs Abdou
 
-*(Nothing outstanding.)*
+### Five questions an avoir raises that are accounting, not code (0.8)
+
+Cancelling an issued invoice now works for the case that is not in doubt: the
+whole invoice, cancelled, credited in full, with the reason printed on the
+avoir. Everything below was left alone on purpose. Each is a question for the
+accountant, and the compliance rules that touch them are among the four
+CLAUDE.md records as unconfirmed — which **warn, never block**.
+
+1. **A partial avoir.** A client returns four of twelve, or a rebate is agreed
+   after the facture has gone out. Today the only avoir is for the whole
+   invoice. A partial one must leave the invoice owed for the rest, so it must
+   *not* set `credited` — which means "what is owed" stops being
+   `totalIncl − paid` and becomes `totalIncl − paid − credited`, on screens 17,
+   19 and 20 at once. **Is a partial avoir something SUPSERV actually issues,
+   or is the practice to cancel in full and re-invoice?** The second is
+   simpler, and if it is what the accountant expects, nothing more is needed.
+
+2. **The droit de timbre on the avoir.** The avoir copies the invoice's stamp
+   duty, so a full credit reverses exactly what was billed. That is right if
+   the duty is a charge on the INVOICE. If it is a charge on the cash PAYMENT —
+   which is what `invoice.stampDutyThreshold` is unconfirmed about — then an
+   avoir on an unpaid cash invoice should carry none, and one on an invoice
+   already paid in cash may not be reclaimable at all. **Which is it?**
+
+3. **Which period the TVA reversal belongs to.** The avoir restates the
+   invoice's VAT lines exactly, and it is dated the day it is raised. **Does
+   the reversal go on the déclaration of the month of the AVOIR, or of the
+   month of the invoice being corrected?** The answer decides whether an avoir
+   may ever be dated back — and if it may, the avoir series stops being
+   chronological, which is its own problem.
+
+4. **Payments already allocated to a credited invoice.** Nothing moves them.
+   The invoice leaves `owings()` the moment it is credited, and any
+   `payment_allocation` rows against it stay where they are — so the money is
+   still recorded as having settled a document that is now void, and it is
+   neither refundable nor re-allocatable from any screen. **When an invoice
+   that has been part or fully paid is cancelled: does the money move to the
+   replacement invoice, or is it refunded and the avoir settled?** There is no
+   re-allocation screen either way; this decides which one to build.
+
+5. **Whether an avoir carries the décret 05-468 mentions.** No compliance rule
+   is keyed to `credit_note`, so an avoir issues today without the identity and
+   client-NIF checks an invoice must pass (see Known gaps). **Does an avoir
+   need the same mandatory mentions as the facture it credits?** If yes it is a
+   one-line change to the rule seed; asking first is cheaper than asserting a
+   law on our own authority.
+
+Until each is answered, the full-credit path stands and nothing guesses.
 
 **Answered 2026-09-08 — the vocabulary is decided.** Abdou chose **Deals** and
 **Sites**. So, in English, everywhere — nav, routes, page titles, body copy,
@@ -501,3 +608,4 @@ carries this out; anything written before 3.3 ships should already use it.
 | 2026-09-08 | 0.5 | `1dfc939` | Export implemented, the other three removed rather than stubbed. `src/components/data/export-csv.ts` writes the ticked rows with the columns the table is showing — semicolon-separated with a BOM, because Excel in a French locale splits on `;` and reads UTF-8 as Windows-1252 without one; the header comes from the caller's translator (LAW 4) and the cell text is walked out of the rendered node, so the file says what the screen says. `BulkAction` gains the row type and a `BulkContext` — ticked records plus visible columns — since only the table knows what is on screen. **Tag** removed: there is no tag table. **Mark waiting on** removed: screen 58 is computed from silences (`domain/waiting/gather.ts` stores nothing), so there is no flag to set and a flag would be a stored state time changes (LAW 1). **Assign to** removed until it has a person picker, an action and a permission — `deal.owner_id` is real, a bar of plain buttons is not enough to write it. No bulk delete; `bulk-bar.tsx` now also states that a listed action must work the moment it is visible. Three message keys deleted from both files. |
 | 2026-09-08 | 0.9 | `b58e432` | `liveDocument` on all four `number is null` lookups in `bpu-store.ts` — the queue named three, and the fourth (`reviewErratum`'s `draftLinesLosingPrice`) would have made screen 42 overstate what an erratum costs. The one that mattered is `applyErratum`, which cleared `unit_price` on every draft line on the enquiry including binned ones; `bpu()`'s `draftOfferId` was the other, sending "Build the offer" into the bin. `tests/integration/bpu-binned-draft.test.ts` proves it: four of its five assertions fail with the clause removed, including the binned row's price being cleared. Survey as asked — `src/documents/` has no lookup of this shape (every query there is by id, which must stay so a binned draft keeps its page); `offersForDeal()` and `draftOffers()` in `src/domain/offer/` already had the clause from 0.1, and `build.ts` inserts rather than looks up. |
 | 2026-09-08 | 0.6 | `6405226` | `/settings/clear`, reached from the settings hub beside the bin. `src/domain/sweep.ts` plans and runs it: pick a moment, see the counts and the first five of each kind, type CLEAR (EFFACER in French, compared against the reader's own message file), and every company, deal, draft document and person created before it goes to the 30-day bin. It discards through `discardParty` / `discardDeal` / `discardDocument` / `discardPerson` — no new UPDATE, so every guard still refuses and every audit entry is still written. **It does not cascade**: the four passes run child first — documents, deals, people, companies — and refuse UPWARDS, so a company or a deal that still has a live child the cut-off does not cover is skipped and counted. A cut-off is a moment somebody chose, not a tree, and cascading would let "before 1 September" reach a deal typed yesterday. Anything issued is skipped and named. Archived, merged and already-binned rows are not candidates; **notes are not swept** — a note is the only row a timeline holds no other copy of. One audit entry per record plus one `sweep` entry carrying the cut-off, the counts and every refusal, written last so screen 32 shows it above its own consequences. `tests/integration/sweep.test.ts` dates its fixtures in the year 2000 and cuts at June 2000 — the suite shares one database and a sweep is global, so a cut-off of "now" in a test would bin every other file's fixtures. |
+| 2026-09-08 | 0.8 | `4754849` | Cancelling an issued invoice writes an avoir. `src/documents/credit.ts` raises it the way `convert.ts` raises a facture — the invoice is read, copied and linked, never edited — and the ORDER is the point: the draft avoir and its `credits` link go in first, the engine issues it (which is what allocates `AV/{YYYY}/{####}`), and only then does the invoice become `credited`. The other way round leaves an invoice reading "credited" with no paper behind it the first time an issue is refused. The figures are copied rather than recomputed, so a full credit can never state a sum nobody was billed. **The trigger survey the task asked for:** the whole schema had exactly one trigger — `payment_allocation_within_payment`, migration 0021, about money and not about paper — so LAW 5's "enforce this with database triggers" had never been carried out. `document_kind_number_once` (0037) stopped a number being reused; everything else was five TypeScript guards the next `db.update(document)` would walk past. And the comment claiming a trigger enforced "a proforma may never carry `settles`" described one that does not exist. Migration 0053 is that trigger — it freezes everything an issued document prints and lets `status` move only along the two edges `MACHINES.document` declares — and 0052 adds `document_credited_once`, so two people cancelling at the same second get one avoir and one refusal that costs no number. **The money already knew how**, and nothing had ever exercised it: `owings()` and `settlements()` drop `credited`, `credit_note` is not an `INVOICE_KIND`, `paidStateOf` has answered "credited" since phase 5. `tests/integration/credit-note.test.ts` proves it over the real functions and carries CLAUDE.md's third acceptance test — issue three, cancel the second, issue a fourth; 0001–0004, four distinct numbers, 0002 credited with its number, lines and lock intact, the avoir on its own series — asserted in the database, including by asking Postgres to reuse 0002 and to edit an issued row and being refused. Screen 18 gains the cancel card beside 0.1's discard card, grey with the reason on every case that does not apply, and both ends of the link on screen. Five accounting questions filed under Needs Abdou; what the trigger does not cover is under Known gaps. |
