@@ -199,7 +199,7 @@ Strictly sequential. Each step is useless without the one above it.
   *Done when:* a message with a `dossier.zip` lists every file inside it,
   each openable, and a malicious zip is refused with a logged reason.
 
-- [ ] **1.5 · View a file inside the ERP**
+- [~] **1.5 · View a file inside the ERP**
   `inbox/[id]/page.tsx:196` renders attachments with no anchor at all. Make
   them links, and add a viewer using the pattern already working in
   `documents/[id]/page.tsx:220` — `<object type="application/pdf">`, the
