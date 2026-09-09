@@ -164,7 +164,24 @@ Write-Host "Public:    https://erp.supserv-dz.com"
 Say "the worker"
 
 if (Get-ScheduledTask -TaskName $worker -ErrorAction SilentlyContinue) {
-  Restart-ScheduledTask -TaskName $worker
+  # Stop then Start, NOT Restart-ScheduledTask.
+  #
+  # There is no `Restart-ScheduledTask` cmdlet. The ScheduledTasks module ships
+  # Get / Start / Stop / Enable / Disable / Register / Unregister / Set and
+  # nothing else, so the first version of this block died with
+  # CommandNotFoundException at line 167 - after the ERP had already restarted,
+  # which is the worst place for it: the run looked successful, the new build
+  # was on port 3000, and the worker was still the old process.
+  Stop-ScheduledTask -TaskName $worker -ErrorAction SilentlyContinue
+
+  # Stop-ScheduledTask returns before the process is gone, and a worker holding
+  # the pg-boss connection needs a moment to let go of it.
+  $deadline = (Get-Date).AddSeconds(20)
+  while ((Get-ScheduledTask -TaskName $worker).State -eq "Running" -and (Get-Date) -lt $deadline) {
+    Start-Sleep -Seconds 1
+  }
+
+  Start-ScheduledTask -TaskName $worker
   Start-Sleep -Seconds 15
 
   # "Running" means a process exists. The worker announces itself on its first
