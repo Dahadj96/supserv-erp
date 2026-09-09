@@ -29,7 +29,8 @@
     "notifications": "Notifications",
     "scan": "Scan station",
     "capture": "Quick capture",
-    "menu": "Menu"
+    "menu": "Menu",
+    "approvals": "Approvals"
   },
   "auth": {
     "signIn": "Sign in",
@@ -563,7 +564,8 @@
       "nameTooShort": "A person needs a name.",
       "tradeRequired": "A trade is the second required field — Soudeur, Manœuvre, Chauffeur.",
       "invalid": "Something in the form was not accepted."
-    }
+    },
+    "candidates": "Candidates"
   },
   "intake": {
     "channelsTitle": "Intake channels",
@@ -1384,7 +1386,8 @@
       "company": "The company",
       "people": "People",
       "incoming": "What comes in",
-      "control": "Control"
+      "control": "Control",
+      "whatIsBuilt": "What this system does, and does not"
     },
     "entry": {
       "identity": {
@@ -1465,8 +1468,17 @@
       "clear": {
         "name": "Clear my test data",
         "what": "Everything typed before a moment you choose goes to the 30-day bin, in one act. Never anything issued."
+      },
+      "modules": {
+        "name": "Modules",
+        "what": "Every part of the system, built or parked, and which phase brought it. There are no switches, and the screen says why."
+      },
+      "forms": {
+        "name": "Website intake form",
+        "what": "The one way in that does not exist. What it would need, and what to do until it does."
       }
-    }
+    },
+    "builtOf": "{built} of {total} built"
   },
   "language": {
     "title": "Language",
@@ -2413,7 +2425,8 @@
       "replyBy": "Reply by",
       "answers": "Answers"
     },
-    "orderFromThem": "Order from them"
+    "orderFromThem": "Order from them",
+    "counterPrice": "Price from a counter"
   },
   "ask": {
     "title": "Ask suppliers",
@@ -3006,7 +3019,9 @@
       "alreadySigned": "A signed copy is already on file for this delivery note.",
       "sourceNotDeliverable": "Goods are not delivered against a document of this kind."
     },
-    "notDeliverable": "A delivery note is not raised against a document of this kind ({kind}). It is raised against what the client ordered — their purchase order, a quotation, a pro forma, an invoice or a progress statement."
+    "notDeliverable": "A delivery note is not raised against a document of this kind ({kind}). It is raised against what the client ordered — their purchase order, a quotation, a pro forma, an invoice or a progress statement.",
+    "new": "New delivery",
+    "newNotAllowed": "Issuing a bon de livraison is the delivery permission, and your role does not carry it."
   },
   "newInvoice": {
     "title": "New invoice — from {number}",

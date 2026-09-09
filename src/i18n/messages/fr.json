@@ -29,7 +29,8 @@
     "notifications": "Notifications",
     "scan": "Numérisation",
     "capture": "Saisie rapide",
-    "menu": "Menu"
+    "menu": "Menu",
+    "approvals": "Approbations"
   },
   "auth": {
     "signIn": "Connexion",
@@ -563,7 +564,8 @@
       "nameTooShort": "Une personne a besoin d'un nom.",
       "tradeRequired": "Le métier est le second champ obligatoire — Soudeur, Manœuvre, Chauffeur.",
       "invalid": "Quelque chose dans le formulaire n'a pas été accepté."
-    }
+    },
+    "candidates": "Candidats"
   },
   "intake": {
     "channelsTitle": "Canaux d'entrée",
@@ -1384,7 +1386,8 @@
       "company": "La société",
       "people": "Les personnes",
       "incoming": "Ce qui arrive",
-      "control": "Contrôle"
+      "control": "Contrôle",
+      "whatIsBuilt": "Ce que ce système fait, et ne fait pas"
     },
     "entry": {
       "identity": {
@@ -1465,8 +1468,17 @@
       "clear": {
         "name": "Effacer mes données d'essai",
         "what": "Tout ce qui a été saisi avant un moment que vous choisissez part à la corbeille de 30 jours, en une fois. Jamais rien d'émis."
+      },
+      "modules": {
+        "name": "Modules",
+        "what": "Chaque partie du système, construite ou mise de côté, et la phase qui l’a apportée. Il n’y a aucun interrupteur, et l’écran dit pourquoi."
+      },
+      "forms": {
+        "name": "Formulaire du site web",
+        "what": "La seule entrée qui n’existe pas. Ce qu’il faudrait pour la faire, et quoi faire en attendant."
       }
-    }
+    },
+    "builtOf": "{built} sur {total} construits"
   },
   "language": {
     "title": "Langue",
@@ -2413,7 +2425,8 @@
       "replyBy": "Réponse avant",
       "answers": "Réponses"
     },
-    "orderFromThem": "Commander chez eux"
+    "orderFromThem": "Commander chez eux",
+    "counterPrice": "Prix relevé au comptoir"
   },
   "ask": {
     "title": "Consulter des fournisseurs",
@@ -3006,7 +3019,9 @@
       "alreadySigned": "Un exemplaire signé est déjà au dossier pour ce bon de livraison.",
       "sourceNotDeliverable": "On ne livre pas contre un document de ce type."
     },
-    "notDeliverable": "On ne fait pas de bon de livraison contre un document de ce type ({kind}). Un BL se fait contre ce que le client a commandé — son bon de commande, un devis, une proforma, une facture ou une situation."
+    "notDeliverable": "On ne fait pas de bon de livraison contre un document de ce type ({kind}). Un BL se fait contre ce que le client a commandé — son bon de commande, un devis, une proforma, une facture ou une situation.",
+    "new": "Nouvelle livraison",
+    "newNotAllowed": "Émettre un bon de livraison relève de la permission livraisons, que votre rôle ne porte pas."
   },
   "newInvoice": {
     "title": "Nouvelle facture — à partir de {number}",

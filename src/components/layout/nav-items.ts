@@ -1,6 +1,7 @@
 import {
   Building2,
   CalendarClock,
+  Check,
   ClipboardList,
   Contact,
   FileCheck2,
@@ -98,6 +99,16 @@ export const NAV_GROUPS: NavGroup[] = [
   {
     messageKey: "control",
     entries: [
+      /*
+        Task 3.4. Approving was in the phone bar and nowhere else, and the phone
+        bar is `md:hidden` — so on a laptop the screen where a Gérant says yes to
+        a discount could be reached by typing its URL and no other way. It is a
+        phone JOB (`src/mobile.ts` #3, and it stays one) and also a destination
+        somebody opens on a laptop between two other things, which is what the
+        rail is for. 3.1 keeps Approvals as one of its eleven rows, so this is
+        the row arriving early rather than a row that will have to move again.
+      */
+      { key: "approvals", messageKey: "approvals", href: "/approvals", icon: Check },
       { key: "compliance", messageKey: "compliance", href: "/compliance", icon: FileCheck2 },
       { key: "files", messageKey: "files", href: "/files", icon: FolderOpen },
       { key: "reports", messageKey: "reports", href: "/reports", icon: LayoutDashboard },

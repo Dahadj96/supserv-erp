@@ -3,6 +3,7 @@ import { redirect as hardRedirect } from "next/navigation";
 import { getFormatter, getTranslations, setRequestLocale } from "next-intl/server";
 import { getSession } from "@/auth/session";
 import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
 import { listSourcingRequests, sourcingCounts } from "@/domain/deal/sourcing-list";
 import { Link } from "@/i18n/navigation";
 
@@ -37,13 +38,31 @@ export default async function SourcingPage({ params }: { params: Promise<{ local
 
   return (
     <main className="flex min-h-0 flex-1 flex-col">
-      <div className="shrink-0 border-b border-line-subtle bg-surface px-4 md:px-7 py-5">
-        <h1 className="text-[19px] font-semibold text-ink">{t("nav.sourcing")}</h1>
-        <p className="mt-1 text-tiny text-muted">
-          {counts.all === 0
-            ? t("sourcing.noneYet")
-            : t("sourcing.subtitle", { waiting: counts.waiting, unsent: counts.unsent })}
-        </p>
+      <div className="flex shrink-0 flex-wrap items-start gap-3 border-b border-line-subtle bg-surface px-4 md:px-7 py-5">
+        <div className="min-w-0">
+          <h1 className="text-[19px] font-semibold text-ink">{t("nav.sourcing")}</h1>
+          <p className="mt-1 text-tiny text-muted">
+            {counts.all === 0
+              ? t("sourcing.noneYet")
+              : t("sourcing.subtitle", { waiting: counts.waiting, unsent: counts.unsent })}
+          </p>
+        </div>
+        {/*
+          Task 3.4. Screen 74 — the counter price — is a PHONE job and it was
+          only ever in the phone bar, which is `md:hidden`: on a laptop the one
+          screen for "a man in a shop said 21 400" could be reached by typing
+          its URL and no other way. It belongs here rather than in the rail,
+          because this is the screen about gathering prices, and putting a
+          phone job in the rail would say it is a fifth destination when
+          `src/mobile.ts` is explicit that there are four phone jobs and this
+          is one of them. Capturing on the laptop is the exception, not the
+          shape of the screen.
+        */}
+        <div className="ms-auto shrink-0">
+          <Link href="/prices/new">
+            <Button variant="secondary">{t("sourcing.counterPrice")}</Button>
+          </Link>
+        </div>
       </div>
 
       {counts.bounced > 0 ? (

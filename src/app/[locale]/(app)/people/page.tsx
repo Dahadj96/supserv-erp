@@ -65,6 +65,15 @@ export default async function PeoplePage({
           </p>
         </div>
         <div className="ms-auto flex items-center gap-2">
+          {/*
+            Task 3.4. `/candidates` is the other half of this screen — the
+            people who are not on the payroll yet — and it was reachable from
+            nowhere. Somebody screening CVs had to know the URL, on the screen
+            that lists everyone they would be screening against.
+          */}
+          <Link href="/candidates">
+            <Button variant="secondary">{t("people.candidates")}</Button>
+          </Link>
           <Button variant="secondary" disabledReason={t("rules.comingInPhase", { phase: 2 })}>
             {t("contacts.import")}
           </Button>

@@ -12,6 +12,7 @@ import { documentTemplate } from "@/db/schema/document-template";
 import { documentType } from "@/db/schema/document-type";
 import { emailTemplate } from "@/db/schema/email-template";
 import { intakeChannel } from "@/db/schema/intake";
+import { moduleCounts } from "@/domain/control/modules";
 import { setupState } from "@/domain/setup";
 import { Link } from "@/i18n/navigation";
 
@@ -45,6 +46,9 @@ export default async function SettingsPage({ params }: { params: Promise<{ local
   const t = await getTranslations();
 
   const state = await setupState();
+  // Pure — a list in `src/domain/control/modules.ts`, no query. The chip on the
+  // Modules row is the same count that screen's own subtitle prints.
+  const modules = moduleCounts();
 
   const [
     [banks],
@@ -141,6 +145,42 @@ export default async function SettingsPage({ params }: { params: Promise<{ local
         // a system that has issued documents would be the alarming reading.
         { key: "audit", href: "/settings/audit", state: some(audited?.n ?? 0) },
         { key: "assistant", href: "/settings/assistant", state: null },
+      ],
+    },
+    /*
+      THE TWO SCREENS THAT SAY WHAT THIS SYSTEM DOES NOT DO — task 3.4.
+
+      Screen 31 (Modules) and screen 46 (Website forms) exist for exactly the
+      reason the paragraph at the top of this file gives: "a setting that exists
+      in the design and nowhere in the app should still be visible, or nobody
+      knows it is missing." Both were written, both are honest, and neither was
+      reachable from anywhere — which made them the only two screens in this ERP
+      that had to be found by typing a URL to be read.
+
+      Their own group rather than appended to `control`, because they are not
+      settings: nothing on either can be changed. They answer "what is here and
+      what is not", which is a question about the system rather than about how
+      it is configured, and the counts say so — built against parked, live
+      channels against the one that is not built.
+    */
+    {
+      key: "whatIsBuilt",
+      entries: [
+        {
+          key: "modules",
+          href: "/settings/modules",
+          state: {
+            tone: "neutral",
+            label: t("settings.builtOf", {
+              built: modules.built,
+              total: modules.built + modules.parked,
+            }),
+          },
+        },
+        // The website form is the one intake channel that does not exist, and
+        // screen 46 is the page that says so and names what it would need. It
+        // is not `unbuilt` — the SCREEN is built; the channel is not.
+        { key: "forms", href: "/settings/forms", state: null },
       ],
     },
   ];

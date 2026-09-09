@@ -1,8 +1,10 @@
 import { AlertCircle } from "lucide-react";
 import { redirect as hardRedirect } from "next/navigation";
 import { getTranslations, setRequestLocale } from "next-intl/server";
+import { can } from "@/auth/can";
 import { getSession } from "@/auth/session";
 import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
 import { deliveries } from "@/domain/delivery/store";
 import { Link } from "@/i18n/navigation";
 
@@ -56,6 +58,25 @@ export default async function DeliveriesPage({
           <p className="mt-1 text-tiny text-muted">
             {t("deliveries.subtitle", { n: rows.length, unsigned: unsigned.length })}
           </p>
+        </div>
+        {/*
+          Task 3.4. `/deliveries/new` was reachable from nowhere — from screen
+          06's next-step panel since 2.6, and before that from a typed URL and
+          nothing else — so the one screen that STARTS a delivery was missing
+          from the screen that lists them. Greyed with the reason rather than
+          hidden, per the law: a permission never hides that a thing exists.
+        */}
+        <div className="ms-auto shrink-0">
+          <Link href="/deliveries/new">
+            <Button
+              variant="primary"
+              disabledReason={
+                can(session.role, "deliveries.issue") ? undefined : t("deliveries.newNotAllowed")
+              }
+            >
+              {t("deliveries.new")}
+            </Button>
+          </Link>
         </div>
       </div>
 
