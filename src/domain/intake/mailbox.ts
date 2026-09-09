@@ -10,7 +10,7 @@ import { db } from "@/db";
 import { auditEntry } from "@/db/schema/control";
 import { intakeAttachment, intakeChannel, intakeMessage } from "@/db/schema/intake";
 import { party, partyRole, person } from "@/db/schema/party";
-import { type AttachmentFetchJob, enqueue, QUEUES } from "@/jobs/queue";
+import { type AttachmentFetchJob, attachmentFetchOptions, enqueue, QUEUES } from "@/jobs/queue";
 import { listRules } from "./channels";
 import { type RoutableMessage, route } from "./routing";
 
@@ -243,13 +243,14 @@ async function storeOne(
       // is to notice that the mail exists; a twelve-file dossier over a fibre
       // link that drops must not be something a person waits for, and each
       // file must be able to fail and be retried on its own.
-      await enqueue(QUEUES.attachmentFetch, { attachmentId: rowId } satisfies AttachmentFetchJob, {
-        // The same attachment must not queue twice if a poll overlaps itself.
-        singletonKey: rowId,
-        retryLimit: 5,
-        retryDelay: 60,
-        retryBackoff: true,
-      });
+      // The same attachment must not queue twice if a poll overlaps itself, or
+      // if the backfill runs while a poll is in flight — hence one shared set
+      // of options rather than two that agree today.
+      await enqueue(
+        QUEUES.attachmentFetch,
+        { attachmentId: rowId } satisfies AttachmentFetchJob,
+        attachmentFetchOptions(rowId),
+      );
       files.queued++;
     }
   }

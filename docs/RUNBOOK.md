@@ -250,16 +250,53 @@ cd C:\SUPSERV-ERP
 powershell -ExecutionPolicy Bypass -File scripts\server\install-services.ps1
 ```
 
-That does four things:
+That does five things:
 
 - **cloudflared becomes a Windows service**, set to Automatic. The tunnel stops
   being a process in somebody's terminal and starts being infrastructure.
 - **The ERP becomes a scheduled task** that runs at startup as SYSTEM, waits for
   the database, and serves the **production build** on port 3000. It restarts
   itself up to three times if it dies.
+- **The worker becomes a scheduled task too**, `SUPSERV worker`, running
+  `scripts\server\run-worker.ps1` the same way. *Added 9 September 2026; before
+  that the worker was covered by nothing.* It is the process that reads the
+  mailbox every ten minutes and fetches attachment bytes — the web app only
+  puts jobs on the queue. **Without it the ERP looks completely healthy and
+  quietly stops capturing:** no new mail, and every attachment that does arrive
+  says "not copied here yet" on screen 40 for ever. Nothing on any screen says
+  the worker is missing, which is exactly why it must not depend on somebody
+  remembering to start it.
 - **Docker Desktop starts on login**, and the `supserv-db` container is set to
   `restart: unless-stopped` — which it already was.
 - It **tells you what is still broken**, which is the next section.
+
+If you only want the worker — the machine already has the rest — this is the
+whole of it, in an **Administrator** PowerShell, and it does not touch the
+tunnel, the ERP or the backup:
+
+```powershell
+cd C:\SUPSERV-ERP
+Register-ScheduledTask -TaskName "SUPSERV worker" -Force `
+  -Action (New-ScheduledTaskAction -Execute "powershell.exe" `
+            -Argument "-NoProfile -ExecutionPolicy Bypass -WindowStyle Hidden -File C:\SUPSERV-ERP\scripts\server\run-worker.ps1" `
+            -WorkingDirectory "C:\SUPSERV-ERP") `
+  -Trigger (New-ScheduledTaskTrigger -AtStartup) `
+  -Principal (New-ScheduledTaskPrincipal -UserId "SYSTEM" -RunLevel Highest) `
+  -Settings (New-ScheduledTaskSettingsSet -AllowStartIfOnBatteries -DontStopIfGoingOnBatteries `
+            -RestartCount 3 -RestartInterval (New-TimeSpan -Minutes 1) `
+            -ExecutionTimeLimit (New-TimeSpan -Seconds 0))
+Start-ScheduledTask -TaskName "SUPSERV worker"
+```
+
+Then check it said so, rather than trusting that the task is "Running":
+
+```powershell
+Select-String -Path C:\SUPSERV-ERP\.data\worker.log -Pattern '\[worker\]'
+```
+
+Close any minimised **supserv-worker** console window first, or you will have
+two workers. Two are harmless — pg-boss gives each job to one of them — but only
+the task's own writes to `.data\worker.log`.
 
 ### Check it
 

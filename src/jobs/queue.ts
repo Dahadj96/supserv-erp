@@ -23,6 +23,26 @@ export const QUEUES = {
 } as const;
 
 export type AttachmentFetchJob = { attachmentId: string };
+
+/**
+ * How an attachment fetch is queued — in one place, because two callers queue
+ * it and they must queue it identically.
+ *
+ * The poll queues a file the moment it notices it; the backfill
+ * (`scripts/backfill-attachments.ts`) queues the ones that were noticed before
+ * there was a fetcher. If those two ever disagreed about the singleton key,
+ * running the backfill while a poll was in flight would put the same file on
+ * the queue twice and fetch the same bytes twice over a link that drops.
+ *
+ *   singletonKey  the row's own id. Nothing else identifies the file: a Graph
+ *                 attachment id changes when a message is moved between folders.
+ *   retry         five tries, backing off from a minute. The fibre in Adrar
+ *                 goes down; a 403 straight after a successful listing is the
+ *                 Exchange permission cache catching up. Both clear themselves.
+ */
+export function attachmentFetchOptions(attachmentId: string): SendOptions {
+  return { singletonKey: attachmentId, retryLimit: 5, retryDelay: 60, retryBackoff: true };
+}
 export type MailboxPollJob = { actorId?: string };
 
 let started: Promise<PgBoss> | null = null;

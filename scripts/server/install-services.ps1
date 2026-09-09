@@ -210,6 +210,56 @@ if ($up) {
   Write-Warning "Nothing answering on port 3000 after two minutes. Read C:\SUPSERV-ERP\.data\server.log"
 }
 
+# ---------------------------------------------------------- 2b. the worker
+Say "the background worker as a scheduled task"
+
+# THE GAP THIS CLOSES. Until 9 September 2026 this script registered the ERP
+# and the backup and nothing else, so after a reboot the machine came back with
+# a web app and no worker - and the worker is what reads the mailbox on a clock
+# and fetches attachment bytes. Nothing on any screen says it is missing: mail
+# simply stops arriving, and every file that does arrive says "not copied here
+# yet" forever. A capture system that stops capturing silently is the failure
+# this whole repair loop exists to end.
+#
+# Separate task, not one script starting both, so that one of them dying does
+# not take the other with it and so the restart counts are independent.
+$worker = Join-Path $repo "scripts\server\run-worker.ps1"
+
+$wAction = New-ScheduledTaskAction -Execute "powershell.exe" `
+            -Argument "-NoProfile -ExecutionPolicy Bypass -WindowStyle Hidden -File `"$worker`"" `
+            -WorkingDirectory $repo
+$wSettings = New-ScheduledTaskSettingsSet -AllowStartIfOnBatteries `
+            -DontStopIfGoingOnBatteries -RestartCount 3 -RestartInterval (New-TimeSpan -Minutes 1) `
+            -ExecutionTimeLimit (New-TimeSpan -Seconds 0)
+
+Register-ScheduledTask -TaskName "SUPSERV worker" -Action $wAction -Trigger $trigger `
+  -Principal $principal -Settings $wSettings -Force | Out-Null
+
+Write-Host "registered task 'SUPSERV worker' (at startup, restarts up to 3 times if it dies)"
+
+# A worker started by hand in a console window would now be a second one. Two
+# are not harmful - pg-boss hands each job to one worker and the poll is keyed
+# so it cannot run twice - but it is confusing, and only one of them writes the
+# log this task reads from.
+foreach ($stray in @(Get-CimInstance Win32_Process -Filter "Name = 'node.exe'" -ErrorAction SilentlyContinue |
+  Where-Object { $_.CommandLine -like "*jobs/worker.ts*" -or $_.CommandLine -like "*jobs\worker.ts*" })) {
+  Write-Host "  stopping a worker started by hand (pid $($stray.ProcessId))"
+  Stop-Process -Id $stray.ProcessId -Force -ErrorAction SilentlyContinue
+}
+Start-Sleep -Seconds 2
+
+Start-ScheduledTask -TaskName "SUPSERV worker"
+Start-Sleep -Seconds 20
+
+# "Running" means a process exists, which is the lie the tunnel told for hours.
+# The worker announces itself on its first line; that is what is checked.
+if ((Test-Path "$repo\.data\worker.log") -and
+    (Select-String -Path "$repo\.data\worker.log" -Pattern "\[worker\] up" -Quiet)) {
+  Write-Host "the worker is up and reading the mailbox on a clock" -ForegroundColor Green
+} else {
+  Write-Warning "The worker task started but has not said '[worker] up'. Read $repo\.data\worker.log"
+}
+
 # ----------------------------------------------------------- 3. the backup
 Say "the nightly backup"
 
