@@ -642,7 +642,21 @@ files and will conflict with everything above.
   `/dashboard` duplicates Today and Reports; `/files` is a file browser inside
   an ERP; `/week` is a view of Today. Demote rather than delete.
 
-- [ ] **3.6 · Adopt `DataTable` on the next lists** *(incremental, last)*
+- [ ] **3.6 · Adopt `DataTable` on the next lists** *(incremental, last —
+  **Tenders is done, `38f6b10`. Three remain: Invoices, Payments,
+  Deliveries.**)*
+  `tenders-list.tsx` is the worked example and the next three copy it: a client
+  list component holding the row type and the columns, and a server page that
+  hands it rows **already formatted** — a date is the string that will be
+  printed, a badge is a tone and a label, so the locale and the arithmetic stay
+  where they already are. Two decisions came with it and hold for the rest: the
+  facet chips stay above the table rather than becoming `filterFields`, because
+  they are counted server-side and live in the URL; and the screen's own
+  `StateBlock` (3.2) is rendered on the server and passed in as `emptyState`,
+  so a screen has one empty state rather than two.
+  **Payments is the awkward one** and worth taking last of the three: its table
+  is rendered inside the `RecordPayment` form, so the form's shape has to be
+  settled before the table can move.
   Used by 4 files; 53 others write a raw `<table>`, so filters, saved views,
   pagination and bulk actions exist on 4 screens only. Convert Tenders,
   Invoices, Payments, Deliveries. One screen per commit.
@@ -1470,8 +1484,9 @@ Deals, and say where Personnel requests and Reports go. Everything else is
 mechanical — a tab strip on four parent screens, one new `NAV_GROUPS`, and the
 routes all stay where they are so no saved link breaks.
 
-Worth knowing before you answer: 3.4 added Approvals, so the rail is 25 rows
-today, and 3.5 takes it to 22 without touching any of the five above.
+Worth knowing before you answer: 3.4 added Approvals, so the rail went to 25
+rows, and 3.5 has since taken it to 23 — Dashboard onto Reports, Files onto the
+settings hub — without touching any of the five above.
 
 ### Two French words for the same thing, twice (3.3)
 
@@ -1564,33 +1579,57 @@ carries this out; anything written before 3.3 ships should already use it.
 
 ### Wave 1 is written and nobody has seen it work (1.4–1.8, and 1.11)
 
-**Now twenty tasks, and the restart is still the whole of it.** The run of
-9 September added 2.3, 2.4a, 2.4b, 2.4, 2.4c and 2.5 on top of wave 1's six,
-and a later run the same day added 2.7 and 2.6 — screen 08's five forms, and a
-numbered run on screens 06 and 08 saying where an enquiry or a folder has got to,
-and 2.8, which makes screen 42 tell the truth about where its lines came from, and
-3.4, which gives six screens that had no way in one, and 3.2, which makes six empty
-screens say what to do next, and 3.3, which makes every English screen say Deal and Site, and 3.5, which
-takes the rail down to 23 rows.
+**Now twenty tasks and one screen, and the restart is still the whole of it.**
+The run of 9 September added 2.3, 2.4a, 2.4b, 2.4, 2.4c and 2.5 on top of
+wave 1's six. A later run the same day closed wave 2 and most of wave 3:
+
+- **2.7** — screen 08's five forms, so a tender folder can be worked at all.
+- **2.6** — a numbered run on screens 06 and 08 saying where a deal or a folder
+  has got to, sharing screen 85's stepper.
+- **2.8** — screen 42 tells the truth about where its lines came from.
+- **3.4** — six screens that had no way in have one.
+- **3.2** — six empty screens say what to do next, with a button.
+- **3.3** — every English screen says **Deal** and **Site**. This is the one
+  that changes the most words on the most screens, and it is the one worth
+  five minutes with the built app.
+- **3.5** — the rail is 23 rows; Dashboard lives on Reports, Files on Settings.
+- **3.6, first of four** — Tenders is on the shared table, with filters, a
+  column menu, sorting and export it did not have.
+
 2.7 also carries **migration 0059**, which is already applied to the dev
 database: two nullable columns on `company_credential`, so a build serving the
 old code against the new schema is harmless either way round.
-`pnpm build` has been run again and succeeded, so the build on disk carries all
-of it. Nothing has changed about what is needed: **double-click
+`pnpm build` was run again at the end of that run and succeeded — 136 pages, no
+errors — so the build on disk carries every one of the tasks above. Nothing has
+changed about what is needed: **double-click
 `restart-erp.cmd`** and say yes, then `Restart-ScheduledTask -TaskName "SUPSERV
 worker"` in the same Administrator window, then `pnpm smoke`. Until then port
 3000 serves the build from before 1.4.
 
 What is worth looking at first once it is up, because it is new and nobody has
 used it: screen 40 now offers to put what you confirm onto the deal, and screen
-06 opens with a line naming the next thing to do. The three RFQ files that
-propose a field are `B_…Instructions aux Soumissionnaires` (offer validity),
-`C_…EtenduedesFournitures_` (delivery time) and `F_…Projet de Contrat` (late
-penalty).
+06 opens with a numbered run naming the next thing to do. The three RFQ files
+that propose a field are `B_…Instructions aux Soumissionnaires` (offer
+validity), `C_…EtenduedesFournitures_` (delivery time) and `F_…Projet de
+Contrat` (late penalty).
 
-Six tasks shipped on 9 September and **none of them is live**. Port 3000 still
-serves the build from before 1.4: a commit is not a deployment. `pnpm build` has
-been run and succeeded, so the only thing left needs Abdou's own machine and
+**And then screen 08**, which changed more than any other screen in this repair
+and which nothing but a person can check. Open a tender, expand a piece backed
+by a company paper, and file the CNAS attestation with its expiry — the folder
+should go from red to green as you save it, and the numbered run at the top of
+the column should move on to the next thing. Nothing in the gate can tell you
+whether that reads right; it can only tell you it compiles.
+
+**Watch for one thing in particular after 3.3.** It rewrote 78 English strings
+and renamed 87 message-key references across 16 files. `messages.test.ts`
+proves every key still resolves, so nothing can be missing — but a sentence can
+be *wrong* while resolving perfectly, and the place to notice that is a screen,
+not a test. If any English copy reads oddly, it is that commit (`979c3ff`) and
+it is one string to fix.
+
+Twenty tasks have shipped and **none of them is live**. Port 3000 still serves
+the build from before 1.4: a commit is not a deployment. `pnpm build` has been
+run and succeeded, so the only thing left needs Abdou's own machine and
 Administrator, which a scheduled run cannot answer.
 
 **Double-click `restart-erp.cmd`** in `C:\SUPSERV-ERP` and say yes to the
@@ -1668,3 +1707,4 @@ above. It is marked blocked rather than skipped.
 | 2026-09-09 | 3.2 | `f6e285f` | Six empty screens that now say what to do. Tenders, Sourcing, Offers, Orders, Deliveries and Payments had zero primary buttons between them, and five of the six answered an empty screen with a grey sentence in a corner — "No requests recorded." is true, and it does not say what a request is, where one starts, or what would appear here once one existed. `StateBlock` was drawn for exactly this on screen 34 and its `action` slot had never been used outside an error page. **Three of the six are judgements rather than defaults.** **Orders gets TWO buttons**: a client's order arrives against an offer we sent and is recorded from the deal, a purchase order goes out to a supplier once their price has been chosen, from the sourcing comparison — this list holds both kinds and its own facets say so, so a single primary would be the wrong one about half the time, which is the failure `dealChecks` avoids by giving its invoice check no link at all. **Payments gets NONE**: the recorder is on the same screen, above the list it is rendered inside, so a button would scroll somebody four inches to a control they can already see — what was missing was the sentence saying so and where to find what is still owed. **Deliveries reuses `/deliveries/new`**, which 3.4 had linked an hour earlier and which had no way in at all before that, and it greys with the same reason the header button does for a role that cannot issue one. Offers changed least and matters most as a precedent: it already had the right words in hand-written markup that reproduced `StateBlock` line for line — same heading size, same 460px measure, same centring — and stopped one element short of it, and two copies of a component is how the third comes to look slightly different. On Deliveries and Payments the block REPLACES the card rather than sitting inside it, because `StateBlock` draws its own border and one bordered box centred inside another is the look of a component used where it does not belong. `tenders.none` needed no fixing — 2.1 had already made "open the deal and press Make this a tender" a true instruction — so it reads as the body here. The other ~54 are three different problems wearing one number, and which of them is worth a sweep is under Known gaps. |
 | 2026-09-09 | 3.3 | `979c3ff` | Deals and Sites, in English, everywhere. **Not one English string in `en.json` says "enquiry" any more** — 78 of them did — and the Chantier screens say Site rather than Project across nav, titles, body copy, empty states and errors. French is untouched and the routes do not move. **The two words the queue left to judge are decided.** *Sourcing* stays Sourcing for *Approvisionnement*: it is the standard English procurement word, the route is already `/sourcing`, the nav already says it, and the screen is exactly what the word means. And **"Ageing and relances" becomes "Ageing and reminders"** — a French word sitting inside an English sentence on two screens, which is a gap in a translation rather than a translation; English now reads Payments beside Ageing and reminders, one word each. **`project` was deliberately NOT swept by regex**, and that is the care this needed: it is a real English word in this file meaning a job title ("Project manager"), a research project, and the repository folder a storage path falls back to. Only the 36 strings under an explicit key list moved, and the storage one was renamed to "Fallback inside the repository" so no English string here uses the word for two things. Six English strings still contain *project* or *chantier* and every one is right — a role name, two job titles, a French trade placeholder, "a research project", and "A projection". Twenty-three more were rewritten BY HAND rather than substituted, because the right English was a judgement: an email template acknowledges a REQUEST and not a record (French says *demande* there and *affaire* for the record, and English draws the same line), the Inbox creates the deal, a person is put on a site. **The static keys moved too** — the `enquiry` and `newEnquiry` namespaces became `deal` and `newDeal`, plus twelve individual keys, 87 references across 16 files — and `messages.test.ts` is what made that safe, resolving every literal key used in the interface and the literal prefix of every key built from a value. It earned its keep on the first run: it caught a property-access reference in `tender-conversion.test.ts` that a literal rewrite could not see. **Seven keys stay, and they are the honest limit of a copy pass**: `inbox.type/facet/action.*` and `capture.shape.*` are built from `intake_message.classified_as` and the capture enum, `emailTemplates.name/when.*` from `email_template.key`, `assistantSafety.tool.*` from the assistant's tool name. Renaming any of them is a migration over data, not a copy change, and none is user-visible — a person reads the value, and every value now says deal. So the done-when's grep reads 7 rather than 0; the seven are tabulated under Known gaps with what each would cost. The French drift the English just lost — *Affaire* against *Consultation*, *Règlements* against *Encaissements* — is a question under Needs Abdou rather than a guess taken here. |
 | 2026-09-09 | 3.5 | `259fc32` | Two rows demoted, neither deleted. **Dashboard** leaves the rail and lives on Reports: it answered the question Today answers and the question Reports answers and did neither as well, and three competing answers to "what should I look at" is how a person stops trusting all three. It had no other link anywhere in the app, so that one link is the whole of what taking the row away owed it. **Files** leaves the rail and sits beside Storage on the settings hub with a count, for a sharper reason than the dashboard's: a file browser is not a destination inside an ERP. `src/domain/files` is explicit that there is no `file` table and there is not going to be one — every file already belongs to the message, dossier, import, item or company paper that brought it in, and that is where a person looks for it — so what screen 60 is genuinely for is "the bytes are somewhere, where", which is a storage question. It was already reachable from `/settings/storage`; this makes it one click from Settings rather than two. **`/week` needed nothing at all**: the task names it and it turns out it was never in the rail, because Today has linked it since it was built — written down rather than quietly skipped, since the next person to read the task would otherwise go looking for what changed. The rail is **23 rows**: 3.4 took it to 25 by promoting Approvals off the phone bar, this takes it to 23, and 3.1 is what takes it to about 11 — blocked on one paragraph about where five screens live, Sourcing above all. Nothing here pre-empts any of those five. |
+| 2026-09-09 | 3.6 (1/4) | `38f6b10` | Tenders on the shared table. Screen 07's raw `<table>` had no filters, no saved views, no column menu, no sort and no way to export what is on screen — every one of which `DataTable` has had since screen 79 was built, on four screens out of fifty-seven, while CLAUDE.md says reuse and never rebuild. `tenders-list.tsx` follows `deals-list.tsx` exactly and **the shape is the point: every field that crosses to the client is already formatted** — a date is the string that will be printed, a badge is a tone and a label rather than a rule about a deadline — so `getFormatter` and `deadlineDisplay`'s arithmetic stay on the server where the locale and the deal's facts already are. A client component recomputing "closing soon" would be a second opinion about the one figure this screen exists to be trusted about. Two decisions that hold for the remaining three: **the facet chips stay above the table** rather than becoming `filterFields`, because they are counted server-side by `tenderCounts` and they live in the URL, and a filter panel answering the same question a second way would be two controls arguing over one list; and **the empty state is rendered on the server and handed in**, because 3.2 gave this screen a `StateBlock` with a real button an hour earlier and `DataTable` draws its `emptyState` in place of the rows — passing that block in keeps one empty state on the screen instead of one above the table and one inside it. Submission method becomes an optional column, off by default: it matters on the day and it is the column somebody scrolls past on every other day, which is what the columns menu is for. Three screens left, named in the task, and Payments is the awkward one — its table is rendered inside the `RecordPayment` form, so the form's shape has to be settled first. |
