@@ -13,8 +13,10 @@ const NOTHING: DealFacts = {
   lostAt: null,
   lineCount: 0,
   suppliersAsked: 0,
+  priceQuotes: 0,
   offersIssued: 0,
   ordersReceived: 0,
+  deliveriesIssued: 0,
   invoicesIssued: 0,
 };
 
@@ -38,6 +40,29 @@ describe("stage is computed, never stored", () => {
     expect(stageOf(facts({ suppliersAsked: 4, offersIssued: 1 }))).toBe("offerOut");
     expect(stageOf(facts({ offersIssued: 1, ordersReceived: 1 }))).toBe("ordered");
     expect(stageOf(facts({ ordersReceived: 1, invoicesIssued: 1 }))).toBe("invoiced");
+  });
+
+  it("does not make a delivery a stage of its own", () => {
+    /*
+      `deliveriesIssued` joined `DealFacts` for screen 06's numbered run (task
+      2.6) and deliberately did NOT join the ladder `stageOf` climbs. Plenty of
+      won deals are invoiced with no bon de livraison at all — a service has
+      nothing to deliver, and goods the client collected leave with a signature
+      on somebody's copy — so "delivered" would be a stage most won deals skip,
+      and a chip counting it would be a chip nobody could trust.
+    */
+    expect(stageOf(facts({ ordersReceived: 1, deliveriesIssued: 3 }))).toBe("ordered");
+    expect(stageOf(facts({ deliveriesIssued: 3 }))).toBe("new");
+    expect(stageOf(facts({ ordersReceived: 1, deliveriesIssued: 3, invoicesIssued: 1 }))).toBe(
+      "invoiced",
+    );
+  });
+
+  it("does not make a price a stage either — asking a supplier is what sourcing means", () => {
+    // A price captured at a shop counter is a real price and no supplier was
+    // asked for it, so it cannot move an enquiry to `sourcing`. Same reasoning
+    // as the delivery above: a fact the run needs is not automatically a rung.
+    expect(stageOf(facts({ lineCount: 2, priceQuotes: 5 }))).toBe("qualifying");
   });
 
   it("does not count a draft offer as an offer out", () => {

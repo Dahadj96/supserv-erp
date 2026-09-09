@@ -2,7 +2,7 @@ import { and, desc, eq, inArray, isNull, sql } from "drizzle-orm";
 import { z } from "zod";
 import { db } from "@/db";
 import { auditEntry } from "@/db/schema/control";
-import { deal, dealLine } from "@/db/schema/deal";
+import { deal, dealLine, priceQuote } from "@/db/schema/deal";
 import { document } from "@/db/schema/document";
 import { party } from "@/db/schema/party";
 import { sourcingRequest, sourcingResponse } from "@/db/schema/sourcing";
@@ -164,6 +164,15 @@ export async function createDeal(input: DealInput, actorId: string): Promise<str
  */
 const OFFER_KINDS = ["quotation", "proforma"];
 const ORDER_KINDS = ["client_order"];
+/**
+ * The bon de livraison, and only ours.
+ *
+ * `goods_receipt` is the buy side — what a supplier delivered TO us — and it is
+ * not a step in the enquiry run, so it is not here. One kind rather than a list
+ * because there is one: `can.ts` maps `delivery_note` to `deliveries.issue` and
+ * nothing else answers that question.
+ */
+const DELIVERY_KINDS = ["delivery_note"];
 const INVOICE_KINDS = ["invoice", "advance_invoice", "situation"];
 
 /**
@@ -179,15 +188,32 @@ const INVOICE_KINDS = ["invoice", "advance_invoice", "situation"];
  * — it is somebody thinking about sourcing, and the distinction is the same one
  * `offersIssued` draws between a draft offer and an offer out.
  */
-export async function factsFor(
-  dealIds: string[],
-): Promise<Map<string, Omit<DealFacts, "decision" | "lostAt" | "lineCount">>> {
-  const out = new Map<string, Omit<DealFacts, "decision" | "lostAt" | "lineCount">>();
+/** What `factsFor` counts: everything on `DealFacts` that is not on the row. */
+export type DealCounts = Omit<DealFacts, "decision" | "lostAt" | "lineCount">;
+
+/**
+ * A deal nothing has happened to yet.
+ *
+ * Exported and used by every caller that needs a fallback, rather than written
+ * out at each of the four. It was four copies of the same object literal until
+ * task 2.6 added two counts to `DealFacts` and the compiler found all four —
+ * which is the cheap version of this lesson. The expensive version is a fifth
+ * count added one day to three of them.
+ */
+export const NO_COUNTS: DealCounts = {
+  suppliersAsked: 0,
+  priceQuotes: 0,
+  offersIssued: 0,
+  ordersReceived: 0,
+  deliveriesIssued: 0,
+  invoicesIssued: 0,
+};
+
+export async function factsFor(dealIds: string[]): Promise<Map<string, DealCounts>> {
+  const out = new Map<string, DealCounts>();
   if (dealIds.length === 0) return out;
 
-  for (const id of dealIds) {
-    out.set(id, { suppliersAsked: 0, offersIssued: 0, ordersReceived: 0, invoicesIssued: 0 });
-  }
+  for (const id of dealIds) out.set(id, { ...NO_COUNTS });
 
   const rows = await db
     .select({
@@ -200,7 +226,12 @@ export async function factsFor(
     .where(
       and(
         inArray(sql`${document.dealId}`, dealIds),
-        inArray(document.kind, [...OFFER_KINDS, ...ORDER_KINDS, ...INVOICE_KINDS]),
+        inArray(document.kind, [
+          ...OFFER_KINDS,
+          ...ORDER_KINDS,
+          ...DELIVERY_KINDS,
+          ...INVOICE_KINDS,
+        ]),
       ),
     )
     .groupBy(document.dealId, document.kind);
@@ -214,7 +245,31 @@ export async function factsFor(
     // one counts RECORDED rows (issued, under their reference), not numbered
     // ones. Not every row: a draft order nobody has confirmed is not a win.
     if (ORDER_KINDS.includes(row.kind)) facts.ordersReceived += row.recorded;
+    if (DELIVERY_KINDS.includes(row.kind)) facts.deliveriesIssued += row.issued;
     if (INVOICE_KINDS.includes(row.kind)) facts.invoicesIssued += row.issued;
+  }
+
+  /**
+   * Prices held against the deal.
+   *
+   * Its own query rather than a join onto the one above, because a price is not
+   * a document — it is a row somebody captured from an email, a proforma, or a
+   * shop counter in Adrar, and `price_quote.deal_id` is `on delete set null` so
+   * that a price outlives the enquiry it was gathered for and becomes a
+   * catalogue price. Counting it here rather than on screen 06 is task 2.6's
+   * own instruction and the reason is LAW 1's: the stepper is a function of
+   * facts, and a fact the page fetches for itself is a fact the deal list
+   * cannot see.
+   */
+  const quotes = await db
+    .select({ dealId: priceQuote.dealId, n: sql<number>`count(*)::int` })
+    .from(priceQuote)
+    .where(inArray(sql`${priceQuote.dealId}`, dealIds))
+    .groupBy(priceQuote.dealId);
+
+  for (const row of quotes) {
+    const facts = row.dealId ? out.get(row.dealId) : undefined;
+    if (facts) facts.priceQuotes = row.n;
   }
 
   const asked = await db
@@ -305,12 +360,7 @@ export async function listDeals(
       decision: (row.decision as DealFacts["decision"]) ?? null,
       lostAt: row.lostAt,
       lineCount: row.lineCount,
-      ...(counted.get(row.id) ?? {
-        suppliersAsked: 0,
-        offersIssued: 0,
-        ordersReceived: 0,
-        invoicesIssued: 0,
-      }),
+      ...(counted.get(row.id) ?? NO_COUNTS),
     };
     return {
       id: row.id,
@@ -390,12 +440,7 @@ export async function decide(opts: {
     decision: (row.decision as DealFacts["decision"]) ?? null,
     lostAt: row.lostAt,
     lineCount: row.lineCount,
-    ...(counted ?? {
-      suppliersAsked: 0,
-      offersIssued: 0,
-      ordersReceived: 0,
-      invoicesIssued: 0,
-    }),
+    ...(counted ?? NO_COUNTS),
   };
   // A no-bid already recorded is not "closed" for this purpose — reversing your
   // own no-bid is the case this whole card exists to make cheap.
@@ -513,12 +558,7 @@ export async function getDeal(id: string) {
     decision: (row.deal.decision as DealFacts["decision"]) ?? null,
     lostAt: row.deal.lostAt,
     lineCount: lines.length,
-    ...(counted ?? {
-      suppliersAsked: 0,
-      offersIssued: 0,
-      ordersReceived: 0,
-      invoicesIssued: 0,
-    }),
+    ...(counted ?? NO_COUNTS),
   };
 
   return {

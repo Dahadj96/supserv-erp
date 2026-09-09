@@ -7,6 +7,7 @@ import { can } from "@/auth/can";
 import { getSession } from "@/auth/session";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import { Stepper } from "@/components/ui/stepper";
 import { db } from "@/db";
 import { party, partyRole } from "@/db/schema/party";
 import { dealChecks, nextStep } from "@/domain/deal/checks";
@@ -25,12 +26,12 @@ import { buildOfferAction } from "./build-actions";
 import { discardDealAction } from "./delete-actions";
 import { makeTenderAction, unmakeTenderAction } from "./tender-actions";
 
-/**
- * The same four tones screen 12 gives the same four states. Copied rather than
- * shared because it is a table of class names on one screen, and `CheckState`
- * — the thing that would actually drift — is imported by `dealChecks` itself.
+/*
+ * The table of tones that used to live here — the same four screen 12 gives the
+ * same four states — moved into `Stepper` with task 2.6. Three screens draw
+ * these states now, and a second table of class names is how two of them come
+ * to disagree about what `note` looks like.
  */
-const CHECK_TONE = { pass: "good", warn: "warning", block: "critical", note: "neutral" } as const;
 
 /**
  * Screen 06 — the enquiry.
@@ -428,7 +429,8 @@ export default async function EnquiryPage({
 
         <div className="flex flex-col gap-5">
           {/*
-            WHAT HAPPENS NEXT — task 2.5, at the top of the column on purpose.
+            WHAT HAPPENS NEXT — task 2.5, at the top of the column on purpose,
+            and a NUMBERED RUN since task 2.6.
 
             The one line under the heading is the first thing actually waiting
             on somebody: a blocker before a warning before a note, and within
@@ -436,46 +438,36 @@ export default async function EnquiryPage({
             so the panel says what is done as well as what is not — a screen
             that only ever names problems teaches people that opening it is bad
             news.
+
+            2.6 made that list the numbered stepper screen 85 uses for day one,
+            in `Stepper`, shared by all three so they cannot drift — and gave it
+            the two rungs the checks did not carry: prices in, and the bon de
+            livraison. A second panel beside this one would have put two lists
+            about the same run on one screen, which is the clutter this wave
+            exists to remove, so `dealChecks` grew rather than gaining a rival.
           */}
-          <section className="rounded-[var(--radius-card)] border border-line bg-surface p-5">
-            <div className="flex flex-wrap items-baseline gap-x-3">
-              <h2 className="text-tiny font-semibold text-ink">{t("deals.next.title")}</h2>
-              <span className="ms-auto text-micro text-muted">{t("deals.next.derived")}</span>
-            </div>
-
-            <p className="mt-2 text-tiny leading-relaxed text-ink">
-              {next ? t(`deals.check.${next.key}`, next.detail ?? {}) : t("deals.next.nothing")}
-            </p>
-
-            {next?.fixHref ? (
-              <Link href={next.fixHref} className="mt-2 inline-block">
-                <Button variant="primary" size="small">
-                  {t("deals.next.go")}
-                </Button>
-              </Link>
-            ) : null}
-
-            <ul className="mt-4 flex flex-col gap-2 border-t border-line-subtle pt-3">
-              {checks.map((check) => (
-                <li key={check.key}>
-                  <div className="flex items-baseline gap-2">
-                    <p className="min-w-0 flex-1 text-micro text-secondary">
-                      {t(`deals.check.${check.key}`, check.detail ?? {})}
-                    </p>
-                    <Badge tone={CHECK_TONE[check.state]}>{t(`offer.state.${check.state}`)}</Badge>
-                  </div>
-                  {check.fixHref && check.key !== next?.key ? (
-                    <Link
-                      href={check.fixHref}
-                      className="mt-0.5 inline-block text-micro text-accent-ink hover:underline"
-                    >
-                      {t("offer.fixIt")}
-                    </Link>
-                  ) : null}
-                </li>
-              ))}
-            </ul>
-          </section>
+          <Stepper
+            title={t("deals.next.title")}
+            aside={t("common.doneOf", {
+              done: checks.filter((c) => c.state === "pass").length,
+              total: checks.length,
+            })}
+            lead={next ? t(`deals.check.${next.key}`, next.detail ?? {}) : t("deals.next.nothing")}
+            doneLabel={t("common.done")}
+            stateLabel={(state) => t(`offer.state.${state}`)}
+            steps={checks.map((check) => ({
+              key: check.key,
+              state: check.state,
+              label: t(`deals.step.${check.key}`),
+              detail: t(`deals.check.${check.key}`, check.detail ?? {}),
+              href: check.fixHref,
+              // The verb only appears where there is somewhere to go. A step
+              // with no `fixHref` — the missing deadline, the uninvoiced order
+              // — draws its badge instead, which is the honest answer while no
+              // screen in this application can set either.
+              action: check.fixHref ? t("deals.next.go") : undefined,
+            }))}
+          />
 
           <section className="rounded-[var(--radius-card)] border border-line bg-surface p-5">
             <h2 className="text-tiny font-semibold text-ink">{t("enquiry.details")}</h2>

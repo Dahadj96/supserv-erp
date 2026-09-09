@@ -46,10 +46,34 @@ export type DealFacts = {
   lineCount: number;
   /** Suppliers we have actually asked — sourcing requests sent, not drafted. */
   suppliersAsked: number;
+  /**
+   * Prices we HOLD against this deal — `price_quote` rows.
+   *
+   * Not the same fact as `suppliersAsked`, and the difference is the reason it
+   * is here rather than inferred from it: a price a man gave over a counter in
+   * Adrar is a price, and no supplier was asked for it. `sourcing.ts` draws the
+   * same line — a sourcing response is somebody's answer to our question, a
+   * price quote is a price we hold from wherever we found it. An offer is built
+   * from these, so "no prices yet" is why an offer cannot be made, and until
+   * now the panel that says what is waiting had no way to say it.
+   */
+  priceQuotes: number;
   /** Offers ISSUED. A draft offer is not an offer out; LAW 5 draws that line. */
   offersIssued: number;
   /** Client purchase orders received against this enquiry. */
   ordersReceived: number;
+  /**
+   * Bons de livraison ISSUED against it — numbered, so a draft does not count,
+   * the same line LAW 5 draws for every other kind here.
+   *
+   * Deliberately NOT a stage. `stageOf` reads invoiced → ordered → offerOut →
+   * sourcing and stops at the furthest thing that exists, and a delivery is not
+   * a rung on that ladder: plenty of deals are invoiced with no BL at all
+   * (a service, or goods the client collected), so "delivered" as a stage would
+   * be a stage most won deals skip. It is a step in the run, which is a
+   * different question, and screen 06's stepper is what asks it.
+   */
+  deliveriesIssued: number;
   /** Invoices issued against it. */
   invoicesIssued: number;
 };

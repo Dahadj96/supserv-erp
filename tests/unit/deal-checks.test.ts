@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { type DealCheckFacts, dealChecks, nextStep } from "@/domain/deal/checks";
+import { DEAL_CHECKS, type DealCheckFacts, dealChecks, nextStep } from "@/domain/deal/checks";
 
 /**
  * Screen 06's next-step panel (task 2.5).
@@ -19,8 +19,10 @@ const facts = (over: Partial<DealCheckFacts> = {}): DealCheckFacts => ({
   lostAt: null,
   lineCount: 0,
   suppliersAsked: 0,
+  priceQuotes: 0,
   offersIssued: 0,
   ordersReceived: 0,
+  deliveriesIssued: 0,
   invoicesIssued: 0,
   deadlineAt: new Date("2026-10-01T09:00:00Z"),
   offersDrafted: 0,
@@ -135,6 +137,10 @@ describe("screen 06 — what happens next", () => {
       closed: "how",
       decision: "decision",
       lines: "n",
+      // Both of task 2.6's new rungs are plurals on `n`, and both have a `=0`
+      // arm — which is the arm that renders on the deals this panel is for.
+      prices: "n",
+      delivery: "n",
       offer: "drafts",
     };
 
@@ -158,6 +164,75 @@ describe("screen 06 — what happens next", () => {
     }
   });
 
+  it("asks for prices, and does not confuse them with having asked a supplier", () => {
+    /*
+      Task 2.6's first new rung. `price_quote` is not `suppliersAsked` under
+      another name: a price a man gave over a counter in Adrar is a price and
+      nobody was asked for it, so a deal can pass this step having failed the
+      one above — and that is the case worth pinning, because reading one off
+      the other is exactly the shortcut this count exists to prevent.
+    */
+    const none = dealChecks(facts({ decision: "pursue", lineCount: 3 }));
+    const overACounter = dealChecks(
+      facts({ decision: "pursue", lineCount: 3, suppliersAsked: 0, priceQuotes: 2 }),
+    );
+
+    expect(none.find((c) => c.key === "prices")?.state).toBe("warn");
+    expect(none.find((c) => c.key === "prices")?.fixHref).toBe("/deals/d-1/prices");
+
+    expect(overACounter.find((c) => c.key === "prices")?.state).toBe("pass");
+    expect(overACounter.find((c) => c.key === "prices")?.detail?.n).toBe(2);
+    // Still nagging about the supplier, because that question is genuinely
+    // unanswered — the two steps are not the same step.
+    expect(overACounter.find((c) => c.key === "suppliers")?.state).toBe("warn");
+  });
+
+  it("stops asking for prices once an offer has gone out, whatever route the figure took", () => {
+    const checks = dealChecks(
+      facts({ decision: "pursue", lineCount: 3, offersIssued: 1, priceQuotes: 0 }),
+    );
+
+    expect(checks.map((c) => c.key)).not.toContain("prices");
+  });
+
+  it("treats a missing bon de livraison as a note, not a fault", () => {
+    /*
+      Task 2.6's second new rung, and its judgement. A service has nothing to
+      deliver and goods the client collected leave with a signature on somebody
+      else's copy, so an order with no BL is the next thing in the run when
+      there is something to deliver and silence when there is not. A warning
+      would put an amber row on every service deal SUPSERV has ever done.
+    */
+    const ordered = dealChecks(facts({ decision: "pursue", lineCount: 3, ordersReceived: 1 }));
+    const delivered = dealChecks(
+      facts({ decision: "pursue", lineCount: 3, ordersReceived: 1, deliveriesIssued: 2 }),
+    );
+
+    expect(ordered.find((c) => c.key === "delivery")?.state).toBe("note");
+    expect(ordered.find((c) => c.key === "delivery")?.fixHref).toBe("/deliveries/new");
+    expect(delivered.find((c) => c.key === "delivery")?.state).toBe("pass");
+    expect(delivered.find((c) => c.key === "delivery")?.detail?.n).toBe(2);
+  });
+
+  it("says nothing about delivery before the client has ordered", () => {
+    const checks = dealChecks(facts({ decision: "pursue", lineCount: 3, offersIssued: 1 }));
+    expect(checks.map((c) => c.key)).not.toContain("delivery");
+  });
+
+  it("keeps every step it emits in the run's own order", () => {
+    /*
+      The stepper NUMBERS these rows, so their order is no longer only a matter
+      of which line reads first — it is what the numbers mean. A run that
+      emitted "offer" before "prices" would print a 6 above a 5.
+    */
+    const checks = dealChecks(
+      facts({ decision: "pursue", lineCount: 3, deadlineAt: null, ordersReceived: 1 }),
+    );
+    const order = DEAL_CHECKS.filter((key) => checks.some((c) => c.key === key));
+
+    expect(checks.map((c) => c.key)).toEqual(order);
+  });
+
   it("orders a blocker before a warning before a note", () => {
     const checks = dealChecks(facts({ decision: "pursue", lineCount: 0, deadlineAt: null }));
 
@@ -171,9 +246,13 @@ describe("screen 06 — what happens next", () => {
         decision: "pursue",
         lineCount: 3,
         suppliersAsked: 2,
+        // The whole run, since task 2.6 — a deal that reached the end of it has
+        // prices behind its offer and a bon de livraison behind its facture.
+        priceQuotes: 4,
         offersIssued: 1,
         offersDrafted: 1,
         ordersReceived: 1,
+        deliveriesIssued: 1,
         invoicesIssued: 1,
       }),
     );

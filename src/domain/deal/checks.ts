@@ -24,14 +24,30 @@ import type { DealFacts } from "./stage";
  * issues an offer from a screen that forgot to update it.
  */
 
+/**
+ * The run, in order, and the order is the whole point.
+ *
+ * Task 2.6 turned this list into a numbered stepper on screen 06, which is what
+ * screen 85 already does for day one: numbered computed steps, done ones with a
+ * green badge and no button, the first unfinished one with a primary button.
+ * Two steps were added at the same time because the run the audit names —
+ * items → suppliers asked → **prices in** → offer issued → order → **BL** →
+ * facture — had two rungs the checks did not carry, and a stepper that skips a
+ * rung is a stepper that cannot say where you are.
+ *
+ * `closed` is not a step. It is the whole list replaced by one line, and it is
+ * first here only so the key sits beside its siblings.
+ */
 export const DEAL_CHECKS = [
   "closed",
   "decision",
   "lines",
   "deadline",
   "suppliers",
+  "prices",
   "offer",
   "clientAnswer",
+  "delivery",
   "invoice",
 ] as const;
 export type DealCheckKey = (typeof DEAL_CHECKS)[number];
@@ -148,6 +164,35 @@ export function dealChecks(facts: DealCheckFacts): DealCheck[] {
   }
 
   /*
+    PRICES IN — task 2.6's first new rung, and the one the 2.5 note asked for.
+
+    An offer is built from `price_quote` rows, so "no prices yet" is the actual
+    answer to why the next step cannot be taken, and until this counted them the
+    panel could only say "make an offer" to somebody with nothing to price it
+    with. It is NOT `suppliersAsked` under another name: a price a man gave over
+    a counter in Adrar is a price, and no supplier was asked for it — which is
+    exactly why a deal can pass this step having failed the one above.
+
+    A warning rather than a blocker for the same reason the sourcing step is
+    one: the offer builder can also take a price typed straight into it, so an
+    ERP that refused to let you quote without capturing a price first is one
+    people work around. It stops asking once an offer has gone out — by then
+    the question is answered, whatever route the figure took.
+  */
+  if (facts.lineCount > 0 && facts.offersIssued === 0) {
+    out.push(
+      facts.priceQuotes === 0
+        ? {
+            key: "prices",
+            state: "warn",
+            detail: { n: 0 },
+            fixHref: `/deals/${facts.dealId}/prices`,
+          }
+        : { key: "prices", state: "pass", detail: { n: facts.priceQuotes } },
+    );
+  }
+
+  /*
     THE OFFER. A draft is not an offer out — LAW 5 draws that line and
     `offersIssued` counts accordingly — so a deal with a draft sitting on it
     still has something waiting, and the link goes to that draft rather than to
@@ -174,6 +219,33 @@ export function dealChecks(facts: DealCheckFacts): DealCheck[] {
   */
   if (facts.offersIssued > 0 && facts.ordersReceived === 0) {
     out.push({ key: "clientAnswer", state: "note" });
+  }
+
+  /*
+    THE BON DE LIVRAISON — task 2.6's second new rung.
+
+    A NOTE, NOT A WARNING, AND THIS ONE IS A JUDGEMENT WORTH READING TWICE.
+
+    Plenty of won deals are invoiced with no BL at all: a service has nothing to
+    deliver, and goods the client collected from the depot leave with a signature
+    on somebody's copy and no document of ours. So an unfulfilled order is not a
+    fault — it is the next thing in the run when there IS something to deliver,
+    and silence when there is not. Calling it a warning would put an amber row on
+    every service deal SUPSERV has ever done, which is how a panel teaches people
+    to stop reading it.
+
+    It is also why `deliveriesIssued` is not a stage: see `DealFacts`.
+
+    The link goes to `/deliveries/new`, which is the one screen that starts one —
+    unlike the invoice below, where the deal genuinely does not know which
+    document a facture would be raised from.
+  */
+  if (facts.ordersReceived > 0) {
+    out.push(
+      facts.deliveriesIssued === 0
+        ? { key: "delivery", state: "note", detail: { n: 0 }, fixHref: "/deliveries/new" }
+        : { key: "delivery", state: "pass", detail: { n: facts.deliveriesIssued } },
+    );
   }
 
   /*

@@ -91,8 +91,10 @@ export async function listTenders(now = new Date()): Promise<TenderRow[]> {
       lostAt: row.lostAt,
       lineCount: row.lineCount,
       suppliersAsked: counted?.suppliersAsked ?? 0,
+      priceQuotes: counted?.priceQuotes ?? 0,
       offersIssued: counted?.offersIssued ?? 0,
       ordersReceived: counted?.ordersReceived ?? 0,
+      deliveriesIssued: counted?.deliveriesIssued ?? 0,
       invoicesIssued: counted?.invoicesIssued ?? 0,
     };
     const folder = folders.get(row.dealId);

@@ -10,7 +10,7 @@ import { Button } from "@/components/ui/button";
 import { db } from "@/db";
 import { deal } from "@/db/schema/deal";
 import { party } from "@/db/schema/party";
-import { factsFor } from "@/domain/deal/deal";
+import { factsFor, NO_COUNTS } from "@/domain/deal/deal";
 import { badgeMessageKey, stageOf } from "@/domain/deal/stage";
 import { byDay, countSides, type EventSide, lastMove } from "@/domain/timeline/events";
 import { timelineFor } from "@/domain/timeline/gather";
@@ -110,10 +110,11 @@ export default async function TimelinePage({
   // single-deal variant that would drift from the list's version.
   const counted = (await factsFor([id])).get(id);
   const stage = stageOf({
-    suppliersAsked: counted?.suppliersAsked ?? 0,
-    offersIssued: counted?.offersIssued ?? 0,
-    ordersReceived: counted?.ordersReceived ?? 0,
-    invoicesIssued: counted?.invoicesIssued ?? 0,
+    // Spread rather than named one by one: this listed four counts and silently
+    // meant "nought" for any fifth, so the day `DealFacts` grew (task 2.6) the
+    // timeline would have gone on computing a stage from a shape nobody had
+    // updated. `NO_COUNTS` is the one place a missing deal's counts are written.
+    ...(counted ?? NO_COUNTS),
     // The column is text; `stageOf` only cares whether a decision was recorded
     // at all, so an unrecognised value is still a decision and is passed as one
     // rather than being narrowed away into null.

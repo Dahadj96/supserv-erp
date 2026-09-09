@@ -74,7 +74,9 @@
     "rowsHidden": "{count} lignes masquées — {permission}",
     "optional": "facultatif",
     "yes": "Oui",
-    "close": "Fermer"
+    "close": "Fermer",
+    "done": "Fait",
+    "doneOf": "{done} sur {total}"
   },
   "list": {
     "applied": "Appliqué",
@@ -143,7 +145,9 @@
       "suppliers": "Aucun fournisseur n'a été consulté, et il n'y a pas encore d'offre.",
       "offer": "{drafts, plural, =0 {Aucune offre n'est partie.} one {Une offre est en brouillon et non émise.} other {# offres sont en brouillon et aucune n'est émise.}}",
       "clientAnswer": "L'offre est partie. En attente du client.",
-      "invoice": "Le client a commandé et rien n'est facturé. La facture se fait depuis le bon de commande ou le bon de livraison."
+      "invoice": "Le client a commandé et rien n'est facturé. La facture se fait depuis le bon de commande ou le bon de livraison.",
+      "prices": "{n, plural, =0 {Aucun prix n’a encore été collecté pour cette affaire. Une offre se construit à partir d’eux.} one {# prix collecté.} other {# prix collectés.}}",
+      "delivery": "{n, plural, =0 {Rien n’a encore été livré sur cette commande. Certaines affaires n’ont jamais besoin d’un bon de livraison.} one {# bon de livraison émis.} other {# bons de livraison émis.}}"
     },
     "newEnquiry": "Nouvelle consultation",
     "recordOrder": "Enregistrer leur commande",
@@ -152,6 +156,18 @@
       "opened": "Le projet est ouvert :",
       "why": "Une fois que le client a dit oui, le chantier vit sur sa propre page — situations, retenue, cautions, qui est sur site.",
       "open": "Ouvrir le projet"
+    },
+    "step": {
+      "closed": "Comment elle s’est terminée",
+      "decision": "Décider",
+      "lines": "Ce qu’ils ont demandé",
+      "deadline": "Échéance",
+      "suppliers": "Consulter les fournisseurs",
+      "prices": "Prix collectés",
+      "offer": "Offre envoyée",
+      "clientAnswer": "Leur commande",
+      "delivery": "Bon de livraison",
+      "invoice": "Facture"
     }
   },
   "search": {
@@ -4461,6 +4477,22 @@
       "force": "Déposer quand même — je sais ce qui manque",
       "reason": "Pourquoi",
       "action": "Enregistrer le dépôt"
+    },
+    "run": {
+      "title": "Où en est cet appel d’offres",
+      "nothing": "Rien n’est en attente. Le pli a été déposé."
+    },
+    "step": {
+      "folder": "Le dossier",
+      "bpu": "Chiffrer le bordereau",
+      "caution": "Caution de soumission",
+      "deposit": "Déposer le pli",
+      "detail": {
+        "folder": "{total, plural, =0 {Aucune pièce enregistrée. Le dossier est ce que demande ce cahier des charges.} other {{ready} pièces prêtes sur {total}{blocking, plural, =0 {, et rien ne ferait rejeter l’offre.} one {, et # ferait rejeter l’offre.} other {, et # feraient rejeter l’offre.}}}}",
+        "bpu": "{lines, plural, =0 {Aucun bordereau importé. Tous les appels d’offres n’en ont pas.} other {{priced} lignes chiffrées sur {lines}.}}",
+        "caution": "{stage, select, received {La caution est en main.} requested {Demandée, et pas encore revenue de la banque.} deposited {Déposé avec la caution en l’état.} other {Le cahier des charges demande une caution et aucune n’a été demandée.}}",
+        "deposit": "{blocking, plural, =0 {Rien ne bloque le dossier. Enregistrez le dépôt une fois le pli remis.} one {# pièce ferait rejeter l’offre. Le dépôt reste possible, avec une raison.} other {# pièces feraient rejeter l’offre. Le dépôt reste possible, avec une raison.}}"
+      }
     }
   },
   "projects": {

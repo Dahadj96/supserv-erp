@@ -74,7 +74,9 @@
     "rowsHidden": "{count} rows hidden — {permission}",
     "optional": "optional",
     "yes": "Yes",
-    "close": "Close"
+    "close": "Close",
+    "done": "Done",
+    "doneOf": "{done} of {total}"
   },
   "list": {
     "applied": "Applied",
@@ -143,7 +145,9 @@
       "suppliers": "No supplier has been asked, and there is no offer yet.",
       "offer": "{drafts, plural, =0 {No offer has gone out.} one {An offer is drafted and not issued.} other {# offers are drafted and none is issued.}}",
       "clientAnswer": "The offer is out. Waiting on the client.",
-      "invoice": "The client has ordered and nothing has been invoiced. The facture is made from the order or the delivery note."
+      "invoice": "The client has ordered and nothing has been invoiced. The facture is made from the order or the delivery note.",
+      "prices": "{n, plural, =0 {No price has been captured for this deal yet. An offer is built from them.} one {# price captured.} other {# prices captured.}}",
+      "delivery": "{n, plural, =0 {Nothing has been delivered against this order yet. Some deals never need a bon de livraison.} one {# bon de livraison issued.} other {# bons de livraison issued.}}"
     },
     "newEnquiry": "New enquiry",
     "recordOrder": "Record their order",
@@ -152,6 +156,18 @@
       "opened": "The project is open:",
       "why": "Once the client has said yes, the site lives on its own page — situations, retention, cautions, who is on site.",
       "open": "Open the project"
+    },
+    "step": {
+      "closed": "How it ended",
+      "decision": "Decide",
+      "lines": "What they asked for",
+      "deadline": "Deadline",
+      "suppliers": "Ask suppliers",
+      "prices": "Prices in",
+      "offer": "Offer out",
+      "clientAnswer": "Their order",
+      "delivery": "Bon de livraison",
+      "invoice": "Facture"
     }
   },
   "search": {
@@ -4461,6 +4477,22 @@
       "force": "Deposit it anyway — I know what is missing",
       "reason": "Why",
       "action": "Record the deposit"
+    },
+    "run": {
+      "title": "Where this tender is",
+      "nothing": "Nothing is waiting. The envelope has been deposited."
+    },
+    "step": {
+      "folder": "The folder",
+      "bpu": "Price the bordereau",
+      "caution": "Caution de soumission",
+      "deposit": "Deposit it",
+      "detail": {
+        "folder": "{total, plural, =0 {No piece has been recorded. The folder is whatever this cahier des charges asks for.} other {{ready} of {total} ready{blocking, plural, =0 {, and nothing would have the bid rejected.} one {, and # would have the bid rejected.} other {, and # would have the bid rejected.}}}}",
+        "bpu": "{lines, plural, =0 {No bordereau has been imported. Not every tender has one.} other {{priced} of {lines} lines priced.}}",
+        "caution": "{stage, select, received {The bond is in hand.} requested {Asked for, and not back from the bank yet.} deposited {Deposited with the bond as it stood.} other {The cahier des charges asks for a bid bond and none has been asked for.}}",
+        "deposit": "{blocking, plural, =0 {Nothing is holding the folder up. Record the deposit once the envelope is on the desk.} one {# piece would have the bid rejected. It can still be deposited, with a reason.} other {# pieces would have the bid rejected. It can still be deposited, with a reason.}}"
+      }
     }
   },
   "projects": {
