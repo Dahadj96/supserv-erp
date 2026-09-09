@@ -8,6 +8,7 @@ import {
   timestamp,
   uuid,
 } from "drizzle-orm/pg-core";
+import { deal } from "./deal";
 import { intakeAttachment, intakeMessage } from "./intake";
 
 /**
@@ -24,6 +25,24 @@ export const intakeDossier = pgTable("intake_dossier", {
   /** Where it came from, when it came from somewhere. */
   messageId: uuid("message_id").references(() => intakeMessage.id),
   attachmentId: uuid("attachment_id").references(() => intakeAttachment.id),
+
+  /**
+   * WHERE IT WENT — the deal its confirmed fields were carried onto (task 2.4).
+   *
+   * Until this column existed, the pipeline ended at `extraction_field`: six
+   * facts a person had checked against the page they came from, sitting in a
+   * table nothing outside screen 40 reads. A deadline confirmed on Tuesday did
+   * not appear on the deal, and `deal.required_validity_days` and
+   * `deal.late_penalty` had no writer anywhere in the application.
+   *
+   * Written by `commitDossierToDeal`, which is a person pressing a button —
+   * never by the reader. It records that the carrying HAPPENED, so a second
+   * press is visible as one and so screen 06 can link back to the document a
+   * field came from. It is not a claim that every field made it: which ones
+   * did is in the audit entry, because some are skipped and the reason
+   * matters.
+   */
+  dealId: uuid("deal_id").references(() => deal.id),
 
   filename: text("filename").notNull(),
   storagePath: text("storage_path").notNull(),

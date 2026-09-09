@@ -1,0 +1,2 @@
+ALTER TABLE "intake_dossier" ADD COLUMN "deal_id" uuid;--> statement-breakpoint
+ALTER TABLE "intake_dossier" ADD CONSTRAINT "intake_dossier_deal_id_deal_id_fk" FOREIGN KEY ("deal_id") REFERENCES "public"."deal"("id") ON DELETE no action ON UPDATE no action;

@@ -7,8 +7,9 @@ import { FileViewer } from "@/components/ui/file-viewer";
 import { fileId } from "@/domain/files";
 import { previewMode } from "@/domain/files/serving";
 import { loadReview, pageText, REVIEW_THRESHOLD } from "@/domain/intake/dossier";
+import { dealBehindDossier } from "@/domain/intake/dossier-commit";
 import { Link } from "@/i18n/navigation";
-import { confirm, confirmAll, reject } from "./actions";
+import { carryToDeal, confirm, confirmAll, reject } from "./actions";
 
 /**
  * Screen 40 — Review what we read.
@@ -53,10 +54,17 @@ export default async function ReviewPage({
   searchParams,
 }: {
   params: Promise<{ locale: string; id: string }>;
-  searchParams: Promise<{ page?: string; field?: string; confirmed?: string; view?: string }>;
+  searchParams: Promise<{
+    page?: string;
+    field?: string;
+    confirmed?: string;
+    view?: string;
+    carried?: string;
+    error?: string;
+  }>;
 }) {
   const { locale, id } = await params;
-  const { page: rawPage, field: activeField, confirmed, view } = await searchParams;
+  const { page: rawPage, field: activeField, confirmed, view, carried, error } = await searchParams;
   setRequestLocale(locale);
   const t = await getTranslations();
 
@@ -70,6 +78,22 @@ export default async function ReviewPage({
   const text = await pageText(id, current);
 
   const focused = review.fields.find((f) => f.id === activeField) ?? open[0] ?? null;
+
+  /*
+    THE LAST ARROW — task 2.4.
+
+    Six facts a person has checked against the page they came from used to stop
+    here, in `extraction_field`, which nothing outside this screen reads. The
+    deal they are about is the one the MESSAGE this document arrived on became,
+    so nothing has to be picked from a list: screen 02 wrote that link when
+    somebody turned the message into a deal.
+
+    Offered, never taken. LAW 2 governs the field itself and the same reasoning
+    governs what is done with it — the button is a person's act, and until it is
+    pressed the deal is untouched.
+  */
+  const settled = review.fields.filter((f) => f.status === "confirmed" || f.status === "corrected");
+  const onwardDeal = settled.length > 0 || review.dealId ? await dealBehindDossier(id) : null;
 
   /*
     THE DOCUMENT ITSELF, NOT ONLY WHAT WE MADE OF IT — task 1.7.
@@ -135,6 +159,56 @@ export default async function ReviewPage({
         <p className="mx-4 md:mx-7 mt-4 rounded-[var(--radius-control)] bg-good-bg px-4 py-2.5 text-tiny text-good-ink">
           {t("review.confirmedCount", { count: Number(confirmed) })}
         </p>
+      ) : null}
+
+      {carried ? (
+        <p className="mx-4 md:mx-7 mt-4 rounded-[var(--radius-control)] bg-good-bg px-4 py-2.5 text-tiny text-good-ink">
+          {t("review.carriedDone")}
+        </p>
+      ) : null}
+
+      {error ? (
+        <p className="mx-4 md:mx-7 mt-4 rounded-[var(--radius-control)] bg-critical-bg px-4 py-2.5 text-tiny leading-relaxed text-critical-ink">
+          {t.has(`review.error.${error}`) ? t(`review.error.${error}`) : error}
+        </p>
+      ) : null}
+
+      {/*
+        WHERE THESE FACTS GO — task 2.4.
+
+        Only once something has been confirmed, because a screen offering to
+        carry nothing is a button that does nothing. What it will not do is
+        overwrite: a deal that already has a deadline keeps it, and the field
+        that was not written is reported rather than applied, because the
+        deadline on the deal may have been typed by somebody who read the
+        covering email and the newest reading is not automatically the truest.
+      */}
+      {onwardDeal ? (
+        <div className="mx-4 md:mx-7 mt-4 flex flex-wrap items-center gap-3 rounded-[var(--radius-control)] border border-line bg-plane px-4 py-3">
+          {review.dealId ? (
+            <p className="text-tiny leading-relaxed text-secondary">
+              {t("review.alreadyCarried")}{" "}
+              <Link
+                href={`/deals/${onwardDeal.id}`}
+                className="text-accent-ink underline underline-offset-2"
+              >
+                {onwardDeal.subject}
+              </Link>
+            </p>
+          ) : (
+            <>
+              <p className="min-w-0 flex-1 text-tiny leading-relaxed text-secondary">
+                {t("review.carryTo", { deal: onwardDeal.subject, n: settled.length })}
+              </p>
+              <form action={carryToDeal.bind(null, locale, id)}>
+                <input type="hidden" name="dealId" value={onwardDeal.id} />
+                <Button type="submit" variant="primary" size="small">
+                  {t("review.carry")}
+                </Button>
+              </form>
+            </>
+          )}
+        </div>
       ) : null}
 
       {review.unreadPages.length > 0 ? (

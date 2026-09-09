@@ -39,6 +39,15 @@ const EXPECTED: Record<string, string[]> = {
   "inbox/actions.ts:syncMailbox": ["inbox.view"],
   "inbox/dossier/[id]/review/actions.ts:confirm": ["inbox.view"],
   "inbox/dossier/[id]/review/actions.ts:confirmAll": ["inbox.view"],
+  /*
+    The one action on screen 40 that writes outside the intake tables (2.4).
+    Confirming a reading is the work of whoever read the page, so it stops at
+    `inbox.view`; carrying those readings onto a deal sets its submission
+    deadline and its offer validity, so it is gated where the record lives.
+    `offers.issue` is the permission 2.1 chose for "Make this a tender" on the
+    same deal, and both change what the company commits itself to.
+  */
+  "inbox/dossier/[id]/review/actions.ts:carryToDeal": ["inbox.view", "offers.issue"],
   "inbox/dossier/[id]/review/actions.ts:reject": ["inbox.view"],
   "inbox/dossier/[id]/review/actions.ts:uploadDossier": ["inbox.view"],
   // Pointing the scanner at a folder is a company setting, not a mail action.

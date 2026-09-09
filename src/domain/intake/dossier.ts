@@ -258,6 +258,12 @@ export type Review = {
   fields: ReviewField[];
   /** Screen 40's "field 3 of 24". */
   confirmedCount: number;
+  /**
+   * The deal these readings have already been carried onto, when somebody has
+   * carried them (task 2.4). Null is the ordinary state and means the last
+   * arrow of the pipeline has not been walked yet.
+   */
+  dealId: string | null;
 };
 
 export async function loadReview(dossierId: string): Promise<Review | null> {
@@ -300,6 +306,7 @@ export async function loadReview(dossierId: string): Promise<Review | null> {
     fields,
     confirmedCount: fields.filter((f) => f.status === "confirmed" || f.status === "corrected")
       .length,
+    dealId: dossier.dealId,
   };
 }
 

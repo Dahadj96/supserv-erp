@@ -802,6 +802,14 @@
     "becomesFact": "This is the only place extraction becomes fact. A wrong deadline or a missing document on this list loses the bid — so a person confirms every field against the page it came from.",
     "confirmedCount": "{count, plural, =0 {Nothing was confident enough to confirm on its own.} =1 {1 field confirmed.} other {# fields confirmed.}}",
     "unreadPages": "{count, plural, =1 {Page {pages} could not be read} other {Pages {pages} could not be read}} — they are scans, and the OCR step is not running on this machine yet. Everything else on this screen came from pages that were read.",
+    "carryTo": "{n, plural, one {# confirmed fact} other {# confirmed facts}} on this document belong to {deal}. Carrying them sets the deal's deadline, validity and penalty from what you confirmed.",
+    "carry": "Put these on the deal",
+    "carriedDone": "Carried onto the deal. Anything already filled in was left as it was — open the deal to see what it holds now.",
+    "alreadyCarried": "These readings have already been put on",
+    "error": {
+      "noDeal": "This document is not attached to a deal yet. Open the message it arrived on and turn it into a deal first.",
+      "notAllowed": "You may confirm readings, but putting them on a deal needs the permission that issues offers."
+    },
     "textLayer": "Text layer — no OCR needed",
     "partiallyRead": "Partially read",
     "pageOf": "page {page} / {pages}",

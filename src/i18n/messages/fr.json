@@ -802,6 +802,14 @@
     "becomesFact": "C'est le seul endroit où l'extraction devient un fait. Une échéance erronée ou un document manquant dans cette liste fait perdre le marché — alors une personne confirme chaque champ face à la page dont il vient.",
     "confirmedCount": "{count, plural, =0 {Rien n'était assez sûr pour être confirmé tout seul.} =1 {1 champ confirmé.} other {# champs confirmés.}}",
     "unreadPages": "{count, plural, =1 {La page {pages} n'a pas pu être lue} other {Les pages {pages} n'ont pas pu être lues}} — ce sont des scans, et l'étape OCR ne tourne pas encore sur cette machine. Tout le reste de cet écran vient de pages qui ont été lues.",
+    "carryTo": "{n, plural, one {# fait confirmé} other {# faits confirmés}} sur ce document concernent {deal}. Les reporter renseigne l'échéance, le délai de validité et les pénalités de l'affaire à partir de ce que vous avez confirmé.",
+    "carry": "Reporter sur l'affaire",
+    "carriedDone": "Reporté sur l'affaire. Ce qui était déjà renseigné a été laissé tel quel — ouvrez l'affaire pour voir ce qu'elle contient maintenant.",
+    "alreadyCarried": "Ces lectures ont déjà été reportées sur",
+    "error": {
+      "noDeal": "Ce document n'est rattaché à aucune affaire. Ouvrez le message par lequel il est arrivé et transformez-le d'abord en affaire.",
+      "notAllowed": "Vous pouvez confirmer des lectures, mais les reporter sur une affaire demande la permission qui émet les offres."
+    },
     "textLayer": "Couche texte — pas d'OCR nécessaire",
     "partiallyRead": "Lu partiellement",
     "pageOf": "page {page} / {pages}",

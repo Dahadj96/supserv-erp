@@ -10,6 +10,7 @@ import {
   rejectField,
   UnreadableKind,
 } from "@/domain/intake/dossier";
+import { commitDossierToDeal, NoDealForDossier } from "@/domain/intake/dossier-commit";
 import { redirect } from "@/i18n/navigation";
 
 /**
@@ -56,6 +57,48 @@ export async function confirmAll(locale: string, dossierId: string) {
   const { confirmed } = await confirmAllHighConfidence(dossierId, session.userId);
   revalidatePath(`/${locale}/inbox/dossier/${dossierId}/review`);
   redirect({ href: `/inbox/dossier/${dossierId}/review?confirmed=${confirmed}`, locale });
+}
+
+/**
+ * Carry the confirmed fields onto the deal — the last arrow in the pipeline.
+ *
+ * `offers.issue` on top of `inbox.view`, and that is the point of the sentence
+ * at the top of this file: confirming a reading is the work of whoever read the
+ * page, but this WRITES ON A DEAL, so it is gated where the record lives. A
+ * server action is a public endpoint; a person allowed to triage the inbox and
+ * not to commit a deal must not be able to set its submission deadline by
+ * posting to this one.
+ *
+ * The same permission 2.1 chose for "Make this a tender", deliberately: both
+ * change what the company is committing itself to on a deal, and inventing a
+ * second permission for the second one would be two names for one decision.
+ */
+export async function carryToDeal(locale: string, dossierId: string, formData: FormData) {
+  const session = await requireUser(locale);
+  if (!can(session.role, "offers.issue")) {
+    redirect({ href: `/inbox/dossier/${dossierId}/review?error=notAllowed`, locale });
+    return;
+  }
+
+  const dealId = String(formData.get("dealId") ?? "").trim();
+  if (!dealId) {
+    redirect({ href: `/inbox/dossier/${dossierId}/review?error=noDeal`, locale });
+    return;
+  }
+
+  try {
+    await commitDossierToDeal({ dossierId, dealId, actorId: session.userId });
+  } catch (error) {
+    if (error instanceof NoDealForDossier) {
+      redirect({ href: `/inbox/dossier/${dossierId}/review?error=noDeal`, locale });
+      return;
+    }
+    throw error;
+  }
+
+  revalidatePath(`/${locale}/inbox/dossier/${dossierId}/review`);
+  revalidatePath(`/${locale}/deals/${dealId}`);
+  redirect({ href: `/inbox/dossier/${dossierId}/review?carried=1`, locale });
 }
 
 /**
