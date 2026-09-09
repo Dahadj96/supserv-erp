@@ -3515,13 +3515,15 @@
       "attachment": "Pièces jointes",
       "dossier": "Dossiers lus",
       "import": "Reprises",
-      "item": "Fiches techniques"
+      "item": "Fiches techniques",
+      "credential": "Papiers de l’entreprise"
     },
     "from": {
       "message": "Un message",
       "dossier": "Un dossier",
       "import": "Une reprise",
-      "item": "Un article"
+      "item": "Un article",
+      "credential": "Un papier de l’entreprise"
     },
     "column": {
       "name": "Fichier",
@@ -4383,6 +4385,82 @@
       "badge": "Appel d’offres · {procedure}",
       "folder": "Dossier",
       "bpu": "Bordereau"
+    },
+    "notAllowed": {
+      "work": "Constituer le dossier d’un appel d’offres relève de ceux qui répondent aux clients, et votre rôle ne le porte pas. Demandez au gérant ou à un commercial.",
+      "file": "Les papiers de l’entreprise sont conservés une seule fois et lus par tous les dossiers ouverts : les déposer relève du gérant. Cette ligne reste rouge tant que personne ne l’a fait."
+    },
+    "error": {
+      "notAllowed": "Votre rôle ne porte pas cette action. Rien n’a été modifié.",
+      "unknownCredential": "Ce n’est pas l’un des papiers d’entreprise que ce système conserve. Rien n’a été enregistré.",
+      "notADate": "Une date doit s’écrire 2026-09-30. Rien n’a été enregistré.",
+      "expiryBeforeIssue": "L’expiration précède la date de délivrance. Rien n’a été enregistré.",
+      "receivedBeforeRequested": "La caution serait revenue avant d’avoir été demandée. Vérifiez à quelle case appartient chaque date — rien n’a été enregistré.",
+      "unknownSection": "Une pièce appartient au dossier administratif, technique ou financier. Rien n’a été ajouté.",
+      "labelRequired": "Une pièce a besoin du nom que lui donne le cahier des charges. Rien n’a été ajouté.",
+      "noSuchPiece": "Cette pièce ne figure pas au dossier de cet appel d’offres. Elle a peut-être été retirée pendant que cette page était ouverte.",
+      "noSuchTender": "Cette affaire n’est pas un appel d’offres.",
+      "dossierIncomplete": "Le dossier comporte encore des pièces qui feraient rejeter l’offre. Corrigez-les, ou cochez la case et dites pourquoi il est déposé en l’état.",
+      "reasonRequired": "Déposer un dossier incomplet s’enregistre avec sa raison. Indiquez-la : elle est consignée au journal à côté de ce qui manquait.",
+      "alreadySubmitted": "Ce pli a déjà été déposé : son dossier est ce qui a été remis, et il ne change plus."
+    },
+    "saved": {
+      "credential": "Enregistré. Tous les dossiers qui demandent ce papier lisent la nouvelle date.",
+      "caution": "Enregistré.",
+      "piece": "Ajoutée au dossier de cet appel d’offres.",
+      "removed": "Retirée. Ce qu’elle était figure au journal.",
+      "submitted": "Dépôt enregistré."
+    },
+    "credential": {
+      "file": "Déposer ce papier",
+      "edit": "Modifier ce qui est au dossier",
+      "why": "Une seule ligne pour toute l’entreprise, lue d’un coup par chaque dossier ouvert. Un dossier constitué en septembre ne doit pas emporter sans le dire l’attestation de février.",
+      "reference": "Référence",
+      "note": "Note",
+      "issuedOn": "Délivré le",
+      "expiresOn": "Expire le",
+      "expiryHint": "Laissez l’expiration vide pour un papier qui n’expire pas — les statuts, le registre de commerce.",
+      "scan": "Scan",
+      "openScan": "Ouvrir ce qui est au dossier",
+      "removeScan": "Retirer ce scan",
+      "noScan": "Rien n’est au dossier, et c’est pourquoi cette pièce est rouge. Elle passe au vert dès qu’un scan est là et que son expiration dépasse la date de dépôt.",
+      "action": "Déposer"
+    },
+    "pieces": {
+      "add": {
+        "title": "Ajouter une pièce",
+        "why": "Le dossier est parti de la liste que SUPSERV porte à chaque marché d’Adrar. Ce que cet appel d’offres demande est ce que dit son cahier des charges : ajoutez ce qui manque, retirez ce qu’il ne demande pas.",
+        "label": "Le nom que lui donne le cahier des charges",
+        "labelExample": "Attestation de bonne exécution — trois marchés similaires",
+        "labelHint": "Mot pour mot depuis le document. C’est ce que quelqu’un cherchera le jour venu.",
+        "section": "Enveloppe",
+        "credential": "Satisfaite par",
+        "credentialNone": "Un document écrit pour cet appel d’offres",
+        "credentialHint": "Une pièce adossée à un papier d’entreprise hérite de son expiration et passe au rouge d’elle-même. Une pièce écrite pour cet appel d’offres est prête dès qu’un fichier lui est joint.",
+        "action": "Ajouter la pièce"
+      },
+      "remove": {
+        "action": "Retirer",
+        "deposited": "Le pli a été déposé. Son dossier est ce qui a été remis, et il ne change plus ensuite."
+      }
+    },
+    "caution": {
+      "title": "Caution de soumission",
+      "why": "La banque met plusieurs jours. Aucune des deux dates ne se déduit d’autre chose ici : elles se saisissent.",
+      "requestedAt": "Demandée le",
+      "receivedAt": "En main le",
+      "hint": "Les deux cases affichent ce qui est enregistré. En vider une retire cette date.",
+      "action": "Enregistrer"
+    },
+    "deposit": {
+      "title": "Dépôt",
+      "why": "Que le pli a été remis. La référence du récépissé est ce qui le prouve des mois plus tard, quand paraît la liste d’attribution.",
+      "receipt": "Référence du récépissé",
+      "receiptExample": "Récépissé n° 214/2026",
+      "blocked": "{n, plural, one {# pièce ferait rejeter l’offre} other {# pièces feraient rejeter l’offre}} si ce dossier est déposé en l’état.",
+      "force": "Déposer quand même — je sais ce qui manque",
+      "reason": "Pourquoi",
+      "action": "Enregistrer le dépôt"
     }
   },
   "projects": {

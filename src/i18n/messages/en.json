@@ -3515,13 +3515,15 @@
       "attachment": "Attachments",
       "dossier": "Read dossiers",
       "import": "Imports",
-      "item": "Technical files"
+      "item": "Technical files",
+      "credential": "Company papers"
     },
     "from": {
       "message": "A message",
       "dossier": "A dossier",
       "import": "An import",
-      "item": "An item"
+      "item": "An item",
+      "credential": "A company paper"
     },
     "column": {
       "name": "File",
@@ -4383,6 +4385,82 @@
       "badge": "Tender · {procedure}",
       "folder": "Tender folder",
       "bpu": "Bordereau"
+    },
+    "notAllowed": {
+      "work": "Assembling this tender's folder is the work of whoever answers clients, and your role does not carry it. Ask the gérant or a commercial.",
+      "file": "The company's own papers are held once and read by every open folder, so filing one is the gérant's. Ask him — this row stays red until somebody does."
+    },
+    "error": {
+      "notAllowed": "Your role does not carry that press. Nothing was changed.",
+      "unknownCredential": "That is not one of the company papers this system holds. Nothing was saved.",
+      "notADate": "A date has to read 2026-09-30. Nothing was saved.",
+      "expiryBeforeIssue": "The expiry is before the date of issue. Nothing was saved.",
+      "receivedBeforeRequested": "That would have the bond come back before it was asked for. Check which box each date belongs in — nothing was saved.",
+      "unknownSection": "A piece belongs to the dossier administratif, technique or financier. Nothing was added.",
+      "labelRequired": "A piece needs the name the cahier des charges gives it. Nothing was added.",
+      "noSuchPiece": "That piece is not on this tender's folder. It may have been removed while this page was open.",
+      "noSuchTender": "This deal is not a tender.",
+      "dossierIncomplete": "The folder still holds pieces that would have the bid rejected. Fix them, or tick the box and say why it is being deposited as it is.",
+      "reasonRequired": "Depositing an incomplete folder is recorded with the reason for it. Say why, and the reason goes in the log beside what was missing.",
+      "alreadySubmitted": "This envelope has already been deposited, so its folder is what was handed over and does not change."
+    },
+    "saved": {
+      "credential": "Filed. Every folder that asks for this paper reads the new date.",
+      "caution": "Recorded.",
+      "piece": "Added to this tender's folder.",
+      "removed": "Removed. What it was is in the audit log.",
+      "submitted": "Deposit recorded."
+    },
+    "credential": {
+      "file": "File this paper",
+      "edit": "Change what is on file",
+      "why": "One row for the whole company, read by every open folder at once. A folder assembled in September must not quietly carry February's attestation.",
+      "reference": "Reference",
+      "note": "Note",
+      "issuedOn": "Issued",
+      "expiresOn": "Expires",
+      "expiryHint": "Leave the expiry empty for a paper that does not expire — the statuts, the registre de commerce.",
+      "scan": "Scan",
+      "openScan": "Open what is on file",
+      "removeScan": "Take this scan off",
+      "noScan": "Nothing is on file, which is why this piece reads red. It turns green once a scan is here and its expiry outlasts the deposit.",
+      "action": "File it"
+    },
+    "pieces": {
+      "add": {
+        "title": "Add a piece",
+        "why": "The folder started from the list SUPSERV carries to every marché in Adrar. What this tender asks for is whatever its cahier des charges says — add what is missing, remove what it does not ask for.",
+        "label": "What the cahier des charges calls it",
+        "labelExample": "Attestation de bonne exécution — three similar marchés",
+        "labelHint": "Verbatim from the document. It is what somebody will look for on the day.",
+        "section": "Envelope",
+        "credential": "Satisfied by",
+        "credentialNone": "Something written for this tender",
+        "credentialHint": "A piece backed by a company paper inherits that paper's expiry and goes red on its own. One written for this tender is ready when a file is against it.",
+        "action": "Add the piece"
+      },
+      "remove": {
+        "action": "Remove",
+        "deposited": "The envelope has been deposited. Its folder is what was handed over, and it does not change afterwards."
+      }
+    },
+    "caution": {
+      "title": "Caution de soumission",
+      "why": "The bank takes days. Neither date can be worked out from anything else here, so both are typed in.",
+      "requestedAt": "Asked for",
+      "receivedAt": "In hand",
+      "hint": "Both boxes show what is recorded. Emptying one takes that date off.",
+      "action": "Record"
+    },
+    "deposit": {
+      "title": "Deposit",
+      "why": "That the envelope was handed over. The receipt reference is what proves it months later, when the award list appears.",
+      "receipt": "Receipt reference",
+      "receiptExample": "Récépissé n° 214/2026",
+      "blocked": "{n, plural, one {# piece would have the bid rejected} other {# pieces would have the bid rejected}} if this folder is deposited as it is.",
+      "force": "Deposit it anyway — I know what is missing",
+      "reason": "Why",
+      "action": "Record the deposit"
     }
   },
   "projects": {

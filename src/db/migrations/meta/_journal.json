@@ -414,6 +414,13 @@
       "when": 1788932039292,
       "tag": "0058_curvy_wendell_rand",
       "breakpoints": true
+    },
+    {
+      "idx": 59,
+      "version": "7",
+      "when": 1788945120754,
+      "tag": "0059_blue_smiling_tiger",
+      "breakpoints": true
     }
   ]
 }

@@ -30,6 +30,15 @@ import type { FileKind } from "./index";
  */
 export const NEEDS: Record<FileKind, Permission | null> = {
   attachment: "inbox.view",
+  /**
+   * `null`, and for the same reason as an item's datasheet: the company's own
+   * CNAS attestation is a RECORD, not correspondence. It is the paper the
+   * whole office photocopies into every folder, and the person assembling one
+   * at eight in the morning is exactly who needs to open it and check the date
+   * on it. Writing one is `settings.company` — that is a different question,
+   * and `tenders/[id]/actions.ts` answers it there.
+   */
+  credential: null,
   dossier: "inbox.view",
   import: "settings.company",
   item: null,

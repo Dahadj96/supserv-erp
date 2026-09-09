@@ -460,6 +460,8 @@ export async function saveCredential(opts: {
   issuedOn?: string | null;
   expiresOn?: string | null;
   fileId?: string | null;
+  fileName?: string | null;
+  fileType?: string | null;
   note?: string | null;
   actorId: string;
 }): Promise<void> {
@@ -469,12 +471,25 @@ export async function saveCredential(opts: {
     .where(eq(companyCredential.key, opts.key))
     .limit(1);
 
+  /**
+   * A save with no new scan keeps the one already filed.
+   *
+   * The upsert replaces the whole row, so passing `fileId: undefined` from a
+   * form where nobody attached anything would blank the path — and blanking
+   * the path takes every piece this credential backs from `ready` to `missing`
+   * on every open tender, because somebody corrected an expiry date. `null`
+   * still means "take it off", which is a different press with its own button.
+   */
+  const keepingFile = opts.fileId === undefined;
+
   const values = {
     key: opts.key,
     reference: opts.reference ?? null,
     issuedOn: opts.issuedOn ?? null,
     expiresOn: opts.expiresOn ?? null,
-    fileId: opts.fileId ?? null,
+    fileId: keepingFile ? (before?.fileId ?? null) : opts.fileId,
+    fileName: keepingFile ? (before?.fileName ?? null) : (opts.fileName ?? null),
+    fileType: keepingFile ? (before?.fileType ?? null) : (opts.fileType ?? null),
     note: opts.note ?? null,
     updatedBy: opts.actorId,
     updatedAt: new Date(),
@@ -507,6 +522,45 @@ export async function credentials(): Promise<CredentialInput[]> {
     expiresOn: row.expiresOn,
     fileId: row.fileId,
   }));
+}
+
+export type CredentialDetail = {
+  key: string;
+  reference: string | null;
+  issuedOn: string | null;
+  expiresOn: string | null;
+  fileId: string | null;
+  fileName: string | null;
+  note: string | null;
+  updatedAt: Date;
+};
+
+/**
+ * The same rows, with the three fields `dossier()` has no use for.
+ *
+ * Kept apart from `credentials()` rather than widening it: `CredentialInput`
+ * is the argument to a pure function, and the four fields on it are the four
+ * that decide a piece's state. A form needs the issue date, the note and the
+ * scan's name to show what is already filed, and none of those may reach
+ * `pieceState` and start deciding anything.
+ */
+export async function credentialDetails(): Promise<Map<string, CredentialDetail>> {
+  const rows = await db.select().from(companyCredential).orderBy(asc(companyCredential.key));
+  return new Map(
+    rows.map((row) => [
+      row.key,
+      {
+        key: row.key,
+        reference: row.reference,
+        issuedOn: row.issuedOn,
+        expiresOn: row.expiresOn,
+        fileId: row.fileId,
+        fileName: row.fileName,
+        note: row.note,
+        updatedAt: row.updatedAt,
+      },
+    ]),
+  );
 }
 
 /**
@@ -623,6 +677,25 @@ export async function tendersWithBlockedFolders(now = new Date()): Promise<Tende
   return rows.filter((row) => row.submittedAt === null && row.blocking > 0);
 }
 
+/**
+ * When the envelope was deposited, or null. One column, no folder computed.
+ *
+ * `addPiece` and `removePiece` are refused after a deposit, and screen 08 greys
+ * both buttons for the same reason — so the fact has to be readable twice, and
+ * asking `getTender` for it would compute a nineteen-piece dossier to look at
+ * one timestamp. A folder that was deposited is what was deposited: editing its
+ * list afterwards rewrites the answer to "what did we hand over", which the
+ * audit entry `markSubmitted` writes has already recorded.
+ */
+export async function tenderSubmittedAt(dealId: string): Promise<Date | null> {
+  const [row] = await db
+    .select({ submittedAt: tender.submittedAt })
+    .from(tender)
+    .where(eq(tender.dealId, dealId))
+    .limit(1);
+  return row?.submittedAt ?? null;
+}
+
 /** Used by the piece rows on screen 08 to know what may be attached. */
 export async function piecesFor(dealId: string) {
   return db
@@ -655,16 +728,38 @@ export async function addPiece(opts: {
   });
 }
 
-/** What this tender does not ask for. Removed, not hidden. */
+/**
+ * What this tender does not ask for. Removed, not hidden.
+ *
+ * The HARD RULE's words are "an audit entry that outlives the record", and
+ * until 9 September this wrote `{ removedPiece: <uuid> }` — the id of a row
+ * that no longer exists, which outlives nothing anybody can read. The row is
+ * read inside the transaction and written into `before` first, so the question
+ * six months later ("who took the caution de soumission out of this folder,
+ * and had it been filed?") has an answer. `unmakeTender` above already does
+ * this for the whole folder; this is the same rule applied one row at a time.
+ *
+ * It also refuses a piece that is not this tender's, rather than silently
+ * deleting nothing: a delete that matched no row used to return cleanly and
+ * still write an audit entry saying a piece had been removed.
+ */
 export async function removePiece(opts: {
   dealId: string;
   pieceId: string;
   actorId: string;
 }): Promise<void> {
   await db.transaction(async (tx) => {
+    const [row] = await tx
+      .select()
+      .from(tenderPiece)
+      .where(and(eq(tenderPiece.id, opts.pieceId), eq(tenderPiece.dealId, opts.dealId)))
+      .limit(1);
+    if (!row) throw new TenderRefused("noSuchPiece");
+
     await tx
       .delete(tenderPiece)
       .where(and(eq(tenderPiece.id, opts.pieceId), eq(tenderPiece.dealId, opts.dealId)));
+
     await tx.insert(auditEntry).values({
       entity: "tender",
       entityId: opts.dealId,
@@ -672,7 +767,14 @@ export async function removePiece(opts: {
       actorId: opts.actorId,
       actorKind: "user",
       sourceScreen: "08",
-      after: { removedPiece: opts.pieceId },
+      before: {
+        removedPiece: row.id,
+        key: row.key,
+        label: row.label,
+        section: row.section,
+        credentialKey: row.credentialKey,
+        fileId: row.fileId,
+      },
     });
   });
 }

@@ -152,6 +152,24 @@ const EXPECTED: Record<string, string[]> = {
   // `margin.view` and does not build offers.
   "offers/[id]/build/actions.ts:applyMarginAction": ["offers.issue", "offers.margin.view"],
   "offers/[id]/build/actions.ts:setLineAction": ["offers.issue", "offers.margin.view"],
+  // Screen 08's folder, added 9 September 2026 (task 2.7). Four of the five
+  // are `offers.issue`, the same press as "Make this a tender" above:
+  // assembling the folder, recording the bank's two dates and depositing the
+  // envelope are all the work of whoever answers clients, and a Commercial in
+  // Adrar who cannot tick off the pieces of the tender he is depositing keeps
+  // the list on paper instead.
+  "tenders/[id]/actions.ts:addPieceAction": ["offers.issue"],
+  "tenders/[id]/actions.ts:markSubmittedAction": ["offers.issue"],
+  "tenders/[id]/actions.ts:recordCautionAction": ["offers.issue"],
+  "tenders/[id]/actions.ts:removePieceAction": ["offers.issue"],
+  // The fifth is narrower, and it is the only one on the screen that is not
+  // about this tender at all. A company paper — the CNAS attestation, the
+  // statuts, the RC — is held ONCE and read by every open folder, so one wrong
+  // expiry date typed here turns nine folders green at the same moment. That
+  // is the same class of fact as the RC and the NIF on screen 85, behind the
+  // same permission. The form is greyed with the reason rather than hidden, so
+  // somebody who may not file it still sees what the folder is waiting for.
+  "tenders/[id]/actions.ts:saveCredentialAction": ["settings.company"],
   // Screen 42 imports and prices a bordereau — the same two questions.
   "tenders/[id]/bpu/actions.ts:applyErratumAction": ["offers.issue", "offers.margin.view"],
   "tenders/[id]/bpu/actions.ts:applyLastPricesAction": ["offers.issue", "offers.margin.view"],

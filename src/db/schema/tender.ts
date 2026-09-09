@@ -110,6 +110,21 @@ export const companyCredential = pgTable("company_credential", {
   /** Where the scan is, in the working store. Null means nobody has filed it. */
   fileId: text("file_id"),
 
+  /**
+   * What the scan was called and what it is, so `/api/files/credential:<key>`
+   * can send the right content type and a filename somebody recognises.
+   *
+   * Added 9 September 2026 (task 2.7). `file_id` held a path and nothing else,
+   * which is enough for `pieceState` — a piece is ready when the paper is on
+   * file — and not enough to hand the bytes back: `contentHeaders` needs a
+   * name and a declared type, and guessing either from a storage path is how a
+   * PDF gets served as `application/octet-stream` on the morning of a deposit.
+   * Both are null for a row filed before this existed; the route treats that
+   * the way it treats any other unknown type, as a download.
+   */
+  fileName: text("file_name"),
+  fileType: text("file_type"),
+
   note: text("note"),
   updatedBy: text("updated_by"),
   updatedAt: timestamp("updated_at", { withTimezone: true }).notNull().defaultNow(),

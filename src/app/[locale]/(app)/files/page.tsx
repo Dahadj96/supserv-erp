@@ -1,4 +1,4 @@
-import { CloudOff, Download, FileText, Mail, Paperclip, Table2 } from "lucide-react";
+import { CloudOff, Download, FileText, Mail, Paperclip, Stamp, Table2 } from "lucide-react";
 import { getFormatter, getTranslations, setRequestLocale } from "next-intl/server";
 import { can } from "@/auth/can";
 import { getSession } from "@/auth/session";
@@ -25,6 +25,9 @@ export const dynamic = "force-dynamic";
 
 const ICON: Record<FileKind, typeof Mail> = {
   attachment: Mail,
+  // The company's own papers — the CNAS attestation, the statuts, the RC.
+  // Screen 08 files them; this is where they are found afterwards.
+  credential: Stamp,
   dossier: FileText,
   import: Table2,
   // A datasheet or a certificate against an item — screen 77 attaches them.

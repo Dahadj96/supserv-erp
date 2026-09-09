@@ -4,6 +4,7 @@ import { intakeDossier } from "@/db/schema/dossier";
 import { importBatch } from "@/db/schema/import";
 import { intakeAttachment, intakeMessage } from "@/db/schema/intake";
 import { item, itemMedia } from "@/db/schema/item";
+import { companyCredential } from "@/db/schema/tender";
 
 /**
  * Screen 60 — Files.
@@ -17,12 +18,19 @@ import { item, itemMedia } from "@/db/schema/item";
  * that can disagree with them — the same argument `src/storage/local.ts` makes
  * about the disk, one level up.
  *
- * So this file is a VIEW. It reads the four tables that own files and unions
- * them. LAW 1: compute, do not store.
+ * So this file is a VIEW. It reads the tables that own files and unions them.
+ * LAW 1: compute, do not store.
+ *
+ * A fifth joined on 9 September 2026 (task 2.7): `company_credential`, one row
+ * per company paper, holding the scan of the CNAS attestation the whole office
+ * photocopies into every tender folder. It fits the rule rather than bending
+ * it — the credential row already owns that file, and screen 08 computes a
+ * folder piece's state from its expiry — so the only thing missing was a way
+ * to open the paper and check it is the one on file.
  */
 
 /** Which table the row came from. The id is prefixed with it, so ids are unique. */
-export const FILE_KINDS = ["attachment", "dossier", "import", "item"] as const;
+export const FILE_KINDS = ["attachment", "credential", "dossier", "import", "item"] as const;
 export type FileKind = (typeof FILE_KINDS)[number];
 
 /**
@@ -252,9 +260,59 @@ async function itemFiles(): Promise<FileRow[]> {
   }));
 }
 
+/**
+ * The company's own papers — screen 08's folder, one level up.
+ *
+ * The id is the credential KEY (`credential:cnas`), not a uuid, because the
+ * key is the primary key of the table: there is one CNAS attestation and
+ * filing a new one replaces it. That is the whole point of the row — screen
+ * 08's comment says a folder assembled in September must not quietly carry
+ * February's attestation — and it means a link printed on a tender page keeps
+ * resolving to whatever is current rather than to the scan that was current
+ * when the page was written.
+ *
+ * `filename` falls back to the key for a row filed before `file_name` existed.
+ * A row with no scan at all is not listed: there is no file to be a row about.
+ */
+async function credentialFiles(): Promise<FileRow[]> {
+  const rows = await db
+    .select({
+      key: companyCredential.key,
+      fileId: companyCredential.fileId,
+      fileName: companyCredential.fileName,
+      fileType: companyCredential.fileType,
+      at: companyCredential.updatedAt,
+    })
+    .from(companyCredential)
+    .orderBy(desc(companyCredential.updatedAt));
+
+  return rows
+    .filter((r) => pathOrNull(r.fileId) !== null)
+    .map((r) => ({
+      id: fileId("credential", r.key),
+      kind: "credential" as const,
+      filename: r.fileName ?? r.key,
+      contentType: r.fileType,
+      bytes: null,
+      storagePath: pathOrNull(r.fileId),
+      state: "stored" as BytesState,
+      at: r.at,
+      belongsTo: {
+        fallbackKey: "credential",
+        label: null,
+        // The piece labels on screen 08 are the same nine papers under the same
+        // nine keys, so the file list borrows them rather than growing a second
+        // set of names for the same documents.
+        labelKey: `tender.piece.${r.key}`,
+        href: null,
+      },
+    }));
+}
+
 export async function listFiles(kind?: FileKind): Promise<FileRow[]> {
   const parts = await Promise.all([
     !kind || kind === "attachment" ? attachmentFiles() : Promise.resolve([]),
+    !kind || kind === "credential" ? credentialFiles() : Promise.resolve([]),
     !kind || kind === "dossier" ? dossierFiles() : Promise.resolve([]),
     !kind || kind === "import" ? importFiles() : Promise.resolve([]),
     !kind || kind === "item" ? itemFiles() : Promise.resolve([]),
@@ -270,6 +328,7 @@ export async function fileCounts(): Promise<FileCounts> {
   return {
     all: all.length,
     attachment: all.filter((f) => f.kind === "attachment").length,
+    credential: all.filter((f) => f.kind === "credential").length,
     dossier: all.filter((f) => f.kind === "dossier").length,
     import: all.filter((f) => f.kind === "import").length,
     item: all.filter((f) => f.kind === "item").length,
