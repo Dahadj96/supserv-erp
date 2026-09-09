@@ -851,6 +851,33 @@ French is unchanged and stays idiomatic: *Affaire* and *Chantier*. The route
 every saved link for a word, and the label is what a person reads. Task 3.3
 carries this out; anything written before 3.3 ships should already use it.
 
+### Wave 1 is written and nobody has seen it work (1.4–1.8)
+
+Five tasks shipped on 9 September and **none of them is live**. Port 3000 still
+serves the build from before 1.4: a commit is not a deployment. `pnpm build` has
+been run and succeeded, so the only thing left needs Abdou's own machine and
+Administrator, which a scheduled run cannot answer.
+
+1. **Double-click `restart-erp.cmd`** in `C:\SUPSERV-ERP` and say yes to the
+   prompt. Then `pnpm smoke`. Nothing from 1.4 to 1.8 is visible until this
+   happens.
+
+2. **Start a worker if none is running** — `tasklist /FI "IMAGENAME eq node.exe"`
+   and `type .data\worker.log`. The three queues (`mailbox.poll`,
+   `attachment.fetch`, `dossier.read`) are all emptied by it, and nothing in
+   wave 1 happens without one. The scheduled task that would survive a reboot is
+   the one command under Known gaps (1.10), still unrun, still Administrator.
+
+Then a real message with a `dossier.zip` or a `.docx` is the acceptance test for
+all five at once: the files inside the archive appear on screen 40, each
+openable; a CCTP is read without anybody uploading it; and the deadline it
+proposes is checked against the document itself on screen 40, not against our
+transcription of it.
+
+**This is also what unblocks 1.9.** That task says in its own words not to start
+until 1.1–1.8 are in daily use, and "daily use" cannot begin until the restart
+above. It is marked blocked rather than skipped.
+
 ---
 
 ## Progress log
