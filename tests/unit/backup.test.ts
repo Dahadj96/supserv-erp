@@ -1,9 +1,18 @@
 import { describe, expect, it } from "vitest";
 import {
   assessBackup,
+  assessRun,
   type BackupReceipt,
   type BackupState,
+  checkNewDestination,
+  driveOf,
+  envValueFrom,
+  localStamp,
+  parseCopyName,
+  planDestination,
+  RUN_WINDOW_MINUTES,
   STALE_DAYS,
+  scheduleFrom,
 } from "@/domain/control/backup";
 
 /**
@@ -111,5 +120,174 @@ describe("what the ERP says about its own backup", () => {
     for (const one of cases) {
       expect(known).toContain(assessBackup(one, NOW).state);
     }
+  });
+});
+
+/**
+ * Task U1 — what screen 66b reads before the script has run again.
+ *
+ * The state under test is the one this installation is actually in and nobody
+ * could see: BACKUP_LOCAL_PATH is a Linux path on a Windows machine, so the
+ * script ignores it and every copy lands on the disk holding the database. It
+ * is proved here rather than on the machine, because a test that needs a
+ * Windows box to run is a test that does not run.
+ */
+const ENV = [
+  "# ---- backup",
+  "BACKUP_LOCAL_PATH=/mnt/usb-backup          # external SSD, plugged in",
+  "BACKUP_SHAREPOINT_FOLDER=/Backups/ERP      # off-site, already paid for",
+  "BACKUP_ENCRYPTION_KEY=secret",
+  "BACKUP_AT=02:30                            # nightly",
+].join("\n");
+
+const REPO = "C:\\SUPSERV-ERP";
+const noDrives = () => false;
+const allDrives = () => true;
+
+describe("reading .env the way backup.ps1 reads it", () => {
+  it("takes the value and drops the trailing comment", () => {
+    expect(envValueFrom(ENV, "BACKUP_LOCAL_PATH")).toBe("/mnt/usb-backup");
+    expect(envValueFrom(ENV, "BACKUP_AT")).toBe("02:30");
+  });
+
+  it("is null for a key that is absent, so nothing downstream invents one", () => {
+    expect(envValueFrom(ENV, "BACKUP_NOWHERE")).toBeNull();
+    expect(envValueFrom("BACKUP_LOCAL_PATH=", "BACKUP_LOCAL_PATH")).toBeNull();
+  });
+
+  it("does not match a key that merely ends with the name", () => {
+    // `OLD_BACKUP_AT=23:00` must not answer for `BACKUP_AT`.
+    expect(envValueFrom("OLD_BACKUP_AT=23:00", "BACKUP_AT")).toBeNull();
+  });
+
+  it("falls back to the time install-services.ps1 registers the task with", () => {
+    expect(scheduleFrom(ENV)).toEqual({ at: "02:30", fromEnv: true });
+    expect(scheduleFrom("")).toEqual({ at: "02:30", fromEnv: false });
+    // A time that is not a time is not a schedule. Reporting it would be the
+    // screen repeating a typo back as if it were the truth.
+    expect(scheduleFrom("BACKUP_AT=whenever")).toEqual({ at: "02:30", fromEnv: false });
+  });
+});
+
+describe("where the next backup will actually be written", () => {
+  it("refuses the POSIX path this machine has been configured with, and says so", () => {
+    const plan = planDestination("/mnt/usb-backup", { repo: REPO, driveExists: allDrives });
+    expect(plan.refusal).toBe("notWindowsPath");
+    expect(plan.resolved).toBe("C:\\SUPSERV-ERP\\.data\\backups");
+    // The whole point: the copies are on the disk they are meant to protect.
+    expect(plan.sameDrive).toBe(true);
+  });
+
+  it("falls back the same way when nothing is set at all", () => {
+    const plan = planDestination(null, { repo: REPO, driveExists: allDrives });
+    expect(plan.refusal).toBe("notSet");
+    expect(plan.sameDrive).toBe(true);
+  });
+
+  it("refuses a rooted path whose drive is not plugged in", () => {
+    const plan = planDestination("D:\\supserv-backups", { repo: REPO, driveExists: noDrives });
+    expect(plan.refusal).toBe("driveMissing");
+    expect(plan.resolved).toBe("C:\\SUPSERV-ERP\\.data\\backups");
+  });
+
+  it("uses a real drive as written, and stops warning once it is another one", () => {
+    const plan = planDestination("D:\\supserv-backups", { repo: REPO, driveExists: allDrives });
+    expect(plan.refusal).toBeNull();
+    expect(plan.resolved).toBe("D:\\supserv-backups");
+    expect(plan.sameDrive).toBe(false);
+  });
+
+  it("still warns when the destination is a folder on the ERP's own drive", () => {
+    // Configured, existing, writable — and useless against the disk failing.
+    const plan = planDestination("C:\\backups", { repo: REPO, driveExists: allDrives });
+    expect(plan.refusal).toBeNull();
+    expect(plan.sameDrive).toBe(true);
+  });
+
+  it("does not call a network share the same drive as anything", () => {
+    const plan = planDestination("\\\\nas\\backups", { repo: REPO, driveExists: allDrives });
+    expect(plan.refusal).toBeNull();
+    expect(plan.sameDrive).toBe(false);
+  });
+
+  it("reads a drive letter without caring how it was typed", () => {
+    expect(driveOf("c:\\x")).toBe("C:");
+    expect(driveOf("\\\\nas\\share")).toBeNull();
+  });
+});
+
+describe("what may be typed into the destination box", () => {
+  it("refuses the drive the ERP is on, which the script itself tolerates", () => {
+    // Stricter than backup.ps1 on purpose: the script has to keep working on a
+    // machine nobody has fixed; a person typing this is choosing it.
+    expect(checkNewDestination("C:\\backups", REPO)).toBe("sameDrive");
+  });
+
+  it("refuses a POSIX path, blank, and a bare folder name", () => {
+    expect(checkNewDestination("/mnt/usb-backup", REPO)).toBe("notWindowsPath");
+    expect(checkNewDestination("   ", REPO)).toBe("blank");
+    expect(checkNewDestination("backups", REPO)).toBe("notWindowsPath");
+  });
+
+  it("accepts another drive and a network share", () => {
+    expect(checkNewDestination("D:\\supserv-backups", REPO)).toBeNull();
+    expect(checkNewDestination("\\\\nas\\supserv", REPO)).toBeNull();
+  });
+});
+
+describe("how far back the copies go", () => {
+  it("reads the date out of the file name, which is what the script stamps", () => {
+    const parsed = parseCopyName("supserv-2026-09-09-0230.dump");
+    expect(parsed?.kind).toBe("database");
+    expect(parsed?.stamp).toBe("2026-09-09-0230");
+    expect(parsed?.takenAt.getFullYear()).toBe(2026);
+    expect(parsed?.takenAt.getHours()).toBe(2);
+    expect(parseCopyName("files-2026-08-30-1741.zip")?.kind).toBe("files");
+  });
+
+  it("ignores anything that is not one of the two shapes it writes", () => {
+    // `last-backup.json` sits in the same folder, and a half-copied file must
+    // never be counted as a backup somebody could restore from.
+    expect(parseCopyName("last-backup.json")).toBeNull();
+    expect(parseCopyName("supserv-2026-09-09-0230.dump.part")).toBeNull();
+    expect(parseCopyName("before-restore-2026-09-09-0230.dump")).toBeNull();
+  });
+});
+
+describe("a run started from the screen", () => {
+  const now = new Date("2026-09-09T10:00:00");
+  const started = { startedAt: localStamp(new Date("2026-09-09T09:58:00")), by: "Abdou" };
+
+  it("says nothing at all when nobody has started one", () => {
+    expect(assessRun(null, null, now).state).toBe("idle");
+  });
+
+  it("says running while no receipt newer than the marker exists", () => {
+    const run = assessRun(started, receipt({ finishedAt: "2026-09-09T02:30:12" }), now);
+    expect(run.state).toBe("running");
+    expect(run.by).toBe("Abdou");
+  });
+
+  it("goes quiet the moment the script writes its receipt", () => {
+    // The receipt is the answer to the marker. Nothing clears the marker file —
+    // it does not have to, because the comparison is the state.
+    const run = assessRun(started, receipt({ finishedAt: "2026-09-09T09:59:30" }), now);
+    expect(run.state).toBe("idle");
+  });
+
+  it("stops claiming a run is in progress once the task's own limit has passed", () => {
+    const old = {
+      startedAt: localStamp(new Date(now.getTime() - (RUN_WINDOW_MINUTES + 1) * 60_000)),
+      by: "Abdou",
+    };
+    expect(assessRun(old, receipt({ finishedAt: "2026-09-08T02:30:12" }), now).state).toBe(
+      "noReceipt",
+    );
+  });
+
+  it("writes the marker in the same shape the receipt uses, with no zone", () => {
+    // A marker in UTC against a receipt in local time is an hour of wrongness
+    // in Algeria, and it always errs towards "still running".
+    expect(localStamp(new Date(2026, 8, 9, 2, 30, 12))).toBe("2026-09-09T02:30:12");
   });
 });

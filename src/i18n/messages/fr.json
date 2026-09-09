@@ -1436,6 +1436,10 @@
         "what": "Où vivent les octets, et ce que la base et le disque se disent l'un de l'autre",
         "unbuilt": "Demande Graph Files.ReadWrite restreint à un seul site SharePoint — la même conversation que la boîte partagée, et elle n'a pas eu lieu. Les documents vont sur le volume de travail en attendant."
       },
+      "backup": {
+        "name": "Sauvegarde",
+        "what": "Quand elle tourne, où elle écrit, et si la dernière a été prouvée restaurable"
+      },
       "compliance": {
         "name": "Profil de conformité",
         "what": "Les règles qui bloquent, chacune avec son autorité et la personne qui l'a confirmée",
@@ -3589,6 +3593,121 @@
     "noPreviewYet": "pas d’aperçu",
     "notCopiedYet": "Pas encore copiée"
   },
+  "backup": {
+    "title": "Sauvegarde",
+    "subtitle": "Quand elle tourne, où elle écrit, et si la dernière a été prouvée restaurable.",
+    "notPermitted": "L'endroit où les données de la société sont copiées relève de l'infrastructure, pas d'une préférence — la même permission que Stockage et que le journal d'audit. Demandez au Gérant.",
+    "openStorage": "Stockage et fichiers",
+    "intro": "Chaque nuit, une tâche planifiée sur cette machine exporte toute la base et compresse les fichiers de travail. Elle restaure ensuite cet export dans une base d'essai et compare ligne par ligne, table par table, avec la base vivante — et elle refuse de qualifier la sauvegarde de bonne tant que les deux ne concordent pas exactement. Cette seconde moitié est ce qui sépare une sauvegarde d'un espoir.",
+    "savedDestination": "Écrit dans .env. La prochaine sauvegarde ira là. Lancez-en une maintenant pour le prouver aujourd'hui plutôt que cette nuit.",
+    "run": {
+      "now": "Lancer une sauvegarde",
+      "started": "Lancée. Elle prend quelques minutes — l'essentiel est la restauration de contrôle. Rechargez cette page : la carte de la dernière exécution, ci-dessous, dira si elle a abouti.",
+      "busy": "Une exécution lancée {when} n'a pas encore écrit son reçu.",
+      "notWindows": "La sauvegarde est un script PowerShell pour cette machine Windows, et cette copie de l'ERP ne tourne pas sous Windows. Il n'y a rien à lancer ici.",
+      "running": "Une sauvegarde lancée {when} par {who} est encore en cours. L'essentiel du temps est la restauration de contrôle. Rechargez cette page dans quelques minutes.",
+      "noReceipt": "Une sauvegarde a été lancée {when} par {who} et n'a jamais écrit de reçu. Plus de deux heures ont passé, soit davantage que ce que la tâche planifiée s'autorise. Lisez .data\\backup-run.log — c'est exactement ce que le script a imprimé."
+    },
+    "sameDrive": {
+      "title": "Chaque sauvegarde est écrite sur le même disque que la base de données.",
+      "becauseNotWindowsPath": "BACKUP_LOCAL_PATH dans .env vaut {configured}. C'est un chemin Linux et ceci est une machine Windows : le script le refuse et écrit dans {resolved} — à l'intérieur du dossier de l'ERP lui-même.",
+      "becauseNotSet": "BACKUP_LOCAL_PATH n'est pas renseigné dans .env, donc le script écrit dans {resolved} — à l'intérieur du dossier de l'ERP lui-même.",
+      "becauseDriveMissing": "BACKUP_LOCAL_PATH dans .env vaut {configured}, et le lecteur {drive} n'est pas branché sur cette machine : le script écrit donc dans {resolved}.",
+      "becauseChosen": "BACKUP_LOCAL_PATH vaut {configured}, qui est sur le même lecteur que l'ERP et sa base.",
+      "covers": "Cela couvre une erreur — une suppression de trop, un import raté, une migration qui a mal tourné — et rien d'autre. Un disque mort, une machine volée ou un incendie emporte l'ERP et chacune de ces copies au même instant.",
+      "fix": "Le correctif : branchez un disque externe, créez-y un dossier, et saisissez ce dossier dans « Où elle écrit ». La prochaine sauvegarde ira là, sans rien redémarrer."
+    },
+    "error": {
+      "blank": "Saisissez un dossier.",
+      "notWindowsPath": "Ce n'est pas un chemin Windows complet. Il doit commencer par une lettre de lecteur — D:\\supserv-backups — ou par deux antislashs pour un partage réseau.",
+      "sameDrive": "Ce dossier est sur le même lecteur que l'ERP, ce qui est précisément ce contre quoi la sauvegarde doit protéger. Choisissez un dossier sur un autre lecteur.",
+      "noSuchFolder": "Il n'y a aucun dossier à ce chemin sur cette machine. Créez-le d'abord : une destination qui n'existe pas à 02:30 redevient silencieusement le repli.",
+      "notWritable": "Le dossier existe, mais ce compte ne peut pas y écrire. Rien n'a été modifié.",
+      "envUnexpected": "Le fichier .env ne contient pas exactement une ligne BACKUP_LOCAL_PATH : rien n'a été modifié. Renseignez-la à la main.",
+      "notAllowed": "Cela demande la permission des paramètres de la société.",
+      "notWindows": "La sauvegarde est un script PowerShell pour cette machine Windows, et cette copie de l'ERP ne tourne pas sous Windows. Il n'y a rien à lancer ici.",
+      "unknown": "Quelque chose a été refusé sans dire quoi. Rien n'a été modifié."
+    },
+    "last": {
+      "title": "La dernière exécution",
+      "state": {
+        "never": "Jamais faite",
+        "failing": "Non prouvée",
+        "stale": "Périmée",
+        "sameDisk": "Même disque",
+        "good": "Bonne"
+      },
+      "none": "Aucune sauvegarde n'a jamais abouti sur cette machine, ou le reçu qu'elle écrit a disparu. Rien dans cet ERP n'a été copié nulle part — chaque affaire, chaque document, chaque règlement n'existe qu'une fois, sur ce disque.",
+      "verifiedYes": "Prouvée : l'export a été restauré dans une base d'essai, et {tables} tables et {rows} lignes ont été comparées, toutes concordantes.",
+      "verifiedNo": "Non prouvée. L'export a été écrit mais jamais relu : personne ne sait s'il se restaure. Lancez-en une maintenant et lisez ce qu'elle dit.",
+      "finishedAt": "Terminée",
+      "today": "aujourd'hui",
+      "daysAgo": "{days, plural, one {il y a # jour} other {il y a # jours}}",
+      "destination": "Écrite dans",
+      "database": "Export de la base",
+      "files": "Fichiers de travail"
+    },
+    "takes": {
+      "title": "Ce qu'elle emporte, et ce qu'elle laisse exprès",
+      "database": "Toute la base : chaque société, affaire, document, article, règlement et entrée d'audit, en un seul pg_dump.",
+      "files": "Les fichiers de travail : pièces jointes récupérées, dossiers scannés et classeurs en attente d'import, en un seul .zip.",
+      "notEnv": "Pas .env. Il contient le secret client Microsoft, le mot de passe de la base et le secret d'authentification : une copie de tout cela sur un disque dans un tiroir est une copie des identifiants de la société dans un tiroir. Reconstruire une machine, c'est écrire un nouveau .env à partir de .env.example et du gestionnaire de mots de passe.",
+      "notBuild": "Pas .next, l'application construite. pnpm build la refabrique depuis l'historique git : la copier chaque nuit reviendrait à copier quelque chose déjà conservé ailleurs, mieux."
+    },
+    "copies": {
+      "title": "Les copies qui existent",
+      "unreadable": "Ce dossier ne peut pas être lu d'ici. S'il est sur un lecteur non branché, les copies sont sur le lecteur et ne sont pas perdues — branchez-le et rechargez.",
+      "none": "Il n'y a encore aucun fichier de sauvegarde dans ce dossier.",
+      "range": "{count} exports de base et {archives} archives de fichiers, {size} au total.",
+      "back": "Le plus loin où vous pourriez remonter aujourd'hui est donc le {oldest}.",
+      "name": "Fichier",
+      "taken": "Prise le",
+      "size": "Taille",
+      "andMore": "et {count} plus anciennes, non listées.",
+      "pair": "L'export restaure les enregistrements ; le .zip du même horodatage restaure les fichiers. L'un sans l'autre est une demi-restauration.",
+      "retention": "Le script garde chaque sauvegarde des 14 derniers jours, plus la première de chaque mois pendant un an — ainsi une erreur que personne n'a vue pendant trois semaines a encore une bonne copie derrière elle."
+    },
+    "restore": {
+      "title": "Restaurer",
+      "noButton": "Il n'y a pas de bouton de restauration sur cet écran, exprès. Restaurer dans la base vivante remplace chacun de ses enregistrements, et scripts\\server\\restore.ps1 refuse de tourner tant que quelque chose sert sur le port 3000 — c'est-à-dire cet ERP, en train de dessiner cette page. Un bouton ici ne pourrait exécuter que la moitié inoffensive, et un bouton « Restaurer » qui ne restaure pas est pire que pas de bouton du tout.",
+      "drill": "L'exercice. Cinq minutes, rien de vivant n'est touché : il liste ce qui existe, restaure l'export le plus récent dans une base d'essai et compte ce qui revient.",
+      "drillCmd": "powershell -ExecutionPolicy Bypass -File scripts\\server\\restore.ps1",
+      "real": "Le vrai cas, quand la machine est revenue et que la base est vide ou fausse. Arrêtez l'ERP d'abord. Le script exporte ce qui se trouve dans la base vivante avant de la remplacer, de sorte même une restauration faite par erreur reste réversible.",
+      "realCmd": "powershell -ExecutionPolicy Bypass -File scripts\\server\\restore.ps1 -From supserv-2026-09-09-0230.dump -Into supserv -Force",
+      "filesToo": "La base n'est qu'une moitié. Les fichiers sont un .zip à part, à décompresser à la main dans le dossier de stockage — et Stockage et fichiers est l'écran qui dit si les deux moitiés concordent.",
+      "runbook": "Toute la procédure, étape par étape : docs\\RUNBOOK.md."
+    },
+    "when": {
+      "title": "Quand elle tourne",
+      "daily": "Chaque jour à {at}.",
+      "fromEnv": "D'après BACKUP_AT dans .env.",
+      "default": "La valeur par défaut — .env ne dit rien.",
+      "catchUp": "Si la machine était éteinte à {at}, la tâche se lance dès qu'elle est rallumée. Une nuit manquée est rattrapée, pas sautée.",
+      "task": "C'est la tâche planifiée SUPSERV backup, exécutée en tant que SYSTEM. L'heure est figée dans cette tâche au moment où elle est enregistrée : changer BACKUP_AT ne suffit donc pas seul, il faut relancer scripts\\server\\install-services.ps1 en Administrateur, sinon la tâche garde l'ancienne heure."
+    },
+    "where": {
+      "title": "Où elle écrit",
+      "configured": ".env indique",
+      "notSetValue": "rien",
+      "ignored": "Le script",
+      "refusal": {
+        "notSet": "aucune valeur",
+        "notWindowsPath": "l'ignore — pas un chemin Windows",
+        "driveMissing": "l'ignore — lecteur non branché"
+      },
+      "resolved": "La prochaine écrira dans",
+      "field": "Un dossier sur un autre lecteur",
+      "hint": "Un chemin Windows complet, comme D:\\supserv-backups. Il doit déjà exister, être accessible en écriture depuis cette machine, et se trouver sur une autre lettre de lecteur que l'ERP. Il est écrit dans .env, que le script de sauvegarde relit à chaque exécution — la prochaine sauvegarde l'utilisera sans qu'on redémarre quoi que ce soit.",
+      "save": "Enregistrer la destination",
+      "driveCaveat": "Deux partitions d'un même disque physique ressemblent d'ici à deux lecteurs : ce contrôle porte sur la lettre de lecteur et ne peut pas porter sur le disque. Le lecteur qui compte est celui qu'on peut débrancher et sortir du bâtiment."
+    },
+    "offsite": {
+      "title": "Hors de cette machine",
+      "named": ".env nomme un dossier hors site, {folder}, et rien n'y dépose quoi que ce soit. Il n'y a dans le script de sauvegarde aucune ligne qui parle à SharePoint, et rien d'autre dans l'ERP ne copie une sauvegarde ailleurs. Chaque copie est sur cette machine.",
+      "notNamed": "Rien ne copie de sauvegarde hors de cette machine. Chaque copie est sur le lecteur nommé ci-dessus.",
+      "what": "Tant qu'une copie ne sort pas du bâtiment, la sauvegarde ne couvre que les erreurs."
+    }
+  },
   "storage": {
     "title": "Stockage et fichiers",
     "subtitle": "Deux endroits, et l'état réel de chacun — lu sur le disque, pas sur un compteur.",
@@ -3654,7 +3773,8 @@
       "failingWhy": "La dernière exécution n'a pas relu sa copie : personne ne sait si elle est restaurable. Lancez scripts\\server\\backup.ps1 à la main et lisez ce qu'il dit.",
       "staleWhy": "Une sauvegarde tourne chaque nuit. Celle-ci est plus ancienne : la tâche planifiée ne tourne pas. Vérifiez : Get-ScheduledTask -TaskName 'SUPSERV backup'.",
       "sameDiskWhy": "Cette sauvegarde est sur le même disque que la base qu'elle protège. Elle couvre une erreur, rien d'autre — ni le disque, ni la machine, ni le local. Branchez le disque externe et renseignez BACKUP_LOCAL_PATH.",
-      "drill": "Preuve : scripts\\server\\restore.ps1 restaure la copie la plus récente dans une base d'essai et compte ce qui revient. Rien de vivant n'est touché."
+      "drill": "Preuve : scripts\\server\\restore.ps1 restaure la copie la plus récente dans une base d'essai et compte ce qui revient. Rien de vivant n'est touché.",
+      "openScreen": "Sauvegarde et restauration"
     }
   },
   "emailTemplates": {
@@ -3794,7 +3914,8 @@
       "personnel_candidate": "Ligne de liste restreinte",
       "bpu_mapping": "correspondance de colonnes",
       "bpu_erratum": "erratum au bordereau",
-      "sweep": "Effacement groupé"
+      "sweep": "Effacement groupé",
+      "backup": "Sauvegarde"
     },
     "action": {
       "alias": {
@@ -3845,7 +3966,8 @@
       "applyLastPrices": "a repris les derniers prix payés",
       "sweep": "Effacé en une fois",
       "credit": "Annulé par un avoir",
-      "unmake": "N’est plus un appel d’offres"
+      "unmake": "N’est plus un appel d’offres",
+      "run": "Exécution lancée"
     }
   },
   "complianceNow": {

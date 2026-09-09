@@ -248,6 +248,21 @@ const EXPECTED: Record<string, string[]> = {
   "assistant/proposals/actions.ts:proposeRelanceAction": ["*caller"],
 
   // ── Settings and setup are the Gérant's ──────────────────────────────────
+  /*
+    Screen 66b, added 9 September 2026 (task U1). `settings.company` — the same
+    permission `/settings/storage` and `/settings/audit` already hold, because
+    where the company's data is copied to is infrastructure and not a
+    preference. Starting a run is behind it too: backup.ps1 drops and recreates
+    a scratch database and reads every row of the live one, which is not a thing
+    anybody who can merely see a screen should be able to set off.
+
+    There is no restore action, on purpose and not by omission — restoring into
+    the live database replaces every record in it, and restore.ps1 refuses while
+    anything is serving on port 3000, which is the process a button here would
+    be running inside. The screen prints the command and says why instead.
+  */
+  "settings/backup/actions.ts:runBackupNowAction": ["settings.company"],
+  "settings/backup/actions.ts:saveDestinationAction": ["settings.company"],
   "settings/compliance/actions.ts:confirmRuleAction": ["settings.company"],
   "settings/compliance/actions.ts:seedRulesAction": ["settings.company"],
   "settings/compliance/actions.ts:unconfirmRuleAction": ["settings.company"],

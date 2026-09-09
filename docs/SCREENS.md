@@ -119,6 +119,7 @@ nothing gets built into this ERP without a line saying what it is for.
 | `/projects/new` | 15 Projects — open one on an enquiry the client said yes to |
 | `/projects/[id]/situation` | 16 Project detail — the next situation, typed against the marché's bordereau |
 | `/projects/[id]/amendment` | 16 Project detail — the avenant, typed against the same bordereau |
+| `/settings/backup` | 66 Storage and files — the backup half: when it runs, where it goes, whether the last one was proved restorable, and the two things a person may do about it |
 | `/settings/clear` | 83 Deleted — the one act that fills it: everything typed before a chosen moment, previewed then binned |
 | `/settings/compliance/one-pager` | 69 Compliance profile — the printable sheet |
 | `/setup/identity` | 85 Day one — step 1 |

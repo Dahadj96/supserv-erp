@@ -339,6 +339,15 @@ export default async function StoragePage({ params }: { params: Promise<{ locale
             <p className="mt-2 text-micro leading-relaxed text-muted">
               {t("storage.backup.drill")}
             </p>
+            {/* Task U1. This card is a chip and four numbers; the screen it now
+                links to is where the schedule, the destination, the copies that
+                exist and the button that runs one live. */}
+            <Link
+              href="/settings/backup"
+              className="mt-3 inline-block text-tiny text-accent-ink hover:underline"
+            >
+              {t("storage.backup.openScreen")}
+            </Link>
           </section>
         </div>
       </div>

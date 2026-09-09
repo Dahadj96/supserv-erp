@@ -1436,6 +1436,10 @@
         "what": "Where the bytes live, and what the database and the disk say about each other",
         "unbuilt": "Needs Graph Files.ReadWrite scoped to one SharePoint site — the same conversation as the mailbox, and it has not been had. Documents go to the working volume until then."
       },
+      "backup": {
+        "name": "Backup",
+        "what": "When it runs, where it goes, and whether the last one was proved restorable"
+      },
       "compliance": {
         "name": "Compliance profile",
         "what": "The rules that block, each with its authority and the person who confirmed it",
@@ -3589,6 +3593,121 @@
     "noPreviewYet": "no preview yet",
     "notCopiedYet": "Not copied yet"
   },
+  "backup": {
+    "title": "Backup",
+    "subtitle": "When it runs, where it goes, and whether the last one was proved restorable.",
+    "notPermitted": "Where this company's data is copied to is infrastructure, not a preference — the same permission as Storage and the audit log. Ask the Gérant.",
+    "openStorage": "Storage and files",
+    "intro": "Every night a scheduled task on this machine dumps the whole database and zips the working files. It then restores that dump into a scratch database and compares every row of every table against the live one, and refuses to call the backup good unless the two agree exactly. That second half is the difference between a backup and a hope.",
+    "savedDestination": "Saved to .env. The next backup writes there. Run one now if you want it proved today rather than tonight.",
+    "run": {
+      "now": "Run one now",
+      "started": "Started. It takes a few minutes — most of it is the restore-and-compare. Reload this page; the last-run card below is what will say it worked.",
+      "busy": "A run started {when} has not written its receipt yet.",
+      "notWindows": "The backup is a PowerShell script for this Windows machine, and this copy of the ERP is not running on Windows. There is nothing here to start.",
+      "running": "A backup started {when} by {who} is still running. Most of the time is the restore-and-compare. Reload this page in a few minutes.",
+      "noReceipt": "A backup was started {when} by {who} and never wrote a receipt. More than two hours have passed, which is longer than the scheduled task is allowed to take. Read .data\\backup-run.log — that is exactly what the script printed."
+    },
+    "sameDrive": {
+      "title": "Every backup is being written to the same disk as the database.",
+      "becauseNotWindowsPath": "BACKUP_LOCAL_PATH in .env is {configured}. That is a Linux path and this is a Windows machine, so the script refuses it and writes to {resolved} instead — inside the ERP's own folder.",
+      "becauseNotSet": "BACKUP_LOCAL_PATH is not set in .env, so the script writes to {resolved} — inside the ERP's own folder.",
+      "becauseDriveMissing": "BACKUP_LOCAL_PATH in .env is {configured}, and drive {drive} is not plugged into this machine, so the script writes to {resolved} instead.",
+      "becauseChosen": "BACKUP_LOCAL_PATH is {configured}, which is on the same drive as the ERP and its database.",
+      "covers": "That covers a mistake — a wrong delete, a bad import, a migration that went sideways — and nothing else. A dead disk, a stolen machine or a fire takes the ERP and every one of these copies with it, at the same moment.",
+      "fix": "The fix: plug in an external drive, make a folder on it, and type that folder into “Where it goes”. The next backup lands there and nothing needs restarting."
+    },
+    "error": {
+      "blank": "Type a folder.",
+      "notWindowsPath": "That is not a full Windows path. It has to start with a drive letter — D:\\supserv-backups — or with two backslashes for a network share.",
+      "sameDrive": "That folder is on the same drive as the ERP, which is the one thing this is meant to protect against. Choose a folder on another drive.",
+      "noSuchFolder": "There is no folder at that path on this machine. Create it first: a destination that does not exist at 02:30 silently becomes the fallback again.",
+      "notWritable": "The folder is there, but this account cannot write in it. Nothing was changed.",
+      "envUnexpected": "The .env file does not hold exactly one BACKUP_LOCAL_PATH line, so nothing was changed. Set it by hand.",
+      "notAllowed": "That needs the company settings permission.",
+      "notWindows": "The backup is a PowerShell script for this Windows machine, and this copy of the ERP is not running on Windows. There is nothing here to start.",
+      "unknown": "Something was refused and did not say what. Nothing was changed."
+    },
+    "last": {
+      "title": "The last run",
+      "state": {
+        "never": "Never taken",
+        "failing": "Not proved",
+        "stale": "Out of date",
+        "sameDisk": "Same disk",
+        "good": "Good"
+      },
+      "none": "No backup has ever finished on this machine, or the receipt it writes is gone. Nothing in this ERP has been copied anywhere — every deal, document and payment exists once, on this disk.",
+      "verifiedYes": "Proved: the dump was restored into a scratch database, and {tables} tables and {rows} rows were compared, all matching.",
+      "verifiedNo": "Not proved. The dump was written but never read back, so nobody knows whether it restores. Run one now and read what it says.",
+      "finishedAt": "Finished",
+      "today": "today",
+      "daysAgo": "{days, plural, one {# day ago} other {# days ago}}",
+      "destination": "Written to",
+      "database": "Database dump",
+      "files": "Working files"
+    },
+    "takes": {
+      "title": "What it takes, and what it deliberately does not",
+      "database": "The whole database: every company, deal, document, item, payment and audit entry, as one pg_dump.",
+      "files": "The working files: fetched attachments, scanned dossiers and workbooks waiting to be imported, as one .zip.",
+      "notEnv": "Not .env. It holds the Microsoft client secret, the database password and the auth secret, and a copy of those on a drive in a drawer is a copy of the company's credentials in a drawer. Rebuilding a machine means writing a new .env from .env.example and the password manager.",
+      "notBuild": "Not .next, the built application. pnpm build makes it again from the git history, so copying it every night would be copying something already kept somewhere safer."
+    },
+    "copies": {
+      "title": "The copies that exist",
+      "unreadable": "That folder cannot be read from here. If it is on a drive that is not plugged in, the copies are on the drive and not lost — plug it in and reload.",
+      "none": "There are no backup files in that folder yet.",
+      "range": "{count} database dumps and {archives} file archives, {size} in all.",
+      "back": "So the furthest back you could restore to today is {oldest}.",
+      "name": "File",
+      "taken": "Taken",
+      "size": "Size",
+      "andMore": "and {count} older, not listed.",
+      "pair": "A dump restores the records; the .zip with the same stamp restores the files. One without the other is half a restore.",
+      "retention": "The script keeps every backup from the last 14 days, plus the first one of each month for a year — so a mistake nobody noticed for three weeks still has a good copy behind it."
+    },
+    "restore": {
+      "title": "Restoring",
+      "noButton": "There is no restore button on this screen, on purpose. Restoring into the live database replaces every record in it, and scripts\\server\\restore.ps1 refuses to run while anything is serving on port 3000 — which is this ERP, drawing this page. A button here could only ever run the harmless half, and a button labelled Restore that cannot restore is worse than no button at all.",
+      "drill": "The drill. Five minutes, nothing live is touched: it lists what exists, restores the newest dump into a scratch database and counts what came back.",
+      "drillCmd": "powershell -ExecutionPolicy Bypass -File scripts\\server\\restore.ps1",
+      "real": "The real thing, when the machine is back and the database is empty or wrong. Stop the ERP first. It dumps whatever is in the live database before replacing it, so even a mistaken restore can be undone.",
+      "realCmd": "powershell -ExecutionPolicy Bypass -File scripts\\server\\restore.ps1 -From supserv-2026-09-09-0230.dump -Into supserv -Force",
+      "filesToo": "The database is one half. The files are a separate .zip, expanded by hand into the storage folder — and Storage and files is the screen that says whether the two halves agree.",
+      "runbook": "The whole procedure, step by step: docs\\RUNBOOK.md."
+    },
+    "when": {
+      "title": "When it runs",
+      "daily": "Every day at {at}.",
+      "fromEnv": "From BACKUP_AT in .env.",
+      "default": "The default — .env does not say.",
+      "catchUp": "If the machine was switched off at {at}, the task runs as soon as it is switched on again. A missed night is caught up, not skipped.",
+      "task": "It is the scheduled task SUPSERV backup, running as SYSTEM. The time is baked into that task when it is registered, so changing BACKUP_AT is not enough on its own: run scripts\\server\\install-services.ps1 as Administrator afterwards, or the task keeps the old time."
+    },
+    "where": {
+      "title": "Where it goes",
+      "configured": ".env says",
+      "notSetValue": "nothing",
+      "ignored": "The script",
+      "refusal": {
+        "notSet": "no value set",
+        "notWindowsPath": "ignores it — not a Windows path",
+        "driveMissing": "ignores it — drive not plugged in"
+      },
+      "resolved": "Next run writes to",
+      "field": "A folder on another drive",
+      "hint": "A full Windows path, like D:\\supserv-backups. It must already exist, be writable from this machine, and be on a different drive letter from the ERP. It is written into .env, which the backup script reads on every run — so the next backup uses it without anything being restarted.",
+      "save": "Save destination",
+      "driveCaveat": "Two partitions of one physical disk look like two drives from here, so this checks the drive letter and cannot check the disk. A drive that can be unplugged and carried out of the building is the one worth having."
+    },
+    "offsite": {
+      "title": "Off this machine",
+      "named": ".env names an off-site folder, {folder}, and nothing uploads to it. There is no code in the backup script that talks to SharePoint, and nothing else in the ERP copies a backup anywhere. Every copy is on this machine.",
+      "notNamed": "Nothing copies a backup off this machine. Every copy is on the drive named above.",
+      "what": "Until a copy leaves the building, the backup covers mistakes only."
+    }
+  },
   "storage": {
     "title": "Storage and files",
     "subtitle": "Two places, and the real state of each — read off the disk, not off a counter.",
@@ -3654,7 +3773,8 @@
       "failingWhy": "The last run did not read its dump back, so nobody knows whether it can be restored. Run scripts\\server\\backup.ps1 by hand and read what it says.",
       "staleWhy": "A backup runs every night. This one is older than that, so the scheduled task is not running. Check it: Get-ScheduledTask -TaskName 'SUPSERV backup'.",
       "sameDiskWhy": "This backup is on the same disk as the database it protects. It covers a mistake and nothing else - not the disk, not the machine, not the room. Plug in the external drive and set BACKUP_LOCAL_PATH.",
-      "drill": "Prove it: scripts\\server\\restore.ps1 restores the newest dump into a scratch database and counts what comes back. Nothing live is touched."
+      "drill": "Prove it: scripts\\server\\restore.ps1 restores the newest dump into a scratch database and counts what comes back. Nothing live is touched.",
+      "openScreen": "Backup and restore"
     }
   },
   "emailTemplates": {
@@ -3794,7 +3914,8 @@
       "personnel_candidate": "Shortlist entry",
       "bpu_mapping": "column mapping",
       "bpu_erratum": "bordereau erratum",
-      "sweep": "Bulk clear"
+      "sweep": "Bulk clear",
+      "backup": "Backup"
     },
     "action": {
       "alias": {
@@ -3845,7 +3966,8 @@
       "applyLastPrices": "applied the last prices paid",
       "sweep": "Cleared in one act",
       "credit": "Cancelled by avoir",
-      "unmake": "No longer a tender"
+      "unmake": "No longer a tender",
+      "run": "Run started"
     }
   },
   "complianceNow": {

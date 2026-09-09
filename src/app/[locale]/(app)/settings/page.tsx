@@ -12,6 +12,7 @@ import { documentTemplate } from "@/db/schema/document-template";
 import { documentType } from "@/db/schema/document-type";
 import { emailTemplate } from "@/db/schema/email-template";
 import { intakeChannel } from "@/db/schema/intake";
+import { type BackupState, backupReport } from "@/domain/control/backup";
 import { moduleCounts } from "@/domain/control/modules";
 import { fileCounts } from "@/domain/files";
 import { setupState } from "@/domain/setup";
@@ -53,6 +54,10 @@ export default async function SettingsPage({ params }: { params: Promise<{ local
   // The same union screen 60 lists, counted. It reads five tables, which is
   // why it is awaited beside `setupState` rather than in the batch below.
   const files = await fileCounts();
+  // Task U1. Reads a JSON receipt off the disk, not a table — the row can say
+  // "3 days ago" rather than "set", which is the only chip on this hub whose
+  // wrong reading costs the company its records.
+  const backup = await backupReport();
 
   const [
     [banks],
@@ -89,6 +94,19 @@ export default async function SettingsPage({ params }: { params: Promise<{ local
       .where(and(eq(emailTemplate.active, true), ne(emailTemplate.body, ""))),
     db.select({ n: sql<number>`count(*)::int` }).from(auditEntry),
   ]);
+
+  /**
+   * The backup row is the one chip on this hub that is a verdict rather than a
+   * count, so it carries the same tones screen 66 uses: amber for a backup that
+   * works but sits on the wrong disk, red for one nobody can restore.
+   */
+  const BACKUP_TONE: Record<BackupState, BadgeTone> = {
+    never: "critical",
+    failing: "critical",
+    stale: "critical",
+    sameDisk: "warning",
+    good: "good",
+  };
 
   const done = (label?: string) => ({
     tone: "good" as BadgeTone,
@@ -151,6 +169,21 @@ export default async function SettingsPage({ params }: { params: Promise<{ local
     {
       key: "control",
       entries: [
+        /*
+          Task U1. Not in "What comes in" beside Storage, though that is where
+          the bytes are: Storage answers "where do the files live", and this
+          answers "does any of it survive the disk". Storage's own backup card
+          links here, so the person who starts from the file question still
+          arrives.
+        */
+        {
+          key: "backup",
+          href: "/settings/backup",
+          state: {
+            tone: BACKUP_TONE[backup.state],
+            label: t(`backup.last.state.${backup.state}`),
+          },
+        },
         { key: "compliance", href: "/settings/compliance", state: null },
         { key: "bin", href: "/settings/bin", state: null },
         // Beside the bin, because it is the same act and lands in the same
