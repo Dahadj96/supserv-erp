@@ -43,6 +43,14 @@ export type ExpandOutcome = {
   outcome: "expanded" | "already" | "notArchive" | "noBytes" | "nested" | "refused";
   /** Files written as rows. */
   files?: number;
+  /**
+   * The rows that were written, so the caller can queue what happens next.
+   *
+   * Returned rather than acted on: a file that came out of an archive wants
+   * reading (1.8) exactly as much as one that arrived on its own, and whether
+   * to queue that is the worker's business, not this function's.
+   */
+  fileIds?: string[];
   /** Entries inside the archive that were skipped, each with its reason. */
   refused?: ZipRefusal[];
   reason?: string;
@@ -123,7 +131,7 @@ export async function expandArchiveFor(attachmentId: string): Promise<ExpandOutc
     return { outcome: "refused", reason };
   }
 
-  let files = 0;
+  const fileIds: string[] = [];
 
   for (const entry of reading.entries) {
     // The row first, then the bytes: the storage path is keyed on the row's own
@@ -163,16 +171,20 @@ export async function expandArchiveFor(attachmentId: string): Promise<ExpandOutc
       .set({ storagePath: path, sha256: sha256(entry.bytes) })
       .where(eq(intakeAttachment.id, childId));
 
-    files++;
+    fileIds.push(childId);
   }
 
   const result: ExpandOutcome = {
     outcome: "expanded",
-    files,
+    files: fileIds.length,
+    fileIds,
     ...(reading.refused.length > 0 ? { refused: reading.refused } : {}),
   };
 
-  await log(row.id, result);
+  // The ids are for the caller, not for the trail: an audit entry listing
+  // fifteen uuids says nothing a person can read, and each of those rows keeps
+  // its own entries.
+  await log(row.id, { ...result, fileIds: undefined });
   return result;
 }
 

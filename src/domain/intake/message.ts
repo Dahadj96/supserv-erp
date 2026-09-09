@@ -1,5 +1,6 @@
 import { and, asc, desc, eq, gt, isNull, lt, ne } from "drizzle-orm";
 import { db } from "@/db";
+import { intakeDossier } from "@/db/schema/dossier";
 import { intakeAttachment, intakeMessage } from "@/db/schema/intake";
 import { party } from "@/db/schema/party";
 import { plainText } from "./body";
@@ -32,6 +33,14 @@ export type MessageAttachment = {
    * under the archive rather than beside it.
    */
   parentAttachmentId: string | null;
+  /**
+   * The reading of this file, once one exists (task 1.8).
+   *
+   * An extraction nobody can reach from the message it arrived on is an
+   * extraction nobody knows happened — screen 39's "Read so far" list is a log,
+   * not a route. This is the link from the paperclip to what was read from it.
+   */
+  dossierId: string | null;
 };
 
 export type MessageDetail = {
@@ -104,6 +113,23 @@ export async function messageDetail(id: string): Promise<MessageDetail | null> {
     .where(eq(intakeAttachment.messageId, id))
     .orderBy(asc(intakeAttachment.filename));
 
+  /*
+    The readings, in a second query rather than a join.
+
+    A join to `intake_dossier` would multiply this list the day an attachment
+    has two readings — which is exactly what a re-read would be — and the list
+    of files on a message must be the files on the message. One query, matched
+    in memory, over a handful of rows.
+  */
+  const readings = await db
+    .select({ id: intakeDossier.id, attachmentId: intakeDossier.attachmentId })
+    .from(intakeDossier)
+    .where(eq(intakeDossier.messageId, id));
+
+  const readingOf = new Map(
+    readings.filter((r) => r.attachmentId).map((r) => [r.attachmentId as string, r.id]),
+  );
+
   const raw = row.raw as { webLink?: string; downgraded?: boolean } | null;
   const hoursLeft = row.deadlineAt
     ? Math.round((row.deadlineAt.getTime() - Date.now()) / 3_600_000)
@@ -131,7 +157,7 @@ export async function messageDetail(id: string): Promise<MessageDetail | null> {
     webLink: raw?.webLink ?? null,
     committedEntity: row.committedEntity,
     committedEntityId: row.committedEntityId,
-    attachments: files,
+    attachments: files.map((file) => ({ ...file, dossierId: readingOf.get(file.id) ?? null })),
   };
 }
 

@@ -3382,6 +3382,7 @@
     "showFile": "Afficher",
     "hideFile": "Masquer",
     "filesInside": "{n, plural, one {# fichier à l’intérieur} other {# fichiers à l’intérieur}}",
+    "reviewWhatWasRead": "Vérifier ce qui a été lu",
     "noPreviewYet": "pas d’aperçu",
     "notCopiedYet": "pas encore copiée ici",
     "copiesArriveLater": "Les pièces jointes sont copiées en arrière-plan : un fichier peut figurer ici avant que sa copie n’arrive. L’original reste dans Outlook dans tous les cas."

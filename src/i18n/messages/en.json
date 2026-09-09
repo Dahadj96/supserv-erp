@@ -3382,6 +3382,7 @@
     "showFile": "Show",
     "hideFile": "Hide",
     "filesInside": "{n, plural, one {# file inside} other {# files inside}}",
+    "reviewWhatWasRead": "Review what was read",
     "noPreviewYet": "no preview yet",
     "notCopiedYet": "not copied here yet",
     "copiesArriveLater": "Attachments are copied in the background, so a file can be listed here before its copy arrives. The original stays in Outlook either way."

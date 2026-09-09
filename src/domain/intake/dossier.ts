@@ -80,6 +80,19 @@ export async function ingestDocument(opts: {
   mime?: string | null;
   messageId?: string;
   attachmentId?: string;
+  /**
+   * Where the bytes ALREADY are, when something else stored them first.
+   *
+   * An attachment read automatically (1.8) has been in the working store since
+   * the fetcher put it there, and copying it to `dossiers/<id>/` would keep a
+   * second copy of every dossier this company is ever sent, on a mini PC, for
+   * no gain: nothing edits either copy, and both are served by the same route.
+   * The dossier points at the attachment's own path instead.
+   *
+   * Two rows claiming one file is not a lie and screen 66 reads it correctly —
+   * what that screen looks for is the opposite, a file no row claims.
+   */
+  storagePath?: string;
 }): Promise<{ dossierId: string; fields: number; unreadPages: number[] }> {
   const kind = dossierKindOf(opts.filename, opts.mime);
   // Nothing is stored and no row is written: a file this cannot read is not a
@@ -101,9 +114,11 @@ export async function ingestDocument(opts: {
     .returning({ id: intakeDossier.id });
 
   const dossierId = row?.id as string;
-  const path = storagePathFor(dossierId, opts.filename);
+  const path = opts.storagePath ?? storagePathFor(dossierId, opts.filename);
 
-  await storageFor("working").put({ path, body: opts.body, mime: format.mime });
+  if (!opts.storagePath) {
+    await storageFor("working").put({ path, body: opts.body, mime: format.mime });
+  }
 
   let unreadPages: number[] = [];
   let provider = kind === "pdf" ? "text-layer" : kind;

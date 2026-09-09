@@ -300,6 +300,19 @@ export default async function MessagePage({
                       ) : null}
 
                       <span className="ms-auto flex shrink-0 items-center gap-3">
+                        {/* What was READ from this file, when something read it
+                            (task 1.8). Screen 39's list is a log, not a route:
+                            an extraction nobody can reach from the message it
+                            arrived on is one nobody knows happened. */}
+                        {file.dossierId ? (
+                          <Link
+                            href={`/inbox/dossier/${file.dossierId}/review`}
+                            className="text-micro text-accent-ink hover:underline"
+                          >
+                            {t("message.reviewWhatWasRead")}
+                          </Link>
+                        ) : null}
+
                         {mode ? (
                           <Link
                             href={open ? `/inbox/${id}` : `/inbox/${id}?file=${file.id}#viewer`}

@@ -20,9 +20,29 @@ export const QUEUES = {
   mailboxPoll: "mailbox.poll",
   /** Fetch one attachment's bytes into the working store. */
   attachmentFetch: "attachment.fetch",
+  /** Read one attachment into a reviewable dossier — text, pages, proposals. */
+  dossierRead: "dossier.read",
 } as const;
 
 export type AttachmentFetchJob = { attachmentId: string };
+export type DossierReadJob = { attachmentId: string };
+
+/**
+ * How a reading is queued.
+ *
+ * Separate from the fetch because the work is different in kind: fetching is
+ * the network and worth five tries over an hour, reading is this machine's own
+ * CPU on bytes that are already here. A file that cannot be read will not read
+ * differently in ten minutes — a corrupt PDF is corrupt — so this retries twice
+ * and stops, which is enough to survive the database being restarted underneath
+ * it and not enough to grind on a bad file all afternoon.
+ *
+ * The singleton key is the attachment's own id, so a poll overlapping a
+ * backfill cannot read the same file twice.
+ */
+export function dossierReadOptions(attachmentId: string): SendOptions {
+  return { singletonKey: `read:${attachmentId}`, retryLimit: 2, retryDelay: 120 };
+}
 
 /**
  * How an attachment fetch is queued — in one place, because two callers queue
@@ -67,6 +87,7 @@ export async function boss(): Promise<PgBoss> {
     await instance.start();
     await instance.createQueue(QUEUES.mailboxPoll);
     await instance.createQueue(QUEUES.attachmentFetch);
+    await instance.createQueue(QUEUES.dossierRead);
     return instance;
   })();
 

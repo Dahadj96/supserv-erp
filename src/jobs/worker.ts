@@ -3,7 +3,15 @@ import { MailboxNotScoped } from "@/capture/mail/graph";
 import { expandArchiveFor } from "@/domain/intake/archive";
 import { fetchAttachmentFor } from "@/domain/intake/attachments";
 import { pollMailbox } from "@/domain/intake/mailbox";
-import { type AttachmentFetchJob, type MailboxPollJob, QUEUES } from "./queue";
+import { readAttachmentIntoDossier } from "@/domain/intake/reading";
+import {
+  type AttachmentFetchJob,
+  type DossierReadJob,
+  dossierReadOptions,
+  enqueue,
+  type MailboxPollJob,
+  QUEUES,
+} from "./queue";
 
 /**
  * `pnpm worker`, and `node dist/jobs/worker.js` in the compose file that has
@@ -33,6 +41,7 @@ async function main() {
   await boss.start();
   await boss.createQueue(QUEUES.mailboxPoll);
   await boss.createQueue(QUEUES.attachmentFetch);
+  await boss.createQueue(QUEUES.dossierRead);
 
   /**
    * Capture on a clock, not only on a press.
@@ -101,6 +110,26 @@ async function main() {
                 `${expansion.refused?.length ? `, ${expansion.refused.length} refused` : ""}`,
             );
           }
+
+          /*
+            AND THEN IT IS READ — task 1.8.
+
+            A file out of an archive wants reading exactly as much as one that
+            arrived on its own: a `dossier.zip` is precisely where a CCTP hides.
+            The archive itself is queued too and answers `notReadable`, which is
+            cheaper than teaching this line what an archive is.
+
+            Its own queue rather than more work here, because reading is the
+            slowest thing on this path — unpdf on a forty-page dossier — and a
+            file that fails to read must not cost the fetch that succeeded.
+          */
+          for (const id of [attachmentId, ...(expansion.fileIds ?? [])]) {
+            await enqueue(
+              QUEUES.dossierRead,
+              { attachmentId: id } satisfies DossierReadJob,
+              dossierReadOptions(id),
+            );
+          }
         }
 
         // The only outcome worth trying again. `linked` has no bytes to fetch and
@@ -114,6 +143,28 @@ async function main() {
       }
     },
   );
+
+  await boss.work<DossierReadJob>(QUEUES.dossierRead, async (jobs: Job<DossierReadJob>[]) => {
+    for (const job of jobs) {
+      const { attachmentId } = job.data;
+      const result = await readAttachmentIntoDossier(attachmentId);
+
+      console.log(
+        `[worker] read ${attachmentId}: ${result.outcome}` +
+          `${result.fields !== undefined ? ` — ${result.fields} fields proposed` : ""}` +
+          `${result.reason ? ` — ${result.reason}` : ""}`,
+      );
+
+      // `notReadable` is an image or an archive and will not become readable;
+      // `noBytes` and `gone` have nothing to read. Only a store that could not
+      // be reached, or a read that threw, is worth a second attempt — and the
+      // dossier row already records the failure either way, so nothing is lost
+      // if the retries run out.
+      if (result.outcome === "failed") {
+        throw new Error(`attachment ${attachmentId} could not be read: ${result.reason ?? "?"}`);
+      }
+    }
+  });
 
   console.log(`[worker] up. mailbox poll ${POLL_EVERY}`);
 }
