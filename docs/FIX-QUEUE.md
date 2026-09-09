@@ -386,7 +386,19 @@ Strictly sequential. Each step is useless without the one above it.
   reported here; and no document that proposed nothing before proposes
   something wrong now.
 
-- [ ] **2.4 · Confirmed extractions reach the deal**
+- [x] **2.4 · Confirmed extractions reach the deal**
+  `intake_dossier.deal_id` (migration 0058) and `commitDossierToDeal`. LAW 2
+  governs the whole module: it reads `status IN (confirmed, corrected) AND
+  confirmed_at IS NOT NULL` and nothing else, and a test proves a dossier of
+  proposed rows leaves the deal untouched. `offerValidity` writes BOTH
+  `deal.required_validity_days` and `tender.offer_validity_days`, because one
+  screen reads each. Three refusals rather than guesses — a column that already
+  has a value is reported, not overwritten; the tender fields are skipped on a
+  deal that is not one rather than failing the whole carry; and a validity in
+  months is refused rather than multiplied by thirty. On screen 40 the deal is
+  not picked from a list: `intake_message.committed_entity` already holds it.
+  Gated on `offers.issue`, the same permission 2.1 chose. What it does not do
+  is under Known gaps.
   `intake_dossier` has no `deal_id`, so six confirmed fields — submission
   deadline, opening session, place of deposit, bid bond, offer validity, late
   penalty — land in `extraction_field` and stop. Add the column and a
@@ -396,6 +408,32 @@ Strictly sequential. Each step is useless without the one above it.
   deal, and `deal.requiredValidityDays` / `requiredDeliveryDays` /
   `latePenalty` finally have a writer, so the silent checks in
   `sourcing-store.ts:268` and `offer/submit.ts:120` start firing.
+
+- [ ] **2.4c · The seventh field: how long the client gives us to deliver**
+  *Found by 2.4 on 9 September. `deal.required_delivery_days` is the one column
+  2.4's done-when named that still has no writer, and the reason is upstream:
+  `FIELD_KEYS` has six entries and none of them is a delivery time, so nothing
+  ever proposes one.*
+  Add `deliveryTime` to `FIELD_KEYS` and a rule for it, then map it onto
+  `deal.requiredDeliveryDays` in `commitDossierToDeal` beside the other six.
+  The real RFQ states it in 2.4b's exact shape — `C_RFQ-…
+  _EtenduedesFournitures_.pdf` page 3, *"5 DELAI DE LIVRAISON"* over *"Ce délai
+  devra être inférieur ou égal à 15 jours"* — so the heading window already
+  built should reach it with no new mechanism.
+  Two things to be careful of. The cue must not collide with `offerValidity`:
+  both end in a count of days and `extract.test.ts` already pins that a
+  delivery clause must NOT propose a validity, so that test becomes the
+  boundary between the two rules rather than an assertion that nothing is read.
+  And *"inférieur ou égal à 15 jours"* is a MAXIMUM the client sets, which is
+  what `requiredDeliveryDays` means — but a document that says "livraison sous
+  15 jours" is stating the same thing and one that says "à partir de 15 jours"
+  is not, so the rule reads the number and the person confirms the meaning.
+  New keys need `review.field.*` in both message files, and screen 40's label
+  list is what a person sees.
+  *Done when:* that file proposes its delivery time, a confirmed one lands on
+  `deal.required_delivery_days`, the check in `sourcing-store.ts:268` fires for
+  the first time, and the run over all 32 stored dossiers reports how many
+  documents gained a proposal they should not have.
 
 - [ ] **2.5 · A next-step panel on the deal**
   Eight cards render at once with no order. `submitChecks` in
@@ -506,6 +544,46 @@ entry, a number in a series, or anything the row is the last copy of. Until that
 decision exists, the honest options are to soften the copy or to leave the
 countdown as a promise nobody has kept — and softening copy the day before
 somebody writes the purge is its own churn.
+
+### 2.4 — `requiredDeliveryDays` has no writer, and three other things
+
+**`deal.required_delivery_days` still has none, and the reason is not this
+task.** 2.4's own done-when named it beside `requiredValidityDays` and
+`latePenalty`, and those two now have one. The third cannot: `FIELD_KEYS` has
+six entries and none of them is a delivery time, so no extraction ever produces
+the value. It is not a gap in the carrying, it is a missing seventh field in
+the reader — and the real RFQ on this database states it plainly, in
+`C_RFQ-…_EtenduedesFournitures_.pdf` page 3: *"5 DELAI DE LIVRAISON"* over
+*"Ce délai devra être inférieur ou égal à 15 jours"*, which is 2.4b's
+heading-and-clause shape exactly and would read with the window already built.
+That is **task 2.4c**, below. Until it ships, the delivery check in
+`sourcing-store.ts` goes on comparing against null.
+
+**Only a dossier that arrived by email can be carried.** The deal is found
+through `intake_message.committed_entity`, which screen 02 writes. A dossier
+somebody uploaded on screen 39 has no message and therefore no deal, and the
+panel does not appear for it — the screen says the document is not attached to
+a deal and points at the message route, which is true and unhelpful for an
+upload. A picker was deliberately not built: a select of every deal is a poor
+control and a searching one is a component, and the path that matters for
+wave 2 is the one that starts in the mailbox. The honest fix is "attach this
+dossier to a deal" on screen 39, beside the upload.
+
+**Nothing carries automatically, and nothing should — but nothing reminds
+either.** A person can confirm six fields and walk away without pressing the
+button, and the deal stays empty with the facts sitting one screen away. That
+is the correct default (LAW 2 governs the field; a person's press governs what
+is done with it), but a dossier with confirmed fields and no `deal_id` is a
+knowable state and belongs on Today, which is exactly the kind of computed fact
+screen 55 is built from. Worth doing once 2.5 exists, in the same shape.
+
+**A second carry can fill what the first could not, and that is deliberate.**
+Press it, then make the deal a tender, then press it again: the three tender
+fields land the second time, because the first run skipped them as `noTender`
+and left them unconfirmed-nothing. Nothing is duplicated — every write is
+"only if the column is empty" — and the audit trail records both presses with
+what each did. That is the intended shape and it is why the carrying is not
+one-shot.
 
 ### 2.4b — what the window still does not read, and one number to watch
 
@@ -1157,3 +1235,4 @@ above. It is marked blocked rather than skipped.
 | 2026-09-09 | 2.3 | `2d5252d` | The screen says what it noticed. Four signals were being computed and thrown away: the router reads the subject for *consultation · avis · appel d'offres* and discards that reading whenever an earlier rule wins, `attachmentLooksLike` writes `tender_dossier` on the row where nothing but a badge ever reads it, and a dossier arrives as a zip and is expanded without anybody asking what an archive on an enquiry usually means. So an RFQ that is plainly an appel d'offres opened as a plain enquiry. `tenderHint()` reads all four off one message and returns a reading rather than a verdict — which signals fired, and whether they add up. The two strong ones each carry it alone because each is somebody ELSE's word rather than our inference: the subject was typed by the authority announcing the procedure, and `tender_dossier` is the filename the sender chose. The two weak ones carry it only together — an archive by itself is a supplier's photographs as often as a dossier, and four attachments by itself is a catalogue. The procedure words are read off the seeded tender rule rather than retyped, and a test walks that rule's own list, so a word added on screen 38 is gained here and the two lists cannot drift. LAW 2 is the whole design: it writes nothing, `route()` and `classified_as` are untouched, it fires only where a person is looking, the panel prints every signal so somebody can disagree with one of them rather than with the machine, and the button is the same reclassify the select box above it already performs — after which the primary button changes from an enquiry to a tender and a person still presses the thing that creates. Quiet when the router already said tender; speaks on `needsReview`, which is where a real dossier lands when its subject is a reference number and nothing else. Attachments counted off what the MESSAGE carried, never what came out of a zip, so the archive is one signal and its contents are not eight more. Twelve tests. |
 | 2026-09-09 | 2.4a | `e9a2a38` | The answer, and neither candidate was right about why. The wire is fine: `ingestDocument` calls `proposeFields` on the pages it just read and inserts every proposal into `extraction_field`, so the pipeline does not end a function short — running it by hand over the stored page text of all 32 read dossiers reproduced **0 fields** exactly. The line-break theory is wrong too: every cue was searched again with each document's whitespace collapsed to single spaces and not one cue appeared that had not appeared already. It is the cues, and the reason is that **`RFQ-10023604-26 · Fourniture de Bureau` is a private *consultation restreinte*, not a public marché** — introduction, instructions to bidders, scope, commercial requirements, draft contract, invoicing instructions, with no *avis d'appel d'offres*, no *séance d'ouverture des plis* and no *caution de soumission*, because a private client asking six suppliers for office furniture holds none of those. The six fields `proposeFields` looks for are the six facts on the front page of a PUBLIC règlement de consultation, and this reader has not yet met one on this database; exactly two of the 32 documents contain any cue at all. **And there is no submission deadline in this dossier in any shape** — every line of all six readable files was scanned for a French date, named month or numeric, and there is not one date anywhere: the instructions *refer* to "la date limite de depot de l'offre" and never state it, because it came in the covering email. So 2.4a's own done-when cannot be met by this dossier by any reader that is not inventing one, and that is now a test asserting nothing is proposed from those two verbatim lines. One cue was taken, on evidence: the same file says at 1.6.18 "L'offre doit rester valable pour une période minimale de 180 jours calendaires", which is `offerValidity` stated as an obligation rather than labelled as a field — adding `rester valable` and `demeurer valable` takes the whole database from **0 proposals to 1** (`offerValidity = 180 jours`, 0.9, cited to page 4) with **nothing else on the database gaining anything**, which is the number that matters. The real sentence is the fixture, and so is the delivery clause it must not fire on. What was not taken is now **2.4b**: a cue in a heading never reaches its value, which makes every numbered French administrative document — a public RC included — unreadable wherever the label and the fact sit on different lines. |
 | 2026-09-09 | 2.4b | `6a72b02` | A cue in a heading reaches the value under it. `proposeFields` only ever looked inside the cue's own sentence, so a numbered French document — which says the label and then says the fact, over lines a PDF text layer has already broken — was unreadable by construction, public règlement de consultation included. The window is **two lines, measured rather than chosen**: the rate in `F_RFQ-…_Projet de Contrat.pdf` sits eleven lines below "ARTICLE 13 – PENALITES DE RETARD", and a window that spanned eleven would reach halfway into the next article and read whatever number it found there — a guess with a citation attached. It does not need to, because the document repeats its own words: clause 13.3 ends "…paiera au CLIENT des pénalités de" and the very next line opens "retard comme suit : 1 % par jour". What is crossed is a line break, not a paragraph. **The citation follows the value, not the cue** — a person confirming a rate has to see the rate on the page they are sent to, and a citation pointing at a heading is a field nobody can check, the one thing screen 40 may not produce — while `articleAbove` still names the article, so it reads "p12 · article 13" and quotes the line that states the rate. `readBelowCue` says the heading is above the line and costs 0.15, which puts every below-cue reading under the 0.8 auto-confirm threshold for all six rules. Two guards, both from real text: **dot leaders** mean a table of contents, where the line under one heading is the next heading, so such a line never looks below itself; and a **heading plus the clause under it that restates the value** is one reading arrived at twice, not two candidates — hits are made distinct by rule, page and line with the direct reading winning, without which "the document says this more than once" would have been permanently on, that being the commonest layout there is. **Measured over the 32 stored dossiers, before and after: 1 proposal → 2**, the new one `latePenalty = 1% par jour` at 0.55 with its caveat, cited to page 12 article 13; **nothing else on the database gained anything** — no CV, catalogue, invoice or company profile proposes something it did not before, which is the false-positive count the task asked for and it is zero. Six tests, every fixture verbatim from the real file. |
+| 2026-09-09 | 2.4 | `a4c57f2` | The last arrow. Six facts a person had checked against the page they came from stopped at `extraction_field`, which nothing outside screen 40 reads — so a deadline confirmed on Tuesday was still not on the deal on Friday, and `deal.required_validity_days` and `deal.late_penalty` had **no writer anywhere in `src/app`**, meaning the checks in `sourcing-store.ts` and `offer/submit.ts` that compare a supplier's answer against what the client requires had been comparing against null, silently, on every deal there has ever been. `intake_dossier.deal_id` (migration 0058, one additive column) and `commitDossierToDeal`. **LAW 2 governs the whole module**: it reads `status IN (confirmed, corrected) AND confirmed_at IS NOT NULL` and nothing else, and a test proves a dossier of proposed and rejected rows leaves the deal untouched. The mapping: deadline → `deal.deadline_at`; penalty → `deal.late_penalty` **verbatim**, because it is contractual language; validity → **both** `deal.required_validity_days` (what screen 67 checks a supplier against) and `tender.offer_validity_days` (what screen 08 reads), since writing one leaves the other screen empty, which is the shape of bug this task exists to end; place, opening session and bid bond → `tender`. **Three refusals, each rather than a guess.** A column that already has a value is left alone and reported as `alreadySet` — the deadline on the deal may have been typed by somebody who read the covering email, this dossier is one attachment of seven, and the newest reading is not automatically the truest, so the screen shows what it did not write and a person settles it. A deal with no tender row skips the three tender fields as `noTender` rather than failing the carry, because losing all six over three is worse and "Make this a tender" is one press away. A validity in months is refused as `unitNotDays` rather than multiplied by thirty: the column counts days, and an invisible assumption inside the figure that decides whether our offer still stands is not worth the convenience. A **corrected** value arrives in the format the person typed rather than as ISO, because the box is prefilled with `display` — so `dateFrom` reads ISO first and falls back to `readFrenchDateTime`, and 15/10 does not become the tenth of something; a test pins it. On screen 40 the deal is **not picked from a list**: `intake_message.committed_entity` already holds it, written by screen 02 the moment somebody turned the message into a deal, so the panel names the deal and offers, and it appears only once something has been confirmed. Gated on `offers.issue` on top of `inbox.view` — the same permission 2.1 chose for "Make this a tender", because both change what the company commits itself to, and a server action is a public endpoint a triager must not set a deadline through. Eight integration tests. |
