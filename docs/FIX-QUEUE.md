@@ -554,7 +554,7 @@ Strictly sequential. Each step is useless without the one above it.
 Do not start Wave 3 until Waves 0–2 are green and pushed. It touches many
 files and will conflict with everything above.
 
-- [ ] **3.4 · Make the honest screens reachable** *(do this one first — it is
+- [~] **3.4 · Make the honest screens reachable** *(do this one first — it is
   small and independent)*
   `/settings/modules` and `/settings/forms` exist to make gaps visible and are
   reachable from nowhere. Add them to the `/settings` hub. Same for
