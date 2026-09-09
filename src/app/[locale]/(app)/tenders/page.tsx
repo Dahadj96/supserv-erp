@@ -7,6 +7,7 @@ import { StateBlock } from "@/components/ui/state-block";
 import { badgeMessageKey } from "@/domain/deal/stage";
 import { listTenders, tenderCounts } from "@/domain/tender/store";
 import { Link } from "@/i18n/navigation";
+import { type TenderListRow, TendersList } from "./tenders-list";
 
 /**
  * Screen 07 — Tenders.
@@ -57,6 +58,66 @@ export default async function TendersPage({
     return true;
   });
 
+  const shortDay = (at: Date) => format.dateTime(at, { day: "numeric", month: "short" });
+
+  /**
+   * Task 3.6. The table is `DataTable` now, so the row that crosses to it is
+   * flat and already decided — every date formatted, every badge a tone and a
+   * label. The formatter and `deadlineDisplay`'s arithmetic stay here, where
+   * the locale and the deal's own facts already are; a client component
+   * recomputing "closing soon" would be a second opinion about the one figure
+   * this screen exists to be trusted about.
+   */
+  const listRows: TenderListRow[] = rows.map((row) => ({
+    id: row.dealId,
+    reference: row.clientReference ?? row.ref,
+    authority: row.authority,
+    object: row.object,
+    procedure: row.procedure,
+    procedureLabel: t(`tenders.procedure.${row.procedure}`),
+    procedureFormal: row.procedure === "aonr" || row.procedure === "aoo",
+    submission: t(`deal.method.${row.submissionMethod}`),
+    caution: row.cautionAmount
+      ? format.number(Number(row.cautionAmount), { maximumFractionDigits: 0 })
+      : "—",
+    percent: row.percent,
+    blocking: row.blocking,
+    closes: row.submittedAt
+      ? {
+          kind: "submitted",
+          label: t("tenders.submittedOn", { on: shortDay(row.submittedAt) }),
+          urgent: false,
+        }
+      : row.deadline.kind === "closed"
+        ? { kind: "closed", label: t(badgeMessageKey(row.badge)), urgent: false }
+        : row.deadline.kind === "none"
+          ? { kind: "none", label: t("tenders.noDeadline"), urgent: false }
+          : {
+              kind: "at",
+              label: shortDay(row.deadline.at as Date),
+              // Inside 48 hours, or already past. Both are red: a deadline that
+              // has gone is not less urgent than one that is going.
+              urgent: (row.deadline.hoursLeft ?? 0) < 48,
+            },
+  }));
+
+  const empty = (
+    /*
+      Task 3.2's block, rendered here and handed to the table. `DataTable`
+      draws it in place of the rows, so the screen has one empty state rather
+      than one above the table and one inside it.
+    */
+    <StateBlock
+      title={t("tenders.noneTitle")}
+      body={t("tenders.none")}
+      action={
+        <Link href="/deals">
+          <Button variant="primary">{t("common.openADeal")}</Button>
+        </Link>
+      }
+    />
+  );
+
   return (
     <main className="flex min-h-0 flex-1 flex-col">
       <div className="shrink-0 border-b border-line-subtle bg-surface px-4 md:px-7 py-5">
@@ -90,134 +151,17 @@ export default async function TendersPage({
         ))}
       </div>
 
-      <div className="min-h-0 flex-1 overflow-auto">
-        {rows.length === 0 ? (
-          /*
-            Task 3.2. The words were already right — 2.1 made "open the deal and
-            press Make this a tender" a true instruction rather than a
-            description of something that did not exist — and they were a grey
-            paragraph in the corner of an empty screen. `StateBlock` is what
-            screen 34 drew for this, and its `action` slot had never been used
-            outside an error page.
-          */
-          <div className="p-4 md:p-7">
-            <StateBlock
-              title={t("tenders.noneTitle")}
-              body={t("tenders.none")}
-              action={
-                <Link href="/deals">
-                  <Button variant="primary">{t("common.openADeal")}</Button>
-                </Link>
-              }
-            />
-          </div>
-        ) : (
-          <table className="w-full border-collapse text-tiny">
-            <thead>
-              <tr className="border-b border-line-subtle bg-plane text-micro text-muted">
-                <th className="px-4 md:px-7 py-2 text-start font-medium">
-                  {t("tenders.column.ref")}
-                </th>
-                <th className="px-4 py-2 text-start font-medium">
-                  {t("tenders.column.authority")}
-                </th>
-                <th className="px-4 py-2 text-start font-medium">{t("tenders.column.object")}</th>
-                <th className="px-4 py-2 text-start font-medium">
-                  {t("tenders.column.procedure")}
-                </th>
-                <th className="px-4 py-2 text-start font-medium">
-                  {t("tenders.column.submission")}
-                </th>
-                <th className="px-4 py-2 text-end font-medium">{t("tenders.column.caution")}</th>
-                <th className="px-4 py-2 text-start font-medium">{t("tenders.column.dossier")}</th>
-                <th className="px-4 md:px-7 py-2 text-start font-medium">
-                  {t("tenders.column.closes")}
-                </th>
-              </tr>
-            </thead>
-            <tbody>
-              {rows.map((row) => (
-                <tr key={row.dealId} className="border-b border-line-subtle hover:bg-plane">
-                  <td className="px-4 md:px-7 py-2.5">
-                    <Link href={`/tenders/${row.dealId}`} className="text-ink hover:underline">
-                      {/* Their reference, not ours. It is the one on every
-                          envelope and in every email about this tender. */}
-                      {row.clientReference ?? row.ref}
-                    </Link>
-                  </td>
-                  <td className="px-4 py-2.5 text-secondary">{row.authority}</td>
-                  <td className="max-w-[280px] truncate px-4 py-2.5 text-ink">{row.object}</td>
-                  <td className="px-4 py-2.5">
-                    <Badge
-                      tone={
-                        row.procedure === "aonr" || row.procedure === "aoo" ? "neutral" : "accent"
-                      }
-                    >
-                      {t(`tenders.procedure.${row.procedure}`)}
-                    </Badge>
-                  </td>
-                  <td className="px-4 py-2.5 text-secondary">
-                    {t(`deal.method.${row.submissionMethod}`)}
-                  </td>
-                  <td className="px-4 py-2.5 text-end tabular-nums text-secondary">
-                    {row.cautionAmount
-                      ? format.number(Number(row.cautionAmount), { maximumFractionDigits: 0 })
-                      : "—"}
-                  </td>
-                  <td className="px-4 py-2.5">
-                    <div className="flex items-center gap-2">
-                      <span
-                        className="h-1.5 w-[70px] overflow-hidden rounded-full bg-line"
-                        aria-hidden
-                      >
-                        <span
-                          className={`block h-full rounded-full ${
-                            row.blocking > 0
-                              ? "bg-critical"
-                              : row.percent === 100
-                                ? "bg-good"
-                                : "bg-warning"
-                          }`}
-                          style={{ width: `${row.percent}%` }}
-                        />
-                      </span>
-                      <span className="tabular-nums text-micro text-secondary">{row.percent}%</span>
-                    </div>
-                  </td>
-                  <td className="px-4 md:px-7 py-2.5">
-                    {row.submittedAt ? (
-                      <Badge tone="good">
-                        {t("tenders.submittedOn", {
-                          on: format.dateTime(row.submittedAt, { day: "numeric", month: "short" }),
-                        })}
-                      </Badge>
-                    ) : row.deadline.kind === "closed" ? (
-                      <Badge tone="neutral">{t(badgeMessageKey(row.badge))}</Badge>
-                    ) : row.deadline.kind === "none" ? (
-                      <span className="text-micro text-muted">{t("tenders.noDeadline")}</span>
-                    ) : (
-                      <Badge
-                        tone={
-                          (row.deadline.hoursLeft ?? 0) < 0
-                            ? "critical"
-                            : (row.deadline.hoursLeft ?? 0) < 48
-                              ? "critical"
-                              : "warning"
-                        }
-                      >
-                        {format.dateTime(row.deadline.at as Date, {
-                          day: "numeric",
-                          month: "short",
-                        })}
-                      </Badge>
-                    )}
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        )}
-      </div>
+      {/*
+        Task 3.6, the first of the four the audit named. The raw <table> that
+        was here had no filters, no saved views, no column menu, no sort and
+        no way to export what is on screen — every one of which `DataTable`
+        has had since screen 79 was built, on four screens out of fifty-seven.
+        CLAUDE.md: reuse, never rebuild. The facet chips above stay where they
+        are; they are counted server-side and they live in the URL, and a
+        filter panel answering the same question a second way would be two
+        controls arguing over one list.
+      */}
+      <TendersList rows={listRows} total={all.length} emptyState={empty} />
     </main>
   );
 }
