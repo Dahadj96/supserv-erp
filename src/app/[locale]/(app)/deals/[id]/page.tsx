@@ -9,6 +9,7 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { db } from "@/db";
 import { party, partyRole } from "@/db/schema/party";
+import { dealChecks, nextStep } from "@/domain/deal/checks";
 import { getDeal, NO_BID_REASONS } from "@/domain/deal/deal";
 import { requestsForDeal } from "@/domain/deal/sourcing-store";
 import { badgeMessageKey, DEADLINE_WARNING_HOURS } from "@/domain/deal/stage";
@@ -23,6 +24,13 @@ import { askSuppliersAction } from "./ask-actions";
 import { buildOfferAction } from "./build-actions";
 import { discardDealAction } from "./delete-actions";
 import { makeTenderAction, unmakeTenderAction } from "./tender-actions";
+
+/**
+ * The same four tones screen 12 gives the same four states. Copied rather than
+ * shared because it is a table of class names on one screen, and `CheckState`
+ * — the thing that would actually drift — is imported by `dealChecks` itself.
+ */
+const CHECK_TONE = { pass: "good", warn: "warning", block: "critical", note: "neutral" } as const;
 
 /**
  * Screen 06 — the enquiry.
@@ -118,6 +126,29 @@ export default async function EnquiryPage({
    */
   const mayClassify = session.role ? can(session.role, "offers.issue") : false;
   const classifyBlockedBy = mayClassify ? undefined : t("tender.make.notAllowed");
+
+  /*
+    WHAT HAPPENS NEXT — task 2.5.
+
+    Eight cards render below in the order somebody happened to write them, all
+    equally loud, and a person opening an enquiry has to read all eight to find
+    the one waiting on them. `dealChecks` answers that in the shape screens 12
+    and 18 already use, over the facts `getDeal` computed on the way in — LAW 1,
+    no column, no second opinion, and no extra query.
+
+    The draft to point at is the first offer with no number: LAW 5 says a draft
+    is not an offer out, so a deal carrying one still has something waiting, and
+    the link goes to that draft rather than to a form that makes a second.
+  */
+  const checks = dealChecks({
+    ...facts,
+    dealId: id,
+    open,
+    deadlineAt: row.deadlineAt,
+    offersDrafted: offers.length,
+    draftOfferId: offers.find((offer) => !offer.number)?.id ?? null,
+  });
+  const next = nextStep(checks);
 
   const when = new Intl.DateTimeFormat(locale === "fr" ? "fr-DZ" : "en-GB", {
     dateStyle: "medium",
@@ -271,7 +302,13 @@ export default async function EnquiryPage({
             )}
           </section>
 
-          <section className="rounded-[var(--radius-card)] border border-line bg-surface p-5">
+          {/* `id`s here and on the two cards below are what the next-step
+              panel's links land on. A check whose fix is a form on this same
+              screen should scroll to that form, not reload the page. */}
+          <section
+            id="decision"
+            className="scroll-mt-6 rounded-[var(--radius-card)] border border-line bg-surface p-5"
+          >
             <div className="flex flex-wrap items-baseline gap-x-3">
               <h2 className="text-tiny font-semibold text-ink">{t("enquiry.decision")}</h2>
               <span className="ms-auto text-micro text-muted">{t("enquiry.decisionWhy")}</span>
@@ -390,6 +427,56 @@ export default async function EnquiryPage({
         </div>
 
         <div className="flex flex-col gap-5">
+          {/*
+            WHAT HAPPENS NEXT — task 2.5, at the top of the column on purpose.
+
+            The one line under the heading is the first thing actually waiting
+            on somebody: a blocker before a warning before a note, and within
+            each, the order of the run itself. The list under it is every check,
+            so the panel says what is done as well as what is not — a screen
+            that only ever names problems teaches people that opening it is bad
+            news.
+          */}
+          <section className="rounded-[var(--radius-card)] border border-line bg-surface p-5">
+            <div className="flex flex-wrap items-baseline gap-x-3">
+              <h2 className="text-tiny font-semibold text-ink">{t("deals.next.title")}</h2>
+              <span className="ms-auto text-micro text-muted">{t("deals.next.derived")}</span>
+            </div>
+
+            <p className="mt-2 text-tiny leading-relaxed text-ink">
+              {next ? t(`deals.check.${next.key}`, next.detail ?? {}) : t("deals.next.nothing")}
+            </p>
+
+            {next?.fixHref ? (
+              <Link href={next.fixHref} className="mt-2 inline-block">
+                <Button variant="primary" size="small">
+                  {t("deals.next.go")}
+                </Button>
+              </Link>
+            ) : null}
+
+            <ul className="mt-4 flex flex-col gap-2 border-t border-line-subtle pt-3">
+              {checks.map((check) => (
+                <li key={check.key}>
+                  <div className="flex items-baseline gap-2">
+                    <p className="min-w-0 flex-1 text-micro text-secondary">
+                      {t(`deals.check.${check.key}`, check.detail ?? {})}
+                    </p>
+                    <Badge tone={CHECK_TONE[check.state]}>{t(`offer.state.${check.state}`)}</Badge>
+                  </div>
+                  {check.fixHref && check.key !== next?.key ? (
+                    <Link
+                      href={check.fixHref}
+                      className="mt-0.5 inline-block text-micro text-accent-ink hover:underline"
+                    >
+                      {t("offer.fixIt")}
+                    </Link>
+                  ) : null}
+                </li>
+              ))}
+            </ul>
+          </section>
+
           <section className="rounded-[var(--radius-card)] border border-line bg-surface p-5">
             <h2 className="text-tiny font-semibold text-ink">{t("enquiry.details")}</h2>
             <dl className="mt-3 flex flex-col gap-2.5 text-tiny">
@@ -686,7 +773,10 @@ export default async function EnquiryPage({
           </section>
 
           {open && lines.length > 0 ? (
-            <section className="rounded-[var(--radius-card)] border border-line bg-surface p-5">
+            <section
+              id="ask"
+              className="scroll-mt-6 rounded-[var(--radius-card)] border border-line bg-surface p-5"
+            >
               <h2 className="text-tiny font-semibold text-ink">{t("ask.title")}</h2>
               <p className="mt-1.5 text-micro leading-relaxed text-muted">{t("ask.hint")}</p>
 
@@ -739,7 +829,10 @@ export default async function EnquiryPage({
           ) : null}
 
           {open && lines.length > 0 ? (
-            <section className="rounded-[var(--radius-card)] border border-line bg-surface p-5">
+            <section
+              id="offer"
+              className="scroll-mt-6 rounded-[var(--radius-card)] border border-line bg-surface p-5"
+            >
               <h2 className="text-tiny font-semibold text-ink">{t("offer.build.title")}</h2>
               <p className="mt-1.5 text-micro leading-relaxed text-muted">
                 {t("offer.build.hint")}

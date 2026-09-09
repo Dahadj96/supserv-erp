@@ -129,6 +129,22 @@
     "openCount": "{n, plural, =0 {nothing open} one {# open} other {# open}}",
     "stageIsDerived": "stage is computed from the documents, outcome is read from the offer",
     "stageDerivedLabel": "Stage — derived",
+    "next": {
+      "title": "What happens next",
+      "derived": "computed, not ticked",
+      "nothing": "Nothing is waiting on us. The offer is out and the client has ordered.",
+      "go": "Do it"
+    },
+    "check": {
+      "closed": "{how, select, won {Won — the client ordered.} lost {Lost, and the reason is on the timeline.} noBid {We walked away from this one.} other {Closed.}}",
+      "decision": "{decision, select, pursue {We decided to pursue it.} no_bid {We decided not to bid.} other {Nobody has said yet whether we are bidding.}}",
+      "lines": "{n, plural, =0 {Nobody has typed in what the client asked for.} one {# line asked for.} other {# lines asked for.}}",
+      "deadline": "No deadline recorded. It can only be set when the enquiry is created, or carried off a document you confirm.",
+      "suppliers": "No supplier has been asked, and there is no offer yet.",
+      "offer": "{drafts, plural, =0 {No offer has gone out.} one {An offer is drafted and not issued.} other {# offers are drafted and none is issued.}}",
+      "clientAnswer": "The offer is out. Waiting on the client.",
+      "invoice": "The client has ordered and nothing has been invoiced. The facture is made from the order or the delivery note."
+    },
     "newEnquiry": "New enquiry",
     "recordOrder": "Record their order",
     "project": {

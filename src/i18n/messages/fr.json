@@ -129,6 +129,22 @@
     "openCount": "{n, plural, =0 {aucune en cours} one {# en cours} other {# en cours}}",
     "stageIsDerived": "l’étape est calculée d’après les documents, l’issue est lue sur l’offre",
     "stageDerivedLabel": "Étape — calculée",
+    "next": {
+      "title": "La suite",
+      "derived": "calculé, pas coché",
+      "nothing": "Rien n'attend de notre côté. L'offre est partie et le client a commandé.",
+      "go": "Le faire"
+    },
+    "check": {
+      "closed": "{how, select, won {Gagnée — le client a commandé.} lost {Perdue, et le motif est sur le fil.} noBid {Nous avons renoncé à celle-ci.} other {Clôturée.}}",
+      "decision": "{decision, select, pursue {Nous avons décidé de la poursuivre.} no_bid {Nous avons décidé de ne pas soumissionner.} other {Personne n'a encore dit si nous soumissionnons.}}",
+      "lines": "{n, plural, =0 {Personne n'a saisi ce que le client a demandé.} one {# ligne demandée.} other {# lignes demandées.}}",
+      "deadline": "Aucune échéance enregistrée. Elle ne se saisit qu'à la création de l'affaire, ou se reporte depuis un document que vous confirmez.",
+      "suppliers": "Aucun fournisseur n'a été consulté, et il n'y a pas encore d'offre.",
+      "offer": "{drafts, plural, =0 {Aucune offre n'est partie.} one {Une offre est en brouillon et non émise.} other {# offres sont en brouillon et aucune n'est émise.}}",
+      "clientAnswer": "L'offre est partie. En attente du client.",
+      "invoice": "Le client a commandé et rien n'est facturé. La facture se fait depuis le bon de commande ou le bon de livraison."
+    },
     "newEnquiry": "Nouvelle consultation",
     "recordOrder": "Enregistrer leur commande",
     "project": {
