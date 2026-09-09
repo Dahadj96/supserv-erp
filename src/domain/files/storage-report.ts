@@ -123,6 +123,37 @@ export type StorageReport = { working: WorkingReport; final: FinalReport };
 /** Long lists help nobody. The count is exact; the sample is a sample. */
 const SAMPLE = 20;
 
+/**
+ * The one line the settings hub needs — task U3, and deliberately not
+ * `storageReport()`.
+ *
+ * The full report walks the whole working tree and lists every file row to find
+ * the drift between them. That is the right amount of work for screen 66, which
+ * exists to show the drift, and the wrong amount for a chip on a hub nobody
+ * opened to think about storage. This asks the filesystem the one question a
+ * chip can answer — would a file written now land — and reports the final
+ * driver's state, which is a constant until the Graph permission arrives.
+ */
+export async function storageHeadline(): Promise<{
+  working: LocalState;
+  configured: boolean;
+  finalConnected: boolean;
+}> {
+  let working: LocalState = "ready";
+  try {
+    await mkdir(workingRoot(), { recursive: true });
+    await access(workingRoot(), constants.W_OK);
+  } catch {
+    working = "unwritable";
+  }
+  return {
+    working,
+    configured: Boolean(process.env.STORAGE_LOCAL_PATH),
+    // `storageFor("final")` still throws. When it stops, this reads it.
+    finalConnected: false,
+  };
+}
+
 export async function storageReport(): Promise<StorageReport> {
   const root = workingRoot();
 

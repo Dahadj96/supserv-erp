@@ -1387,8 +1387,30 @@
       "company": "The company",
       "people": "People",
       "incoming": "What comes in",
-      "control": "Control",
+      "safety": "If something goes wrong",
       "whatIsBuilt": "What this system does, and does not"
+    },
+    "groupWhat": {
+      "company": "What every document says about SUPSERV, and what stops one being issued. Set here once, printed everywhere.",
+      "people": "Who can sign in, what each of them may do, and the language you personally work in.",
+      "incoming": "Every way work reaches this system, and where the files it brings land.",
+      "safety": "Getting a record back, proving a copy of everything exists, and reading who did what.",
+      "whatIsBuilt": "Nothing on these three can be changed. They answer what is here and what is not."
+    },
+    "state": {
+      "unconfirmed": "{count, plural, =1 {1 unconfirmed} other {# unconfirmed}}",
+      "allConfirmed": "All confirmed",
+      "noRole": "No role yet",
+      "imported": "{count, plural, =1 {1 import} other {# imports}}",
+      "never": "Never used",
+      "unwritable": "Disk not writable",
+      "localOnly": "Local disk only",
+      "inBin": "{count, plural, =1 {1 record} other {# records}}",
+      "empty": "Empty",
+      "neverRun": "Never run",
+      "lastRun": "{days, plural, =0 {Run today} =1 {Run yesterday} other {Run # days ago}}",
+      "notBuilt": "Not built",
+      "tools": "{mine} of {total} tools"
     },
     "entry": {
       "identity": {

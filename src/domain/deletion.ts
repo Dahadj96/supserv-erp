@@ -621,6 +621,32 @@ export async function listBin(): Promise<BinRow[]> {
 }
 
 /**
+ * How many records are in the bin, without building any of them — task U3.
+ *
+ * The settings hub prints this as a chip, and a chip is not worth five selects
+ * of every column plus a sort. Five counts across the same five tables
+ * `listBin` reads, so the number on the hub and the number of rows on screen 83
+ * cannot disagree.
+ */
+export async function countBin(): Promise<number> {
+  const n = sql<number>`count(*)::int`;
+  const [parties, deals, documents, people, notes] = await Promise.all([
+    db.select({ n }).from(party).where(isNotNull(party.deletedAt)),
+    db.select({ n }).from(deal).where(isNotNull(deal.deletedAt)),
+    db.select({ n }).from(document).where(isNotNull(document.deletedAt)),
+    db.select({ n }).from(person).where(isNotNull(person.deletedAt)),
+    db.select({ n }).from(note).where(isNotNull(note.deletedAt)),
+  ]);
+  return (
+    (parties[0]?.n ?? 0) +
+    (deals[0]?.n ?? 0) +
+    (documents[0]?.n ?? 0) +
+    (people[0]?.n ?? 0) +
+    (notes[0]?.n ?? 0)
+  );
+}
+
+/**
  * Screen 83 — never a blank 404.
  *
  * A dead link inside your own system should say what used to be there and what

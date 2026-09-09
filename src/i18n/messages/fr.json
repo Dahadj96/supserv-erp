@@ -1387,8 +1387,30 @@
       "company": "La société",
       "people": "Les personnes",
       "incoming": "Ce qui arrive",
-      "control": "Contrôle",
+      "safety": "En cas de problème",
       "whatIsBuilt": "Ce que ce système fait, et ne fait pas"
+    },
+    "groupWhat": {
+      "company": "Ce que chaque document dit de SUPSERV, et ce qui empêche d'en émettre un. Renseigné ici une fois, imprimé partout.",
+      "people": "Qui peut se connecter, ce que chacun a le droit de faire, et la langue dans laquelle vous travaillez.",
+      "incoming": "Toutes les façons dont le travail arrive dans le système, et où atterrissent les fichiers qu'il apporte.",
+      "safety": "Récupérer une fiche, s'assurer qu'une copie de tout existe, et lire qui a fait quoi.",
+      "whatIsBuilt": "Rien de ces trois écrans ne se modifie. Ils disent ce qui existe et ce qui n'existe pas."
+    },
+    "state": {
+      "unconfirmed": "{count, plural, =1 {1 non confirmée} other {# non confirmées}}",
+      "allConfirmed": "Toutes confirmées",
+      "noRole": "Aucun rôle",
+      "imported": "{count, plural, =1 {1 import} other {# imports}}",
+      "never": "Jamais utilisé",
+      "unwritable": "Disque non inscriptible",
+      "localOnly": "Disque local uniquement",
+      "inBin": "{count, plural, =1 {1 fiche} other {# fiches}}",
+      "empty": "Vide",
+      "neverRun": "Jamais lancé",
+      "lastRun": "{days, plural, =0 {Lancé aujourd'hui} =1 {Lancé hier} other {Lancé il y a # jours}}",
+      "notBuilt": "Non construit",
+      "tools": "{mine} outils sur {total}"
     },
     "entry": {
       "identity": {
