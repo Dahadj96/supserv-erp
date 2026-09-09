@@ -4009,6 +4009,76 @@
     "structural": {
       "title": "Structural guarantees",
       "what": "True because of how the system is built, not because anybody confirmed them. There is no switch."
+    },
+    "whatExpires": "What expires",
+    "expiring": {
+      "beforeDeposit": "{count, plural, one {# paper expires before a tender that has not been deposited} other {# papers expire before tenders that have not been deposited}} — the state that gets a bid thrown out. {expired} already expired, {soon} more within a month.",
+      "expired": "{count, plural, one {# paper has already expired} other {# papers have already expired}}, and {soon} more expire within a month.",
+      "soon": "{count, plural, one {# paper expires within a month} other {# papers expire within a month}}."
+    }
+  },
+  "expiring": {
+    "title": "Everything that expires",
+    "subtitle": "What expires, when, and what breaks when it does. Computed from today, every time this page is drawn.",
+    "backToCompliance": "Compliance",
+    "intro": "Every row here is a date on a piece of paper the company holds, checked against today and — for a tender's folder — against the day that tender's envelope has to be on the desk. Nothing is stored: a folder that was complete in July is not complete in September because the CASNOS attestation expired in August, and no column anywhere says otherwise. Anything inside {days} days is amber; anything that dies before a deposit that is still open is red, whatever its date.",
+    "banner": {
+      "beforeDeposit": "{count, plural, one {# paper expires before a tender that has not been deposited yet} other {# papers expire before tenders that have not been deposited yet}}. A piece valid today and expired on the morning of the deposit is what gets a bid thrown out, and it is the one thing on this page that cannot be fixed on the day.",
+      "expired": "{count, plural, one {# paper has already expired} other {# papers have already expired}} and something open still depends on it."
+    },
+    "table": {
+      "title": "By date, soonest first",
+      "counted": "{count, plural, one {# thing with an expiry} other {# things with an expiry}}",
+      "what": "What",
+      "when": "Expires",
+      "breaks": "What it breaks",
+      "renew": "Renew"
+    },
+    "kind": {
+      "credential": "Company paper",
+      "caution": "Bank guarantee",
+      "certification": "Certification",
+      "offer": "Offer validity"
+    },
+    "state": {
+      "expired": "{days, plural, one {expired # day ago} other {expired # days ago}}",
+      "beforeDeposit": "Expires before a deposit",
+      "soon": "{days, plural, =0 {expires today} one {# day left} other {# days left}}",
+      "later": "{days, plural, one {# day left} other {# days left}}"
+    },
+    "breaks": {
+      "nothingOpen": "Nothing open depends on it today.",
+      "beforeDeposit": "deposited after it expires"
+    },
+    "renew": {
+      "credential": "File a new one",
+      "caution": "Open the site",
+      "certification": "Open the person",
+      "offer": "Open the offer"
+    },
+    "noRenewScreen": "A company paper is filed from a tender's folder, and no open tender asks for this one. There is nowhere else in the ERP to renew it today.",
+    "none": {
+      "title": "Nothing in the system has an expiry date yet",
+      "body": "This page reads company papers, bank guarantees, people's certifications and the validity of issued offers. None of them carries a date yet, which on a system this new means nobody has typed one rather than that nothing expires.",
+      "action": "Open Tenders"
+    },
+    "summary": {
+      "title": "Where it stands",
+      "expired": "Already expired",
+      "beforeDeposit": "Expire before a deposit",
+      "soon": "Within {days} days",
+      "total": "With an expiry at all",
+      "computed": "All four are counted from the rows above, and the rows are computed when this page is drawn. There is no stored total anybody has to remember to update."
+    },
+    "notHere": {
+      "title": "What is not on this page, and why",
+      "intro": "Four things in this ERP carry a duration and no date, so there is nothing to count down and nothing here invents one.",
+      "requiredValidity": "How long the client requires our offer to stand is a number of days on the deal with no starting date — it is checked against a supplier's answer on the sourcing comparison, not counted down here.",
+      "supplierValidity": "A supplier's own validity is the same shape from the other side: days, not a date.",
+      "bidBond": "A tender's bid bond records the day it was asked for and the day it came back. It records no expiry at all, so a bond lapsing before the opening session cannot be seen here or anywhere else.",
+      "proformaUnconfirmed": "How long a pro forma stands is a rule waiting on the accountant, so the system holds no default. A pro forma with no validity typed on it has no expiry, and this page will not guess one.",
+      "proformaConfirmed": "How long a pro forma stands has been confirmed as a rule, and a pro forma issued with a validity appears above like any other offer.",
+      "prices": "A captured price has its own valid-until date and it is deliberately left out: a stale price expires a costing rather than a commitment, and it already has a home on the deal's price panel. Nine papers buried under three hundred prices would be worse than no page."
     }
   },
   "assistantSafety": {

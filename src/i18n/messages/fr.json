@@ -4009,6 +4009,76 @@
     "structural": {
       "title": "Garanties de construction",
       "what": "Vraies parce que le système est bâti ainsi, pas parce que quelqu'un les a confirmées. Il n'y a pas d'interrupteur."
+    },
+    "whatExpires": "Ce qui expire",
+    "expiring": {
+      "beforeDeposit": "{count, plural, one {# papier expire avant un appel d'offres non déposé} other {# papiers expirent avant des appels d'offres non déposés}} — l'état qui fait rejeter une soumission. {expired} déjà expirés, {soon} autres dans le mois.",
+      "expired": "{count, plural, one {# papier a déjà expiré} other {# papiers ont déjà expiré}}, et {soon} autres expirent dans le mois.",
+      "soon": "{count, plural, one {# papier expire dans le mois} other {# papiers expirent dans le mois}}."
+    }
+  },
+  "expiring": {
+    "title": "Tout ce qui expire",
+    "subtitle": "Ce qui expire, quand, et ce que cela casse. Calculé depuis aujourd'hui, à chaque affichage de cette page.",
+    "backToCompliance": "Conformité",
+    "intro": "Chaque ligne ici est une date portée par un papier que la société détient, confrontée à aujourd'hui et — pour le dossier d'un appel d'offres — au jour où l'enveloppe doit être sur le bureau. Rien n'est stocké : un dossier complet en juillet ne l'est plus en septembre parce que l'attestation CASNOS a expiré en août, et aucune colonne ne prétend le contraire. Tout ce qui tombe dans les {days} jours est en ambre ; tout ce qui meurt avant un dépôt encore à venir est en rouge, quelle que soit sa date.",
+    "banner": {
+      "beforeDeposit": "{count, plural, one {# papier expire avant un appel d'offres non encore déposé} other {# papiers expirent avant des appels d'offres non encore déposés}}. Une pièce valable aujourd'hui et périmée le matin du dépôt est ce qui fait rejeter une soumission, et c'est la seule chose sur cette page qu'on ne peut pas régler le jour même.",
+      "expired": "{count, plural, one {# papier a déjà expiré} other {# papiers ont déjà expiré}} et quelque chose d'ouvert en dépend encore."
+    },
+    "table": {
+      "title": "Par date, au plus tôt",
+      "counted": "{count, plural, one {# élément avec une échéance} other {# éléments avec une échéance}}",
+      "what": "Quoi",
+      "when": "Expire",
+      "breaks": "Ce que cela casse",
+      "renew": "Renouveler"
+    },
+    "kind": {
+      "credential": "Papier de la société",
+      "caution": "Caution bancaire",
+      "certification": "Habilitation",
+      "offer": "Validité de l'offre"
+    },
+    "state": {
+      "expired": "{days, plural, one {expiré depuis # jour} other {expiré depuis # jours}}",
+      "beforeDeposit": "Expire avant un dépôt",
+      "soon": "{days, plural, =0 {expire aujourd'hui} one {# jour restant} other {# jours restants}}",
+      "later": "{days, plural, one {# jour restant} other {# jours restants}}"
+    },
+    "breaks": {
+      "nothingOpen": "Rien d'ouvert n'en dépend aujourd'hui.",
+      "beforeDeposit": "déposé après son expiration"
+    },
+    "renew": {
+      "credential": "Déposer le nouveau",
+      "caution": "Ouvrir le chantier",
+      "certification": "Ouvrir la personne",
+      "offer": "Ouvrir l'offre"
+    },
+    "noRenewScreen": "Un papier de la société se dépose depuis le dossier d'un appel d'offres, et aucun appel d'offres ouvert ne demande celui-ci. Il n'y a aujourd'hui nulle part ailleurs dans l'ERP pour le renouveler.",
+    "none": {
+      "title": "Rien dans le système ne porte encore de date d'expiration",
+      "body": "Cette page lit les papiers de la société, les cautions bancaires, les habilitations des personnes et la validité des offres émises. Aucun ne porte encore de date, ce qui sur un système aussi neuf veut dire que personne n'en a saisi, pas que rien n'expire.",
+      "action": "Ouvrir les appels d'offres"
+    },
+    "summary": {
+      "title": "Où l'on en est",
+      "expired": "Déjà expirés",
+      "beforeDeposit": "Expirent avant un dépôt",
+      "soon": "Dans les {days} jours",
+      "total": "Portant une échéance",
+      "computed": "Les quatre sont comptés depuis les lignes ci-dessus, et ces lignes sont calculées à l'affichage. Aucun total stocké que quelqu'un devrait penser à mettre à jour."
+    },
+    "notHere": {
+      "title": "Ce qui n'est pas sur cette page, et pourquoi",
+      "intro": "Quatre choses dans cet ERP portent une durée et aucune date : il n'y a donc rien à décompter, et rien ici n'invente une échéance.",
+      "requiredValidity": "La durée pendant laquelle le client exige que notre offre tienne est un nombre de jours porté par l'affaire, sans date de départ — elle est confrontée à la réponse d'un fournisseur sur la comparaison d'approvisionnement, pas décomptée ici.",
+      "supplierValidity": "La validité annoncée par un fournisseur a la même forme, vue de l'autre côté : des jours, pas une date.",
+      "bidBond": "La caution de soumission d'un appel d'offres enregistre le jour où elle a été demandée et le jour où elle est revenue. Elle n'enregistre aucune expiration : une caution qui tombe avant la séance d'ouverture ne se voit donc ni ici ni ailleurs.",
+      "proformaUnconfirmed": "La durée de validité d'une facture pro forma est une règle en attente du comptable : le système ne détient aucune valeur par défaut. Une pro forma sans validité saisie n'a pas d'échéance, et cette page n'en devinera pas.",
+      "proformaConfirmed": "La durée de validité d'une pro forma est confirmée comme règle, et une pro forma émise avec une validité apparaît ci-dessus comme toute autre offre.",
+      "prices": "Un prix relevé porte sa propre date de fin de validité et il est volontairement laissé de côté : un prix périmé fait expirer un chiffrage, pas un engagement, et il a déjà sa place sur le panneau des prix de l'affaire. Neuf papiers noyés sous trois cents prix vaudraient moins que pas de page du tout."
     }
   },
   "assistantSafety": {

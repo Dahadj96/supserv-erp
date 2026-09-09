@@ -5,6 +5,7 @@ import { getSession } from "@/auth/session";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { complianceStatus } from "@/domain/control/compliance-status";
+import { expirySummary } from "@/domain/control/expiring";
 import { Link } from "@/i18n/navigation";
 
 /**
@@ -30,7 +31,7 @@ export default async function CompliancePage({ params }: { params: Promise<{ loc
   const session = await getSession();
   if (!session) hardRedirect(`/${locale}/sign-in`);
 
-  const status = await complianceStatus();
+  const [status, expiry] = await Promise.all([complianceStatus(), expirySummary()]);
 
   /** A rule's sentence, by its own message key. Never the code. */
   const ruleText = (key: string) => (t.has(key) ? t(key) : key);
@@ -47,9 +48,16 @@ export default async function CompliancePage({ params }: { params: Promise<{ loc
             })}
           </p>
         </div>
-        <div className="ms-auto">
+        <div className="ms-auto flex items-center gap-2">
           <Link href="/settings/compliance">
             <Button variant="secondary">{t("complianceNow.theProfile")}</Button>
+          </Link>
+          {/* Task U2. The rules half of compliance was the whole of this screen;
+              what expires is the other half and it had no screen at all. It is
+              the primary action here because it is the one with dates on it —
+              a rule waits for an accountant, a CASNOS attestation does not. */}
+          <Link href="/compliance/expiring">
+            <Button variant="primary">{t("complianceNow.whatExpires")}</Button>
           </Link>
         </div>
       </div>
@@ -69,6 +77,44 @@ export default async function CompliancePage({ params }: { params: Promise<{ loc
           </div>
         </div>
       )}
+
+      {/* Repeated up here so nobody has to know screen 27b exists to be warned
+          by it. Silent when there is nothing to say — a strip that reads "0, 0,
+          0" every morning is a strip people stop seeing. */}
+      {expiry.expired + expiry.beforeDeposit + expiry.soon > 0 ? (
+        <Link
+          href="/compliance/expiring"
+          className={`mx-4 md:mx-7 mt-4 flex items-start gap-3 rounded-[var(--radius-control)] border px-4 py-3 ${
+            expiry.expired + expiry.beforeDeposit > 0
+              ? "border-critical bg-critical-bg"
+              : "border-warning bg-warning-bg"
+          }`}
+        >
+          {expiry.expired + expiry.beforeDeposit > 0 ? (
+            <CircleAlert className="mt-px size-4 shrink-0 text-critical-ink" aria-hidden />
+          ) : (
+            <TriangleAlert className="mt-px size-4 shrink-0 text-warning-ink" aria-hidden />
+          )}
+          <p
+            className={`max-w-[900px] text-tiny leading-relaxed ${
+              expiry.expired + expiry.beforeDeposit > 0 ? "text-critical-ink" : "text-warning-ink"
+            }`}
+          >
+            {expiry.beforeDeposit > 0
+              ? t("complianceNow.expiring.beforeDeposit", {
+                  count: expiry.beforeDeposit,
+                  expired: expiry.expired,
+                  soon: expiry.soon,
+                })
+              : expiry.expired > 0
+                ? t("complianceNow.expiring.expired", {
+                    count: expiry.expired,
+                    soon: expiry.soon,
+                  })
+                : t("complianceNow.expiring.soon", { count: expiry.soon })}
+          </p>
+        </Link>
+      ) : null}
 
       <div className="grid max-w-[1400px] grid-cols-1 md:grid-cols-3 items-start gap-5 px-4 md:px-7 py-6">
         <div className="col-span-1 md:col-span-2 flex flex-col gap-5">
