@@ -42,8 +42,16 @@ export const NEEDS: Record<FileKind, Permission | null> = {
  * attachment was chosen by whoever sent the email, and `text/html` served
  * inline from our own origin is script running with the signed-in user's
  * session — stored XSS, deliverable by anybody who can write to contact@.
- * The route's `Content-Security-Policy` is a second lock on the same door;
- * this is the first, and the one that does not depend on browser support.
+ *
+ * This set and `x-content-type-options: nosniff` are what actually hold that
+ * door. The route also sets `content-security-policy: default-src 'none';
+ * sandbox`, and this comment used to call it a second lock — it is not one
+ * today: `next.config.ts` applies `Content-Security-Policy: frame-ancestors
+ * 'self'` to `/(.*)`, and a header from `headers()` REPLACES the one a route
+ * handler set, so what reaches the browser is only `frame-ancestors`. Measured
+ * on 9 September 2026 against a running build (task 1.5). Written down rather
+ * than fixed here, because making the route's CSP survive is a change to a
+ * config every response passes through, and it belongs in its own commit.
  *
  * `image/svg+xml` is missing on purpose. An SVG is a document that can carry
  * script, not a picture.
@@ -57,11 +65,45 @@ export const RENDERABLE = new Set([
   "text/plain",
 ]);
 
+/**
+ * `text/html; charset=utf-8` and ` TEXT/HTML ` are the same claim.
+ *
+ * One normaliser, used by both functions below, so the route and the screen can
+ * never disagree about what a file is.
+ */
+function claimedType(declared: string | null): string {
+  return (declared ?? "").split(";")[0]?.trim().toLowerCase() ?? "";
+}
+
+/**
+ * How a file can be shown INSIDE the ERP, or null when it can only be a
+ * download.
+ *
+ * Deliberately derived from `RENDERABLE`, not from a second list. The route
+ * sends `content-disposition: attachment` for everything RENDERABLE does not
+ * contain, so a screen that offered a preview on any wider set would offer a
+ * button that downloads the file instead of showing it — a broken preview,
+ * which is worse than an honest "no preview yet".
+ *
+ * That is also why a Word or Excel attachment is not here. It is not an
+ * oversight and it is not a security rule: nothing in this repository can turn
+ * a .docx into pixels yet. Task 1.6 gives it a text extraction; until then the
+ * screen says so rather than showing an empty frame.
+ */
+export type PreviewMode = "pdf" | "image" | "text";
+
+export function previewMode(declared: string | null): PreviewMode | null {
+  const type = claimedType(declared);
+  if (!RENDERABLE.has(type)) return null;
+  if (type === "application/pdf") return "pdf";
+  if (type === "text/plain") return "text";
+  return "image";
+}
+
 export type ContentHeaders = { type: string; disposition: string };
 
 export function contentHeaders(filename: string, declared: string | null): ContentHeaders {
-  // `text/html; charset=utf-8` and ` TEXT/HTML ` are the same claim.
-  const type = (declared ?? "").split(";")[0]?.trim().toLowerCase() ?? "";
+  const type = claimedType(declared);
   const inline = RENDERABLE.has(type);
 
   // A quote or a newline in a filename would break out of the header. ASCII for

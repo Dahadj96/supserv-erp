@@ -6,6 +6,9 @@ import { getSession } from "@/auth/session";
 import { companyNameFromEmail, resolveSender } from "@/capture/quick";
 import { Badge, type BadgeTone } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import { FileViewer } from "@/components/ui/file-viewer";
+import { fileId } from "@/domain/files";
+import { previewMode } from "@/domain/files/serving";
 import { commitAvailability } from "@/domain/intake/commit";
 import { markRead } from "@/domain/intake/inbox";
 import { messageDetail, neighbours } from "@/domain/intake/message";
@@ -46,10 +49,10 @@ export default async function MessagePage({
   searchParams,
 }: {
   params: Promise<{ locale: string; id: string }>;
-  searchParams: Promise<{ error?: string }>;
+  searchParams: Promise<{ error?: string; file?: string }>;
 }) {
   const { locale, id } = await params;
-  const { error } = await searchParams;
+  const { error, file: openFile } = await searchParams;
   setRequestLocale(locale);
 
   const t = await getTranslations();
@@ -123,6 +126,27 @@ export default async function MessagePage({
   const suggestedName = needsCompany ? (companyNameFromEmail(message.fromAddress) ?? "") : "";
   const byName = suggestedName ? await searchParties(suggestedName, 4) : [];
   const lookAlikes = byName.filter((hit) => hit.id !== nowResolves?.id);
+
+  /*
+    WHICH ATTACHMENT IS OPEN.
+
+    In the URL, not in component state, for three reasons: this screen is a
+    server component and stays one; a message with fifteen attachments must
+    render one viewer and not fifteen; and the address of a particular page of
+    a particular dossier is then something a person can send to somebody else.
+
+    Only a file whose bytes are actually here can be selected, and only one the
+    route agrees to serve inline — `previewMode` reads the same `RENDERABLE` set
+    the route does, so the screen can never offer a preview that would arrive as
+    a download.
+  */
+  const openAttachment =
+    message.attachments.find((a) => a.id === openFile && a.storagePath !== null) ?? null;
+  const openMode = openAttachment ? previewMode(openAttachment.contentType) : null;
+
+  /** `/api/files/attachment:<uuid>` — the permission and the headers live there. */
+  const bytesHref = (attachmentId: string) =>
+    `/api/files/${encodeURIComponent(fileId("attachment", attachmentId))}`;
 
   const when = format.dateTime(message.receivedAt, {
     day: "2-digit",
@@ -198,28 +222,94 @@ export default async function MessagePage({
               <h2 className="text-micro uppercase tracking-wide text-muted">
                 {t("message.attachments", { n: message.attachments.length })}
               </h2>
+
+              {/*
+                A list, and ONE viewer under it.
+
+                This was the whole complaint: an RFQ whose content is entirely
+                in the attachments, and no way to read it without Outlook. Tasks
+                1.1-1.3 fetch the bytes; this is where they become readable.
+
+                The filename is the link to the file itself. A separate Show
+                puts it in the pane below, because fifteen frames on one message
+                would be unusable and a dossier is usually read once.
+              */}
               <ul className="mt-2 flex flex-col gap-1.5">
-                {message.attachments.map((file) => (
-                  <li
-                    key={file.id}
-                    className="flex items-center gap-2 rounded-[var(--radius-control)] border border-line-subtle bg-surface px-3 py-2"
-                  >
-                    <Paperclip className="size-3.5 shrink-0 text-muted" aria-hidden />
-                    <span className="min-w-0 truncate text-tiny text-ink">{file.filename}</span>
-                    {file.looksLike && file.looksLike !== "unknown" ? (
-                      <Badge tone="neutral">{t(`inbox.attachment.${file.looksLike}`)}</Badge>
-                    ) : null}
-                    {/*
-                      The row exists; the bytes do not. Only the name and size
-                      were captured - fetching the content waits on real storage
-                      (screens 60 and 66). Saying so beats a link that 404s.
-                    */}
-                    <span className="ms-auto shrink-0 text-micro text-muted">
-                      {file.storagePath ? t("message.stored") : t("message.inOutlookOnly")}
-                    </span>
-                  </li>
-                ))}
+                {message.attachments.map((file) => {
+                  const stored = file.storagePath !== null;
+                  const mode = stored ? previewMode(file.contentType) : null;
+                  const open = openAttachment?.id === file.id;
+
+                  return (
+                    <li
+                      key={file.id}
+                      className={`flex flex-wrap items-center gap-2 rounded-[var(--radius-control)] border bg-surface px-3 py-2 ${
+                        open ? "border-ink" : "border-line-subtle"
+                      }`}
+                    >
+                      <Paperclip className="size-3.5 shrink-0 text-muted" aria-hidden />
+
+                      {stored ? (
+                        <a
+                          href={bytesHref(file.id)}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="min-w-0 truncate text-tiny text-ink underline underline-offset-2 decoration-muted hover:decoration-ink"
+                        >
+                          {file.filename}
+                        </a>
+                      ) : (
+                        <span className="min-w-0 truncate text-tiny text-ink">{file.filename}</span>
+                      )}
+
+                      {file.looksLike && file.looksLike !== "unknown" ? (
+                        <Badge tone="neutral">{t(`inbox.attachment.${file.looksLike}`)}</Badge>
+                      ) : null}
+
+                      <span className="ms-auto flex shrink-0 items-center gap-3">
+                        {mode ? (
+                          <Link
+                            href={open ? `/inbox/${id}` : `/inbox/${id}?file=${file.id}#viewer`}
+                            className="text-micro text-accent-ink hover:underline"
+                          >
+                            {open ? t("message.hideFile") : t("message.showFile")}
+                          </Link>
+                        ) : stored ? (
+                          /* Not a failure. Nothing here can turn a .docx or a
+                             .zip into pixels yet - 1.4 and 1.6 do - and an
+                             empty frame would be a worse answer than a
+                             sentence. The file itself is one click away. */
+                          <span className="text-micro text-muted">{t("message.noPreviewYet")}</span>
+                        ) : (
+                          <span className="text-micro text-muted">{t("message.notCopiedYet")}</span>
+                        )}
+                      </span>
+                    </li>
+                  );
+                })}
               </ul>
+
+              {/*
+                The bytes are fetched by a background job, so a row can be here
+                before its copy is. Saying "in Outlook only" stopped being true
+                the day 1.2 shipped, and a screen that says something untrue
+                about where a file is teaches people to stop believing it.
+              */}
+              {message.attachments.some((file) => file.storagePath === null) ? (
+                <p className="mt-2 max-w-[620px] text-micro leading-relaxed text-muted">
+                  {t("message.copiesArriveLater")}
+                </p>
+              ) : null}
+
+              {openAttachment && openMode ? (
+                <div id="viewer" className="mt-3">
+                  <FileViewer
+                    src={bytesHref(openAttachment.id)}
+                    filename={openAttachment.filename}
+                    mode={openMode}
+                  />
+                </div>
+              ) : null}
             </div>
           ) : null}
         </div>

@@ -1,7 +1,7 @@
 import { and, asc, desc, eq, isNotNull, isNull, lte, ne, sql } from "drizzle-orm";
 import { db } from "@/db";
 import { auditEntry } from "@/db/schema/control";
-import { intakeMessage, routingRule } from "@/db/schema/intake";
+import { intakeAttachment, intakeMessage, routingRule } from "@/db/schema/intake";
 import { party } from "@/db/schema/party";
 import type { RoutedTo } from "./routing";
 
@@ -58,6 +58,15 @@ export type InboxRow = {
   hoursLeft: number | null;
   read: boolean;
   status: string;
+  /**
+   * How many files came with it.
+   *
+   * The list showed no sign of them at all, which on this mailbox is the wrong
+   * silence: a consultation whose whole content is a `cahier des charges` looked
+   * from the list exactly like a two-line courtesy note. A count, not the names
+   * — the names are on the message, and this is a triage row.
+   */
+  attachments: number;
 };
 
 /** Not dismissed, not committed. What is actually waiting for somebody. */
@@ -88,6 +97,13 @@ export async function listInbox(
       deadlineConfirmedAt: intakeMessage.deadlineConfirmedAt,
       readAt: intakeMessage.readAt,
       status: intakeMessage.status,
+      // A correlated count rather than a join and a group by: this list is
+      // already grouped by nothing, and a join to a one-to-many would multiply
+      // the rows it is trying to show.
+      attachments: sql<number>`(
+        select count(*)::int from ${intakeAttachment}
+        where ${intakeAttachment.messageId} = ${intakeMessage.id}
+      )`,
     })
     .from(intakeMessage)
     .leftJoin(party, eq(intakeMessage.partyId, party.id))
@@ -115,6 +131,7 @@ export async function listInbox(
     hoursLeft: r.deadlineAt ? Math.round((r.deadlineAt.getTime() - now) / 3_600_000) : null,
     read: r.readAt !== null,
     status: r.status,
+    attachments: Number(r.attachments ?? 0),
   }));
 }
 

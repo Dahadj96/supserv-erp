@@ -1,3 +1,4 @@
+import { Paperclip } from "lucide-react";
 import { getTranslations } from "next-intl/server";
 import { Badge, type BadgeTone } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -45,14 +46,33 @@ export async function InboxRowView({
         person to read something.
       */}
       <td className="max-w-[380px] px-4 py-2.5">
-        <Link
-          href={`/inbox/${row.id}`}
-          className={`block truncate text-tiny hover:underline ${
-            row.read ? "text-secondary" : "font-medium text-ink"
-          }`}
-        >
-          {row.subject || t("inbox.noSubject")}
-        </Link>
+        <div className="flex items-center gap-2">
+          <Link
+            href={`/inbox/${row.id}`}
+            className={`min-w-0 truncate text-tiny hover:underline ${
+              row.read ? "text-secondary" : "font-medium text-ink"
+            }`}
+          >
+            {row.subject || t("inbox.noSubject")}
+          </Link>
+
+          {/*
+            Half of what matters in this mailbox is not in the body. A row for a
+            consultation whose entire content is a cahier des charges read, from
+            here, exactly like a courtesy note — there was no sign at all that
+            anything came with it.
+          */}
+          {row.attachments > 0 ? (
+            <span
+              className="inline-flex shrink-0 items-center gap-0.5 text-micro text-muted"
+              title={t("inbox.hasAttachments", { n: row.attachments })}
+            >
+              <Paperclip className="size-3" aria-hidden />
+              {row.attachments}
+              <span className="sr-only">{t("inbox.hasAttachments", { n: row.attachments })}</span>
+            </span>
+          ) : null}
+        </div>
       </td>
 
       <td className="px-4 py-2.5">

@@ -3,7 +3,7 @@ import { join } from "node:path";
 import { describe, expect, it } from "vitest";
 import { ROLES } from "@/auth/can";
 import { FILE_KINDS, fileId, parseFileId } from "@/domain/files";
-import { contentHeaders, NEEDS, RENDERABLE } from "@/domain/files/serving";
+import { contentHeaders, NEEDS, previewMode, RENDERABLE } from "@/domain/files/serving";
 
 /**
  * Screens 60 and 66.
@@ -114,6 +114,73 @@ describe("what a browser is allowed to render in place", () => {
   });
 });
 
+describe("what may be shown inside the ERP", () => {
+  /**
+   * The viewer's rule and the route's rule are the same rule.
+   *
+   * `previewMode` decides what screen 02 and screen 60 draw a frame for;
+   * `contentHeaders` decides what the route sends inline. If the first is ever
+   * wider than the second, a Show button downloads the file instead of showing
+   * it — a broken preview, which is worse than saying there is not one.
+   */
+  it("never offers a preview the route would send as a download", () => {
+    const declared = [
+      "application/pdf",
+      "image/png",
+      "image/jpeg",
+      "image/gif",
+      "image/webp",
+      "text/plain",
+      "image/svg+xml",
+      "text/html",
+      "application/zip",
+      "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+      "application/octet-stream",
+      "",
+      null,
+    ];
+    for (const type of declared) {
+      if (previewMode(type) === null) continue;
+      expect(contentHeaders("f", type).disposition.startsWith("inline;"), `${type}`).toBe(true);
+    }
+  });
+
+  it("names the right frame for each thing it does offer", () => {
+    expect(previewMode("application/pdf")).toBe("pdf");
+    expect(previewMode("APPLICATION/PDF")).toBe("pdf");
+    expect(previewMode("text/plain; charset=utf-8")).toBe("text");
+    for (const image of ["image/png", "image/jpeg", "image/gif", "image/webp"]) {
+      expect(previewMode(image), image).toBe("image");
+    }
+  });
+
+  it("refuses the two that are documents wearing a picture's name", () => {
+    // Same decision as RENDERABLE, reached through the same set rather than a
+    // second list somebody could widen without noticing this one.
+    expect(previewMode("image/svg+xml")).toBeNull();
+    expect(previewMode("text/html")).toBeNull();
+  });
+
+  it("says no rather than guessing when nothing was declared", () => {
+    // An attachment whose sender's mail client said `application/octet-stream`
+    // is a file we know nothing about. The screen says "no preview yet" and
+    // hands over the bytes; it does not read the extension and hope.
+    expect(previewMode(null)).toBeNull();
+    expect(previewMode("")).toBeNull();
+    expect(previewMode("application/octet-stream")).toBeNull();
+  });
+
+  it("has no preview for a Word or Excel file, and that is task 1.6", () => {
+    const office = [
+      "application/msword",
+      "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+      "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+      "application/zip",
+    ];
+    for (const type of office) expect(previewMode(type), type).toBeNull();
+  });
+});
+
 describe("both screens say the same things in both languages", () => {
   const en = load("en");
   const fr = load("fr");
@@ -122,6 +189,22 @@ describe("both screens say the same things in both languages", () => {
     for (const key of ["all", ...FILE_KINDS]) {
       expect(get(en, `files.kind.${key}`), `${key} (English)`).toBeTypeOf("string");
       expect(get(fr, `files.kind.${key}`), `${key} (French)`).toBeTypeOf("string");
+    }
+  });
+
+  it("gives the viewer its three sentences", () => {
+    // `FileViewer` is drawn by the mailbox and by screen 60, and neither has
+    // its own copy of these. A missing French one is a 500 on both.
+    for (const key of ["label", "openInNewTab", "cannotEmbed"]) {
+      expect(get(en, `viewer.${key}`), `${key} (English)`).toBeTypeOf("string");
+      expect(get(fr, `viewer.${key}`), `${key} (French)`).toBeTypeOf("string");
+    }
+  });
+
+  it("says what it means when there is no preview and when there are no bytes", () => {
+    for (const key of ["show", "hide", "noPreviewYet", "notCopiedYet"]) {
+      expect(get(en, `files.${key}`), `${key} (English)`).toBeTypeOf("string");
+      expect(get(fr, `files.${key}`), `${key} (French)`).toBeTypeOf("string");
     }
   });
 

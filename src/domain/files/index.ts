@@ -144,7 +144,18 @@ async function dossierFiles(): Promise<FileRow[]> {
       id: fileId("dossier", r.id),
       kind: "dossier" as const,
       filename: r.filename,
-      contentType: null,
+      /*
+        `ingestPdf` is the only writer and it puts the bytes with
+        `mime: "application/pdf"`. Repeating that claim here is not sniffing —
+        it is reading back what the writer declared — and it is what lets the
+        serving route send a dossier inline instead of as a download.
+
+        Except when the read FAILED. Those rows keep their bytes on purpose, and
+        the reason a dossier fails is usually that the file was not the PDF
+        somebody thought it was. Claiming a type for it would be asserting the
+        very thing the row records not being true.
+      */
+      contentType: r.status === "failed" ? null : "application/pdf",
       // The dossier row records pages, not bytes. Printing "0 B" would be a
       // measurement that was never taken; printing nothing is the truth.
       bytes: null,

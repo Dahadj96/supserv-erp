@@ -695,7 +695,8 @@
       "invoice": "Invoice",
       "delivery_note": "Delivery note",
       "tender_dossier": "Tender dossier"
-    }
+    },
+    "hasAttachments": "{n, plural, one {# file attached} other {# files attached}}"
   },
   "moveIn": {
     "title": "Move in",
@@ -3343,8 +3344,6 @@
     "next": "Older",
     "noBody": "This message arrived with no text — only a subject, or only attachments.",
     "attachments": "{n, plural, one {# attachment} other {# attachments}}",
-    "stored": "saved here",
-    "inOutlookOnly": "in Outlook only",
     "whatItIs": "What it is",
     "whatNext": "What next",
     "confidence": "{pc}% sure",
@@ -3371,7 +3370,12 @@
     },
     "thisIsProbably": "This address matches a company already on file:",
     "useCompanyAndOpen": "It is {name} — open the enquiry",
-    "whatThisDoes": "Creates the company, saves the sender as a contact under it, and opens the enquiry. Once."
+    "whatThisDoes": "Creates the company, saves the sender as a contact under it, and opens the enquiry. Once.",
+    "showFile": "Show",
+    "hideFile": "Hide",
+    "noPreviewYet": "no preview yet",
+    "notCopiedYet": "not copied here yet",
+    "copiesArriveLater": "Attachments are copied in the background, so a file can be listed here before its copy arrives. The original stays in Outlook either way."
   },
   "conversations": {
     "subtitle": "Everything a client or a supplier has said, in one place · {needReply, plural, =0 {nothing needs a reply} one {# needs a reply} other {# need a reply}}",
@@ -3447,7 +3451,6 @@
     "whereTheyLive": "Where the bytes live",
     "none": "Nothing yet. No attachment fetched, no dossier read, no workbook imported.",
     "open": "Open",
-    "inOutlookOnly": "In Outlook only",
     "notStored": "Not stored",
     "absentCount": "{count} with no bytes here",
     "bytes": "{n} B",
@@ -3483,7 +3486,11 @@
       "party": "Companies import",
       "contact": "Contacts import",
       "person": "People import"
-    }
+    },
+    "show": "Show",
+    "hide": "Hide",
+    "noPreviewYet": "no preview yet",
+    "notCopiedYet": "Not copied yet"
   },
   "storage": {
     "title": "Storage and files",
@@ -5159,5 +5166,10 @@
       "notConfirmed": "Nothing was touched: the confirmation word was not typed exactly.",
       "notAllowed": "Only the Gérant may clear records."
     }
+  },
+  "viewer": {
+    "label": "{name}, shown here",
+    "openInNewTab": "Open in a new tab",
+    "cannotEmbed": "This browser will not show a PDF inside a page."
   }
 }

@@ -3,7 +3,9 @@ import { getFormatter, getTranslations, setRequestLocale } from "next-intl/serve
 import { can } from "@/auth/can";
 import { getSession } from "@/auth/session";
 import { Badge } from "@/components/ui/badge";
+import { FileViewer } from "@/components/ui/file-viewer";
 import { FILE_KINDS, type FileKind, fileCounts, listFiles } from "@/domain/files";
+import { previewMode } from "@/domain/files/serving";
 import { Link } from "@/i18n/navigation";
 
 /**
@@ -38,7 +40,7 @@ export default async function FilesPage({
   searchParams,
 }: {
   params: Promise<{ locale: string }>;
-  searchParams: Promise<{ kind?: string }>;
+  searchParams: Promise<{ kind?: string; file?: string }>;
 }) {
   const { locale } = await params;
   setRequestLocale(locale);
@@ -85,6 +87,29 @@ export default async function FilesPage({
     if (label) return label;
     if (labelKey && t.has(labelKey)) return t(labelKey);
     return t(`files.from.${fallbackKey}`);
+  };
+
+  /*
+    THE SAME VIEWER AS THE MAILBOX.
+
+    Screen 60 lists the same bytes through the same route, so it gets the same
+    pane rather than a second idea of what looking at a file means. Selection is
+    in the URL for the same reasons it is on the message: one pane and not
+    ninety, and a server component that stays one.
+
+    The facet links deliberately do not carry `file`, so changing what is listed
+    closes what is open — a preview left hanging over a list it is no longer in
+    would be the screen lying about what you are looking at.
+  */
+  const open = query.file ? (rows.find((r) => r.id === query.file) ?? null) : null;
+  const openMode = open && open.state === "stored" ? previewMode(open.contentType) : null;
+
+  const withFile = (fileKey: string | null) => {
+    const parts = [
+      kind ? `kind=${kind}` : null,
+      fileKey ? `file=${encodeURIComponent(fileKey)}` : null,
+    ].filter(Boolean);
+    return `/files${parts.length ? `?${parts.join("&")}` : ""}`;
   };
 
   const facets: { key: string; href: string; count: number; active: boolean }[] = [
@@ -138,6 +163,21 @@ export default async function FilesPage({
       </div>
 
       <div className="min-h-0 flex-1 overflow-auto">
+        {open && openMode ? (
+          <div id="viewer" className="px-4 md:px-7 pt-5">
+            <FileViewer
+              src={`/api/files/${encodeURIComponent(open.id)}`}
+              filename={open.filename}
+              mode={openMode}
+            />
+            <p className="mt-2">
+              <Link href={withFile(null)} className="text-micro text-accent-ink hover:underline">
+                {t("files.hide")}
+              </Link>
+            </p>
+          </div>
+        ) : null}
+
         {rows.length === 0 ? (
           <p className="max-w-[620px] p-7 text-tiny leading-relaxed text-muted">
             {t("files.none")}
@@ -192,17 +232,36 @@ export default async function FilesPage({
                     <td className="px-4 py-2.5 text-secondary">{day(row.at)}</td>
                     <td className="px-4 md:px-7 py-2.5 text-end">
                       {row.state === "stored" ? (
-                        <a
-                          href={`/api/files/${encodeURIComponent(row.id)}`}
-                          className="inline-flex min-h-9 items-center md:min-h-0 gap-1.5 text-accent-ink hover:underline"
-                        >
-                          <Download className="size-3.5" aria-hidden />
-                          {t("files.open")}
-                        </a>
+                        <span className="inline-flex items-center justify-end gap-3">
+                          {/* Show puts it in the pane at the top of this
+                              screen; Open hands over the file itself. A
+                              spreadsheet or an archive gets only the second,
+                              and says why rather than offering an empty
+                              frame. */}
+                          {previewMode(row.contentType) ? (
+                            <Link
+                              href={
+                                open?.id === row.id ? withFile(null) : `${withFile(row.id)}#viewer`
+                              }
+                              className="inline-flex min-h-9 items-center md:min-h-0 text-accent-ink hover:underline"
+                            >
+                              {open?.id === row.id ? t("files.hide") : t("files.show")}
+                            </Link>
+                          ) : (
+                            <span className="text-micro text-muted">{t("files.noPreviewYet")}</span>
+                          )}
+                          <a
+                            href={`/api/files/${encodeURIComponent(row.id)}`}
+                            className="inline-flex min-h-9 items-center md:min-h-0 gap-1.5 text-accent-ink hover:underline"
+                          >
+                            <Download className="size-3.5" aria-hidden />
+                            {t("files.open")}
+                          </a>
+                        </span>
                       ) : (
                         <Badge tone="neutral">
                           {row.kind === "attachment"
-                            ? t("files.inOutlookOnly")
+                            ? t("files.notCopiedYet")
                             : t("files.notStored")}
                         </Badge>
                       )}

@@ -695,7 +695,8 @@
       "invoice": "Facture",
       "delivery_note": "Bon de livraison",
       "tender_dossier": "Dossier d'appel d'offres"
-    }
+    },
+    "hasAttachments": "{n, plural, one {# pièce jointe} other {# pièces jointes}}"
   },
   "moveIn": {
     "title": "Reprise",
@@ -3343,8 +3344,6 @@
     "next": "Plus ancien",
     "noBody": "Ce message est arrivé sans texte — un objet seul, ou seulement des pièces jointes.",
     "attachments": "{n, plural, one {# pièce jointe} other {# pièces jointes}}",
-    "stored": "enregistrée ici",
-    "inOutlookOnly": "dans Outlook uniquement",
     "whatItIs": "Ce que c'est",
     "whatNext": "Et ensuite",
     "confidence": "{pc}% de certitude",
@@ -3371,7 +3370,12 @@
     },
     "thisIsProbably": "Cette adresse correspond à une société déjà enregistrée :",
     "useCompanyAndOpen": "C'est {name} — ouvrir l'affaire",
-    "whatThisDoes": "Crée la société, enregistre l'expéditeur comme contact chez elle, et ouvre l'affaire. Une seule fois."
+    "whatThisDoes": "Crée la société, enregistre l'expéditeur comme contact chez elle, et ouvre l'affaire. Une seule fois.",
+    "showFile": "Afficher",
+    "hideFile": "Masquer",
+    "noPreviewYet": "pas d’aperçu",
+    "notCopiedYet": "pas encore copiée ici",
+    "copiesArriveLater": "Les pièces jointes sont copiées en arrière-plan : un fichier peut figurer ici avant que sa copie n’arrive. L’original reste dans Outlook dans tous les cas."
   },
   "conversations": {
     "subtitle": "Tout ce qu'un client ou un fournisseur a dit, au même endroit · {needReply, plural, =0 {rien n'attend de réponse} one {# attend une réponse} other {# attendent une réponse}}",
@@ -3447,7 +3451,6 @@
     "whereTheyLive": "Où vivent les octets",
     "none": "Rien pour l'instant. Aucune pièce jointe récupérée, aucun dossier lu, aucun classeur importé.",
     "open": "Ouvrir",
-    "inOutlookOnly": "Dans Outlook seulement",
     "notStored": "Pas stocké",
     "absentCount": "{count} sans octets ici",
     "bytes": "{n} o",
@@ -3483,7 +3486,11 @@
       "party": "Reprise de sociétés",
       "contact": "Reprise de contacts",
       "person": "Reprise de personnes"
-    }
+    },
+    "show": "Afficher",
+    "hide": "Masquer",
+    "noPreviewYet": "pas d’aperçu",
+    "notCopiedYet": "Pas encore copiée"
   },
   "storage": {
     "title": "Stockage et fichiers",
@@ -5159,5 +5166,10 @@
       "notConfirmed": "Rien n'a été touché : le mot de confirmation n'a pas été tapé exactement.",
       "notAllowed": "Seul le Gérant peut effacer des enregistrements."
     }
+  },
+  "viewer": {
+    "label": "{name}, affiché ici",
+    "openInNewTab": "Ouvrir dans un nouvel onglet",
+    "cannotEmbed": "Ce navigateur n’affiche pas un PDF à l’intérieur d’une page."
   }
 }
