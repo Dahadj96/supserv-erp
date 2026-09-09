@@ -14,6 +14,9 @@ task, then work from this queue.
 One task at a time. Never two in flight.
 
 1. Read this file. Take the **first task that is `[ ]` and not blocked**.
+   **WAVE U OUTRANKS EVERYTHING.** Added 9 September from Abdou directly: the
+   ERP is powerful and nobody can tell what it does. Take Wave U before the
+   rest of Wave 2 and before Wave 3, whatever the numbering suggests.
 2. Mark it `[~]` (in progress) and write the file back immediately, so a
    session that starts while you work does not take the same task.
 3. Implement it. Follow `CLAUDE.md` — the six laws are not negotiable, and the
@@ -548,6 +551,80 @@ Strictly sequential. Each step is useless without the one above it.
   provenance the screen header prints is lost.
   *Done when:* importing a BPU on a plain deal either records provenance or
   says it cannot, and a test covers both.
+
+## WAVE U — the ERP explains itself
+
+**Added 9 September 2026, from Abdou, in his words.** This wave outranks the
+rest of Wave 2 and Wave 3; take these first.
+
+> "It's not usable for someone that never used it. You introduce the ERP to
+> someone and he does not understand the flow, how it works. It's not clear.
+> There's a lot of screens with no real actions. We have a powerful ERP but it's
+> not user friendly. And this is through all the ERP functions. When you take a
+> look at settings, it's not user friendly, it's not clear. You talk about
+> backup — there's no settings for backup, or to change the folder. What does
+> the backup do? How does it work? Is it daily? And the documents expiration,
+> it's not clear. A lot of things are not clear."
+
+The rule for every task in this wave: **a screen must say what it is for, what
+state it is in right now, and what the person can do next.** A screen that only
+displays rows has failed, even when every row is correct.
+
+- [ ] **U1 · A backup screen, because a promise nobody can see is not a promise**
+  There is no `/settings/backup`. Everything about backups is invisible: the
+  schedule lives in `BACKUP_AT` in `.env`, the destination in
+  `BACKUP_LOCAL_PATH`, the last result in `.data/last-backup.json`, and the
+  only way to know any of it is to read files on the server.
+  The screen says, in sentences: **when** it runs (daily at 02:30, and that it
+  catches up if the machine was off), **where** it writes, **what** it takes
+  (the database and the files), **when it last ran and whether it was proved
+  restorable** — `last-backup.json` already carries `verified`, `tablesChecked`
+  and `rowsChecked` — and **how far back** the copies go. It offers: run one
+  now, change the destination, and restore.
+  **It must show the warning the script prints and nobody reads:**
+  `BACKUP_LOCAL_PATH` is currently `/mnt/usb-backup`, a Linux path on a Windows
+  machine, so it is ignored and every backup lands on the same disk as the
+  database. That covers a mistake and nothing else — not a dead disk, not a
+  theft, not a fire. On screen, in red, with the fix.
+  *Done when:* Abdou can answer "am I backed up, and where?" without leaving
+  the ERP, and change the destination from it.
+
+- [ ] **U2 · Everything that expires, in one place**
+  Expiry is scattered and mostly invisible. `companyCredential.expiresOn` (CNAS,
+  CASNOS, extrait de rôle, qualification) decides whether a tender folder is
+  complete, and `expiresBeforeDeposit` in `src/domain/tender/dossier.ts` is the
+  state the whole module exists for — a piece valid today and expired on the
+  day of deposit is the thing that gets a bid thrown out. Offer validity,
+  proforma validity and caution validity are the same shape.
+  One view that answers "what expires, when, and what breaks when it does",
+  ordered by date, each row leading to the screen that renews it. Computed, not
+  stored (LAW 1).
+  *Done when:* a credential expiring in three weeks is impossible to miss, and
+  every tender whose folder it breaks is named beside it.
+
+- [ ] **U3 · Settings a person can read**
+  Every row states what it is for and its live state — not a name and a link.
+  Group by what a person is trying to do, not by module. Anything unbuilt says
+  so (that pattern already exists and works). Add the two orphans nobody can
+  reach: `/settings/modules` and `/settings/forms`.
+  *Done when:* somebody who has never seen the system can open Settings and say
+  what each row would do before clicking it.
+
+- [ ] **U4 · The flow, drawn on the screen it happens on** *(2.5 and 2.6 do this
+  for deals and tenders — this is the same job everywhere else)*
+  A person new to the ERP cannot see the shape: mail arrives → it becomes a
+  deal → the deal is priced → an offer goes out → an order comes back →
+  delivery → invoice → payment. Every screen sits somewhere on that line and
+  none of them says where.
+  *Done when:* on any screen in the chain, a person can see where they are, what
+  came before, and what happens next.
+
+- [ ] **U5 · No screen without an action**
+  ~20 screens have no `variant="primary"` at all. Every one gets either a real
+  primary action or an honest sentence saying why there is nothing to do here
+  and where to go instead. `StateBlock` already has the `action` slot.
+  *Done when:* `grep -rL 'variant="primary"' src/app/**/page.tsx` returns only
+  screens that genuinely are read-only, and each of those says so.
 
 ## WAVE 3 — shrink the surface
 
