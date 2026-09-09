@@ -533,7 +533,7 @@ Strictly sequential. Each step is useless without the one above it.
   *Done when:* a tender can be taken from folder to recorded deposit without
   leaving the ERP.
 
-- [ ] **2.8 · Fix `importBpu`'s silent loss**
+- [~] **2.8 · Fix `importBpu`'s silent loss**
   `src/domain/tender/bpu-store.ts:663` updates the `tender` row
   unconditionally; on a deal with no tender row that updates zero rows and the
   provenance the screen header prints is lost.
