@@ -831,7 +831,8 @@
       "hedged": "la formulation est conditionnelle",
       "longSentence": "lu dans un long paragraphe",
       "sameDayAsDeadline": "le jour vient de l'échéance, l'heure de cette phrase",
-      "dayUnknown": "l'heure est claire, le jour ne l'est pas"
+      "dayUnknown": "l'heure est claire, le jour ne l'est pas",
+      "readBelowCue": "l'intitulé est au-dessus de cette ligne — vérifiez que les deux vont ensemble"
     },
     "status": {
       "confirmed": "Confirmé par vous",

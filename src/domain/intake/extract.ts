@@ -248,6 +248,36 @@ function articleAbove(lines: string[], index: number): string | null {
 }
 
 /**
+ * How far below a cue a rule may look for its value.
+ *
+ * TWO, measured rather than chosen (task 2.4b). The case this exists for is
+ * `F_RFQ-…_Projet de Contrat.pdf`, where "ARTICLE 13 – PENALITES DE RETARD" is
+ * a heading and the rate is eleven lines under it. A window big enough to span
+ * that would reach halfway into the next article and read whatever number it
+ * found there — which is not a reader, it is a guess with a citation attached.
+ *
+ * It does not need to be. A French administrative document repeats its own
+ * words: eleven lines below the heading, clause 13.3 says "…paiera au CLIENT
+ * des pénalités de" and the very next line says "retard comme suit : 1 % par
+ * jour…". The cue fires again next to the value, so a window of two lines
+ * reaches it and a window of eleven is never wanted. What is being crossed
+ * here is a LINE BREAK, not a paragraph.
+ */
+const CUE_WINDOW = 2;
+
+/**
+ * "ARTICLE 13 – PENALITES DE RETARD ............................ 12"
+ *
+ * A table of contents carries every heading in the document, so every cue
+ * appears there first — and the line under one heading is the next heading,
+ * not its clause. Four dots in a row are dot leaders and occur nowhere else,
+ * so a cue found on such a line never looks below it.
+ */
+function isContentsEntry(line: string): boolean {
+  return /\.{4,}/.test(line);
+}
+
+/**
  * Sentences, not lines.
  *
  * A citation must be something a person can find on the page with their eye.
@@ -278,13 +308,27 @@ function scoreOf(
   rule: Rule,
   sentence: string,
   cueCount: number,
+  belowCue: boolean,
 ): { score: number; caveat: string | null } {
   let score = rule.base;
   let caveat: string | null = null;
 
+  if (belowCue) {
+    /*
+      The cue and the value are on different lines, so the reader joined two
+      things the document did not put in one sentence. Usually that is a line
+      break inside a clause and the join is exactly right; occasionally it is a
+      heading followed by something unrelated. The person is told which, and
+      told first, because it is the caveat that says where to look.
+    */
+    score -= 0.15;
+    caveat = "readBelowCue";
+  }
   if (sentence.length > 220) {
     score -= 0.2;
-    caveat = "longSentence";
+    // `??`, so a value read below its cue keeps the caveat that says so. With
+    // no `belowCue` this is `null ?? "longSentence"` and nothing changes.
+    caveat = caveat ?? "longSentence";
   }
   if (cueCount > 1) {
     // The same cue appears more than once in the document — which of them is
@@ -314,6 +358,8 @@ export function proposeFields(pages: PageText[]): ProposedField[] {
     sentence: string;
     lineIndex: number;
     read: { value: string; display: string };
+    /** The value was found under the cue rather than in the same sentence. */
+    belowCue: boolean;
   };
 
   // One pass to find everything, so a rule can be scored against how often it
@@ -321,22 +367,93 @@ export function proposeFields(pages: PageText[]): ProposedField[] {
   // deadline that a later article had already postponed.
   const hits: Hit[] = [];
   for (const page of pages) {
-    for (const s of sentencesOf(page.lines)) {
+    const sentences = sentencesOf(page.lines);
+
+    for (const s of sentences) {
       const flat = stripAccents(s.text.toLowerCase());
       for (const rule of RULES) {
         if (!rule.cues.some((cue) => flat.includes(cue))) continue;
-        const read = rule.read(s.text);
-        if (read) hits.push({ rule, page, sentence: s.text, lineIndex: s.lineIndex, read });
+
+        const here = rule.read(s.text);
+        if (here) {
+          hits.push({
+            rule,
+            page,
+            sentence: s.text,
+            lineIndex: s.lineIndex,
+            read: here,
+            belowCue: false,
+          });
+          continue;
+        }
+
+        /*
+          THE CUE IS HERE AND THE VALUE IS NOT.
+
+          A numbered French document says the label and then says the fact, and
+          a PDF text layer breaks both into lines. Looking only inside the cue's
+          own sentence made every such document unreadable — measured in 2.4a on
+          a real draft contract whose penalty rate sits one line below the words
+          "des pénalités de".
+
+          The citation follows the VALUE, not the cue: a person confirming a
+          rate has to be able to see the rate on the page they are sent to, and
+          a citation pointing at a heading is a field nobody can check — the one
+          thing screen 40 may not produce. The caveat says it was read below.
+        */
+        if (isContentsEntry(s.text)) continue;
+
+        for (const under of sentences) {
+          if (under.lineIndex <= s.lineIndex) continue;
+          if (under.lineIndex > s.lineIndex + CUE_WINDOW) break;
+
+          const read = rule.read(under.text);
+          if (!read) continue;
+
+          hits.push({
+            rule,
+            page,
+            sentence: under.text,
+            lineIndex: under.lineIndex,
+            read,
+            belowCue: true,
+          });
+          break;
+        }
       }
     }
   }
 
+  /*
+    ONE READING ARRIVED AT TWICE IS STILL ONE READING.
+
+    "ARTICLE 11 — DÉLAI DE VALIDITÉ DES OFFRES" names the field, and the clause
+    under it — "Le délai de validité des offres est fixé à 90 jours" — states
+    it and carries the cue again. The window turns the heading into a hit on
+    that clause, and the clause makes its own; both land on the same line with
+    the same value, and counting them as two candidates fires
+    `severalCandidates` on a document that said it once. That is the commonest
+    layout there is, so the caveat would have been permanently on.
+
+    Same rule, same page, same line is one hit — and the DIRECT reading wins,
+    because a value found beside its cue is more certain than the same value
+    found under one.
+  */
+  const seen = new Set<string>();
+  const distinct: Hit[] = [];
+  for (const h of [...hits.filter((x) => !x.belowCue), ...hits.filter((x) => x.belowCue)]) {
+    const at = `${h.rule.key}|${h.page.page}|${h.lineIndex}`;
+    if (seen.has(at)) continue;
+    seen.add(at);
+    distinct.push(h);
+  }
+
   const perKey = new Map<FieldKey, number>();
-  for (const h of hits) perKey.set(h.rule.key, (perKey.get(h.rule.key) ?? 0) + 1);
+  for (const h of distinct) perKey.set(h.rule.key, (perKey.get(h.rule.key) ?? 0) + 1);
 
   const candidates = new Map<FieldKey, ProposedField[]>();
-  for (const h of hits) {
-    const { score, caveat } = scoreOf(h.rule, h.sentence, perKey.get(h.rule.key) ?? 1);
+  for (const h of distinct) {
+    const { score, caveat } = scoreOf(h.rule, h.sentence, perKey.get(h.rule.key) ?? 1, h.belowCue);
     const list = candidates.get(h.rule.key) ?? [];
     list.push({
       key: h.rule.key,

@@ -189,6 +189,104 @@ describe("screen 40 — what we read, and where we read it", () => {
     expect(fields).toHaveLength(0);
   });
 
+  /*
+    TASK 2.4b — the label on one line and the fact on the next.
+
+    Verbatim from page 12 of `F_RFQ-…_Projet de Contrat.pdf`. Line 27 carries
+    the cue and ends mid-phrase — "…paiera au CLIENT des pénalités de" — and
+    line 28 opens with "retard comme suit : 1 %". Before 2.4b this document
+    proposed nothing at all, twice over: the article heading has no rate under
+    it within reach, and the clause that has the rate had no cue in its own
+    sentence.
+  */
+  const CONTRACT = page(12, [
+    "ARTICLE 13 – PENALITES DE RETARD",
+    "13.1 Le CLIENT Précisera dans le BON DE COMMANDE la Date de livraison pour toute livraison totale ou",
+    "partielle des BIENS. Le FOURNISSEUR accepte d’effectuer la livraison de tels BIENS avant ou à la",
+    "13.3 En cas de retard dans la livraison des BIENS, Le FOURNISSEUR paiera au CLIENT des pénalités de",
+    "retard comme suit : 1 % par jour du montant total du bon de commande, jusqu’à un maximum",
+    "cumulé de dix pourcent (10%) du montant total du CONTRAT.",
+  ]);
+
+  it("reads a value from the line under the cue that names it", () => {
+    const penalty = proposeFields([CONTRACT]).find((f) => f.key === "latePenalty");
+
+    expect(penalty?.value).toBe("1% par jour");
+    expect(penalty?.caveat).toBe("readBelowCue");
+  });
+
+  it("cites the line the value is on, not the line the cue is on", () => {
+    // A citation pointing at a heading is a field nobody can check, which is
+    // the one thing screen 40 may not produce.
+    const penalty = proposeFields([CONTRACT]).find((f) => f.key === "latePenalty");
+
+    expect(penalty?.citation.quote).toContain("1 % par jour");
+    expect(penalty?.citation.quote).not.toContain("ARTICLE 13");
+    // And the article is still named, because articleAbove walks up the page.
+    expect(penalty?.citation.article).toBe("article 13");
+  });
+
+  it("trusts a value read below a cue less than one read beside it", () => {
+    const below = proposeFields([CONTRACT]).find((f) => f.key === "latePenalty");
+    const beside = proposeFields([
+      page(12, [
+        "ARTICLE 13",
+        "Les pénalités de retard sont de 1 % par jour du montant total du bon de commande.",
+      ]),
+    ]).find((f) => f.key === "latePenalty");
+
+    expect(below?.confidence).toBeLessThan(beside?.confidence ?? 1);
+    expect(beside?.caveat).toBeNull();
+  });
+
+  it("never reads below a cue that is a table of contents entry", () => {
+    /*
+      The contents page carries every heading in the document, and the line
+      under one heading there is the NEXT heading. Verbatim from page 3 of the
+      same file — dot leaders and a page number.
+    */
+    const fields = proposeFields([
+      page(3, [
+        "ARTICLE 13 – PENALITES DE RETARD ....................................................................... 12",
+        "ARTICLE 14 - GARANTIE ................................................................................................. 12",
+        "ARTICLE 15 – NOTIFICATION ........................................................................................ 13",
+      ]),
+    ]);
+    expect(fields).toHaveLength(0);
+  });
+
+  it("does not call a heading and the clause under it two candidates", () => {
+    /*
+      The commonest layout in the RC fixture above: the article heading names
+      the field and the clause under it states the value and names it again.
+      The window reaches that clause from the heading and the clause finds
+      itself — one reading arrived at twice. Counting it as two would leave
+      "the document says this more than once" permanently on screen 40, which
+      is how a caveat stops meaning anything.
+    */
+    const validity = proposeFields(RC).find((f) => f.key === "offerValidity");
+
+    expect(validity?.value).toBe("90 jours");
+    expect(validity?.caveat).toBeNull();
+    expect(validity?.confidence).toBeGreaterThanOrEqual(0.8);
+  });
+
+  it("does not reach past the window into the next article", () => {
+    // Two lines. A heading followed by three lines of prose and then an
+    // unrelated number must stay unread — a window wide enough to span a
+    // paragraph is a guess with a citation attached.
+    const fields = proposeFields([
+      page(5, [
+        "ARTICLE 11 — DÉLAI DE VALIDITÉ DES OFFRES",
+        "Le présent article précise les obligations du soumissionnaire quant à son offre.",
+        "Il est rappelé que toute offre engage son auteur.",
+        "ARTICLE 12 — DÉLAI DE LIVRAISON",
+        "La livraison intervient dans un délai de 15 jours.",
+      ]),
+    ]);
+    expect(fields.map((f) => f.key)).not.toContain("offerValidity");
+  });
+
   it("never cites a quotation longer than a person will read", () => {
     const long =
       "Les offres doivent être déposées au plus tard le 02 septembre 2026 à 10 heures 00 ".repeat(

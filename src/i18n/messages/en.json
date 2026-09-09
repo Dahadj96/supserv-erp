@@ -831,7 +831,8 @@
       "hedged": "the wording is conditional",
       "longSentence": "read from a long paragraph",
       "sameDayAsDeadline": "the day comes from the deadline, the time from this sentence",
-      "dayUnknown": "the time is clear, the day is not"
+      "dayUnknown": "the time is clear, the day is not",
+      "readBelowCue": "the heading is above this line — check that the two belong together"
     },
     "status": {
       "confirmed": "Confirmed by you",
