@@ -192,7 +192,26 @@ const RULES: Rule[] = [
   },
   {
     key: "offerValidity",
-    cues: ["delai de validite", "validite des offres", "duree de validite"],
+    /*
+      The first three are how a règlement de consultation puts it — as a
+      heading, or as a clause naming the thing. Measured on 9 September (task
+      2.4a): none of them appears anywhere in the six readable files of the
+      real RFQ on this database. A private *consultation restreinte* does not
+      name the field, it states the obligation in a sentence —
+
+        "1.6.18 L'offre doit rester valable pour une période minimale de
+         180 jours calendaires à partir de la date…"
+
+      — which is the same fact, written the way a person writes it rather than
+      the way a form labels it. The last two cues are that sentence's verb.
+    */
+    cues: [
+      "delai de validite",
+      "validite des offres",
+      "duree de validite",
+      "rester valable",
+      "demeurer valable",
+    ],
     read: (s) => {
       const m = s.match(/(\d{1,3})\s*(jours?|mois)/i);
       if (!m) return null;

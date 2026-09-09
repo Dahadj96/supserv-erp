@@ -133,6 +133,62 @@ describe("screen 40 — what we read, and where we read it", () => {
     expect(auto.map((f) => f.key)).toContain("offerValidity");
   });
 
+  /*
+    TASK 2.4a — the wording of a real private consultation, not an invented one.
+
+    The three lines below are verbatim from
+    `B_RFQ-10023604-26_Fourniture de Bureau_Instructions aux Soumissionnaires.pdf`,
+    one of the six readable files of the RFQ actually sitting in this database.
+    It was read successfully in 1.11 and proposed nothing at all, and this is
+    the sentence that says why: the fact is there, stated as an obligation on
+    the bidder, and no cue in this file named the verb it is stated with.
+  */
+  it("reads an offer validity a private consultation states rather than labels", () => {
+    const fields = proposeFields([
+      page(4, [
+        "1.6.15 Il est entendu que le SOUMISSIONNAIRE feraune offre la plus adéquation avec la réalité.",
+        "1.6.18 L’offre doit rester valable pour une période minimale de 180 jours calendaires à partir de la date",
+        "1.6.19 Tous les SOUMISSIONNAIRES doivent soumettre dans le dossier de l’offre technique le projet",
+      ]),
+    ]);
+
+    const validity = fields.find((f) => f.key === "offerValidity");
+    expect(validity?.value).toBe("180 jours");
+    expect(validity?.citation.page).toBe(4);
+    expect(validity?.citation.quote).toContain("rester valable");
+  });
+
+  it("still says nothing about a document that only discusses the deadline", () => {
+    /*
+      Also verbatim from that file, page 2. The cue "date limite de depot" IS
+      present — and there is no date on the line, in the lines around it, or
+      anywhere in the six files. The document REFERS to a deadline it never
+      states; the deadline for this RFQ came in the covering email.
+
+      A reader that answered here would be inventing one, which is the failure
+      LAW 2 exists to prevent. Nothing proposed is the correct answer.
+    */
+    const fields = proposeFields([
+      page(2, [
+        "LE SOUMISSIONNAIRE devrait confirmer son engagement pour respecter la date limite de depot de",
+        "l’offre et spécifier le nom, numéro de cellulaire, adresse e-mail de la personne à contacter par le CLIENT",
+      ]),
+    ]);
+    expect(fields.map((f) => f.key)).not.toContain("submissionDeadline");
+  });
+
+  it("does not let the new cue fire on a delivery time", () => {
+    // "15 jours" next to a delivery clause is not an offer validity, and the
+    // widened cue must not turn every duration in a contract into one.
+    const fields = proposeFields([
+      page(3, [
+        "5 DELAI DE LIVRAISON",
+        "formulée par le client, Ce délai devra être inférieur ou égal à 15 jours",
+      ]),
+    ]);
+    expect(fields).toHaveLength(0);
+  });
+
   it("never cites a quotation longer than a person will read", () => {
     const long =
       "Les offres doivent être déposées au plus tard le 02 septembre 2026 à 10 heures 00 ".repeat(
