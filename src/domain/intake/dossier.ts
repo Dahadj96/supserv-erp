@@ -1,6 +1,7 @@
 import { and, asc, eq } from "drizzle-orm";
+import { DOCX_MIME, officeKind, readDocx, readXlsx, XLSX_MIME } from "@/capture/ocr/office";
 import { NeedsOcr, REVIEW_THRESHOLD } from "@/capture/ocr/provider";
-import { readTextLayer } from "@/capture/ocr/text-layer";
+import { readTextLayer, type TextLayer } from "@/capture/ocr/text-layer";
 import { db } from "@/db";
 import { auditEntry } from "@/db/schema/control";
 import { extractionField, intakeDossier, intakePage } from "@/db/schema/dossier";
@@ -20,24 +21,79 @@ export function storagePathFor(dossierId: string, filename: string): string {
 }
 
 /**
- * Take in a PDF: store it, read it, propose fields.
+ * What this file can read, and what each one is stored as.
+ *
+ * A dossier's bytes are served back to the browser (screen 60, and 1.5's
+ * viewer), so the type recorded here is the type that route will declare. It is
+ * written on the row rather than assumed by the reader: `dossierFiles()` used to
+ * say `application/pdf` for every dossier on the grounds that `ingestPdf` was
+ * the only writer and put it there — true until this task, and the kind of
+ * claim that goes quietly wrong the day it stops being true.
+ */
+const READABLE: Record<string, { mime: string; read: (file: Buffer) => Promise<TextLayer> }> = {
+  pdf: { mime: "application/pdf", read: readTextLayer },
+  docx: { mime: DOCX_MIME, read: readDocx },
+  xlsx: { mime: XLSX_MIME, read: readXlsx },
+};
+
+export type DossierKind = keyof typeof READABLE;
+
+/**
+ * Which reader a file needs, from its name and whatever type came with it.
+ *
+ * Null means nothing here can read it — a .doc from 2003, a .rar, an image.
+ * The caller decides what to do about that; this function does not guess.
+ */
+export function dossierKindOf(filename: string, mime?: string | null): DossierKind | null {
+  const name = filename.toLowerCase();
+  const type = (mime ?? "").split(";")[0]?.trim().toLowerCase() ?? "";
+  if (name.endsWith(".pdf") || type === "application/pdf" || type === "application/x-pdf") {
+    return "pdf";
+  }
+  return officeKind(filename, mime ?? null);
+}
+
+/** Thrown when a file is not one of the three kinds above. */
+export class UnreadableKind extends Error {
+  constructor(readonly filename: string) {
+    super("unreadableKind");
+    this.name = "UnreadableKind";
+  }
+}
+
+/**
+ * Take in a document: store it, read it, propose fields.
+ *
+ * PDF, Word and Excel, through one path — because everything after the reading
+ * is identical, and that is the point of 1.6: `intake_page`, `proposeFields`,
+ * screen 40 and its citations never learn which reader produced the text.
  *
  * A dossier whose pages could not all be read is still created, still
  * reviewable, and says which pages it could not read. Refusing the whole file
  * because page 7 is a scan would leave the other thirteen pages unread too.
  */
-export async function ingestPdf(opts: {
+export async function ingestDocument(opts: {
   filename: string;
   body: Buffer;
   actorId: string;
+  /** What the file said it was, when something declared it. */
+  mime?: string | null;
   messageId?: string;
   attachmentId?: string;
 }): Promise<{ dossierId: string; fields: number; unreadPages: number[] }> {
+  const kind = dossierKindOf(opts.filename, opts.mime);
+  // Nothing is stored and no row is written: a file this cannot read is not a
+  // dossier that failed, it is a file that was never a dossier.
+  if (!kind) throw new UnreadableKind(opts.filename);
+
+  const format = READABLE[kind] as (typeof READABLE)[string];
+
   const [row] = await db
     .insert(intakeDossier)
     .values({
       filename: opts.filename,
       storagePath: "",
+      contentType: format.mime,
       messageId: opts.messageId ?? null,
       attachmentId: opts.attachmentId ?? null,
       status: "reading",
@@ -47,22 +103,19 @@ export async function ingestPdf(opts: {
   const dossierId = row?.id as string;
   const path = storagePathFor(dossierId, opts.filename);
 
-  await storageFor("working").put({
-    path,
-    body: opts.body,
-    mime: "application/pdf",
-  });
+  await storageFor("working").put({ path, body: opts.body, mime: format.mime });
 
   let unreadPages: number[] = [];
-  let provider = "text-layer";
+  let provider = kind === "pdf" ? "text-layer" : kind;
 
-  // A file that turns out not to be a PDF at all — a scanner set to JPEG, a
-  // download that stopped halfway — must not leave a dossier sitting in
-  // `reading` for ever. The row is marked failed and the error is re-thrown so
-  // the caller can leave the file where the person put it.
-  let layer: Awaited<ReturnType<typeof readTextLayer>>;
+  // A file that turns out not to be what its name claimed — a scanner set to
+  // JPEG, a .docx that is really a .doc, a download that stopped halfway — must
+  // not leave a dossier sitting in `reading` for ever. The row is marked failed
+  // and the error is re-thrown so the caller can leave the file where the
+  // person put it.
+  let layer: TextLayer;
   try {
-    layer = await readTextLayer(opts.body);
+    layer = await format.read(opts.body);
   } catch (error) {
     await db
       .update(intakeDossier)
@@ -77,6 +130,7 @@ export async function ingestPdf(opts: {
       action: "unreadable",
       after: {
         filename: opts.filename,
+        kind,
         error: error instanceof Error ? error.message : "unknown",
       },
       sourceScreen: "39",
@@ -84,11 +138,12 @@ export async function ingestPdf(opts: {
 
     throw error;
   }
+
   if (layer.thinPages.length > 0 || layer.needsBidi) {
     // The OCR container is not on this machine yet (docs/OCR.md). The pages
     // that DID read are kept and reviewable; the rest are named.
     unreadPages = layer.thinPages;
-    provider = "text-layer-partial";
+    provider = `${provider}-partial`;
   }
 
   if (layer.pages.length > 0) {

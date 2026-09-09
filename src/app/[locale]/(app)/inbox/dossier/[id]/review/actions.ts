@@ -6,8 +6,9 @@ import { getSession } from "@/auth/session";
 import {
   confirmAllHighConfidence,
   confirmField,
-  ingestPdf,
+  ingestDocument,
   rejectField,
+  UnreadableKind,
 } from "@/domain/intake/dossier";
 import { redirect } from "@/i18n/navigation";
 
@@ -57,7 +58,13 @@ export async function confirmAll(locale: string, dossierId: string) {
   redirect({ href: `/inbox/dossier/${dossierId}/review?confirmed=${confirmed}`, locale });
 }
 
-/** Screen 39 — a PDF arrives and is read. Nothing is decided by reading it. */
+/**
+ * Screen 39 — a document arrives and is read. Nothing is decided by reading it.
+ *
+ * A PDF, a Word file or a spreadsheet since 1.6: a CCTP is very often a .docx
+ * and a supplier's price list is nearly always an .xlsx, and the text is in
+ * both of them.
+ */
 export async function uploadDossier(locale: string, formData: FormData) {
   const session = await requireUser(locale);
 
@@ -67,11 +74,23 @@ export async function uploadDossier(locale: string, formData: FormData) {
     return;
   }
 
-  const { dossierId } = await ingestPdf({
-    filename: file.name,
-    body: Buffer.from(await file.arrayBuffer()),
-    actorId: session.userId,
-  });
+  let dossierId: string;
+  try {
+    ({ dossierId } = await ingestDocument({
+      filename: file.name,
+      body: Buffer.from(await file.arrayBuffer()),
+      mime: file.type || null,
+      actorId: session.userId,
+    }));
+  } catch (error) {
+    // A kind nothing here can read writes no row and stores no bytes, so the
+    // person is sent back with the reason rather than to a dossier that failed.
+    if (error instanceof UnreadableKind) {
+      redirect({ href: "/inbox/dossier?error=unreadableKind", locale });
+      return;
+    }
+    throw error;
+  }
 
   redirect({ href: `/inbox/dossier/${dossierId}/review`, locale });
 }

@@ -45,9 +45,14 @@ export default async function DossierPage({
 
       <div className="mx-4 md:mx-7 mt-5 flex items-start gap-3 rounded-[var(--radius-control)] border border-accent bg-accent-bg px-4 py-3">
         <Info className="mt-px size-4 shrink-0 text-accent-ink" aria-hidden />
-        <p className="max-w-[860px] text-tiny leading-relaxed text-accent-ink">
-          {t("dossier.textLayerFirst")}
-        </p>
+        <div className="max-w-[860px]">
+          <p className="text-tiny leading-relaxed text-accent-ink">{t("dossier.textLayerFirst")}</p>
+          {/* What "page 3" means depends on what was read, and a citation is
+              only worth something if the reader knows what it points at. */}
+          <p className="mt-1.5 text-micro leading-relaxed text-accent-ink">
+            {t("dossier.sheetsNotPages")}
+          </p>
+        </div>
       </div>
 
       {error ? (
@@ -65,7 +70,10 @@ export default async function DossierPage({
               <input
                 type="file"
                 name="file"
-                accept="application/pdf"
+                /* The three kinds `ingestDocument` can read. A file picker's
+                   filter is a convenience and not a guard — the action refuses
+                   anything else by name, whatever the browser let through. */
+                accept=".pdf,.docx,.xlsx,.xlsm,application/pdf,application/vnd.openxmlformats-officedocument.wordprocessingml.document,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
                 required
                 className="text-tiny file:me-3 file:rounded-[var(--radius-control)] file:border file:border-line file:bg-surface file:px-2.5 file:py-1.5 file:text-tiny"
               />

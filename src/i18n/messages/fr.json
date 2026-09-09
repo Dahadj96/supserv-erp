@@ -835,16 +835,18 @@
   },
   "dossier": {
     "title": "Lire un document",
-    "subtitle": "un PDF entre, et ce qu'il dit en sort — avec la page où il le dit",
-    "textLayerFirst": "Un PDF numérique est lu depuis sa propre couche texte : instantané, exact, et rien ne quitte cette machine. Un document scanné demande l'OCR, qui tourne dans un conteneur pas encore installé — ces pages sont nommées plutôt que devinées.",
+    "subtitle": "un document entre, et ce qu'il dit en sort — avec la page où il le dit",
+    "textLayerFirst": "Un PDF numérique est lu depuis sa propre couche texte, et un fichier Word ou Excel directement depuis son contenu : instantané, exact, et rien ne quitte cette machine. Un document scanné demande l'OCR, qui tourne dans un conteneur pas encore installé — ces pages sont nommées plutôt que devinées.",
     "readOne": "Lire un document",
-    "file": "PDF",
+    "file": "PDF, Word ou Excel",
     "read": "Le lire",
     "recent": "Documents lus",
     "nPages": "{n, plural, =1 {1 page} other {# pages}}",
+    "sheetsNotPages": "Un fichier Excel est lu feuille par feuille, et un fichier Word n'a pas de pages propres — ici, une page est un saut que l'auteur a posé.",
     "review": "Vérifier",
     "error": {
-      "noFile": "Choisissez d'abord un PDF."
+      "noFile": "Choisissez d'abord un fichier.",
+      "unreadableKind": "Rien ici ne sait encore lire ce type de fichier. Un PDF, un document Word (.docx) ou un tableur (.xlsx) peuvent être lus ; le fichier n'a pas été conservé."
     }
   },
   "setup": {

@@ -27,8 +27,21 @@ export const intakeDossier = pgTable("intake_dossier", {
 
   filename: text("filename").notNull(),
   storagePath: text("storage_path").notNull(),
+  /**
+   * What the bytes were stored as — and therefore what `/api/files/dossier:<id>`
+   * declares when it serves them back.
+   *
+   * Written by the ingest rather than assumed by the reader. Screen 60 used to
+   * say `application/pdf` for every dossier, on the true-at-the-time grounds
+   * that the only writer put it there; since 1.6 a dossier may be a Word or an
+   * Excel file, and a claim like that is the kind that goes quietly wrong the
+   * day it stops holding. Null on rows written before this column, which the
+   * files screen reads as "no type declared" — the same honest answer as an
+   * attachment nobody typed one for.
+   */
+  contentType: text("content_type"),
 
-  /** text-layer | ocr | rapid | azure — which of the four actually read it. */
+  /** text-layer | docx | xlsx | ocr | rapid | azure — which reader read it. */
   provider: text("provider"),
   /** LAW 4 — the language the DOCUMENT is in, not the language of the reader. */
   locale: text("locale"),

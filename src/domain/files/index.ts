@@ -132,6 +132,7 @@ async function dossierFiles(): Promise<FileRow[]> {
       id: intakeDossier.id,
       filename: intakeDossier.filename,
       storagePath: intakeDossier.storagePath,
+      contentType: intakeDossier.contentType,
       status: intakeDossier.status,
       at: intakeDossier.createdAt,
     })
@@ -145,17 +146,22 @@ async function dossierFiles(): Promise<FileRow[]> {
       kind: "dossier" as const,
       filename: r.filename,
       /*
-        `ingestPdf` is the only writer and it puts the bytes with
-        `mime: "application/pdf"`. Repeating that claim here is not sniffing —
-        it is reading back what the writer declared — and it is what lets the
-        serving route send a dossier inline instead of as a download.
+        The type the INGEST recorded when it stored the bytes. Reading back what
+        the writer declared is not sniffing, and it is what lets the serving
+        route send a dossier inline instead of as a download.
+
+        It used to be the constant `application/pdf`, on the grounds that
+        `ingestPdf` was the only writer and put it there. That was true until
+        1.6, when Word and Excel became readable — so the claim moved onto the
+        row (`intake_dossier.content_type`) where the writer states it, rather
+        than staying here where a reader repeated it.
 
         Except when the read FAILED. Those rows keep their bytes on purpose, and
-        the reason a dossier fails is usually that the file was not the PDF
+        the reason a dossier fails is usually that the file was not the thing
         somebody thought it was. Claiming a type for it would be asserting the
         very thing the row records not being true.
       */
-      contentType: r.status === "failed" ? null : "application/pdf",
+      contentType: r.status === "failed" ? null : r.contentType,
       // The dossier row records pages, not bytes. Printing "0 B" would be a
       // measurement that was never taken; printing nothing is the truth.
       bytes: null,

@@ -835,16 +835,18 @@
   },
   "dossier": {
     "title": "Read a document",
-    "subtitle": "a PDF goes in, and what it says comes out — with the page it said it on",
-    "textLayerFirst": "A digital PDF is read from its own text layer: instant, exact, and nothing leaves this machine. A scanned one needs OCR, which runs in a container that is not set up yet — those pages are named rather than guessed at.",
+    "subtitle": "a document goes in, and what it says comes out — with the page it said it on",
+    "textLayerFirst": "A digital PDF is read from its own text layer, and a Word or Excel file straight from what it contains: instant, exact, and nothing leaves this machine. A scanned document needs OCR, which runs in a container that is not set up yet — those pages are named rather than guessed at.",
     "readOne": "Read a document",
-    "file": "PDF",
+    "file": "PDF, Word or Excel",
     "read": "Read it",
     "recent": "Read so far",
     "nPages": "{n, plural, =1 {1 page} other {# pages}}",
+    "sheetsNotPages": "An Excel file is read one sheet at a time, and a Word file has no pages of its own — a page here is a break the author put in.",
     "review": "Review",
     "error": {
-      "noFile": "Choose a PDF first."
+      "noFile": "Choose a file first.",
+      "unreadableKind": "Nothing here can read that kind of file yet. A PDF, a Word document (.docx) or a spreadsheet (.xlsx) can be read; the file has not been kept."
     }
   },
   "setup": {

@@ -1,6 +1,5 @@
 import { rm } from "node:fs/promises";
 import { resolve } from "node:path";
-import { deflateRawSync } from "node:zlib";
 import { eq, inArray } from "drizzle-orm";
 import { afterAll, beforeAll, describe, expect, it } from "vitest";
 import { db } from "@/db";
@@ -10,6 +9,7 @@ import { expandArchiveFor } from "@/domain/intake/archive";
 import { storagePathFor } from "@/domain/intake/attachments";
 import { storageFor } from "@/storage";
 import { sha256 } from "@/storage/local";
+import { buildZip } from "../helpers/zip";
 
 /**
  * 1.4 — a `dossier.zip` becomes files a person can read.
@@ -21,66 +21,6 @@ import { sha256 } from "@/storage/local";
  * duplicate a dossier — a queue may deliver the same job twice, and a tender
  * folder listed twice is a folder nobody can count.
  */
-
-function crc32(bytes: Buffer): number {
-  let crc = 0xffffffff;
-  for (const byte of bytes) {
-    crc ^= byte;
-    for (let bit = 0; bit < 8; bit++) crc = (crc >>> 1) ^ (0xedb88320 & -(crc & 1));
-  }
-  return (crc ^ 0xffffffff) >>> 0;
-}
-
-/** A minimal ZIP: local headers, a central directory, an end record. */
-function buildZip(entries: { name: string; body: Buffer }[]): Buffer {
-  const locals: Buffer[] = [];
-  const centrals: Buffer[] = [];
-  let offset = 0;
-
-  for (const entry of entries) {
-    const name = Buffer.from(entry.name, "utf8");
-    const payload = deflateRawSync(entry.body);
-    const crc = crc32(entry.body);
-
-    const local = Buffer.alloc(30 + name.byteLength);
-    local.writeUInt32LE(0x04034b50, 0);
-    local.writeUInt16LE(20, 4);
-    local.writeUInt16LE(8, 8);
-    local.writeUInt16LE(0x21, 12);
-    local.writeUInt32LE(crc, 14);
-    local.writeUInt32LE(payload.byteLength, 18);
-    local.writeUInt32LE(entry.body.byteLength, 22);
-    local.writeUInt16LE(name.byteLength, 26);
-    name.copy(local, 30);
-
-    const central = Buffer.alloc(46 + name.byteLength);
-    central.writeUInt32LE(0x02014b50, 0);
-    central.writeUInt16LE(20, 4);
-    central.writeUInt16LE(20, 6);
-    central.writeUInt16LE(8, 10);
-    central.writeUInt16LE(0x21, 14);
-    central.writeUInt32LE(crc, 16);
-    central.writeUInt32LE(payload.byteLength, 20);
-    central.writeUInt32LE(entry.body.byteLength, 24);
-    central.writeUInt16LE(name.byteLength, 28);
-    central.writeUInt32LE(offset, 42);
-    name.copy(central, 46);
-
-    locals.push(local, payload);
-    centrals.push(central);
-    offset += local.byteLength + payload.byteLength;
-  }
-
-  const directory = Buffer.concat(centrals);
-  const end = Buffer.alloc(22);
-  end.writeUInt32LE(0x06054b50, 0);
-  end.writeUInt16LE(entries.length, 8);
-  end.writeUInt16LE(entries.length, 10);
-  end.writeUInt32LE(directory.byteLength, 12);
-  end.writeUInt32LE(offset, 16);
-
-  return Buffer.concat([...locals, directory, end]);
-}
 
 const stamp = Date.now().toString().slice(-6);
 

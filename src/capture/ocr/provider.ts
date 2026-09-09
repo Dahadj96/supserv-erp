@@ -114,6 +114,22 @@ export async function extractText(file: Buffer, mime: string): Promise<OcrResult
     throw new NeedsOcr(layer.thinPages, layer.totalPages);
   }
 
+  /*
+    1b. Word and Excel CONTAIN their text — task 1.6.
+
+    Neither is OCR and neither is a PDF text layer, but both belong at step 1
+    for the same reason: the text is in the file, free and exact, and reading
+    it is not a guess about pixels. `provider` says `text-layer` on the way
+    out, which is what that value has always meant — this is what the file
+    says, not what something read off a picture of it.
+  */
+  const { officeKind, readDocx, readXlsx } = await import("./office");
+  const kind = officeKind("", mime);
+  if (kind) {
+    const { toOcrResult } = await import("./text-layer");
+    return toOcrResult(kind === "docx" ? await readDocx(file) : await readXlsx(file));
+  }
+
   // 3. if OCR confidence < REVIEW_THRESHOLD, escalate to RapidOCR
   // 4. anything below threshold goes to extraction review regardless. LAW 2.
   throw new NeedsOcr([], 0);

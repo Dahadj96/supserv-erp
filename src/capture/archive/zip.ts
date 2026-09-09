@@ -156,7 +156,20 @@ export function safeEntryPath(raw: string): string | null {
  * back bytes, so the guards above can be tested against a hostile zip without a
  * store, a row or a message.
  */
-export async function readZip(bytes: Buffer): Promise<ZipReading> {
+export async function readZip(
+  bytes: Buffer,
+  /**
+   * Which entries are wanted. Everything else is stepped over without being
+   * inflated, and without being recorded as a refusal — it was not turned away,
+   * it was not asked for.
+   *
+   * A `.docx` is a zip (task 1.6) and the text lives in two or three of its
+   * XML parts; the rest is images, fonts and theme data. Reading a 40 MB Word
+   * file into memory to find one XML file would be spending the disk to answer
+   * a question that named the file it wanted.
+   */
+  want?: (path: string) => boolean,
+): Promise<ZipReading> {
   let zip: ZipFile;
   try {
     zip = await openZip(bytes);
@@ -188,6 +201,9 @@ export async function readZip(bytes: Buffer): Promise<ZipReading> {
         refused.push({ path: name, reason: "unsafePath" });
         continue;
       }
+
+      // Not wanted is not refused. Nothing is inflated and nothing is said.
+      if (want && !want(path)) continue;
 
       if (isNestedArchive(path)) {
         // One level — and the inner archive is still kept as a file, so

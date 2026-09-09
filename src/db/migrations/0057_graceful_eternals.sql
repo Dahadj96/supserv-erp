@@ -1,0 +1,1 @@
+ALTER TABLE "intake_dossier" ADD COLUMN "content_type" text;

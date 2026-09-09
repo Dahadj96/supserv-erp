@@ -1,6 +1,6 @@
 import { mkdir, readdir, readFile, rename, stat } from "node:fs/promises";
 import { isAbsolute, join } from "node:path";
-import { ingestPdf } from "@/domain/intake/dossier";
+import { ingestDocument } from "@/domain/intake/dossier";
 
 /**
  * Screen 41 — the scan station.
@@ -103,7 +103,10 @@ export async function sweepFolder(opts: {
 
     try {
       const body = await readFile(from);
-      const result = await ingestPdf({ filename, body, actorId });
+      // A scan station scans to PDF — `isPdf` above is what this sweep takes,
+      // and it is not widened here. A folder somebody drops a spreadsheet into
+      // is a different feature from a scanner writing what it produced.
+      const result = await ingestDocument({ filename, body, actorId, mime: "application/pdf" });
 
       await mkdir(done, { recursive: true });
       await rename(from, join(done, uniqueName(filename, stampNow())));
