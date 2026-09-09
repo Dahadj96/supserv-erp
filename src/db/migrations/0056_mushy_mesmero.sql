@@ -1,0 +1,1 @@
+ALTER TABLE "intake_attachment" ADD COLUMN "parent_attachment_id" uuid;

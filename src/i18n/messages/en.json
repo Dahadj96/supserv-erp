@@ -3373,6 +3373,7 @@
     "whatThisDoes": "Creates the company, saves the sender as a contact under it, and opens the enquiry. Once.",
     "showFile": "Show",
     "hideFile": "Hide",
+    "filesInside": "{n, plural, one {# file inside} other {# files inside}}",
     "noPreviewYet": "no preview yet",
     "notCopiedYet": "not copied here yet",
     "copiesArriveLater": "Attachments are copied in the background, so a file can be listed here before its copy arrives. The original stays in Outlook either way."
@@ -3715,6 +3716,7 @@
       "discard": "Discarded",
       "dismiss": "Dismissed",
       "edit": "Edited",
+      "expand": "Archive opened",
       "fetch": "Fetched",
       "fill": "Filled in",
       "import": "Imported",

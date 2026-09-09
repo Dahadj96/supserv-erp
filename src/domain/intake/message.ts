@@ -26,6 +26,12 @@ export type MessageAttachment = {
   looksLike: string | null;
   /** Null while the bytes have not been fetched. Today that is always. */
   storagePath: string | null;
+  /**
+   * The archive this file came out of, when it came out of one. `filename` is
+   * then the path inside it — `annexes/bordereau.pdf` — and the screen lists it
+   * under the archive rather than beside it.
+   */
+  parentAttachmentId: string | null;
 };
 
 export type MessageDetail = {
@@ -92,6 +98,7 @@ export async function messageDetail(id: string): Promise<MessageDetail | null> {
       sizeBytes: intakeAttachment.sizeBytes,
       looksLike: intakeAttachment.looksLike,
       storagePath: intakeAttachment.storagePath,
+      parentAttachmentId: intakeAttachment.parentAttachmentId,
     })
     .from(intakeAttachment)
     .where(eq(intakeAttachment.messageId, id))

@@ -3373,6 +3373,7 @@
     "whatThisDoes": "Crée la société, enregistre l'expéditeur comme contact chez elle, et ouvre l'affaire. Une seule fois.",
     "showFile": "Afficher",
     "hideFile": "Masquer",
+    "filesInside": "{n, plural, one {# fichier à l’intérieur} other {# fichiers à l’intérieur}}",
     "noPreviewYet": "pas d’aperçu",
     "notCopiedYet": "pas encore copiée ici",
     "copiesArriveLater": "Les pièces jointes sont copiées en arrière-plan : un fichier peut figurer ici avant que sa copie n’arrive. L’original reste dans Outlook dans tous les cas."
@@ -3715,6 +3716,7 @@
       "discard": "Mis à la corbeille",
       "dismiss": "Écarté",
       "edit": "Modifié",
+      "expand": "Archive ouverte",
       "fetch": "Récupéré",
       "fill": "Renseigné",
       "import": "Importé",

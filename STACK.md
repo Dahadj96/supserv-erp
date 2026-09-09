@@ -134,6 +134,7 @@ stored text keeps the language it was typed in.
 | **@microsoft/microsoft-graph-client** | `3.0.7` | Shared mailbox → Inbox, drafts back out, SharePoint filing |
 | **exceljs** | `4.4.0` | Screens 62, 73. Use this, not `xlsx` — the npm `xlsx` package is stale at 0.18.5 |
 | **papaparse** | `5.6.0` | CSV |
+| **yauzl** | `3.4.0` | Added 9 September 2026 (task 1.4). A tender dossier usually arrives as one `dossier.zip`, and until it was expanded the ERP showed a paperclip with nothing readable behind it. Chosen over a one-call unzip **because the archive is hostile**: `lazyEntries` reads the central directory first, so an entry's declared size is refused before a byte is inflated, and each stream is counted as it arrives so a header that lies costs one entry rather than the disk. A library that returns a map of decompressed buffers has already spent the disk by the time you could check. Free, MIT. Types: `@types/yauzl` (dev) |
 | **@azure-rest/ai-document-intelligence** | `1.1.0` | OCR — see §3 |
 | **sharp** | `0.35.3` | Phone photos are 4 MB. Resize before storing — screens 61, 77, 86 |
 

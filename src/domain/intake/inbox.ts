@@ -100,9 +100,14 @@ export async function listInbox(
       // A correlated count rather than a join and a group by: this list is
       // already grouped by nothing, and a join to a one-to-many would multiply
       // the rows it is trying to show.
+      // Files the MESSAGE carried, so a `dossier.zip` counts once however many
+      // files came out of it (task 1.4). The row says "1 attachment" and the
+      // message says what was inside — the other way round, a paperclip that
+      // reads 7 for one zip is a count of our own unpacking.
       attachments: sql<number>`(
         select count(*)::int from ${intakeAttachment}
         where ${intakeAttachment.messageId} = ${intakeMessage.id}
+          and ${intakeAttachment.parentAttachmentId} is null
       )`,
     })
     .from(intakeMessage)

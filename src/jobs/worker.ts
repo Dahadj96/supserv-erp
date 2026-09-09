@@ -1,5 +1,6 @@
 import { type Job, PgBoss } from "pg-boss";
 import { MailboxNotScoped } from "@/capture/mail/graph";
+import { expandArchiveFor } from "@/domain/intake/archive";
 import { fetchAttachmentFor } from "@/domain/intake/attachments";
 import { pollMailbox } from "@/domain/intake/mailbox";
 import { type AttachmentFetchJob, type MailboxPollJob, QUEUES } from "./queue";
@@ -74,6 +75,33 @@ async function main() {
         console.log(
           `[worker] attachment ${attachmentId}: ${outcome}${reason ? ` — ${reason}` : ""}`,
         );
+
+        /*
+          AN ARCHIVE IS OPENED ONCE ITS BYTES ARE HERE.
+
+          Here rather than inside `fetchAttachmentFor` for the same reason the
+          fetch reports instead of deciding: unpacking is local work on bytes
+          that have already arrived, and every way it can fail is terminal —
+          a zip bomb, a corrupt file, a `.zip` that is not one. Making the
+          fetch job fail on it would pull 12 MB over the fibre again to be
+          refused again, five times.
+
+          `already` counts as well as `stored`: a queue may deliver the same
+          job twice, and a delivery that stored the bytes and then died before
+          unpacking must be finishable by the next one. The archive's own row
+          is the guard against doing it twice.
+        */
+        if (outcome === "stored" || outcome === "already") {
+          const expansion = await expandArchiveFor(attachmentId);
+          if (expansion.outcome !== "notArchive") {
+            console.log(
+              `[worker] archive ${attachmentId}: ${expansion.outcome}` +
+                `${expansion.files !== undefined ? ` — ${expansion.files} files` : ""}` +
+                `${expansion.reason ? ` — ${expansion.reason}` : ""}` +
+                `${expansion.refused?.length ? `, ${expansion.refused.length} refused` : ""}`,
+            );
+          }
+        }
 
         // The only outcome worth trying again. `linked` has no bytes to fetch and
         // `gone` has no row to fetch them for; throwing on either would keep the

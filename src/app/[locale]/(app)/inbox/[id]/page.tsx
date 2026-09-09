@@ -144,6 +144,30 @@ export default async function MessagePage({
     message.attachments.find((a) => a.id === openFile && a.storagePath !== null) ?? null;
   const openMode = openAttachment ? previewMode(openAttachment.contentType) : null;
 
+  /*
+    AN ARCHIVE, AND WHAT CAME OUT OF IT.
+
+    A `dossier.zip` keeps its own row and its own bytes — it is what was
+    actually sent, and a tender dossier is evidence. The files inside it are
+    rows of their own (task 1.4), each carrying its path inside the archive as
+    its name, and they are listed UNDER the archive rather than mixed in with
+    what the message carried: otherwise "seven attachments" means one zip and
+    six things that were in it, and the count stops meaning anything.
+  */
+  const insideArchive = new Map<string, typeof message.attachments>();
+  for (const file of message.attachments) {
+    if (!file.parentAttachmentId) continue;
+    const group = insideArchive.get(file.parentAttachmentId);
+    if (group) group.push(file);
+    else insideArchive.set(file.parentAttachmentId, [file]);
+  }
+
+  const arrived = message.attachments.filter((file) => !file.parentAttachmentId);
+  const listed = arrived.flatMap((file) => [
+    { file, inside: false },
+    ...(insideArchive.get(file.id) ?? []).map((child) => ({ file: child, inside: true })),
+  ]);
+
   /** `/api/files/attachment:<uuid>` — the permission and the headers live there. */
   const bytesHref = (attachmentId: string) =>
     `/api/files/${encodeURIComponent(fileId("attachment", attachmentId))}`;
@@ -220,7 +244,7 @@ export default async function MessagePage({
           {message.attachments.length > 0 ? (
             <div className="mt-5">
               <h2 className="text-micro uppercase tracking-wide text-muted">
-                {t("message.attachments", { n: message.attachments.length })}
+                {t("message.attachments", { n: arrived.length })}
               </h2>
 
               {/*
@@ -235,17 +259,18 @@ export default async function MessagePage({
                 would be unusable and a dossier is usually read once.
               */}
               <ul className="mt-2 flex flex-col gap-1.5">
-                {message.attachments.map((file) => {
+                {listed.map(({ file, inside }) => {
                   const stored = file.storagePath !== null;
                   const mode = stored ? previewMode(file.contentType) : null;
                   const open = openAttachment?.id === file.id;
+                  const holds = insideArchive.get(file.id)?.length ?? 0;
 
                   return (
                     <li
                       key={file.id}
                       className={`flex flex-wrap items-center gap-2 rounded-[var(--radius-control)] border bg-surface px-3 py-2 ${
                         open ? "border-ink" : "border-line-subtle"
-                      }`}
+                      } ${inside ? "ms-6" : ""}`}
                     >
                       <Paperclip className="size-3.5 shrink-0 text-muted" aria-hidden />
 
@@ -264,6 +289,14 @@ export default async function MessagePage({
 
                       {file.looksLike && file.looksLike !== "unknown" ? (
                         <Badge tone="neutral">{t(`inbox.attachment.${file.looksLike}`)}</Badge>
+                      ) : null}
+
+                      {/* The archive says what came out of it; the archive itself
+                          is still here, still downloadable, and never deleted. */}
+                      {holds > 0 ? (
+                        <span className="text-micro text-muted">
+                          {t("message.filesInside", { n: holds })}
+                        </span>
                       ) : null}
 
                       <span className="ms-auto flex shrink-0 items-center gap-3">

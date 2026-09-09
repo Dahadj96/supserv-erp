@@ -139,6 +139,23 @@ export const intakeAttachment = pgTable("intake_attachment", {
    * captured before this column, and on any channel that has no such id.
    */
   externalId: text("external_id"),
+  /**
+   * Set when this row is a file that came OUT of an archive — the archive's own
+   * attachment row.
+   *
+   * A `dossier.zip` stays exactly where it was, with its bytes, and its contents
+   * become rows beside it: the original is evidence and is never deleted, and a
+   * dossier is only a dossier because of what is in it. `filename` on a child
+   * carries the path inside the archive (`annexes/bordereau.pdf`), so where a
+   * file sat in the folder somebody sent survives.
+   *
+   * It is also the guard against expanding twice — a queue may deliver a job
+   * twice — and against expanding a second level: a row that HAS a parent is
+   * never itself opened. `src/capture/archive/zip.ts` says why one level.
+   *
+   * Null on everything that arrived as its own attachment, which is nearly all.
+   */
+  parentAttachmentId: uuid("parent_attachment_id"),
   contentType: text("content_type"),
   sizeBytes: integer("size_bytes"),
   /**
