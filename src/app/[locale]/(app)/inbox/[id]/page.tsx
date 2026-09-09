@@ -13,6 +13,7 @@ import { commitAvailability } from "@/domain/intake/commit";
 import { markRead } from "@/domain/intake/inbox";
 import { messageDetail, neighbours } from "@/domain/intake/message";
 import { ROUTED_TO } from "@/domain/intake/routing";
+import { tenderHint } from "@/domain/intake/tender-hint";
 import { searchParties } from "@/domain/search";
 import { Link } from "@/i18n/navigation";
 import {
@@ -167,6 +168,20 @@ export default async function MessagePage({
     { file, inside: false },
     ...(insideArchive.get(file.id) ?? []).map((child) => ({ file: child, inside: true })),
   ]);
+
+  /*
+    DOES THIS LOOK LIKE A TENDER?
+
+    Read off `arrived` rather than `message.attachments`, so what came out of a
+    zip is not counted a second time — the archive is one signal and its
+    contents are not eight more. Nothing here writes: the panel proposes and
+    the person presses, or does not (LAW 2).
+  */
+  const hint = tenderHint({
+    classifiedAs: message.classifiedAs,
+    subject: message.subject,
+    attachments: arrived,
+  });
 
   /** `/api/files/attachment:<uuid>` — the permission and the headers live there. */
   const bytesHref = (attachmentId: string) =>
@@ -434,6 +449,39 @@ export default async function MessagePage({
               <p className="mt-2 rounded-[var(--radius-control)] bg-critical-bg px-3 py-2 text-micro leading-relaxed text-critical-ink">
                 {t.has(`message.error.${error}`) ? t(`message.error.${error}`) : error}
               </p>
+            ) : null}
+
+            {/*
+              THE SUGGESTION, BESIDE THE BUTTONS AND NEVER INSTEAD OF THEM.
+
+              It says what it noticed and names every signal, so a person can
+              disagree with one of them rather than with the machine. Pressing
+              reclassifies — the same act as the select box above, and undone
+              the same way — and only then does the primary button below change
+              from an enquiry to a tender. Nothing here creates anything.
+            */}
+            {hint.show ? (
+              <div className="mt-2.5 rounded-[var(--radius-control)] bg-accent-bg p-3">
+                <p className="text-micro font-medium leading-relaxed text-accent-ink">
+                  {t("message.looksLikeTender")}
+                </p>
+                <ul className="mt-1.5 flex list-disc flex-col gap-0.5 ps-4">
+                  {hint.signals.map((signal) => (
+                    <li key={signal} className="text-micro leading-relaxed text-secondary">
+                      {t(`message.tenderSignal.${signal}`, { n: arrived.length })}
+                    </li>
+                  ))}
+                </ul>
+                <form action={setClassification.bind(null, locale, id)} className="mt-2.5">
+                  <input type="hidden" name="to" value="tender" />
+                  <Button type="submit" variant="secondary" size="small">
+                    {t("message.treatAsTender")}
+                  </Button>
+                </form>
+                <p className="mt-1.5 text-micro leading-relaxed text-muted">
+                  {t("message.tenderIsYourCall")}
+                </p>
+              </div>
             ) : null}
 
             <div className="mt-2.5 flex flex-col items-start gap-2">

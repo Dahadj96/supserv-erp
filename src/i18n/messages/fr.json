@@ -3392,6 +3392,15 @@
     "hideFile": "Masquer",
     "filesInside": "{n, plural, one {# fichier à l’intérieur} other {# fichiers à l’intérieur}}",
     "reviewWhatWasRead": "Vérifier ce qui a été lu",
+    "looksLikeTender": "Cela ressemble à un appel d’offres.",
+    "tenderSignal": {
+      "procedureNamed": "L’objet nomme une procédure formelle.",
+      "dossierAttached": "Une pièce jointe porte le nom d’un dossier de consultation.",
+      "archive": "Le message est arrivé sous forme d’archive — un dossier est un classeur avant d’être un e-mail.",
+      "manyFiles": "{n, plural, one {Il porte # fichier} other {Il porte # fichiers}} à la fois."
+    },
+    "treatAsTender": "Le traiter comme un appel d’offres",
+    "tenderIsYourCall": "Rien n’a encore changé. Ceci fixe seulement ce qu’est le message, comme la liste ci-dessus, et vous pouvez le remettre.",
     "noPreviewYet": "pas d’aperçu",
     "notCopiedYet": "pas encore copiée ici",
     "copiesArriveLater": "Les pièces jointes sont copiées en arrière-plan : un fichier peut figurer ici avant que sa copie n’arrive. L’original reste dans Outlook dans tous les cas."

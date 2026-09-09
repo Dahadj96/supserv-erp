@@ -3392,6 +3392,15 @@
     "hideFile": "Hide",
     "filesInside": "{n, plural, one {# file inside} other {# files inside}}",
     "reviewWhatWasRead": "Review what was read",
+    "looksLikeTender": "This looks like a tender.",
+    "tenderSignal": {
+      "procedureNamed": "The subject names a formal procedure.",
+      "dossierAttached": "An attachment is named like a tender dossier.",
+      "archive": "It arrived as an archive — a dossier is a folder before it is an email.",
+      "manyFiles": "{n, plural, one {It carries # file} other {It carries # files}} at once."
+    },
+    "treatAsTender": "Treat it as a tender",
+    "tenderIsYourCall": "Nothing has changed yet. This only sets what the message is, the way the box above does, and you can set it back.",
     "noPreviewYet": "no preview yet",
     "notCopiedYet": "not copied here yet",
     "copiesArriveLater": "Attachments are copied in the background, so a file can be listed here before its copy arrives. The original stays in Outlook either way."
