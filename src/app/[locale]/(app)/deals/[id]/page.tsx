@@ -89,9 +89,9 @@ export default async function EnquiryPage({
   const hasIssuedDocuments =
     facts.offersIssued > 0 || facts.ordersReceived > 0 || facts.invoicesIssued > 0;
   const discardBlockedBy = !mayDelete
-    ? t("enquiry.discard.notAllowed")
+    ? t("deal.discard.notAllowed")
     : hasIssuedDocuments
-      ? t("enquiry.discard.hasIssued")
+      ? t("deal.discard.hasIssued")
       : undefined;
 
   /**
@@ -174,7 +174,7 @@ export default async function EnquiryPage({
             <span>{clientName}</span>
             {row.clientReference ? <span>· {row.clientReference}</span> : null}
             <span>
-              · {t("enquiry.received")} {when.format(row.receivedAt)}
+              · {t("deal.received")} {when.format(row.receivedAt)}
             </span>
             <Badge tone={TONE[badge] ?? "neutral"}>{t(badgeMessageKey(badge))}</Badge>
             {/*
@@ -239,7 +239,7 @@ export default async function EnquiryPage({
         <div className="mx-4 mt-4 flex items-start gap-3 rounded-[var(--radius-control)] border border-critical bg-critical-bg px-4 py-3 md:mx-7">
           <AlertCircle className="mt-px size-4 shrink-0 text-critical-ink" aria-hidden />
           <p className="text-tiny leading-relaxed text-critical-ink">
-            {t("enquiry.sealedBanner", { client: clientName })}
+            {t("deal.sealedBanner", { client: clientName })}
           </p>
         </div>
       ) : null}
@@ -248,14 +248,14 @@ export default async function EnquiryPage({
         <div className="mx-4 mt-4 flex items-start gap-3 rounded-[var(--radius-control)] border border-line bg-warning-bg px-4 py-3 md:mx-7">
           <AlertCircle className="mt-px size-4 shrink-0 text-warning-ink" aria-hidden />
           <p className="text-tiny leading-relaxed text-warning-ink">
-            {t("enquiry.portalBanner", { client: clientName })}
+            {t("deal.portalBanner", { client: clientName })}
           </p>
         </div>
       ) : null}
 
       {error ? (
         <p className="mx-4 mt-4 rounded-[var(--radius-control)] bg-critical-bg px-4 py-2.5 text-tiny text-critical-ink md:mx-7">
-          {t.has(`enquiry.error.${error}`) ? t(`enquiry.error.${error}`) : error}
+          {t.has(`deal.error.${error}`) ? t(`deal.error.${error}`) : error}
         </p>
       ) : null}
 
@@ -263,26 +263,24 @@ export default async function EnquiryPage({
         <div className="flex flex-col gap-5 md:col-span-2">
           <section className="rounded-[var(--radius-card)] border border-line bg-surface">
             <div className="flex flex-wrap items-baseline gap-x-3 border-b border-line-subtle px-5 py-3.5">
-              <h2 className="text-tiny font-semibold text-ink">{t("enquiry.requestedItems")}</h2>
+              <h2 className="text-tiny font-semibold text-ink">{t("deal.requestedItems")}</h2>
               <span className="ms-auto text-micro text-muted">
-                {t("enquiry.nLines", { n: lines.length })} · {t("enquiry.noClientCodes")}
+                {t("deal.nLines", { n: lines.length })} · {t("deal.noClientCodes")}
               </span>
             </div>
 
             {lines.length === 0 ? (
-              <p className="px-5 py-4 text-tiny text-muted">{t("enquiry.noLines")}</p>
+              <p className="px-5 py-4 text-tiny text-muted">{t("deal.noLines")}</p>
             ) : (
               <div className="overflow-x-auto">
                 <table className="w-full border-collapse text-tiny">
                   <thead>
                     <tr className="text-micro uppercase tracking-wide text-muted">
                       <th className="py-2 ps-5 text-start font-medium">#</th>
-                      <th className="py-2 pe-4 text-start font-medium">{t("enquiry.lineRef")}</th>
-                      <th className="py-2 pe-4 text-start font-medium">
-                        {t("enquiry.designation")}
-                      </th>
-                      <th className="py-2 pe-4 text-end font-medium">{t("enquiry.qty")}</th>
-                      <th className="py-2 pe-5 text-start font-medium">{t("enquiry.unit")}</th>
+                      <th className="py-2 pe-4 text-start font-medium">{t("deal.lineRef")}</th>
+                      <th className="py-2 pe-4 text-start font-medium">{t("deal.designation")}</th>
+                      <th className="py-2 pe-4 text-end font-medium">{t("deal.qty")}</th>
+                      <th className="py-2 pe-5 text-start font-medium">{t("deal.unit")}</th>
                     </tr>
                   </thead>
                   <tbody>
@@ -311,8 +309,8 @@ export default async function EnquiryPage({
             className="scroll-mt-6 rounded-[var(--radius-card)] border border-line bg-surface p-5"
           >
             <div className="flex flex-wrap items-baseline gap-x-3">
-              <h2 className="text-tiny font-semibold text-ink">{t("enquiry.decision")}</h2>
-              <span className="ms-auto text-micro text-muted">{t("enquiry.decisionWhy")}</span>
+              <h2 className="text-tiny font-semibold text-ink">{t("deal.decision")}</h2>
+              <span className="ms-auto text-micro text-muted">{t("deal.decisionWhy")}</span>
             </div>
 
             {open ? (
@@ -332,10 +330,10 @@ export default async function EnquiryPage({
                       />
                       <span>
                         <span className="block text-tiny font-medium text-ink">
-                          {t(choice === "pursue" ? "enquiry.pursue" : "enquiry.noBid")}
+                          {t(choice === "pursue" ? "deal.pursue" : "deal.noBid")}
                         </span>
                         <span className="block text-micro text-muted">
-                          {t(choice === "pursue" ? "enquiry.pursueHint" : "enquiry.noBidHint")}
+                          {t(choice === "pursue" ? "deal.pursueHint" : "deal.noBidHint")}
                         </span>
                       </span>
                     </label>
@@ -344,7 +342,7 @@ export default async function EnquiryPage({
 
                 <div className="mt-3 grid grid-cols-1 gap-3 sm:grid-cols-2">
                   <label>
-                    <span className="text-micro text-secondary">{t("enquiry.reasonLabel")}</span>
+                    <span className="text-micro text-secondary">{t("deal.reasonLabel")}</span>
                     {/*
                       A closed list, not a text box. "Recorded so we can learn
                       from it" is only true if the reasons can be counted, and
@@ -352,10 +350,10 @@ export default async function EnquiryPage({
                       the words.
                     */}
                     <select name="reason" defaultValue="" className={`${INPUT} mt-1`}>
-                      <option value="">{t("enquiry.chooseReason")}</option>
+                      <option value="">{t("deal.chooseReason")}</option>
                       {NO_BID_REASONS.map((reason) => (
                         <option key={reason} value={reason}>
-                          {t(`enquiry.reasons.${reason}`)}
+                          {t(`deal.reasons.${reason}`)}
                         </option>
                       ))}
                     </select>
@@ -363,7 +361,7 @@ export default async function EnquiryPage({
 
                   <label>
                     <span className="text-micro text-secondary">
-                      {t("enquiry.expectedValue", { currency: row.currency })}
+                      {t("deal.expectedValue", { currency: row.currency })}
                     </span>
                     <input
                       name="expectedValue"
@@ -375,19 +373,19 @@ export default async function EnquiryPage({
                 </div>
 
                 <label className="mt-3 block">
-                  <span className="text-micro text-secondary">{t("enquiry.noteLabel")}</span>
+                  <span className="text-micro text-secondary">{t("deal.noteLabel")}</span>
                   <input name="note" className={`${INPUT} mt-1`} />
                 </label>
 
                 <div className="mt-4 flex items-center gap-3">
                   {row.decidedAt ? (
                     <p className="text-micro text-muted">
-                      {t("enquiry.decidedOn", { when: day.format(row.decidedAt) })}
+                      {t("deal.decidedOn", { when: day.format(row.decidedAt) })}
                     </p>
                   ) : null}
                   <div className="ms-auto">
                     <Button type="submit" variant="primary">
-                      {t("enquiry.save")}
+                      {t("deal.save")}
                     </Button>
                   </div>
                 </div>
@@ -401,7 +399,7 @@ export default async function EnquiryPage({
                 {row.lostAt ? (
                   <form action={reopenAction.bind(null, locale, id)} className="ms-auto">
                     <Button type="submit" variant="secondary">
-                      {t("enquiry.reopen")}
+                      {t("deal.reopen")}
                     </Button>
                   </form>
                 ) : null}
@@ -411,8 +409,8 @@ export default async function EnquiryPage({
 
           <section className="rounded-[var(--radius-card)] border border-line bg-surface p-5">
             <div className="flex flex-wrap items-baseline gap-x-3">
-              <h2 className="text-tiny font-semibold text-ink">{t("enquiry.instructions")}</h2>
-              <span className="ms-auto text-micro text-muted">{t("enquiry.verbatim")}</span>
+              <h2 className="text-tiny font-semibold text-ink">{t("deal.instructions")}</h2>
+              <span className="ms-auto text-micro text-muted">{t("deal.verbatim")}</span>
             </div>
             {row.clientInstructions ? (
               // Verbatim, and rendered as text rather than markdown or HTML.
@@ -422,7 +420,7 @@ export default async function EnquiryPage({
                 {row.clientInstructions}
               </p>
             ) : (
-              <p className="mt-3 text-tiny text-muted">{t("enquiry.noInstructions")}</p>
+              <p className="mt-3 text-tiny text-muted">{t("deal.noInstructions")}</p>
             )}
           </section>
         </div>
@@ -470,7 +468,7 @@ export default async function EnquiryPage({
           />
 
           <section className="rounded-[var(--radius-card)] border border-line bg-surface p-5">
-            <h2 className="text-tiny font-semibold text-ink">{t("enquiry.details")}</h2>
+            <h2 className="text-tiny font-semibold text-ink">{t("deal.details")}</h2>
             <dl className="mt-3 flex flex-col gap-2.5 text-tiny">
               {(
                 [
@@ -485,14 +483,14 @@ export default async function EnquiryPage({
                         ? day.format(deadline.at)
                         : "—",
                   ],
-                  ["submissionMethod", t(`enquiry.method.${row.submissionMethod}`)],
+                  ["submissionMethod", t(`deal.method.${row.submissionMethod}`)],
                   ["currency", row.currency],
                   ["source", row.source],
                 ] as const
               ).map(([key, value]) => (
                 <div key={key} className="flex items-baseline gap-3">
                   <dt className="shrink-0 text-secondary">
-                    {t(key === "client" ? "deals.client" : `enquiry.${key}`)}
+                    {t(key === "client" ? "deals.client" : `deal.${key}`)}
                   </dt>
                   <dd
                     className={`ms-auto min-w-0 truncate text-end ${
@@ -509,11 +507,11 @@ export default async function EnquiryPage({
 
             {overdue ? (
               <p className="mt-3 rounded-[var(--radius-control)] bg-critical-bg px-3 py-2 text-micro text-critical-ink">
-                {t("enquiry.deadlinePassed")}
+                {t("deal.deadlinePassed")}
               </p>
             ) : deadline.kind === "at" && deadline.hoursLeft !== null && urgent ? (
               <p className="mt-3 rounded-[var(--radius-control)] bg-critical-bg px-3 py-2 text-micro text-critical-ink">
-                {t("enquiry.hoursLeft", { n: deadline.hoursLeft })}
+                {t("deal.hoursLeft", { n: deadline.hoursLeft })}
               </p>
             ) : null}
           </section>
@@ -723,7 +721,7 @@ export default async function EnquiryPage({
 
           {open ? (
             <section className="rounded-[var(--radius-card)] border border-line bg-surface p-5">
-              <h2 className="text-tiny font-semibold text-ink">{t("enquiry.markLost")}</h2>
+              <h2 className="text-tiny font-semibold text-ink">{t("deal.markLost")}</h2>
               {/*
                 The only fact on this screen no document will ever contain. It
                 arrives by telephone, so it is typed in — and it is reversible,
@@ -731,12 +729,12 @@ export default async function EnquiryPage({
               */}
               <form action={lostAction.bind(null, locale, id)} className="mt-3">
                 <label className="block">
-                  <span className="text-micro text-secondary">{t("enquiry.lostReason")}</span>
+                  <span className="text-micro text-secondary">{t("deal.lostReason")}</span>
                   <input name="reason" className={`${INPUT} mt-1`} />
                 </label>
                 <div className="mt-3 flex justify-end">
                   <Button type="submit" variant="secondary">
-                    {t("enquiry.lost")}
+                    {t("deal.lost")}
                   </Button>
                 </div>
               </form>
@@ -744,8 +742,8 @@ export default async function EnquiryPage({
           ) : null}
 
           <section className="rounded-[var(--radius-card)] border border-line bg-surface p-5">
-            <h2 className="text-tiny font-semibold text-ink">{t("enquiry.discard.title")}</h2>
-            <p className="mt-1 text-micro text-secondary">{t("enquiry.discard.what")}</p>
+            <h2 className="text-tiny font-semibold text-ink">{t("deal.discard.title")}</h2>
+            <p className="mt-1 text-micro text-secondary">{t("deal.discard.what")}</p>
             {/*
               No restore button here: `getDeal` filters on `deleted_at`, so a
               binned enquiry has no page to put one on. Taking it back out is
@@ -753,12 +751,12 @@ export default async function EnquiryPage({
             */}
             <form action={discardDealAction.bind(null, locale, id)} className="mt-3">
               <label className="block">
-                <span className="text-micro text-secondary">{t("enquiry.discard.reason")}</span>
+                <span className="text-micro text-secondary">{t("deal.discard.reason")}</span>
                 <input name="reason" className={`${INPUT} mt-1`} />
               </label>
               <div className="mt-3 flex justify-end">
                 <Button type="submit" variant="danger" disabledReason={discardBlockedBy}>
-                  {t("enquiry.discard.action")}
+                  {t("deal.discard.action")}
                 </Button>
               </div>
             </form>

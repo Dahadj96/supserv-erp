@@ -112,7 +112,7 @@ export default async function SourcingRequestPage({
             </form>
           ) : null}
           <Link href={`/deals/${found.dealId}`}>
-            <Button variant="secondary">{t("prices.backToEnquiry")}</Button>
+            <Button variant="secondary">{t("prices.backToDeal")}</Button>
           </Link>
         </div>
       </div>
@@ -297,7 +297,7 @@ export default async function SourcingRequestPage({
                 <thead>
                   <tr className="text-micro uppercase tracking-wide text-muted">
                     <th className="py-2 ps-5 text-start font-medium">{t("prices.item")}</th>
-                    <th className="py-2 pe-4 text-end font-medium">{t("enquiry.qty")}</th>
+                    <th className="py-2 pe-4 text-end font-medium">{t("deal.qty")}</th>
                     {found.answers
                       .filter((a) => a.status === "quoted")
                       .map((a) => (
@@ -387,7 +387,7 @@ export default async function SourcingRequestPage({
                 </label>
 
                 <label>
-                  <span className="text-micro text-secondary">{t("enquiry.currency")}</span>
+                  <span className="text-micro text-secondary">{t("deal.currency")}</span>
                   <input
                     name="currency"
                     defaultValue={found.currency}

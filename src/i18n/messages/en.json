@@ -12,7 +12,7 @@
     "offers": "Offers",
     "orders": "Orders",
     "deliveries": "Deliveries",
-    "projects": "Projects",
+    "projects": "Sites",
     "money": "MONEY",
     "invoices": "Invoices",
     "payments": "Payments",
@@ -123,7 +123,7 @@
       "waitingOnSupplier": "Waiting on a supplier",
       "waitingOnSupplierAsks": "Asked, no reply, 2 days or more",
       "nothingSentYet": "Nothing sent yet",
-      "nothingSentYetAsks": "Enquiry open, no offer, older than 3 days"
+      "nothingSentYetAsks": "Deal open, no offer, older than 3 days"
     },
     "all": "All",
     "closed": "closed",
@@ -143,7 +143,7 @@
       "closed": "{how, select, won {Won — the client ordered.} lost {Lost, and the reason is on the timeline.} noBid {We walked away from this one.} other {Closed.}}",
       "decision": "{decision, select, pursue {We decided to pursue it.} no_bid {We decided not to bid.} other {Nobody has said yet whether we are bidding.}}",
       "lines": "{n, plural, =0 {Nobody has typed in what the client asked for.} one {# line asked for.} other {# lines asked for.}}",
-      "deadline": "No deadline recorded. It can only be set when the enquiry is created, or carried off a document you confirm.",
+      "deadline": "No deadline recorded. It can only be set when the deal is created, or carried off a document you confirm.",
       "suppliers": "No supplier has been asked, and there is no offer yet.",
       "offer": "{drafts, plural, =0 {No offer has gone out.} one {An offer is drafted and not issued.} other {# offers are drafted and none is issued.}}",
       "clientAnswer": "The offer is out. Waiting on the client.",
@@ -151,13 +151,13 @@
       "prices": "{n, plural, =0 {No price has been captured for this deal yet. An offer is built from them.} one {# price captured.} other {# prices captured.}}",
       "delivery": "{n, plural, =0 {Nothing has been delivered against this order yet. Some deals never need a bon de livraison.} one {# bon de livraison issued.} other {# bons de livraison issued.}}"
     },
-    "newEnquiry": "New enquiry",
+    "newDeal": "New deal",
     "recordOrder": "Record their order",
     "project": {
       "title": "The works",
-      "opened": "The project is open:",
+      "opened": "The site is open:",
       "why": "Once the client has said yes, the site lives on its own page — situations, retention, cautions, who is on site.",
-      "open": "Open the project"
+      "open": "Open the site"
     },
     "step": {
       "closed": "How it ended",
@@ -495,7 +495,7 @@
   },
   "people": {
     "subtitle": "{total, plural, =1 {1 person} other {# people}} · {fromCv} came from a CV, {rest} did not · a CV is evidence, not a requirement",
-    "directlyBanner": "A person can be created directly — a name and a trade is enough. Day labourers, a subcontractor's welder, a driver hired for a week: none of them will ever send a CV, and all of them can be put on a project.",
+    "directlyBanner": "A person can be created directly — a name and a trade is enough. Day labourers, a subcontractor's welder, a driver hired for a week: none of them will ever send a CV, and all of them can be put on a site.",
     "facet": {
       "all": "All",
       "cv": "From a CV",
@@ -553,7 +553,7 @@
     "appliesTitle": "What still applies to everyone",
     "applies": {
       "expiry": "Certification expiry is tracked",
-      "project": "Can be put on a project",
+      "project": "Can be put on a site",
       "moyensHumains": "Counts in moyens humains for a bid",
       "subcontractorRisk": "Subcontractor compliance is our risk",
       "retention": "Personal data retention"
@@ -604,15 +604,15 @@
       "phone_note": "A person writes down a call"
     },
     "channelCreates": {
-      "mailbox": "Enquiry · CV · Quote · Invoice",
+      "mailbox": "Deal · CV · Quote · Invoice",
       "manual": "Any record",
       "upload": "Any document",
-      "portal_urbacon": "Enquiry · Tender",
+      "portal_urbacon": "Deal · Tender",
       "scan": "Tender · CV · Delivery proof",
-      "web_quote": "Enquiry",
+      "web_quote": "Deal",
       "web_careers": "Candidate",
       "whatsapp": "Quote · CV · Delivery proof",
-      "phone_note": "Enquiry · Contact"
+      "phone_note": "Deal · Contact"
     },
     "statusValue": {
       "live": "Live",
@@ -632,11 +632,11 @@
       "cvFromStranger": "Attachment is a CV and sender is not a known company",
       "cvFromStrangerAction": "Candidate, status New",
       "rfq": "Subject contains PR / RFQ / demande de cotation",
-      "rfqAction": "Enquiry, linked to the sender's company",
+      "rfqAction": "Deal, linked to the sender's company",
       "tender": "Subject contains consultation / avis / appel d'offres",
       "tenderAction": "Tender, deadline extraction queued",
       "supplierPrice": "Sender is a known supplier and body contains a price",
-      "supplierPriceAction": "Supplier quote, attach to the open enquiry",
+      "supplierPriceAction": "Supplier quote, attach to the open deal",
       "payment": "Subject contains facture / règlement / virement",
       "paymentAction": "Payment, match against an open invoice",
       "anythingElse": "Anything else",
@@ -666,8 +666,8 @@
     "error": {
       "mailboxNotScoped": "The mailbox was not read, because the application is not yet restricted to it. Application Mail.Read reaches every mailbox in the tenant until an Application Access Policy says otherwise.",
       "tradeRequired": "A candidate needs a trade — it is what you will search by.",
-      "companyRequired": "That sender is not linked to a company, so there is no client to open an enquiry for. Add them as a contact first.",
-      "subjectRequired": "That message has no subject, so the enquiry would have no name. Type one."
+      "companyRequired": "That sender is not linked to a company, so there is no client to open a deal for. Add them as a contact first.",
+      "subjectRequired": "That message has no subject, so the deal would have no name. Type one."
     },
     "expiringBanner": "{count, plural, =1 {1 item expires} other {# items expire}} within 48 hours —",
     "expiringItem": "{what} ({hours}h left)",
@@ -689,8 +689,8 @@
       "needsReview": "Needs review"
     },
     "action": {
-      "enquiry": "Create enquiry",
-      "tender": "Create enquiry",
+      "enquiry": "Create the deal",
+      "tender": "Create the deal",
       "candidate": "Create candidate",
       "payment": "Link to invoice",
       "supplierQuote": "Attach to sourcing",
@@ -719,7 +719,7 @@
     "confirmAs": "It is a {what}",
     "addContactUnder": "Add contact under {company}",
     "itIsNoise": "It is noise",
-    "notPermitted": "Your role cannot open the Inbox. It holds everything sent to the company mailbox before anybody has sorted it — enquiries, CVs, invoices and spam alike — so it is limited to the Gérant, commercial, purchasing and accounts. The records made from it are on the screens you already have.",
+    "notPermitted": "Your role cannot open the Inbox. It holds everything sent to the company mailbox before anybody has sorted it — deals, CVs, invoices and spam alike — so it is limited to the Gérant, commercial, purchasing and accounts. The records made from it are on the screens you already have.",
     "blocked": {
       "needsSourcingPicker": "Sourcing requests exist, but this screen cannot yet say which one the quote answers — and attaching it to the wrong request would price an offer from the wrong quote.",
       "needsInvoicePicker": "Invoices and payments exist, but which invoice this pays has to be chosen, not guessed from an amount in a subject line."
@@ -1164,15 +1164,15 @@
     "invoiceDelivered": "Invoice what is delivered",
     "situation": {
       "title": "Situation n° {n}",
-      "toProject": "The project",
-      "project": "Project",
+      "toProject": "The site",
+      "project": "Site",
       "contract": "Marché n°",
       "period": "Period",
       "cumul": "Cumulative (excl. VAT)",
       "percent": "Of the contract",
       "submitted": "Submitted",
       "approved": "Approved",
-      "why": "Submitted and approved are recorded on the project page, the day the paper moves."
+      "why": "Submitted and approved are recorded on the site page, the day the paper moves."
     },
     "amendment": {
       "title": "What this avenant changes",
@@ -1909,10 +1909,10 @@
       "alreadyIssued": "That document is issued. A correction is a new document.",
       "noLines": "A document needs at least one line with a description and a quantity.",
       "noSuchDocument": "That document no longer exists.",
-      "situationHasItsOwnScreen": "A situation is edited against the marché on the project page, not here.",
-      "amendmentHasItsOwnScreen": "An avenant is written against the marché's bordereau on the project page, not here.",
-      "finalAccountIsComputed": "A final account is arithmetic over the situations. There is nothing on it to edit — it is drawn again on the project page.",
-      "retentionIsComputed": "A demand for the retention lists what each situation withheld. There is nothing on it to type — it is written again on the project page."
+      "situationHasItsOwnScreen": "A situation is edited against the marché on the site page, not here.",
+      "amendmentHasItsOwnScreen": "An avenant is written against the marché's bordereau on the site page, not here.",
+      "finalAccountIsComputed": "A final account is arithmetic over the situations. There is nothing on it to edit — it is drawn again on the site page.",
+      "retentionIsComputed": "A demand for the retention lists what each situation withheld. There is nothing on it to type — it is written again on the site page."
     },
     "settlement": "Payment method",
     "settlementUnsaid": "Not stated",
@@ -2126,7 +2126,7 @@
       "today": "Today"
     }
   },
-  "enquiry": {
+  "deal": {
     "received": "Received",
     "clientDeadline": "Client deadline",
     "submissionMethod": "Submission method",
@@ -2184,21 +2184,21 @@
     "reopen": "Reopen",
     "lostOn": "Lost {when}",
     "discard": {
-      "title": "Put this enquiry in the bin",
-      "what": "For a row that should never have existed — a mistake, a duplicate, a test. Losing an enquiry is not this: a lost enquiry stays on the list. Restorable for 30 days.",
+      "title": "Put this deal in the bin",
+      "what": "For a row that should never have existed — a mistake, a duplicate, a test. Losing a deal is not this: a lost deal stays on the list. Restorable for 30 days.",
       "reason": "Why is it going? This is kept.",
       "action": "Put in the bin",
       "restore": "Take it back out of the bin",
       "notAllowed": "Only the Gérant may put records in the bin.",
-      "hasIssued": "This enquiry has an issued document. An issued document is never deleted — correct it with an avoir instead."
+      "hasIssued": "This deal has an issued document. An issued document is never deleted — correct it with an avoir instead."
     },
     "error": {
-      "noSuchDeal": "That enquiry no longer exists.",
+      "noSuchDeal": "That deal no longer exists.",
       "reasonRequired": "A no-bid needs a reason — that is the point of recording it.",
       "unknownReason": "Choose one of the listed reasons so it can be counted later.",
       "alreadyClosed": "This one is already finished. Reopen it first if that is wrong.",
       "notAllowed": "Your role does not allow that.",
-      "hasIssuedDocuments": "This enquiry has an issued document, so it cannot go in the bin. An issued document is never deleted — correction is a new document.",
+      "hasIssuedDocuments": "This deal has an issued document, so it cannot go in the bin. An issued document is never deleted — correction is a new document.",
       "alreadyATender": "This deal is already recorded as a tender.",
       "unknownProcedure": "Choose one of the listed procedures.",
       "cautionNotANumber": "The caution has to be a figure — an amount or a percent, digits only. Put anything else in the note.",
@@ -2217,30 +2217,30 @@
     "ordersReceived": "Their orders received",
     "invoicesIssued": "Invoices issued"
   },
-  "newEnquiry": {
-    "subtitle": "An enquiry arrived. Record what they asked for before it goes cold.",
+  "newDeal": {
+    "subtitle": "A deal arrived. Record what they asked for before it goes cold.",
     "referenceHint": "Their reference, exactly as they wrote it. It is how they will refer to this.",
     "instructionsHint": "Paste the part of the email that says how and where to submit — word for word.",
     "pasteLabel": "The list of items, pasted",
     "pastePlaceholder": "Paste straight out of the email or the spreadsheet.\n\n1. VP-DN80-16 Vanne papillon DN80 PN16 — 12 pc\n2. RAC-BR-2 Raccord bride 2\" — 40 pc",
-    "pasteHint": "A table out of Excel or a list out of an email both work. Whatever cannot be read is shown to you on the enquiry rather than dropped, and the references stay as the client wrote them — they are never turned into our item codes.",
-    "create": "Create the enquiry",
+    "pasteHint": "A table out of Excel or a list out of an email both work. Whatever cannot be read is shown to you on the deal rather than dropped, and the references stay as the client wrote them — they are never turned into our item codes.",
+    "create": "Create the deal",
     "noClientsTitle": "There are no companies yet",
-    "noClientsBody": "An enquiry belongs to somebody. Add the client first and come back.",
+    "noClientsBody": "A deal belongs to somebody. Add the client first and come back.",
     "addCompany": "Add a company",
     "error": {
-      "clientAndSubject": "An enquiry needs a client and a subject."
+      "clientAndSubject": "A deal needs a client and a subject."
     }
   },
   "prices": {
     "title": "Prices — {ref}",
     "summary": "{items} items · {priced} priced · {open} still open · prices come from wherever you found them",
-    "backToEnquiry": "Back to the enquiry",
+    "backToDeal": "Back to the deal",
     "banner": "A price does not have to come from an email. A shop you visited, a phone call, a proforma someone handed you, or your own costing all count — and each is recorded with where it came from.",
     "gathered": "Prices gathered",
     "bestHighlighted": "best price per item is highlighted",
     "nonePlease": "No prices yet. Add the first one below — a number from a counter counts.",
-    "noLinesYet": "This enquiry has no lines yet. Add what the client asked for first.",
+    "noLinesYet": "This deal has no lines yet. Add what the client asked for first.",
     "item": "Item",
     "whereFrom": "Where it came from",
     "price": "Price",
@@ -2296,8 +2296,8 @@
       "internal_costing": "Our own costing"
     },
     "error": {
-      "noSuchDeal": "That enquiry no longer exists.",
-      "closed": "This enquiry is closed. Reopen it before adding prices.",
+      "noSuchDeal": "That deal no longer exists.",
+      "closed": "This deal is closed. Reopen it before adding prices.",
       "unknownSource": "Choose where the price came from.",
       "noPrice": "A price needs a number greater than zero.",
       "noSubject": "Choose which line this price is for.",
@@ -2397,8 +2397,8 @@
     "nobodyPriced": "{n, plural, one {# line has no price from anybody.} other {# lines have no price from anybody.}} Splitting cannot fix that.",
     "error": {
       "noSuchRequest": "That request no longer exists.",
-      "noSuchDeal": "That enquiry no longer exists.",
-      "closed": "The enquiry is closed. Reopen it before sourcing against it.",
+      "noSuchDeal": "That deal no longer exists.",
+      "closed": "The deal is closed. Reopen it before sourcing against it.",
       "alreadySent": "This request has already gone out.",
       "noSuppliers": "Pick at least one supplier to ask.",
       "unknownStatus": "Choose one of the listed answers.",
@@ -2444,8 +2444,8 @@
     "draft": "draft",
     "issued": "issued",
     "noNumberYet": "no number yet",
-    "fromEnquiry": "from {ref}",
-    "fromWhich": "Enquiry",
+    "fromDeal": "from {ref}",
+    "fromWhich": "Deal",
     "created": "Created",
     "lines": "Offer lines",
     "costsFromQuotes": "costs from supplier quotes",
@@ -2510,7 +2510,7 @@
     "submittedOn": "Submitted {when}",
     "listSummary": "{n, plural, one {# offer} other {# offers}} · {drafts, plural, one {# still a draft} other {# still drafts}}",
     "noneTitle": "No offers yet",
-    "noneBody": "An offer is built from an enquiry, so its lines and its costs come with it. Open a deal and build one.",
+    "noneBody": "An offer is built from a deal, so its lines and its costs come with it. Open one and build it.",
     "error": {
       "notAllowed": "Your role cannot set prices from costs, because it cannot see costs.",
       "badMargin": "A margin needs to be a number.",
@@ -2524,7 +2524,7 @@
       "hint": "Takes the lines and the best cost found for each — from a supplier's answer, or a price you recorded.",
       "marginLabel": "Starting margin %",
       "go": "Build the offer",
-      "existing": "Offers on this enquiry"
+      "existing": "Offers on this deal"
     },
     "openDocument": "Preview, PDF and issue",
     "editLines": "Edit the lines in the builder",
@@ -2642,8 +2642,8 @@
       }
     },
     "error": {
-      "noSuchDeal": "That enquiry no longer exists.",
-      "noSuchLine": "That line is not on this enquiry.",
+      "noSuchDeal": "That deal no longer exists.",
+      "noSuchLine": "That line is not on this deal.",
       "notMatched": "This line has not been matched to an item in the catalogue yet, so there is nowhere to record it.",
       "reasonRequired": "Say why no datasheet exists. A mark with no reason teaches nobody anything."
     },
@@ -2657,7 +2657,7 @@
     }
   },
   "ageing": {
-    "title": "Ageing and relances",
+    "title": "Ageing and reminders",
     "subtitle": "{total} outstanding · {pct}% of it past 90 days",
     "sendN": "{n, plural, =0 {Nothing to send} one {Send # relance} other {Send # relances}}",
     "sendingIsAPerson": "Nothing here writes to a client on its own. Draft it, read it, and send it from your own mail.",
@@ -2820,7 +2820,7 @@
       "exceedsPayment": "That allocates more than the payment received.",
       "exceedsBalance": "That is more than this invoice still owes."
     },
-    "seeAgeing": "Ageing and relances",
+    "seeAgeing": "Ageing and reminders",
     "neverRemoved": "Money that arrived at the bank is never removed. A payment against the wrong invoice is re-allocated; an amount that should never have been invoiced is corrected by an avoir.",
     "noneTitle": "Nothing received yet"
   },
@@ -3159,16 +3159,16 @@
         "update": "Updated a delivery note"
       },
       "deal": {
-        "create": "Opened an enquiry",
-        "update": "Updated an enquiry"
+        "create": "Opened a deal",
+        "update": "Updated a deal"
       },
       "party": {
         "create": "Added a company",
         "update": "Updated a company"
       },
       "project": {
-        "create": "Opened a project",
-        "update": "Recorded something on a project"
+        "create": "Opened a site",
+        "update": "Recorded something on a site"
       },
       "price_quote": {
         "create": "Wrote down a price"
@@ -3242,7 +3242,7 @@
     "deadlines": "Deadlines",
     "deliveriesToProve": "Deliveries to prove",
     "chasesDue": "Chases due",
-    "noRiskFigure": "No “money at risk” figure. An enquiry has no value until somebody has priced it, and most of these have not been — a number meaning “the ones we happen to have priced” looks complete and is not.",
+    "noRiskFigure": "No “money at risk” figure. A deal has no value until somebody has priced it, and most of these have not been — a number meaning “the ones we happen to have priced” looks complete and is not.",
     "nothingHidden": "Nothing is hidden",
     "nothingHiddenBody": "Everything on this page also appears on Today when its day comes. This view exists so you can see a crowded Thursday on Monday, not so you have a second list to manage. It reads from exactly the same place Today does."
   },
@@ -3352,11 +3352,11 @@
   },
   "timeline": {
     "everythingHere": "everything about it is on this page",
-    "backToDeal": "Back to the enquiry",
+    "backToDeal": "Back to the deal",
     "everythingThatHappened": "Everything that happened",
     "nEvents": "{n, plural, =0 {no events} one {# event} other {# events}}",
     "newestFirst": "newest first",
-    "nothingYet": "Nothing has happened on this enquiry yet.",
+    "nothingYet": "Nothing has happened on this deal yet.",
     "system": "System",
     "open": "Open",
     "noted": "Written down.",
@@ -3377,8 +3377,8 @@
       "documentIssued": "Document issued",
       "draftCreated": "Draft created",
       "deal": {
-        "create": "Enquiry opened",
-        "update": "Enquiry updated",
+        "create": "Deal opened",
+        "update": "Deal updated",
         "decide": "Decision recorded"
       }
     },
@@ -3395,7 +3395,7 @@
     "attach": "Attach a file",
     "filesLater": "File storage is not built yet.",
     "save": "Save it",
-    "thisDeal": "This enquiry",
+    "thisDeal": "This deal",
     "client": "Client",
     "reference": "Their reference",
     "stage": "Stage",
@@ -3407,12 +3407,12 @@
       "out": "{n, plural, =0 {You wrote today — it is with them.} one {You wrote yesterday. It has been with them for # day.} other {You wrote # days ago. It has been with them that long.}}"
     },
     "whoMovedLastNote": "Notes and system events are skipped. A folder being created is not somebody's move, and neither is writing a note to yourself.",
-    "nobodyHasMoved": "Nothing has been sent or received on this enquiry yet.",
+    "nobodyHasMoved": "Nothing has been sent or received on this deal yet.",
     "whereItComesFrom": "Where these rows come from",
     "noEventTable": "There is no event table. Every row but a note is read from the record that already holds it — the message, the quote, the document, the log. A second copy of each would be two versions of every fact, and no way to tell which one happened on the day they disagree.",
     "error": {
       "empty": "A note with no words records that you opened the box.",
-      "noSuchDeal": "That enquiry no longer exists.",
+      "noSuchDeal": "That deal no longer exists.",
       "notYourNote": "Somebody else wrote that note, and removing another person’s note takes the Gérant."
     },
     "removed": "Note removed. It is in the bin for 30 days.",
@@ -3439,18 +3439,18 @@
     "companyName": "The client's company",
     "companyNamePlaceholder": "Legal name",
     "companyNameHelp": "Suggested from the sender's domain. Correct it — this is the name that will be printed on the documents.",
-    "enquiryName": "Name of the enquiry",
-    "createCompanyAndOpen": "Create the company and open the enquiry",
+    "dealName": "Name of the deal",
+    "createCompanyAndOpen": "Create the company and open the deal",
     "error": {
       "companyNameRequired": "Give the company a name — two characters at least.",
       "legalNameTooShort": "Give the company a name — two characters at least.",
-      "subjectRequired": "Give the enquiry a name.",
+      "subjectRequired": "Give the deal a name.",
       "noSuchCompany": "That company no longer exists.",
-      "companyRequired": "This enquiry needs a client company."
+      "companyRequired": "This deal needs a client company."
     },
     "thisIsProbably": "This address matches a company already on file:",
-    "useCompanyAndOpen": "It is {name} — open the enquiry",
-    "whatThisDoes": "Creates the company, saves the sender as a contact under it, and opens the enquiry. Once.",
+    "useCompanyAndOpen": "It is {name} — open the deal",
+    "whatThisDoes": "Creates the company, saves the sender as a contact under it, and opens the deal. Once.",
     "showFile": "Show",
     "hideFile": "Hide",
     "filesInside": "{n, plural, one {# file inside} other {# files inside}}",
@@ -3602,7 +3602,7 @@
       "root": "Root folder",
       "configured": "Where the path comes from",
       "fromEnv": "STORAGE_LOCAL_PATH",
-      "fallback": "Fallback inside the project",
+      "fallback": "Fallback inside the repository",
       "files": "Files",
       "size": "Total size",
       "unwritableWhy": "A file written now would not land. The folder may exist, but the system has no right to write in it — and finding that out at upload time is finding out too late."
@@ -3689,7 +3689,7 @@
       "unknownPlaceholder": "A field in braces is not part of the vocabulary. Check the spelling — otherwise it would go out in the email exactly as typed."
     },
     "name": {
-      "enquiryAck": "Acknowledge an enquiry",
+      "enquiryAck": "Acknowledge a request",
       "askForClarification": "Ask for a clarification",
       "supplierRfq": "Ask a supplier for a price",
       "supplierChase": "Chase a supplier",
@@ -3785,7 +3785,7 @@
       "assistant_proposal": "Assistant proposal",
       "tender": "Tender",
       "company_credential": "Company paper",
-      "project": "Project",
+      "project": "Site",
       "personnel_request": "Personnel request",
       "personnel_candidate": "Shortlist entry",
       "bpu_mapping": "column mapping",
@@ -3923,7 +3923,7 @@
       "whatWouldBeRefused": "What would be refused at issue",
       "whoOwesUs": "Who owes us money",
       "draftRelance": "Draft a payment reminder",
-      "draftEnquiryReply": "Draft a reply to an enquiry"
+      "draftEnquiryReply": "Draft a reply on a deal"
     },
     "neverHeading": "What it cannot do"
   },
@@ -4006,8 +4006,8 @@
     "twelveMonths": "Last 12 months",
     "noInvoices": "No invoices issued.",
     "noOffers": "No offers issued.",
-    "enquiries": "Enquiries",
-    "noDeals": "No enquiries recorded.",
+    "deals": "Deals",
+    "noDeals": "No deals recorded.",
     "seeThem": "See",
     "wonHow": "Won is not a tick box: it is a client order arriving. The figure is counted off the documents, not off a flag somebody has to remember to set.",
     "outcome": {
@@ -4029,7 +4029,7 @@
     "subtitle": "What matters today, seen as {role}.",
     "late": "Late",
     "ofExamined": "of {count} examined",
-    "openEnquiries": "Open enquiries",
+    "openDeals": "Open deals",
     "ofDeals": "of {count} in total",
     "awaitingSuppliers": "Suppliers not replied",
     "bounced": "{count} address(es) bounced",
@@ -4080,8 +4080,8 @@
     "closed": "Lost — cannot be edited",
     "error": {
       "nothingToAdd": "Nothing to save: the pasted text holds no readable line.",
-      "noSuchDeal": "No such enquiry.",
-      "closed": "This enquiry is lost. Editing what the client asked for would rewrite history."
+      "noSuchDeal": "No such deal.",
+      "closed": "This deal is lost. Editing what the client asked for would rewrite history."
     },
     "column": {
       "reference": "Reference",
@@ -4095,12 +4095,12 @@
     "noBrand": "No brand or model recorded",
     "held": "What we hold",
     "provenanceMatters": "Where it came from matters",
-    "nothingHeld": "Nothing is held on this item yet. This is what the technical annexe will ask for on the first enquiry that needs it.",
+    "nothingHeld": "Nothing is held on this item yet. This is what the technical annexe will ask for on the first deal that needs it.",
     "usedOn": "Asked for on",
     "usedOnWhy": "A datasheet found once serves the next time",
-    "neverAsked": "No enquiry has asked for this item yet.",
+    "neverAsked": "No deal has asked for this item yet.",
     "item": "The item",
-    "gathering": "Pieces gather across enquiries. Nothing here is invented: every row was recorded by somebody, with its provenance.",
+    "gathering": "Pieces gather across deals. Nothing here is invented: every row was recorded by somebody, with its provenance.",
     "column": {
       "kind": "Piece",
       "provenance": "Provenance",
@@ -4115,7 +4115,7 @@
       "brand": "Brand",
       "model": "Model"
     },
-    "recorded": "Recorded: the piece is attached to the item and serves every enquiry after this one.",
+    "recorded": "Recorded: the piece is attached to the item and serves every deal after this one.",
     "f": {
       "file": "The file",
       "where": "Where it came from, in words",
@@ -4153,7 +4153,7 @@
       "control": "Control",
       "assistant": "Assistant",
       "tenders": "Tenders (depth)",
-      "projects": "Projects and situations",
+      "projects": "Sites and situations",
       "recruitment": "Recruitment",
       "supplierScorecard": "Supplier scorecard",
       "websiteForms": "Website forms",
@@ -4172,7 +4172,7 @@
       "routing": "A routing rule, like screen 38's, to say what an arriving message becomes."
     },
     "meanwhile": "Meanwhile",
-    "meanwhileWhat": "Enquiries arrive at contact@supserv-dz.com and show up in the Inbox. Nothing is lost — it is an email address rather than a form."
+    "meanwhileWhat": "Deals arrive at contact@supserv-dz.com and show up in the Inbox. Nothing is lost — it is an email address rather than a form."
   },
   "purchaseOrder": {
     "draft": "Draft — no number yet",
@@ -4389,8 +4389,8 @@
       "count": "{n} items",
       "why": "Missing, expired, or valid today and expired on the day of the deposit. The date that decides is not today."
     },
-    "thisIsAnEnquiry": "This is an enquiry",
-    "thisIsAnEnquiryWhy": "A tender is a deal with a procedure. The client, the lines, the offer and the outcome all live on the enquiry, and every screen that reads them reads the same record.",
+    "thisIsADeal": "This is a deal",
+    "thisIsADealWhy": "A tender is a deal with a procedure. The client, the lines, the offer and the outcome all live on the deal, and every screen that reads them reads the same record.",
     "make": {
       "title": "Is this a tender?",
       "why": "A tender is this same deal answering a formal procedure. Record the procedure and it appears in Tenders with its folder of pieces. Nothing about the client, the lines, the offer or the outcome moves — they stay on this deal, and every screen keeps reading the same record.",
@@ -4521,7 +4521,7 @@
   },
   "projects": {
     "summary": "{active, plural, one {# active} other {# active}} · {warranty, plural, =0 {none in warranty} one {# in warranty} other {# in warranty}} · {retention} held in retenue de garantie",
-    "none": "No projects yet. A project is what happens after a deal is won — the situations, the retention and the bank guarantees. Open the enquiry and start one.",
+    "none": "No sites yet. A site is what happens after a deal is won — the situations, the retention and the bank guarantees. Open the deal and start one.",
     "openSituation": "Open the situation",
     "waitingBanner": "Situation n°{n} on {code} has been with {client} for {days} days without approval. Payment cannot start until it is signed.",
     "cautionsAt": "{n} caution(s)",
@@ -4537,7 +4537,7 @@
       "closed": "Closed"
     },
     "card": {
-      "active": "Active projects",
+      "active": "Active sites",
       "waiting": "Situations pending approval",
       "retention": "Retenue held",
       "cautions": "Cautions wanting attention"
@@ -4561,12 +4561,12 @@
     "lateBy": "{days} days late",
     "months": "{n} months",
     "expiresOn": "expires {on}",
-    "fromEnquiry": "This came from an enquiry",
-    "fromEnquiryWhy": "Every project belongs to a deal. The client, the offer and the order that started the work all live there, and nothing about this site is recorded twice.",
+    "fromDeal": "This came from a deal",
+    "fromDealWhy": "Every site belongs to a deal. The client, the offer and the order that started the work all live there, and nothing about this site is recorded twice.",
     "situations": {
       "title": "Situations / attachements",
       "approvedToDate": "{amount} approved to date",
-      "none": "No situation has been raised yet. A situation is a document of kind `situation` against this project — the same engine as every other document."
+      "none": "No situation has been raised yet. A situation is a document of kind `situation` against this site — the same engine as every other document."
     },
     "situation": {
       "draft": "Draft",
@@ -4599,7 +4599,7 @@
       "onSiteSince": "On site since"
     },
     "panel": {
-      "title": "Project",
+      "title": "Site",
       "client": "Client",
       "contract": "Contract",
       "amount": "Amount HT",
@@ -4658,7 +4658,7 @@
     },
     "continueSituation": "Continue situation n° {n}",
     "nextSituation": "Situation n° {n}",
-    "openedOk": "Project {code} is open.",
+    "openedOk": "Site {code} is open.",
     "issueFirst": "Issue it first",
     "submittedOn": "Submitted",
     "approvedBy": "Signed by",
@@ -4866,7 +4866,7 @@
       "previous": "Previous",
       "change": "Change",
       "times": "Times quoted",
-      "enquiry": "Enquiry",
+      "deal": "Deal",
       "items": "Items",
       "asked": "Asked",
       "replied": "Replied",
@@ -4880,7 +4880,7 @@
     "replacedByErratum": "{n} lines replaced by the erratum",
     "askSuppliers": "Ask suppliers for these lines",
     "buildOffer": "Build financial offer",
-    "noDraftOffer": "No draft offer on this enquiry yet. Start one from the enquiry.",
+    "noDraftOffer": "No draft offer on this deal yet. Start one from the deal.",
     "read": "Read the file",
     "readErratum": "Read the erratum",
     "applyLastPrices": "Apply last prices",
@@ -4991,7 +4991,7 @@
     "sources": {
       "title": "Files read",
       "never": "files are never modified",
-      "none": "No file has been read for this enquiry yet.",
+      "none": "No file has been read for this deal yet.",
       "line": "{kind} · {total} rows read · {imported} imported · {skipped} skipped",
       "kind": {
         "deal_line": "Bordereau",
@@ -5003,9 +5003,9 @@
       "noFile": "No file was chosen.",
       "noBatch": "That file is no longer available. Upload it again.",
       "noSuchBatch": "That file is no longer available. Upload it again.",
-      "noSuchDeal": "That enquiry does not exist.",
+      "noSuchDeal": "That deal does not exist.",
       "noSuchErratum": "That erratum does not exist.",
-      "alreadyImported": "This enquiry already has lines. A second file is an erratum: upload it from the Erratum tab, where it is compared line by line.",
+      "alreadyImported": "This deal already has lines. A second file is an erratum: upload it from the Erratum tab, where it is compared line by line.",
       "nothingImportedYet": "Import the bordereau first — there is nothing to compare against.",
       "unreadable": "That file could not be read.",
       "emptySheet": "The first sheet of that file is empty.",
@@ -5020,7 +5020,7 @@
     }
   },
   "projectNew": {
-    "title": "Open the project",
+    "title": "Open the site",
     "lead": "Most of this is already known and is here to be checked. What has to be read off the marché is the contract value, the dates and the retenue de garantie — with what it is taken on.",
     "section": {
       "site": "The site",
@@ -5035,7 +5035,7 @@
       "wilaya": "Wilaya",
       "wilayaHint": "Free text; the 58 wilayas are offered as you type.",
       "contract": "DQE contractuel",
-      "contractNone": "No issued order or offer on this enquiry yet — name it later from the project page.",
+      "contractNone": "No issued order or offer on this deal yet — name it later from the site page.",
       "contractLater": "Name it later",
       "amountExcl": "Contract value (excl. VAT)",
       "startedOn": "ODS / start",
@@ -5049,17 +5049,17 @@
       "excl": "the HT of the situation",
       "incl": "the TTC of the situation"
     },
-    "footnote": "Opening a project allocates its code. Everything else can be corrected on the project page.",
-    "go": "Open the project",
+    "footnote": "Opening a site allocates its code. Everything else can be corrected on the site page.",
+    "go": "Open the site",
     "error": {
-      "notAllowed": "Your role cannot open a project.",
-      "noSuchDeal": "That enquiry does not exist.",
+      "notAllowed": "Your role cannot open a site.",
+      "noSuchDeal": "That deal does not exist.",
       "objectRequired": "The object of the works is required.",
       "badRetentionBase": "The retention is taken on the HT or on the TTC — nothing else.",
       "contractNotIssued": "The DQE must be an issued document."
     },
-    "whichEnquiry": "On which enquiry? Listed: those where the client has an issued order or offer in hand and no project exists yet.",
-    "noCandidates": "No enquiry is waiting for a project. Issue an offer or record a client's order first."
+    "whichDeal": "On which deal? Listed: those where the client has an issued order or offer in hand and no site exists yet.",
+    "noCandidates": "No deal is waiting for a site. Issue an offer or record a client's order first."
   },
   "projectRecord": {
     "record": "Record",
@@ -5086,13 +5086,13 @@
       "contractNotIssued": "The DQE must be an issued document.",
       "kindRequired": "Say which caution it is.",
       "noSuchCaution": "That caution does not exist.",
-      "noSuchProject": "That project does not exist.",
+      "noSuchProject": "That site does not exist.",
       "personRequired": "Pick a person first.",
       "alreadyOnSite": "They are already on this site.",
       "noSuchCrew": "That crew row does not exist.",
       "alreadyLeft": "They have already left.",
       "leftBeforeArrival": "Nobody leaves before they arrive.",
-      "noContract": "Name the DQE contractuel on the project first.",
+      "noContract": "Name the DQE contractuel on the site first.",
       "badPenaltyBase": "Penalties are taken on the HT or on the TTC — the CCAP says which.",
       "noSituations": "No situation has been raised on this marché.",
       "situationUnissued": "A situation is still a draft.",
@@ -5151,15 +5151,15 @@
     "lead": "Type this period's quantities against the marché's bordereau. The cumulative columns, the retention and the net à payer are arithmetic on the draft.",
     "editingDraft": "This situation is still a draft — its quantities can be changed until it is issued.",
     "error": {
-      "noContract": "Name the DQE contractuel on the project first.",
+      "noContract": "Name the DQE contractuel on the site first.",
       "retentionBaseRequired": "Say what the retention is taken on first — it is on the CCAP.",
       "previousNotIssued": "The previous situation is still a draft. Issue it first.",
       "nothingClaimed": "Nothing was claimed. Type at least one quantity.",
       "lineNotOnContract": "One of the lines is not on the marché.",
-      "noSuchProject": "That project does not exist."
+      "noSuchProject": "That site does not exist."
     },
     "blocked": {
-      "noContract": "No DQE contractuel is named on this project, so there is nothing to claim against.",
+      "noContract": "No DQE contractuel is named on this site, so there is nothing to claim against.",
       "retentionBaseRequired": "The retention's base has not been read off the CCAP. A situation with a retention cannot be raised until it is.",
       "previousNotIssued": "The previous situation is still a draft; its quantities would be missing from the cumul précédent."
     },
@@ -5196,12 +5196,12 @@
   },
   "counterPrice": {
     "title": "A price at the counter",
-    "lead": "What a shop charges, written down where you are standing. No enquiry needed — it answers \"what did this cost last time\" on every offer built afterwards.",
+    "lead": "What a shop charges, written down where you are standing. No deal needed — it answers \"what did this cost last time\" on every offer built afterwards.",
     "saved": "Recorded. The price is in the register.",
     "go": "Record the price",
     "more": "Where, who, until when",
     "recent": "The last ones you wrote down",
-    "footnote": "These are catalogue prices: they belong to no enquiry and serve them all. A verbal one stays marked unconfirmed until a document backs it.",
+    "footnote": "These are catalogue prices: they belong to no deal and serve them all. A verbal one stays marked unconfirmed until a document backs it.",
     "ht": "excl. VAT",
     "ttc": "incl. VAT",
     "verbal": "verbal",
@@ -5260,16 +5260,16 @@
       "designationHint": "Description of the new price"
     },
     "blocked": {
-      "noContract": "This project has no DQE contractuel yet, so there is nothing to amend."
+      "noContract": "This site has no DQE contractuel yet, so there is nothing to amend."
     },
     "error": {
-      "noContract": "This project has no DQE contractuel yet, so there is nothing to amend.",
+      "noContract": "This site has no DQE contractuel yet, so there is nothing to amend.",
       "nothingAmended": "An avenant that changes nothing is not an avenant.",
       "lineNotOnContract": "That line is not on the marché.",
       "additionNeedsDesignation": "A new price needs a description.",
       "additionNeedsPrice": "A new price needs a quantity and a unit price, both above zero.",
       "notAllowed": "Your role cannot amend a marché.",
-      "noSuchProject": "That project does not exist."
+      "noSuchProject": "That site does not exist."
     },
     "delai": "The délai",
     "newDeadline": "New contractual end",
@@ -5299,8 +5299,8 @@
     },
     "blocked": {
       "noClause": "Nobody has read the penalty clause off the CCAP yet — the rate, the ceiling and which amount they are taken on.",
-      "noDeadline": "This project has no contractual end, so there is nothing to be late against.",
-      "noAmount": "This project has no contract value, so there is nothing to take a percentage of."
+      "noDeadline": "This site has no contractual end, so there is nothing to be late against.",
+      "noAmount": "This site has no contract value, so there is nothing to take a percentage of."
     },
     "f": {
       "perMille": "Penalty ‰ per day",
@@ -5346,7 +5346,7 @@
       "noRetention": "No issued situation on this marché withheld any retention, so there is nothing to ask back.",
       "noDefinitive": "The réception définitive has not been pronounced. That is what entitles us to the money; a demand sent before it is a demand the client files.",
       "allAsked": "Every dinar held has already been asked for. The marché closes when the money arrives.",
-      "noContract": "This project is not attached to a marché, so there is no document to attach the demand to.",
+      "noContract": "This site is not attached to a marché, so there is no document to attach the demand to.",
       "noSeries": "No numbering series exists for the retention release — screen 50 creates it, once, and the pattern cannot be changed afterwards."
     }
   },

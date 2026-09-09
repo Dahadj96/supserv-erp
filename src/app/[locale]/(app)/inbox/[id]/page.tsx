@@ -586,7 +586,7 @@ export default async function MessagePage({
                         htmlFor="subject"
                         className="block text-micro uppercase tracking-wide text-muted"
                       >
-                        {t("message.enquiryName")}
+                        {t("message.dealName")}
                       </label>
                       <input
                         id="subject"

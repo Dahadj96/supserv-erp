@@ -151,7 +151,7 @@
       "prices": "{n, plural, =0 {Aucun prix n’a encore été collecté pour cette affaire. Une offre se construit à partir d’eux.} one {# prix collecté.} other {# prix collectés.}}",
       "delivery": "{n, plural, =0 {Rien n’a encore été livré sur cette commande. Certaines affaires n’ont jamais besoin d’un bon de livraison.} one {# bon de livraison émis.} other {# bons de livraison émis.}}"
     },
-    "newEnquiry": "Nouvelle consultation",
+    "newDeal": "Nouvelle consultation",
     "recordOrder": "Enregistrer leur commande",
     "project": {
       "title": "Les travaux",
@@ -2126,7 +2126,7 @@
       "today": "Aujourd’hui"
     }
   },
-  "enquiry": {
+  "deal": {
     "received": "Reçue le",
     "clientDeadline": "Date limite client",
     "submissionMethod": "Mode de dépôt",
@@ -2217,7 +2217,7 @@
     "ordersReceived": "Leurs commandes reçues",
     "invoicesIssued": "Factures émises"
   },
-  "newEnquiry": {
+  "newDeal": {
     "subtitle": "Une consultation est arrivée. Enregistrez la demande avant qu’elle refroidisse.",
     "referenceHint": "Leur référence, exactement telle qu’ils l’ont écrite. C’est ainsi qu’ils en parleront.",
     "instructionsHint": "Collez le passage de l’e-mail qui précise où et comment déposer — mot pour mot.",
@@ -2235,7 +2235,7 @@
   "prices": {
     "title": "Prix — {ref}",
     "summary": "{items} articles · {priced} chiffrés · {open} encore ouverts · les prix viennent d’où vous les avez trouvés",
-    "backToEnquiry": "Retour à la consultation",
+    "backToDeal": "Retour à la consultation",
     "banner": "Un prix n’a pas besoin de venir d’un e-mail. Une boutique où vous êtes passé, un appel, une proforma qu’on vous a remise, ou votre propre chiffrage comptent tous — et chacun est enregistré avec sa provenance.",
     "gathered": "Prix recueillis",
     "bestHighlighted": "le meilleur prix par article est surligné",
@@ -2444,7 +2444,7 @@
     "draft": "brouillon",
     "issued": "émise",
     "noNumberYet": "pas encore de numéro",
-    "fromEnquiry": "issue de {ref}",
+    "fromDeal": "issue de {ref}",
     "fromWhich": "Consultation",
     "created": "Créée le",
     "lines": "Lignes de l’offre",
@@ -3439,7 +3439,7 @@
     "companyName": "Société du client",
     "companyNamePlaceholder": "Raison sociale",
     "companyNameHelp": "Proposé d'après le domaine de l'expéditeur. Corrigez-le : c'est le nom qui sera imprimé sur les documents.",
-    "enquiryName": "Nom de l'affaire",
+    "dealName": "Nom de l'affaire",
     "createCompanyAndOpen": "Créer la société et ouvrir l'affaire",
     "error": {
       "companyNameRequired": "Donnez un nom à la société — deux caractères au moins.",
@@ -4006,7 +4006,7 @@
     "twelveMonths": "12 derniers mois",
     "noInvoices": "Aucune facture émise.",
     "noOffers": "Aucune offre émise.",
-    "enquiries": "Affaires",
+    "deals": "Affaires",
     "noDeals": "Aucune affaire enregistrée.",
     "seeThem": "Voir",
     "wonHow": "« Gagné » n'est pas une case à cocher : c'est une commande client reçue. Le chiffre est compté sur les documents, pas sur un indicateur que quelqu'un doit penser à mettre à jour.",
@@ -4029,7 +4029,7 @@
     "subtitle": "Ce qui compte aujourd'hui, vu comme {role}.",
     "late": "En retard",
     "ofExamined": "sur {count} examinés",
-    "openEnquiries": "Affaires en cours",
+    "openDeals": "Affaires en cours",
     "ofDeals": "sur {count} au total",
     "awaitingSuppliers": "Fournisseurs sans réponse",
     "bounced": "{count} adresse(s) en échec",
@@ -4389,8 +4389,8 @@
       "count": "{n} éléments",
       "why": "Manquant, expiré, ou valable aujourd'hui et expiré le jour du dépôt. La date qui décide n'est pas celle d'aujourd'hui."
     },
-    "thisIsAnEnquiry": "C'est une consultation",
-    "thisIsAnEnquiryWhy": "Un appel d'offres est une consultation avec une procédure. Le client, les lignes, l'offre et l'issue vivent sur la consultation, et tous les écrans qui les lisent lisent le même enregistrement.",
+    "thisIsADeal": "C'est une consultation",
+    "thisIsADealWhy": "Un appel d'offres est une consultation avec une procédure. Le client, les lignes, l'offre et l'issue vivent sur la consultation, et tous les écrans qui les lisent lisent le même enregistrement.",
     "make": {
       "title": "Est-ce un appel d’offres ?",
       "why": "Un appel d’offres est cette même affaire répondant à une procédure formelle. Enregistrez la procédure et elle apparaît dans Appels d’offres avec son dossier de pièces. Rien du client, des lignes, de l’offre ou de l’issue ne bouge — tout reste sur cette affaire, et tous les écrans continuent de lire le même enregistrement.",
@@ -4561,8 +4561,8 @@
     "lateBy": "{days} jours de retard",
     "months": "{n} mois",
     "expiresOn": "expire le {on}",
-    "fromEnquiry": "Vient d'une consultation",
-    "fromEnquiryWhy": "Chaque chantier appartient à une affaire. Le client, l'offre et la commande qui a lancé les travaux y vivent, et rien de ce chantier n'est enregistré deux fois.",
+    "fromDeal": "Vient d'une consultation",
+    "fromDealWhy": "Chaque chantier appartient à une affaire. Le client, l'offre et la commande qui a lancé les travaux y vivent, et rien de ce chantier n'est enregistré deux fois.",
     "situations": {
       "title": "Situations / attachements",
       "approvedToDate": "{amount} approuvés à ce jour",
@@ -4866,7 +4866,7 @@
       "previous": "Précédent",
       "change": "Évolution",
       "times": "Fois chiffré",
-      "enquiry": "Consultation",
+      "deal": "Consultation",
       "items": "Articles",
       "asked": "Demandé",
       "replied": "Répondu",
@@ -5058,7 +5058,7 @@
       "badRetentionBase": "La retenue se calcule sur le HT ou sur le TTC — rien d'autre.",
       "contractNotIssued": "Le DQE doit être un document émis."
     },
-    "whichEnquiry": "Sur quelle affaire ? Sont listées celles où le client tient une commande ou une offre émise et où aucun projet n'existe encore.",
+    "whichDeal": "Sur quelle affaire ? Sont listées celles où le client tient une commande ou une offre émise et où aucun projet n'existe encore.",
     "noCandidates": "Aucune affaire n'attend de projet. Émettez une offre ou enregistrez une commande client d'abord."
   },
   "projectRecord": {

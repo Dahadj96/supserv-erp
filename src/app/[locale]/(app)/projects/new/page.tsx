@@ -49,7 +49,7 @@ export default async function NewProjectPage({
         <div className="border-b border-line-subtle bg-surface px-4 md:px-7 py-5">
           <h1 className="text-[19px] font-semibold text-ink">{t("projectNew.title")}</h1>
           <p className="mt-1 max-w-[760px] text-tiny leading-relaxed text-muted">
-            {t("projectNew.whichEnquiry")}
+            {t("projectNew.whichDeal")}
           </p>
         </div>
         <section className="mx-4 md:mx-7 my-6 max-w-[860px] rounded-[var(--radius-card)] border border-line bg-surface">

@@ -85,14 +85,14 @@ export default async function OfferBuilderPage({
           </h1>
           <p className="mt-1 text-tiny text-muted">
             {offer.clientName}
-            {offer.dealRef ? ` · ${t("offer.fromEnquiry", { ref: offer.dealRef })}` : ""}
+            {offer.dealRef ? ` · ${t("offer.fromDeal", { ref: offer.dealRef })}` : ""}
             {offer.clientReference ? ` · ${offer.clientReference}` : ""}
           </p>
         </div>
         <div className="ms-auto flex flex-wrap items-center gap-2">
           {offer.dealId ? (
             <Link href={`/deals/${offer.dealId}`}>
-              <Button variant="secondary">{t("prices.backToEnquiry")}</Button>
+              <Button variant="secondary">{t("prices.backToDeal")}</Button>
             </Link>
           ) : null}
           {/*
@@ -147,7 +147,7 @@ export default async function OfferBuilderPage({
             <div className="flex flex-wrap items-baseline gap-x-3 border-b border-line-subtle px-5 py-3.5">
               <h2 className="text-tiny font-semibold text-ink">{t("offer.lines")}</h2>
               <span className="ms-auto text-micro text-muted">
-                {t("enquiry.nLines", { n: offer.lines.length })}
+                {t("deal.nLines", { n: offer.lines.length })}
                 {seesMargin ? ` · ${t("offer.costsFromQuotes")}` : ""}
               </span>
             </div>
@@ -157,8 +157,8 @@ export default async function OfferBuilderPage({
                 <thead>
                   <tr className="text-micro uppercase tracking-wide text-muted">
                     <th className="py-2 ps-5 text-start font-medium">#</th>
-                    <th className="py-2 pe-4 text-start font-medium">{t("enquiry.designation")}</th>
-                    <th className="py-2 pe-4 text-end font-medium">{t("enquiry.qty")}</th>
+                    <th className="py-2 pe-4 text-start font-medium">{t("deal.designation")}</th>
+                    <th className="py-2 pe-4 text-end font-medium">{t("deal.qty")}</th>
                     {seesMargin ? (
                       <>
                         <th className="py-2 pe-4 text-end font-medium">{t("offer.cost")}</th>

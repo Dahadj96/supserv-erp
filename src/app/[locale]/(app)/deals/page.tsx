@@ -102,7 +102,7 @@ export default async function DealsPage({
         <div className="ms-auto">
           <Link href="/deals/new">
             <Button variant="primary" icon={<Plus className="size-4" aria-hidden />}>
-              {t("deals.newEnquiry")}
+              {t("deals.newDeal")}
             </Button>
           </Link>
         </div>

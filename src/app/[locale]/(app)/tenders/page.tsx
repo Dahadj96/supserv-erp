@@ -157,7 +157,7 @@ export default async function TendersPage({
                     </Badge>
                   </td>
                   <td className="px-4 py-2.5 text-secondary">
-                    {t(`enquiry.method.${row.submissionMethod}`)}
+                    {t(`deal.method.${row.submissionMethod}`)}
                   </td>
                   <td className="px-4 py-2.5 text-end tabular-nums text-secondary">
                     {row.cautionAmount

@@ -71,7 +71,7 @@ export default async function TechnicalPage({
           </p>
         </div>
         <Link className="ms-auto" href={`/deals/${id}`}>
-          <Button variant="secondary">{t("prices.backToEnquiry")}</Button>
+          <Button variant="secondary">{t("prices.backToDeal")}</Button>
         </Link>
       </div>
 

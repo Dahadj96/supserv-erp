@@ -960,9 +960,9 @@ export default async function ProjectPage({
           />
 
           <section className="rounded-[var(--radius-card)] border border-line bg-surface p-5">
-            <h2 className="text-tiny font-semibold text-ink">{t("project.fromEnquiry")}</h2>
+            <h2 className="text-tiny font-semibold text-ink">{t("project.fromDeal")}</h2>
             <p className="mt-3 text-tiny leading-relaxed text-secondary">
-              {t("project.fromEnquiryWhy")}
+              {t("project.fromDealWhy")}
             </p>
             <Link
               href={`/deals/${p.dealId}`}

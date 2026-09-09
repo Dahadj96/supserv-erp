@@ -55,24 +55,24 @@ export default async function NewEnquiryPage({
   return (
     <main className="min-h-0 flex-1 overflow-auto">
       <div className="border-b border-line-subtle bg-surface px-4 py-4 md:px-7 md:py-5">
-        <h1 className="text-[19px] font-semibold text-ink">{t("deals.newEnquiry")}</h1>
-        <p className="mt-1 text-tiny text-muted">{t("newEnquiry.subtitle")}</p>
+        <h1 className="text-[19px] font-semibold text-ink">{t("deals.newDeal")}</h1>
+        <p className="mt-1 text-tiny text-muted">{t("newDeal.subtitle")}</p>
       </div>
 
       {error ? (
         <p className="mx-4 mt-4 rounded-[var(--radius-control)] bg-critical-bg px-4 py-2.5 text-tiny text-critical-ink md:mx-7">
-          {t.has(`newEnquiry.error.${error}`) ? t(`newEnquiry.error.${error}`) : error}
+          {t.has(`newDeal.error.${error}`) ? t(`newDeal.error.${error}`) : error}
         </p>
       ) : null}
 
       {clients.length === 0 ? (
         <div className="mx-4 mt-5 max-w-[640px] rounded-[var(--radius-card)] border border-line bg-surface p-5 md:mx-7">
-          <h2 className="text-tiny font-semibold text-ink">{t("newEnquiry.noClientsTitle")}</h2>
+          <h2 className="text-tiny font-semibold text-ink">{t("newDeal.noClientsTitle")}</h2>
           <p className="mt-1.5 text-tiny leading-relaxed text-secondary">
-            {t("newEnquiry.noClientsBody")}
+            {t("newDeal.noClientsBody")}
           </p>
           <Link className="mt-3 inline-block" href="/companies/new">
-            <Button variant="primary">{t("newEnquiry.addCompany")}</Button>
+            <Button variant="primary">{t("newDeal.addCompany")}</Button>
           </Link>
         </div>
       ) : (
@@ -94,11 +94,9 @@ export default async function NewEnquiryPage({
             </label>
 
             <label>
-              <span className="text-micro text-secondary">{t("enquiry.reference")}</span>
+              <span className="text-micro text-secondary">{t("deal.reference")}</span>
               <input name="clientReference" placeholder="25/DA/2026" className={`${INPUT} mt-1`} />
-              <span className="mt-1 block text-micro text-muted">
-                {t("newEnquiry.referenceHint")}
-              </span>
+              <span className="mt-1 block text-micro text-muted">{t("newDeal.referenceHint")}</span>
             </label>
           </div>
 
@@ -109,45 +107,45 @@ export default async function NewEnquiryPage({
 
           <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
             <label>
-              <span className="text-micro text-secondary">{t("enquiry.clientDeadline")}</span>
+              <span className="text-micro text-secondary">{t("deal.clientDeadline")}</span>
               <input type="datetime-local" name="deadlineAt" className={`${INPUT} mt-1`} />
             </label>
 
             <label>
-              <span className="text-micro text-secondary">{t("enquiry.submissionMethod")}</span>
+              <span className="text-micro text-secondary">{t("deal.submissionMethod")}</span>
               <select name="submissionMethod" defaultValue="unknown" className={`${INPUT} mt-1`}>
                 {SUBMISSION_METHODS.map((method) => (
                   <option key={method} value={method}>
-                    {t(`enquiry.method.${method}`)}
+                    {t(`deal.method.${method}`)}
                   </option>
                 ))}
               </select>
             </label>
 
             <label>
-              <span className="text-micro text-secondary">{t("enquiry.currency")}</span>
+              <span className="text-micro text-secondary">{t("deal.currency")}</span>
               <input name="currency" defaultValue="DZD" className={`${INPUT} mt-1`} />
             </label>
           </div>
 
           <label>
-            <span className="text-micro text-secondary">{t("enquiry.instructions")}</span>
+            <span className="text-micro text-secondary">{t("deal.instructions")}</span>
             <textarea name="clientInstructions" rows={4} className={`${INPUT} mt-1`} />
             <span className="mt-1 block text-micro text-muted">
-              {t("newEnquiry.instructionsHint")}
+              {t("newDeal.instructionsHint")}
             </span>
           </label>
 
           <label>
-            <span className="text-micro text-secondary">{t("newEnquiry.pasteLabel")}</span>
+            <span className="text-micro text-secondary">{t("newDeal.pasteLabel")}</span>
             <textarea
               name="paste"
               rows={10}
-              placeholder={t("newEnquiry.pastePlaceholder")}
+              placeholder={t("newDeal.pastePlaceholder")}
               className={`${INPUT} mt-1 font-mono`}
             />
             <span className="mt-1 block text-micro leading-relaxed text-muted">
-              {t("newEnquiry.pasteHint")}
+              {t("newDeal.pasteHint")}
             </span>
           </label>
 
@@ -157,7 +155,7 @@ export default async function NewEnquiryPage({
             </Link>
             <div className="ms-auto">
               <Button type="submit" variant="primary">
-                {t("newEnquiry.create")}
+                {t("newDeal.create")}
               </Button>
             </div>
           </div>

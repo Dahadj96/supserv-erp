@@ -110,7 +110,7 @@ export default async function ReportsPage({ params }: { params: Promise<{ locale
 
         <section className="rounded-[var(--radius-card)] border border-line bg-surface">
           <div className="flex items-baseline gap-3 border-b border-line-subtle px-5 py-3.5">
-            <h2 className="text-tiny font-semibold text-ink">{t("reports.enquiries")}</h2>
+            <h2 className="text-tiny font-semibold text-ink">{t("reports.deals")}</h2>
             <Link href="/deals" className="ms-auto text-micro text-accent-ink hover:underline">
               {t("reports.seeThem")}
             </Link>

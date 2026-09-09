@@ -216,7 +216,7 @@ export default async function ScorecardPage({
                 <thead>
                   <tr className="border-b border-line-subtle bg-plane text-micro text-muted">
                     <th className="px-5 py-2 text-start font-medium">
-                      {t("scorecard.column.enquiry")}
+                      {t("scorecard.column.deal")}
                     </th>
                     <th className="px-3 py-2 text-end font-medium">
                       {t("scorecard.column.items")}

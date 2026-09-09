@@ -98,9 +98,9 @@ describe("what turning a tender back refuses", () => {
       expect(en.tender.unmake.refused[refusal], `en ${refusal}`).toBeTruthy();
       expect(fr.tender.unmake.refused[refusal], `fr ${refusal}`).toBeTruthy();
       // The action redirects with the same code as `?error=`, and screen 06
-      // reads it out of `enquiry.error`.
-      expect(en.enquiry.error[refusal], `en enquiry.error.${refusal}`).toBeTruthy();
-      expect(fr.enquiry.error[refusal], `fr enquiry.error.${refusal}`).toBeTruthy();
+      // reads it out of `deal.error`.
+      expect(en.deal.error[refusal], `en deal.error.${refusal}`).toBeTruthy();
+      expect(fr.deal.error[refusal], `fr deal.error.${refusal}`).toBeTruthy();
     }
   });
 });

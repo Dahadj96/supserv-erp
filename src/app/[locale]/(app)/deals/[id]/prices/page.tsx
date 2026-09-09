@@ -88,7 +88,7 @@ export default async function PricesPage({
           </p>
         </div>
         <Link className="ms-auto" href={`/deals/${id}`}>
-          <Button variant="secondary">{t("prices.backToEnquiry")}</Button>
+          <Button variant="secondary">{t("prices.backToDeal")}</Button>
         </Link>
       </div>
 
@@ -276,7 +276,7 @@ export default async function PricesPage({
                   </label>
 
                   <label>
-                    <span className="text-micro text-secondary">{t("enquiry.currency")}</span>
+                    <span className="text-micro text-secondary">{t("deal.currency")}</span>
                     <input
                       name="currency"
                       defaultValue={found.deal.currency}

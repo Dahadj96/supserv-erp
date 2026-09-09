@@ -98,7 +98,7 @@ export default async function DashboardPage({ params }: { params: Promise<{ loca
           note={late.examined > 0 ? t("dashboard.ofExamined", { count: late.examined }) : undefined}
         />
         <Tile
-          label={t("dashboard.openEnquiries")}
+          label={t("dashboard.openDeals")}
           value={String(data.deals.open)}
           href="/deals"
           note={
