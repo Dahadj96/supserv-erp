@@ -474,6 +474,24 @@ Strictly sequential. Each step is useless without the one above it.
   submitted). Both are computable from rows that already exist, exactly as
   `setupState()` is. **Do not store progress** — LAW 1.
   *Done when:* both runs show where they are without anyone ticking anything.
+  **READ THIS BEFORE STARTING — 2.5 changed what this task is.** Screen 06 now
+  has a next-step panel (`dealChecks`, task 2.5) which already computes most of
+  the enquiry run from `DealFacts` and renders it with a state badge per step
+  and one primary button. Adding a second panel beside it would put two lists
+  about the same run on one screen, and that is the clutter this wave exists to
+  remove. The enquiry half of 2.6 is therefore **not a new panel** — it is
+  turning the one that is there into the numbered stepper `/setup` uses, on the
+  foundation 2.5 laid: number the steps, give the first unfinished one the
+  primary button it already has, and add the two the checks do not carry —
+  **prices in** (a `price_quote` count, which means adding it to `DealFacts`
+  rather than querying from the page; see the 2.5 note under Known gaps) and
+  **bon de livraison issued**. `dealChecks` should grow those two steps rather
+  than a second module growing a parallel list.
+  The tender half has no conflict and nothing on screen today: `/tenders/[id]`
+  has no stepper and no actions at all, so folder pieces → BPU priced → caution
+  → submitted is new work there. It overlaps 2.7, which gives that same page
+  its forms — worth doing the two together, or 2.7 first, since a stepper whose
+  steps have no buttons is a list of things you cannot do.
 
 - [ ] **2.7 · Give the tender page its actions**
   The tender detail page has no form and no `actions.ts`. `markSubmitted`,
@@ -1233,6 +1251,21 @@ every saved link for a word, and the label is what a person reads. Task 3.3
 carries this out; anything written before 3.3 ships should already use it.
 
 ### Wave 1 is written and nobody has seen it work (1.4–1.8, and 1.11)
+
+**Now thirteen tasks, and the restart is still the whole of it.** The run of
+9 September added 2.3, 2.4a, 2.4b, 2.4, 2.4c and 2.5 on top of wave 1's six.
+`pnpm build` has been run again and succeeded, so the build on disk carries all
+of it. Nothing has changed about what is needed: **double-click
+`restart-erp.cmd`** and say yes, then `Restart-ScheduledTask -TaskName "SUPSERV
+worker"` in the same Administrator window, then `pnpm smoke`. Until then port
+3000 serves the build from before 1.4.
+
+What is worth looking at first once it is up, because it is new and nobody has
+used it: screen 40 now offers to put what you confirm onto the deal, and screen
+06 opens with a line naming the next thing to do. The three RFQ files that
+propose a field are `B_…Instructions aux Soumissionnaires` (offer validity),
+`C_…EtenduedesFournitures_` (delivery time) and `F_…Projet de Contrat` (late
+penalty).
 
 Six tasks shipped on 9 September and **none of them is live**. Port 3000 still
 serves the build from before 1.4: a commit is not a deployment. `pnpm build` has
