@@ -23,6 +23,16 @@ export const FIELD_KEYS = [
   "bidBond",
   "offerValidity",
   "latePenalty",
+  /*
+    HOW LONG THE CLIENT GIVES US TO DELIVER (task 2.4c).
+
+    The seventh, added after 2.4 found that `deal.required_delivery_days` was
+    the one column with no writer anywhere: the carrying was built and there
+    was nothing to carry, because nothing ever proposed the value. Screen 67
+    checks every supplier's promised lead time against it and had been checking
+    against null on every deal there has ever been.
+  */
+  "deliveryTime",
 ] as const;
 export type FieldKey = (typeof FIELD_KEYS)[number];
 
@@ -219,6 +229,38 @@ const RULES: Rule[] = [
       return { value, display: value };
     },
     base: 0.9,
+  },
+  {
+    /*
+      DELIVERY TIME — task 2.4c.
+
+      Kept apart from `offerValidity` on purpose, though both end in a count of
+      days. They are opposite obligations: a validity is how long OUR price
+      stands, a delivery time is how fast the CLIENT requires the goods. Reading
+      one as the other would put a lead time into the field screen 12 uses to
+      decide whether our offer has expired.
+
+      Nothing about the two cue lists overlaps — *validité* and *livraison* are
+      different words — so the separation is in the vocabulary rather than in an
+      ordering that could be broken by moving a rule.
+
+      What this reads is a NUMBER, and a person confirms the meaning. "inférieur
+      ou égal à 15 jours" is a maximum the client set, which is exactly what
+      `required_delivery_days` holds; "à partir de 15 jours" would be the
+      opposite claim in the same words, and no regular expression should be
+      trusted to tell them apart on a document that decides a penalty.
+    */
+    key: "deliveryTime",
+    cues: ["delai de livraison", "delais de livraison", "livraison sous", "delai de fourniture"],
+    read: (s) => {
+      const m = s.match(/(\d{1,3})\s*(jours?|mois|semaines?)/i);
+      if (!m) return null;
+      const value = `${m[1]} ${m[2]?.toLowerCase()}`;
+      return { value, display: value };
+    },
+    // Lower than a validity's 0.9. A contract mentions delivery in a dozen
+    // clauses and only one of them is the requirement.
+    base: 0.8,
   },
   {
     key: "latePenalty",

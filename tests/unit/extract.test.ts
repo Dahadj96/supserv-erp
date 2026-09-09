@@ -177,16 +177,44 @@ describe("screen 40 — what we read, and where we read it", () => {
     expect(fields.map((f) => f.key)).not.toContain("submissionDeadline");
   });
 
-  it("does not let the new cue fire on a delivery time", () => {
-    // "15 jours" next to a delivery clause is not an offer validity, and the
-    // widened cue must not turn every duration in a contract into one.
+  it("keeps a delivery time and an offer validity apart", () => {
+    /*
+      THE BOUNDARY BETWEEN TWO RULES, on the real page that has one of them.
+      Verbatim from `C_RFQ-…_EtenduedesFournitures_.pdf` page 3.
+
+      Both fields end in a count of days and they are opposite obligations: a
+      validity is how long OUR price stands, a delivery time is how fast the
+      CLIENT requires the goods. Reading one as the other would put a lead time
+      into the field screen 12 uses to decide whether our offer has expired.
+
+      Until 2.4c this asserted that NOTHING was read here, which was true and
+      was only half the point — the delivery requirement was sitting on the page
+      unread, and `deal.required_delivery_days` had no writer because of it.
+    */
     const fields = proposeFields([
       page(3, [
         "5 DELAI DE LIVRAISON",
         "formulée par le client, Ce délai devra être inférieur ou égal à 15 jours",
       ]),
     ]);
-    expect(fields).toHaveLength(0);
+
+    expect(fields.map((f) => f.key)).toEqual(["deliveryTime"]);
+    expect(fields[0]?.value).toBe("15 jours");
+    // Read from the line under the heading, so it says so — 2.4b's window.
+    expect(fields[0]?.caveat).toBe("readBelowCue");
+  });
+
+  it("does not read a delivery clause as an offer validity", () => {
+    const fields = proposeFields([
+      page(6, [
+        "ARTICLE 11 — DÉLAI DE VALIDITÉ DES OFFRES",
+        "Le délai de validité est de 90 jours.",
+      ]),
+      page(7, ["ARTICLE 12 — DÉLAI DE LIVRAISON", "La livraison intervient sous 15 jours."]),
+    ]);
+
+    expect(fields.find((f) => f.key === "offerValidity")?.value).toBe("90 jours");
+    expect(fields.find((f) => f.key === "deliveryTime")?.value).toBe("15 jours");
   });
 
   /*

@@ -280,6 +280,40 @@ describe("2.4 — confirmed extractions reach the deal", () => {
     expect(after?.requiredValidityDays).toBeNull();
   });
 
+  it("gives required_delivery_days its first writer — task 2.4c", async () => {
+    /*
+      `requestFor` in `sourcing-store.ts` selects this column on every sourcing
+      request and screen 67 compares each supplier's promised lead time against
+      it. Nothing had ever written it, so that comparison was made against null
+      on every deal there has ever been — a check that cannot fail is a check
+      nobody knows is off.
+    */
+    const dealId = await newDeal("Delivery required");
+    const dossierId = await newDossier([
+      { key: "deliveryTime", value: "15 jours", status: "confirmed" },
+    ]);
+
+    const out = await commitDossierToDeal({ dossierId, dealId, actorId: ACTOR });
+    expect(out.carried).toEqual([{ key: "deliveryTime", on: "deal" }]);
+
+    const [after] = await db.select().from(deal).where(eq(deal.id, dealId)).limit(1);
+    expect(after?.requiredDeliveryDays).toBe(15);
+  });
+
+  it("counts a delivery time in weeks, because a week is always seven days", async () => {
+    // The distinction that matters: a week is arithmetic, a month is an
+    // assumption. One is converted and the other is refused.
+    const dealId = await newDeal("Delivery in weeks");
+    const dossierId = await newDossier([
+      { key: "deliveryTime", value: "3 semaines", status: "confirmed" },
+    ]);
+
+    await commitDossierToDeal({ dossierId, dealId, actorId: ACTOR });
+
+    const [after] = await db.select().from(deal).where(eq(deal.id, dealId)).limit(1);
+    expect(after?.requiredDeliveryDays).toBe(21);
+  });
+
   it("records the carrying on the dossier and in the audit trail", async () => {
     const dealId = await newDeal("Audited carry");
     const dossierId = await newDossier([

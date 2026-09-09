@@ -832,7 +832,8 @@
       "whereToDeposit": "Where to deposit",
       "bidBond": "Caution de soumission",
       "offerValidity": "Offer validity",
-      "latePenalty": "Late penalty"
+      "latePenalty": "Late penalty",
+      "deliveryTime": "Delivery time required"
     },
     "caveat": {
       "severalCandidates": "the document says this more than once",

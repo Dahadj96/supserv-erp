@@ -86,10 +86,16 @@ function dateFrom(text: string): Date | null {
  * person puts the number on the deal themselves.
  */
 function daysFrom(text: string): { days: number | null; monthsInstead: boolean } {
-  const m = text.match(/(\d{1,3})\s*(jours?|mois|j\b)/i);
+  const m = text.match(/(\d{1,3})\s*(jours?|semaines?|mois|j\b)/i);
   if (!m) return { days: null, monthsInstead: false };
-  if (/mois/i.test(m[2] ?? "")) return { days: null, monthsInstead: true };
-  return { days: Number(m[1]), monthsInstead: false };
+
+  const unit = m[2] ?? "";
+  if (/mois/i.test(unit)) return { days: null, monthsInstead: true };
+  // A week is seven days everywhere and always, which is exactly what a month
+  // is not. The conversion is arithmetic rather than an assumption, so it is
+  // made rather than refused.
+  const weeks = /semaine/i.test(unit);
+  return { days: Number(m[1]) * (weeks ? 7 : 1), monthsInstead: false };
 }
 
 /** "84 200,00 DZD (1%)" → an amount, a percentage, or both. */
@@ -257,6 +263,27 @@ export async function commitDossierToDeal(opts: {
         onDeal.requiredValidityDays = days;
         carried.push({ key, on: "deal" });
         if (tenderRow && tenderRow.offerValidityDays === null) onTender.offerValidityDays = days;
+        break;
+      }
+
+      case "deliveryTime": {
+        /*
+          THE CHECK THAT HAS NEVER FIRED (task 2.4c).
+
+          `requestFor` in `sourcing-store.ts` selects `requiredDeliveryDays` on
+          every sourcing request, and screen 67 compares each supplier's
+          promised lead time against it. Nothing has ever written the column, so
+          that comparison has been made against null on every deal there has
+          ever been — a check that cannot fail is a check nobody knows is off.
+        */
+        const { days, monthsInstead } = daysFrom(said);
+        if (monthsInstead) skipped.push({ key, reason: "unitNotDays" });
+        else if (days === null) skipped.push({ key, reason: "unreadable" });
+        else if (target.requiredDeliveryDays !== null) skipped.push({ key, reason: "alreadySet" });
+        else {
+          onDeal.requiredDeliveryDays = days;
+          carried.push({ key, on: "deal" });
+        }
         break;
       }
 

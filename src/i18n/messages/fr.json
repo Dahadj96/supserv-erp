@@ -832,7 +832,8 @@
       "whereToDeposit": "Lieu de dépôt",
       "bidBond": "Caution de soumission",
       "offerValidity": "Délai de validité",
-      "latePenalty": "Pénalités de retard"
+      "latePenalty": "Pénalités de retard",
+      "deliveryTime": "Délai de livraison exigé"
     },
     "caveat": {
       "severalCandidates": "le document le dit plus d'une fois",
