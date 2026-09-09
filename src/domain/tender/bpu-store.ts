@@ -3,6 +3,7 @@ import { db } from "@/db";
 import { auditEntry } from "@/db/schema/control";
 import { deal, dealLine, priceQuote } from "@/db/schema/deal";
 import { document, documentLine } from "@/db/schema/document";
+import { importBatch } from "@/db/schema/import";
 import { sourcingLine, sourcingRequest, sourcingResponse } from "@/db/schema/sourcing";
 import { bpuErratum, bpuMapping, tender } from "@/db/schema/tender";
 import { recomputeTotals } from "@/documents/totals";
@@ -65,6 +66,44 @@ export type BpuView = {
   draftOfferId: string | null;
 };
 
+/**
+ * Where this enquiry's lines were read from, on ANY deal.
+ *
+ * `tender.bpu_source` and `tender.bpu_imported_at` are what screen 42's header
+ * printed, and they live on a row a plain deal does not have — so a bordereau
+ * imported onto an enquiry that was never made a tender left the header saying
+ * the lines were typed, which is a statement about where forty-two figures came
+ * from and it was false. That is task 2.8.
+ *
+ * `import_batch` is the fix rather than a new column, because it already holds
+ * this for every deal: `commitBpuBatch` writes one row per sheet with the
+ * filename, the deal and the moment it was imported, and screen 42's Sources
+ * tab has been listing them all along. The two tender columns are a cache of
+ * the newest of them, and they are still written — `unmakeRefusalFor` refuses
+ * to undo a tender conversion once a BPU has been imported, and that refusal
+ * reads them.
+ *
+ * Newest first, and only a batch that actually became lines: an erratum is a
+ * different sheet answering a different question, and a batch abandoned at the
+ * mapping step is a file somebody opened and thought better of.
+ */
+async function importedFrom(dealId: string): Promise<{ filename: string; at: Date | null } | null> {
+  const [row] = await db
+    .select({ filename: importBatch.filename, at: importBatch.importedAt })
+    .from(importBatch)
+    .where(
+      and(
+        eq(importBatch.dealId, dealId),
+        eq(importBatch.becomes, "deal_line"),
+        eq(importBatch.status, "imported"),
+      ),
+    )
+    .orderBy(desc(importBatch.importedAt))
+    .limit(1);
+
+  return row ?? null;
+}
+
 /** The client's lines, with what each one costs and what we intend to charge. */
 export async function bpu(dealId: string): Promise<BpuView | null> {
   const [found] = await db
@@ -85,6 +124,19 @@ export async function bpu(dealId: string): Promise<BpuView | null> {
     .limit(1);
   if (!found) return null;
 
+  /**
+   * The tender's cache first, the batch behind it second.
+   *
+   * The order is deliberate: on a tender both say the same thing and the cached
+   * column costs no query to read, and on a plain deal the column does not
+   * exist to be wrong. Falling back rather than replacing also means a deal
+   * whose lines were imported before `import_batch` carried them keeps whatever
+   * the tender row remembers.
+   */
+  const batch = found.source === null ? await importedFrom(dealId) : null;
+  const source = found.source ?? batch?.filename ?? null;
+  const importedAt = found.importedAt ?? batch?.at ?? null;
+
   const lines = await db
     .select()
     .from(dealLine)
@@ -101,8 +153,8 @@ export async function bpu(dealId: string): Promise<BpuView | null> {
       object: found.object,
       currency: found.currency,
       cautionPct: found.cautionPct,
-      source: found.source,
-      importedAt: found.importedAt,
+      source,
+      importedAt,
       rows,
       totals: bpuTotals(rows, found.cautionPct),
       drift: null,
@@ -218,8 +270,8 @@ export async function bpu(dealId: string): Promise<BpuView | null> {
     object: found.object,
     currency: found.currency,
     cautionPct: found.cautionPct,
-    source: found.source,
-    importedAt: found.importedAt,
+    source,
+    importedAt,
     rows,
     totals: bpuTotals(rows, found.cautionPct),
     drift: priceDrift(rows),
@@ -653,13 +705,24 @@ export async function saveMapping(opts: {
  * erratum — it goes through `recordErratum` and is reviewed line by line — and
  * quietly replacing forty-two lines because somebody uploaded again is how
  * thirty-one gathered prices disappear without a trace.
+ *
+ * WHERE THE PROVENANCE LANDS — task 2.8. This used to update the `tender` row
+ * unconditionally. On a deal that was never made a tender there is no such row,
+ * so the update matched nothing, returned cleanly, and the filename went
+ * nowhere: screen 42's header went on saying the lines had been typed, about
+ * forty-two figures that came out of a spreadsheet. It is not a refusal —
+ * importing a bordereau onto a plain enquiry is a legitimate thing to do and
+ * screen 42 supports it — so the fix is to know which of the two happened and
+ * to say so. `provenanceOn` is that answer: `tender` when the cache was
+ * written, `batch` when only `import_batch` and the audit entry hold it, which
+ * `bpu()` reads through `importedFrom`.
  */
 export async function importBpu(opts: {
   dealId: string;
   lines: BpuLine[];
   filename?: string | null;
   actorId: string;
-}): Promise<{ imported: number }> {
+}): Promise<{ imported: number; provenanceOn: "tender" | "batch" }> {
   if (opts.lines.length === 0) throw new BpuRefused("nothingToImport");
 
   const held = await heldLines(opts.dealId);
@@ -667,6 +730,7 @@ export async function importBpu(opts: {
   if (held.length > 0) throw new BpuRefused("alreadyImported");
 
   const now = new Date();
+  let provenanceOn: "tender" | "batch" = "batch";
   await db.transaction(async (tx) => {
     await tx.insert(dealLine).values(
       opts.lines.map((line) => ({
@@ -679,10 +743,14 @@ export async function importBpu(opts: {
       })),
     );
 
-    await tx
+    // `returning` rather than a count, because drizzle's update result shape
+    // differs by driver and an empty array is the same answer on all of them.
+    const cached = await tx
       .update(tender)
       .set({ bpuSource: opts.filename ?? null, bpuImportedAt: now })
-      .where(eq(tender.dealId, opts.dealId));
+      .where(eq(tender.dealId, opts.dealId))
+      .returning({ dealId: tender.dealId });
+    provenanceOn = cached.length > 0 ? "tender" : "batch";
 
     await tx.insert(auditEntry).values({
       entity: "deal",
@@ -691,11 +759,15 @@ export async function importBpu(opts: {
       actorId: opts.actorId,
       actorKind: "user",
       sourceScreen: "42",
-      after: { filename: opts.filename ?? null, lines: opts.lines.length },
+      // `provenanceOn` goes in the entry too. Six months later the question
+      // "where did these forty-two lines come from" is answered here whatever
+      // happened to the tender row afterwards — including a tender conversion
+      // being undone, which deletes it.
+      after: { filename: opts.filename ?? null, lines: opts.lines.length, provenanceOn },
     });
   });
 
-  return { imported: opts.lines.length };
+  return { imported: opts.lines.length, provenanceOn };
 }
 
 /* -------------------------------------------------- errata, as they land */

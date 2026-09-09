@@ -4,8 +4,10 @@ import { db } from "@/db";
 import { auditEntry } from "@/db/schema/control";
 import { deal, dealLine, priceQuote } from "@/db/schema/deal";
 import { document, documentLine } from "@/db/schema/document";
+import { importBatch } from "@/db/schema/import";
 import { item } from "@/db/schema/item";
 import { party, partyRole } from "@/db/schema/party";
+import { tender } from "@/db/schema/tender";
 import { createDeal } from "@/domain/deal/deal";
 import type { BpuLine } from "@/domain/tender/bpu";
 import {
@@ -480,5 +482,150 @@ describe("an erratum as it arrives", () => {
       .from(auditEntry)
       .where(and(eq(auditEntry.entityId, id), eq(auditEntry.action, "discard")));
     expect(entry?.reason).toBe("Retiré par l'acheteur");
+  });
+});
+
+/**
+ * Task 2.8 — where a bordereau's provenance goes on a deal that is not a tender.
+ *
+ * `importBpu` used to update the `tender` row unconditionally. On a plain
+ * enquiry there is no such row, so the update matched nothing, returned
+ * cleanly, and the filename went nowhere: screen 42's header went on saying the
+ * lines had been typed, about figures that came out of a spreadsheet.
+ *
+ * Both branches are here because the done-when asked for both, and because the
+ * one that used to be silent is the one worth a test.
+ */
+describe("where the bordereau says it came from", () => {
+  /** A deal nobody has made a tender. Screen 42 works on one; `bpu()` leftJoins. */
+  const plainDeal = async (subject: string) =>
+    createDeal(
+      {
+        partyId: clientId,
+        subject,
+        contactPersonId: null,
+        clientReference: `RFQ ${stamp}`,
+        receivedAt: new Date("2026-08-01T08:00:00Z"),
+        deadlineAt: new Date("2026-09-02T10:00:00Z"),
+        submissionMethod: "email",
+        currency: "DZD",
+        ownerId: null,
+        source: "manual",
+        intakeMessageId: null,
+        expectedValue: null,
+        clientInstructions: null,
+      },
+      ACTOR,
+    );
+
+  it("caches it on the tender row when there is one", async () => {
+    const view = await bpu(dealId);
+    expect(view?.source).toBe("BPU.xls");
+
+    const [row] = await db
+      .select({ source: tender.bpuSource, at: tender.bpuImportedAt })
+      .from(tender)
+      .where(eq(tender.dealId, dealId));
+    expect(row?.source).toBe("BPU.xls");
+    expect(row?.at).not.toBeNull();
+  });
+
+  it("says so, rather than silently, when there is no tender row to cache it on", async () => {
+    const plain = await plainDeal("Bordereau on a plain enquiry");
+
+    const result = await importBpu({
+      dealId: plain,
+      lines: IMPORTED,
+      filename: "DEVIS-CLIENT.xlsx",
+      actorId: ACTOR,
+    });
+
+    // The old behaviour returned `{ imported: 4 }` here and told nobody that
+    // the filename had gone nowhere. This is the half of the done-when that
+    // says it cannot: the caller is told which of the two happened.
+    expect(result).toEqual({ imported: 4, provenanceOn: "batch" });
+
+    // And the audit entry carries the filename whatever happens to any row —
+    // including a tender conversion being undone, which deletes it.
+    const [entry] = await db
+      .select()
+      .from(auditEntry)
+      .where(and(eq(auditEntry.entityId, plain), eq(auditEntry.action, "importBpu")));
+    expect(entry?.after).toMatchObject({
+      filename: "DEVIS-CLIENT.xlsx",
+      lines: 4,
+      provenanceOn: "batch",
+    });
+  });
+
+  it("prints it on the header of a plain deal, read from the import batch", async () => {
+    /*
+      THE BUG ITSELF. `commitBpuBatch` writes one `import_batch` row per sheet
+      with the filename, the deal and the moment it was imported — screen 42's
+      Sources tab has been listing them all along — so the provenance was never
+      actually lost, only unreachable by the header. The row is written here the
+      way that function writes it: `becomes: "deal_line"`, `status: "imported"`,
+      and an `importedAt`, which are the three fields `importedFrom` filters and
+      orders on.
+    */
+    const plain = await plainDeal("Bordereau with a batch behind it");
+    const at = new Date("2026-08-03T09:30:00Z");
+
+    await db.insert(importBatch).values({
+      filename: "BORDEREAU-SADEG.xlsx",
+      becomes: "deal_line",
+      dealId: plain,
+      mapping: {},
+      status: "imported",
+      rowsTotal: 4,
+      rowsImported: 4,
+      createdBy: ACTOR,
+      importedAt: at,
+    });
+    await importBpu({
+      dealId: plain,
+      lines: IMPORTED,
+      filename: "BORDEREAU-SADEG.xlsx",
+      actorId: ACTOR,
+    });
+
+    const view = await bpu(plain);
+    expect(view?.source).toBe("BORDEREAU-SADEG.xlsx");
+    expect(view?.importedAt?.toISOString()).toBe(at.toISOString());
+  });
+
+  it("ignores an erratum sheet and a batch nobody finished", async () => {
+    /*
+      An erratum is a different sheet answering a different question — it does
+      not become the lines — and a batch abandoned at the mapping step is a file
+      somebody opened and thought better of. Either one claiming to be where the
+      bordereau came from would be worse than the header saying nothing.
+    */
+    const plain = await plainDeal("Bordereau with only the wrong batches");
+
+    await db.insert(importBatch).values([
+      {
+        filename: "ERRATUM-1.xlsx",
+        becomes: "bpu_erratum",
+        dealId: plain,
+        mapping: {},
+        status: "imported",
+        createdBy: ACTOR,
+        importedAt: new Date("2026-08-10T09:00:00Z"),
+      },
+      {
+        filename: "ABANDONNE.xlsx",
+        becomes: "deal_line",
+        dealId: plain,
+        mapping: {},
+        status: "mapping",
+        createdBy: ACTOR,
+      },
+    ]);
+    await importBpu({ dealId: plain, lines: IMPORTED, actorId: ACTOR });
+
+    const view = await bpu(plain);
+    expect(view?.source).toBeNull();
+    expect(view?.importedAt).toBeNull();
   });
 });
