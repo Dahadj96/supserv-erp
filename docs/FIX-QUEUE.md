@@ -199,7 +199,7 @@ Strictly sequential. Each step is useless without the one above it.
   *Done when:* a message with a `dossier.zip` lists every file inside it,
   each openable, and a malicious zip is refused with a logged reason.
 
-- [~] **1.5 · View a file inside the ERP**
+- [x] **1.5 · View a file inside the ERP**
   `inbox/[id]/page.tsx:196` renders attachments with no anchor at all. Make
   them links, and add a viewer using the pattern already working in
   `documents/[id]/page.tsx:220` — `<object type="application/pdf">`, the
@@ -415,6 +415,50 @@ asked for again — but there is no "try again" anywhere on screen 60, and no
 list of what gave up. `deadLetter` on the queue plus a row on the files screen
 is the shape; it wants 1.5's viewer to exist first, so that the button has
 somewhere to sit.
+
+### 1.5 — the route's CSP never reaches the browser, and three smaller things
+
+**`/api/files/[id]` sets a Content-Security-Policy that is thrown away.** The
+route sends `default-src 'none'; sandbox`; `next.config.ts` applies
+`Content-Security-Policy: frame-ancestors 'self'` to `/(.*)`, and a header from
+Next's `headers()` REPLACES the one a route handler set. Measured on a running
+build on 9 September 2026: the only CSP on an attachment response is
+`frame-ancestors 'self'`. The same is true of `/api/documents/[id]/pdf`, which
+sets none of its own.
+
+This is not an open door. What actually keeps a `text/html` attachment from
+running with the Gérant's session is `RENDERABLE` forcing it to
+`application/octet-stream` with `content-disposition: attachment`, plus
+`x-content-type-options: nosniff` — both still there, both tested. What is
+missing is the second lock `serving.ts` claimed, and the comment now says so
+rather than claiming it. Left for its own commit because making a route's CSP
+survive means changing a config every response in the application passes
+through, and because the fix has a choice inside it: per-route `headers()`
+entries, or setting the header in the route and removing `/(.*)` from the
+blanket. Worth knowing before then: `default-src 'none'; sandbox` was measured
+against a real Chrome during 1.5 and does NOT stop the PDF viewer, so the
+obvious fear about restoring it is unfounded.
+
+**An attachment nobody typed a content type for gets no preview.** `previewMode`
+reads the declared type and refuses to guess from the extension. Two of the 38
+rows in the mailbox today are PNGs whose sender's mail client declared
+`application/octet-stream`, so they download rather than open. A narrow fix is
+available and was deliberately not taken in 1.5: fall back to the extension
+ONLY when the declared type is empty or `application/octet-stream` — never
+upgrading an explicit claim, so `text/html` and `image/svg+xml` stay downloads —
+and only onto types already in `RENDERABLE`. With `nosniff` set, a file that
+lies about its extension renders as a broken image rather than as anything. It
+was left out because it widens a security-shaped function for two files, and
+because every PDF in the mailbox is correctly typed, which is the case that
+matters.
+
+**Nothing retries an attachment whose job gave up** — 1.3 wrote that down and
+said the button wanted 1.5's viewer to exist first so it would have somewhere
+to sit. It exists now. The row on screen 60 that says which fetches are
+exhausted, and a "try again", is unblocked.
+
+**A .docx, a .xlsx and a .zip say "no preview yet".** That is 1.6 and 1.4, and
+the words on screen name the state rather than pretending.
 
 ### 0.4 — four removal paths still silent, and one that must stay refused
 
@@ -643,3 +687,4 @@ carries this out; anything written before 3.3 ships should already use it.
 | 2026-09-08 | 1.1 | `b1522af` | `fetchAttachmentBytes` on `/$value`, never `contentBytes` — which arrives base64 inside the listing JSON and stops being populated somewhere around 4 MB, so a list-and-decode fetcher works on every message anybody tests with and returns nothing for the 12 MB CCTP the feature exists for, without erroring. The three kinds are answered separately because only one is a file: a **file** comes back at its original content type; an **item** (contact, event, message) comes back serialised as MIME, which is worth storing but is not the file a person thinks they attached, so the result carries `kind: "item"` for 1.2 to act on; a **reference** is a link to OneDrive and has no bytes in the mailbox at all — Graph's documented answer to `$value` on one is **405**, and new `AttachmentHasNoBytes` carries that as a reason rather than a failure, because a link is the normal case for a large dossier and 1.3 must not retry it forever. Refused twice on purpose: by `@odata.type` before a request is spent, and by the 405 when the listing did not carry it — the annotation is not a property, `$select` does not govern it, and nothing depends on it being present. `get()` parsed JSON and `/$value` is bytes, so the request is factored into `request()` and both readers sit on it rather than a second `fetch` becoming a second place to forget `assertScoped()`; `get()` is unchanged in behaviour. The test pins the two things that fail invisibly — the request shape (ids encoded into the path rather than pasted) and that the guard still refuses **without making any request**, setting the scope env itself in both directions so a machine whose `.env` says `true` cannot decide which half runs. |
 | 2026-09-08 | 1.2 | `b4154cd` | `storeOne` fetches each attachment through 1.1, puts it in the working store and writes `storage_path` — so `/api/files/attachment:<id>` stops answering 409 for every file the company has ever been sent. `sha256` restored (migration 0054, one additive column) with the fetcher whose absence was the stated reason it was dropped; the schema comment claimed `storageFor().put()` returns the digest and it does not — `sha256()` was exported from `storage/local.ts` with no caller, and has one now. The rows go in **before** the bytes because the path is keyed on our row id, not the Graph attachment id: Graph ids change when a message is moved between folders, and a path built from one stops resolving for a reason invisible on screen. Naming follows `storagePathFor` in `dossier.ts` and `import/batch.ts` — `attachments/<row id>/<safe filename>`. **Three outcomes and only one is a fault**, and `fetchInto` never throws: `stored`; `linked`, a OneDrive or SharePoint reference with nothing in the mailbox to fetch, where the null path is correct and the route's 409 already says "the file is real, this copy is not"; and `failed`, the network or a 403 that after a successful listing is the Exchange permission cache catching up. Keeping those apart is 1.3's whole basis — a job that cannot tell a link from a flaky link retries the link forever — and an attachment that will not download must never cost the message it arrived on. Nothing in this layer logs and there is no column for a per-attachment reason, so the capture audit entry carries the outcome counts and the failing filename with its reason. `size_bytes` becomes the length of the copy held rather than Graph's mail-store figure, which includes encoding. The test runs the real `pollMailbox` against the real database with only the three Graph calls mocked and the real error classes kept (`fetchInto` dispatches on `instanceof`), and removes its own files in teardown — screen 66 reports files no row claims, and a suite that litters the working store makes that report lie. |
 | 2026-09-08 | 1.3 | `a951b41` | `src/jobs/` exists — pg-boss was installed, `pnpm worker` declared and compose running `node dist/jobs/worker.js` since before there was anything there to run. Two queues, separate because the retry is: `mailbox.poll` reads the mailbox, `attachment.fetch` pulls one file, and the link dropping on file nine of a dozen must cost file nine, not the message, not the other eleven, not the poll. Each file queues with five tries and exponential backoff from a minute, keyed on its own row so overlapping polls cannot queue it twice. The poll now only NOTICES files; `intake_attachment` gains `external_id` (migration 0055) because a job running ten minutes later has nothing else to ask Graph for, and a reference attachment never becomes a job at all. `src/domain/intake/attachments.ts` fetches and **reports rather than decides** — whether to try again is a queue's business — with five outcomes of which `failed` is the only one the worker throws on: `already` because a queue may deliver twice and re-pulling 12 MB to write identical bytes is not free on this link, `linked`, `gone` for a row whose message was dismissed while the job waited, and a 403 counted as `failed` because after a successful listing it is the permission cache catching up. The worker refuses to retry exactly one thing that reads like a failure — a poll raising `MailboxNotScoped`, which is configuration not weather, and would otherwise fill the queue with the same refusal and tell nobody. **Capture is now on a clock** (`MAILBOX_POLL_CRON`, ten minutes): an ERP that reads the mailbox only when somebody presses a button is a mailbox somebody still has to watch. "Sync now" enqueues that same job and returns; `inbox.synced` ("3 new messages") is deleted from both message files because the count is not knowable at the moment of pressing, replaced by a line saying the mailbox is being read and files appear as they arrive. `intake_attachment` and `fetch` needed words in both languages too — `tests/unit/audit.test.ts` caught that, correctly. The web app starts pg-boss with `supervise` and `schedule` off: two processes share the queue and cron belongs to the worker alone, or every Next server instance is a second scheduler racing the first. `pnpm worker` is now in CLAUDE.md's commands, because in dev it is a second terminal and nothing said so. What the screen still cannot see — queue depth, and an exhausted job — is under Known gaps. |
+| 2026-09-09 | 1.5 | `c8580b4` | An attachment opens inside the ERP. `FileViewer` (`src/components/ui/file-viewer.tsx`) is screen 18's `<object type="application/pdf">` lifted out of the document page so the mailbox and screen 60 share one — no new dependency, three modes (object for a PDF, `img` for a picture, iframe for plain text). **Which file is open lives in the URL** (`?file=<id>`): both screens stay server components, a message with fifteen attachments renders one viewer and not fifteen, and the address of a particular file is something one person can send another. `previewMode()` sits beside `contentHeaders()` and is DERIVED from `RENDERABLE` rather than being a second list — a screen whose set were wider than the route's would offer a Show that downloads the file, so a test asserts the containment. `RENDERABLE` untouched: HTML and SVG stay downloads, Office files say "no preview yet" until 1.6. **The stale copy is corrected** — "in Outlook only" stopped being true the day 1.2 shipped, so a row with no bytes now says "not copied here yet" and the list says once that copies arrive in the background. The inbox list gains a paperclip and a count, by correlated subquery rather than a join. A read dossier declares `application/pdf` (its only writer puts it with that mime) so it opens inline too — unless the read failed, because that usually means it was not a PDF. **Verified against a real build in a real Chrome**, not assumed: a throwaway harness seeded four attachments in the TEST database and TEST file store, minted a gérant session, and photographed both locales — the PDF renders, the PNG decodes, the route answers 200 `application/pdf` `inline` and the bytes begin `%PDF-`. Headless Chromium has no PDF viewer and always shows the fallback, so the assertion is that the fallback is NOT visible. **No attachment in the application database has bytes yet** — 38 rows, every `storage_path` null, because no sync has run with a worker since 1.3. What the viewer does is correct and Abdou will see "not copied here yet" on all 38 until `pnpm worker` runs against a sync. The CSP measurement and three smaller gaps are under Known gaps. |
