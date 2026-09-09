@@ -348,7 +348,19 @@ Strictly sequential. Each step is useless without the one above it.
   review screen onto the deal. If nothing is ever proposed, nothing is ever
   confirmed, and 2.4 ships a road with no traffic on it.
 
-- [ ] **2.4b · A cue in a heading must reach the value under it**
+- [x] **2.4b · A cue in a heading must reach the value under it**
+  A window of **two lines**, measured rather than chosen: the rate is eleven
+  lines below its heading, but clause 13.3 ends "…paiera au CLIENT des
+  pénalités de" and the next line opens "retard comme suit : 1 % par jour", so
+  the cue fires again beside the value and what is crossed is a line break
+  rather than a paragraph. The citation follows the VALUE — a citation pointing
+  at a heading is a field nobody can check — while `articleAbove` still names
+  the article, and the `readBelowCue` caveat costs 0.15 confidence so it can
+  never auto-confirm. Two guards, both from real text: dot leaders mean a table
+  of contents and are never read below, and a heading plus the clause under it
+  that restates the value are one reading arrived at twice rather than two
+  candidates. **Over the 32 stored dossiers: 1 proposal → 2, and nothing else
+  on the database gained anything.** Details under Known gaps.
   *Found by 2.4a on 9 September, measured, not guessed. Full evidence under
   Known gaps.*
   `proposeFields` only looks for a value inside the cue's OWN sentence, so a
@@ -494,6 +506,38 @@ entry, a number in a series, or anything the row is the last copy of. Until that
 decision exists, the honest options are to soften the copy or to leave the
 countdown as a promise nobody has kept — and softening copy the day before
 somebody writes the purge is its own churn.
+
+### 2.4b — what the window still does not read, and one number to watch
+
+**The cap on the penalty is lost.** The reading is `1% par jour`, and the
+document goes on, on the line after the one cited: *"cumulé de dix pourcent
+(10%) du montant total du CONTRAT."* The rule's `cap` pattern looks for
+*plafonnée à X%* and this contract says *jusqu'à un maximum cumulé de*, on a
+third line. Widening the window to three would reach it and would also reach a
+line further into every other article, which is the trade this task measured
+and declined. The honest fix is the cap's own alternative wording, not a wider
+window — a rule reading further because its own words are richer is different
+from a rule reading further because it is hopeful.
+
+**A value on the line ABOVE its cue is still unread.** The window only looks
+down. Nothing on this database needs it, and a table whose header row is the
+label and whose cell below is the value is read correctly already, so this is
+recorded rather than built: the first document that needs it will say what
+shape it has.
+
+**`readBelowCue` costs 0.15 and that number has never been calibrated.** It
+was chosen so a below-cue reading lands under `REVIEW_THRESHOLD` (0.8) for
+every rule whose base is 0.9 or less — which is all six — so nothing read this
+way can ever auto-confirm. That is the property that matters and it holds. But
+whether 0.55 rather than 0.6 or 0.5 is *right* for a penalty rate is a
+question only a person confirming a few of them can answer, and it is worth
+re-reading once screen 40 has been used on a real dossier.
+
+**One proposal on this database is still zero public tenders.** The two fields
+now read both come from a private *consultation restreinte*. Nothing here has
+been tested against a real Algerian public RC, because none has arrived. Every
+cue in the file is written for one, and 2.4a's finding stands: the first real
+marché is the measurement, and it may move all of this again.
 
 ### 2.4a — the RFQ is not a règlement de consultation, and two things follow
 
@@ -1112,3 +1156,4 @@ above. It is marked blocked rather than skipped.
 | 2026-09-09 | 2.2 | `4d78af7` | The deal says what it is. `deals/[id]/page.tsx` contained the word "tender" **nought times**, so even with 2.1 shipped a deal answering a formal procedure looked exactly like one that was not, and nothing led to its folder. The header now carries an accent badge naming the procedure — "Tender · AONR", not merely that it is one — and the tab row gains links to `/tenders/[id]` and to **`/tenders/[id]/bpu`**, screen 42, the bordereau import, which was reachable from nowhere but itself and is where a tender's prices are actually entered. **The completeness is read, not recomputed**: `getTender` has already run the pure `dossier()` over this tender's pieces, the company's papers and the closing date, so the card shows that object — the bar, the three sections as ready-of-total, and screen 08's own blocking sentence while it can still be acted on. A second arithmetic here could disagree with screen 08 about the same folder, and a stored percentage would still read 100 in September after the CASNOS attestation expired in August. **`/deals/[id]/items` (screen 73) is linked too** — it has existed since the item-list hole was filled and nothing in the codebase pointed at it, so correcting a quantity read wrong from an email meant knowing the URL. Four tests hold it, including one that fails the day screen 42 is again linked from nothing but itself. `tender.onDeal.*` in EN and FR. **Not seen in a browser**: port 3000 still serves an older build; `pnpm build` has been run so the build on disk is current, and the restart needs Administrator. |
 | 2026-09-09 | 2.3 | `2d5252d` | The screen says what it noticed. Four signals were being computed and thrown away: the router reads the subject for *consultation · avis · appel d'offres* and discards that reading whenever an earlier rule wins, `attachmentLooksLike` writes `tender_dossier` on the row where nothing but a badge ever reads it, and a dossier arrives as a zip and is expanded without anybody asking what an archive on an enquiry usually means. So an RFQ that is plainly an appel d'offres opened as a plain enquiry. `tenderHint()` reads all four off one message and returns a reading rather than a verdict — which signals fired, and whether they add up. The two strong ones each carry it alone because each is somebody ELSE's word rather than our inference: the subject was typed by the authority announcing the procedure, and `tender_dossier` is the filename the sender chose. The two weak ones carry it only together — an archive by itself is a supplier's photographs as often as a dossier, and four attachments by itself is a catalogue. The procedure words are read off the seeded tender rule rather than retyped, and a test walks that rule's own list, so a word added on screen 38 is gained here and the two lists cannot drift. LAW 2 is the whole design: it writes nothing, `route()` and `classified_as` are untouched, it fires only where a person is looking, the panel prints every signal so somebody can disagree with one of them rather than with the machine, and the button is the same reclassify the select box above it already performs — after which the primary button changes from an enquiry to a tender and a person still presses the thing that creates. Quiet when the router already said tender; speaks on `needsReview`, which is where a real dossier lands when its subject is a reference number and nothing else. Attachments counted off what the MESSAGE carried, never what came out of a zip, so the archive is one signal and its contents are not eight more. Twelve tests. |
 | 2026-09-09 | 2.4a | `e9a2a38` | The answer, and neither candidate was right about why. The wire is fine: `ingestDocument` calls `proposeFields` on the pages it just read and inserts every proposal into `extraction_field`, so the pipeline does not end a function short — running it by hand over the stored page text of all 32 read dossiers reproduced **0 fields** exactly. The line-break theory is wrong too: every cue was searched again with each document's whitespace collapsed to single spaces and not one cue appeared that had not appeared already. It is the cues, and the reason is that **`RFQ-10023604-26 · Fourniture de Bureau` is a private *consultation restreinte*, not a public marché** — introduction, instructions to bidders, scope, commercial requirements, draft contract, invoicing instructions, with no *avis d'appel d'offres*, no *séance d'ouverture des plis* and no *caution de soumission*, because a private client asking six suppliers for office furniture holds none of those. The six fields `proposeFields` looks for are the six facts on the front page of a PUBLIC règlement de consultation, and this reader has not yet met one on this database; exactly two of the 32 documents contain any cue at all. **And there is no submission deadline in this dossier in any shape** — every line of all six readable files was scanned for a French date, named month or numeric, and there is not one date anywhere: the instructions *refer* to "la date limite de depot de l'offre" and never state it, because it came in the covering email. So 2.4a's own done-when cannot be met by this dossier by any reader that is not inventing one, and that is now a test asserting nothing is proposed from those two verbatim lines. One cue was taken, on evidence: the same file says at 1.6.18 "L'offre doit rester valable pour une période minimale de 180 jours calendaires", which is `offerValidity` stated as an obligation rather than labelled as a field — adding `rester valable` and `demeurer valable` takes the whole database from **0 proposals to 1** (`offerValidity = 180 jours`, 0.9, cited to page 4) with **nothing else on the database gaining anything**, which is the number that matters. The real sentence is the fixture, and so is the delivery clause it must not fire on. What was not taken is now **2.4b**: a cue in a heading never reaches its value, which makes every numbered French administrative document — a public RC included — unreadable wherever the label and the fact sit on different lines. |
+| 2026-09-09 | 2.4b | `6a72b02` | A cue in a heading reaches the value under it. `proposeFields` only ever looked inside the cue's own sentence, so a numbered French document — which says the label and then says the fact, over lines a PDF text layer has already broken — was unreadable by construction, public règlement de consultation included. The window is **two lines, measured rather than chosen**: the rate in `F_RFQ-…_Projet de Contrat.pdf` sits eleven lines below "ARTICLE 13 – PENALITES DE RETARD", and a window that spanned eleven would reach halfway into the next article and read whatever number it found there — a guess with a citation attached. It does not need to, because the document repeats its own words: clause 13.3 ends "…paiera au CLIENT des pénalités de" and the very next line opens "retard comme suit : 1 % par jour". What is crossed is a line break, not a paragraph. **The citation follows the value, not the cue** — a person confirming a rate has to see the rate on the page they are sent to, and a citation pointing at a heading is a field nobody can check, the one thing screen 40 may not produce — while `articleAbove` still names the article, so it reads "p12 · article 13" and quotes the line that states the rate. `readBelowCue` says the heading is above the line and costs 0.15, which puts every below-cue reading under the 0.8 auto-confirm threshold for all six rules. Two guards, both from real text: **dot leaders** mean a table of contents, where the line under one heading is the next heading, so such a line never looks below itself; and a **heading plus the clause under it that restates the value** is one reading arrived at twice, not two candidates — hits are made distinct by rule, page and line with the direct reading winning, without which "the document says this more than once" would have been permanently on, that being the commonest layout there is. **Measured over the 32 stored dossiers, before and after: 1 proposal → 2**, the new one `latePenalty = 1% par jour` at 0.55 with its caveat, cited to page 12 article 13; **nothing else on the database gained anything** — no CV, catalogue, invoice or company profile proposes something it did not before, which is the false-positive count the task asked for and it is zero. Six tests, every fixture verbatim from the real file. |
