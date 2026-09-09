@@ -141,9 +141,34 @@ $cert = Join-Path (Split-Path $tunnelConfig) "cert.pem"
 if ($tunnelId -and (Test-Path $cert)) {
   Write-Host "waiting 20s for the connector to register..."
   Start-Sleep -Seconds 20
-  $info = (& $cloudflared --origincert $cert tunnel info $tunnelId 2>&1 | Out-String)
-  Write-Host $info
-  if ($info -match "does not have any active connection") {
+
+  # BOUNDED, because this is a CHECK and a check must never be the thing that
+  # stops the install. On 9 September 2026 this line hung: cloudflared sat on
+  # the API call and never returned, so the script stopped here forever with
+  # the tunnel already fixed and the ERP, the worker and the backup tasks all
+  # still unregistered. A verification step that can block the work it is
+  # verifying is worse than no verification at all.
+  #
+  # Run it in a job so it can be abandoned. Sixty seconds is generous for one
+  # API call; past that, say the check could not run and CARRY ON.
+  $job = Start-Job -ScriptBlock {
+    param($exe, $certPath, $id)
+    & $exe --origincert $certPath tunnel info $id 2>&1 | Out-String
+  } -ArgumentList $cloudflared, $cert, $tunnelId
+
+  if (Wait-Job $job -Timeout 60) {
+    $info = (Receive-Job $job | Out-String)
+  } else {
+    Stop-Job $job -ErrorAction SilentlyContinue
+    $info = ""
+    Write-Warning "cloudflared did not answer within 60s, so the tunnel could not be verified from here. The service is running; check by hand with: cloudflared tunnel info <name>"
+  }
+  Remove-Job $job -Force -ErrorAction SilentlyContinue
+  if ($info) { Write-Host $info }
+  if (-not $info) {
+    # Unknown is not the same as connected. Say nothing rather than something
+    # reassuring and false.
+  } elseif ($info -match "does not have any active connection") {
     Write-Warning "THE TUNNEL IS STILL DOWN. The service is running but is not connected."
     Write-Warning "Read the log named by 'logfile:' in $tunnelConfig, or add one."
   } else {
