@@ -58,6 +58,7 @@ Facts learned the hard way. Do not rediscover them.
 | Biome import order | Biome sorts imports and will fail the gate over it. Run `pnpm format` before `pnpm check`, then `git status --short` before staging — format touches only what it needs, but stage files by name, never `git add -A`. |
 | Scheduled runs | A scheduled run may have no mounted folder, so `device_bash` fails. Everything can be done through Desktop Commander instead: `read_file`, `write_file`, `edit_block`, `start_process`. Do not stop over it. |
 | **Seeing the work** | **A commit is not a deployment.** The ERP is served by `next start` over a *built* `.next`, so code on disk changes nothing a person can see. After finishing a task: `pnpm build`, then `restart-erp.cmd` (or `scripts\server\restart.ps1`). **The restart needs Administrator** — the process on port 3000 will not die without it, and Windows shows a prompt on the machine that only Abdou can answer. So: build unattended, then tell him to double-click `restart-erp.cmd` and say yes. Never claim a change is live until port 3000 has been restarted onto the new build. `pnpm smoke` afterwards. |
+| Worker | `pnpm worker` is what empties the queue: no worker means no mailbox poll and every attachment stuck at "not copied here yet", with nothing on screen saying so. It is **not covered by any scheduled task** on this machine yet (1.10, under Known gaps) — check with `tasklist /FI "IMAGENAME eq node.exe"` and `type .data\worker.log`, and start one with `start "supserv-worker" /min cmd /c "pnpm worker > .data\worker.log 2>&1"` before running anything that queues jobs. |
 | Reboot | There is **no `SUPSERV ERP` scheduled task** on this machine, so the ERP does not come back after a reboot or a power cut, while cloudflared does — the tunnel answers with a Cloudflare error page pointing at nothing. `scripts\server\install-services.ps1` fixes it once, from an Administrator PowerShell. Abdou's call, and it needs his machine. |
 | MCP timeouts | A `start_process` call can time out at the tool layer while the process keeps running on the machine. Do not re-run the command — call `list_sessions`, find the pid, and `read_process_output`. Re-running is how you get "the file is being used by another process". |
 
@@ -189,22 +190,17 @@ Strictly sequential. Each step is useless without the one above it.
   *Done when:* attachments download in the background with retries, and the
   worker starts from `pnpm worker`.
 
-- [~] **1.10 · Backfill the attachments that predate the fetcher**
-  `enqueue(QUEUES.attachmentFetch, …)` fires only inside `storeOne`
+- [x] **1.10 · Backfill the attachments that predate the fetcher**
+  `enqueue(QUEUES.attachmentFetch, …)` fired only inside `storeOne`
   (`src/domain/intake/mailbox.ts:246`), so only attachments discovered by a
-  *new* sync are ever queued. Every `intake_attachment` row in the production
-  database was recorded before the fetcher existed: 38 rows, every
-  `storage_path` null, and nothing has ever asked for the bytes. Add
-  `scripts/backfill-attachments.ts` (a `tsx --env-file=.env` script like the
-  others) that enqueues the fetch for every row with a null `storage_path`,
-  skipping reference attachments, using the same `singletonKey: rowId` and
-  retry options as `mailbox.ts:246` so re-running it cannot double-queue.
-  Run it against the real database with a worker running, and say what
-  actually landed. Also: `pnpm worker` is not run by anything durable —
-  `scripts\server\install-services.ps1` registers the ERP and the backup and
-  no worker at all.
-  *Done when:* the rows that can be fetched have a `storage_path` and a file
-  on disk, every failure is named with its reason, and the worker is running.
+  *new* sync were ever queued. All 38 `intake_attachment` rows were recorded
+  before the fetcher existed, so every `storage_path` was null and the viewer
+  1.5 built had nothing to show. `pnpm backfill:attachments` now asks — after
+  recovering the Graph id each row was missing, because `external_id` arrived
+  with 1.3 and a backfill that only queued would have queued 38 jobs that
+  stored nothing. **38 queued, 38 stored, 0 failed**, verified byte-for-byte
+  against `.data\files`. The worker was covered by no scheduled task at all;
+  that is under Known gaps with the one command that fixes it.
 
 - [ ] **1.4 · Expand ZIP attachments**
   New `src/capture/archive/zip.ts`. Guard against path traversal and zip
@@ -403,6 +399,65 @@ entry, a number in a series, or anything the row is the last copy of. Until that
 decision exists, the honest options are to soften the copy or to leave the
 countdown as a promise nobody has kept — and softening copy the day before
 somebody writes the purge is its own churn.
+
+### 1.10 — the worker does not come back after a reboot, and that is Abdou's to fix
+
+**The one thing from this task that is not done, because it needs
+Administrator.** `scripts\server\install-services.ps1` registered `SUPSERV ERP`
+and `SUPSERV backup` and nothing else, and `run-erp.ps1` does not start a
+worker. So the machine has always come back from a reboot with a web app and no
+worker — and the worker is the process that reads the mailbox every ten minutes
+and fetches attachment bytes. The web app only enqueues.
+
+**Nothing on any screen says the worker is missing.** Mail simply stops
+arriving, "Sync now" keeps saying the mailbox is being read, and every
+attachment that does arrive says "not copied here yet" for ever. It is the exact
+silence this wave exists to end, and it has been the machine's state since 1.3
+shipped.
+
+`scripts\server\run-worker.ps1` is now written and the installer now registers
+`SUPSERV worker` beside the other two — but **registering a scheduled task needs
+an elevated PowerShell, which only Abdou can approve on his own machine.** The
+whole of it, in an **Administrator** PowerShell, touching neither the tunnel nor
+the ERP nor the backup:
+
+```powershell
+cd C:\SUPSERV-ERP
+Register-ScheduledTask -TaskName "SUPSERV worker" -Force `
+  -Action (New-ScheduledTaskAction -Execute "powershell.exe" `
+            -Argument "-NoProfile -ExecutionPolicy Bypass -WindowStyle Hidden -File C:\SUPSERV-ERP\scripts\server\run-worker.ps1" `
+            -WorkingDirectory "C:\SUPSERV-ERP") `
+  -Trigger (New-ScheduledTaskTrigger -AtStartup) `
+  -Principal (New-ScheduledTaskPrincipal -UserId "SYSTEM" -RunLevel Highest) `
+  -Settings (New-ScheduledTaskSettingsSet -AllowStartIfOnBatteries -DontStopIfGoingOnBatteries `
+            -RestartCount 3 -RestartInterval (New-TimeSpan -Minutes 1) `
+            -ExecutionTimeLimit (New-TimeSpan -Seconds 0))
+Start-ScheduledTask -TaskName "SUPSERV worker"
+```
+
+Then read `.data\worker.log` for a `[worker] up` line, rather than trusting that
+the task says Running — that is the mistake the tunnel taught. Close the
+minimised **supserv-worker** console window first: two workers are harmless,
+pg-boss gives each job to one of them, but only the task's own writes that log.
+
+**Until that command is run, the worker on this machine is the console window
+this task started, and it dies with the next reboot or the next log-out.**
+
+### 1.10 — the content type is the sender's word, and two files pay for it
+
+Two of the 38 are named `.png` and were declared `application/octet-stream` by
+whatever mail client sent them, so `RENDERABLE` will not preview them and screen
+40 offers a download instead of the picture. `store()` does not overwrite
+`content_type` with what `/$value` returned either, so a fetch cannot correct it.
+
+Deliberately not changed here. `serving.ts` says why in its own words: the
+content type on an email attachment was chosen by whoever sent the email, and
+the set of types served inline is what stops `text/html` from contact@ running
+as script in a signed-in session. Sniffing a type from the bytes, or trusting a
+filename extension, is a change to that door — not a fix to a fetcher — and it
+belongs with somebody looking at the CSP gap 1.5 measured. Seven of the 38 are
+downloads rather than previews for this and related reasons: three .docx, one
+.pptx (both wait on 1.6), one .zip (1.4), and these two .png.
 
 ### 1.3 — the screen cannot see the queue, and dev needs a second terminal
 
@@ -704,4 +759,5 @@ carries this out; anything written before 3.3 ships should already use it.
 | 2026-09-08 | 1.1 | `b1522af` | `fetchAttachmentBytes` on `/$value`, never `contentBytes` — which arrives base64 inside the listing JSON and stops being populated somewhere around 4 MB, so a list-and-decode fetcher works on every message anybody tests with and returns nothing for the 12 MB CCTP the feature exists for, without erroring. The three kinds are answered separately because only one is a file: a **file** comes back at its original content type; an **item** (contact, event, message) comes back serialised as MIME, which is worth storing but is not the file a person thinks they attached, so the result carries `kind: "item"` for 1.2 to act on; a **reference** is a link to OneDrive and has no bytes in the mailbox at all — Graph's documented answer to `$value` on one is **405**, and new `AttachmentHasNoBytes` carries that as a reason rather than a failure, because a link is the normal case for a large dossier and 1.3 must not retry it forever. Refused twice on purpose: by `@odata.type` before a request is spent, and by the 405 when the listing did not carry it — the annotation is not a property, `$select` does not govern it, and nothing depends on it being present. `get()` parsed JSON and `/$value` is bytes, so the request is factored into `request()` and both readers sit on it rather than a second `fetch` becoming a second place to forget `assertScoped()`; `get()` is unchanged in behaviour. The test pins the two things that fail invisibly — the request shape (ids encoded into the path rather than pasted) and that the guard still refuses **without making any request**, setting the scope env itself in both directions so a machine whose `.env` says `true` cannot decide which half runs. |
 | 2026-09-08 | 1.2 | `b4154cd` | `storeOne` fetches each attachment through 1.1, puts it in the working store and writes `storage_path` — so `/api/files/attachment:<id>` stops answering 409 for every file the company has ever been sent. `sha256` restored (migration 0054, one additive column) with the fetcher whose absence was the stated reason it was dropped; the schema comment claimed `storageFor().put()` returns the digest and it does not — `sha256()` was exported from `storage/local.ts` with no caller, and has one now. The rows go in **before** the bytes because the path is keyed on our row id, not the Graph attachment id: Graph ids change when a message is moved between folders, and a path built from one stops resolving for a reason invisible on screen. Naming follows `storagePathFor` in `dossier.ts` and `import/batch.ts` — `attachments/<row id>/<safe filename>`. **Three outcomes and only one is a fault**, and `fetchInto` never throws: `stored`; `linked`, a OneDrive or SharePoint reference with nothing in the mailbox to fetch, where the null path is correct and the route's 409 already says "the file is real, this copy is not"; and `failed`, the network or a 403 that after a successful listing is the Exchange permission cache catching up. Keeping those apart is 1.3's whole basis — a job that cannot tell a link from a flaky link retries the link forever — and an attachment that will not download must never cost the message it arrived on. Nothing in this layer logs and there is no column for a per-attachment reason, so the capture audit entry carries the outcome counts and the failing filename with its reason. `size_bytes` becomes the length of the copy held rather than Graph's mail-store figure, which includes encoding. The test runs the real `pollMailbox` against the real database with only the three Graph calls mocked and the real error classes kept (`fetchInto` dispatches on `instanceof`), and removes its own files in teardown — screen 66 reports files no row claims, and a suite that litters the working store makes that report lie. |
 | 2026-09-08 | 1.3 | `a951b41` | `src/jobs/` exists — pg-boss was installed, `pnpm worker` declared and compose running `node dist/jobs/worker.js` since before there was anything there to run. Two queues, separate because the retry is: `mailbox.poll` reads the mailbox, `attachment.fetch` pulls one file, and the link dropping on file nine of a dozen must cost file nine, not the message, not the other eleven, not the poll. Each file queues with five tries and exponential backoff from a minute, keyed on its own row so overlapping polls cannot queue it twice. The poll now only NOTICES files; `intake_attachment` gains `external_id` (migration 0055) because a job running ten minutes later has nothing else to ask Graph for, and a reference attachment never becomes a job at all. `src/domain/intake/attachments.ts` fetches and **reports rather than decides** — whether to try again is a queue's business — with five outcomes of which `failed` is the only one the worker throws on: `already` because a queue may deliver twice and re-pulling 12 MB to write identical bytes is not free on this link, `linked`, `gone` for a row whose message was dismissed while the job waited, and a 403 counted as `failed` because after a successful listing it is the permission cache catching up. The worker refuses to retry exactly one thing that reads like a failure — a poll raising `MailboxNotScoped`, which is configuration not weather, and would otherwise fill the queue with the same refusal and tell nobody. **Capture is now on a clock** (`MAILBOX_POLL_CRON`, ten minutes): an ERP that reads the mailbox only when somebody presses a button is a mailbox somebody still has to watch. "Sync now" enqueues that same job and returns; `inbox.synced` ("3 new messages") is deleted from both message files because the count is not knowable at the moment of pressing, replaced by a line saying the mailbox is being read and files appear as they arrive. `intake_attachment` and `fetch` needed words in both languages too — `tests/unit/audit.test.ts` caught that, correctly. The web app starts pg-boss with `supervise` and `schedule` off: two processes share the queue and cron belongs to the worker alone, or every Next server instance is a second scheduler racing the first. `pnpm worker` is now in CLAUDE.md's commands, because in dev it is a second terminal and nothing said so. What the screen still cannot see — queue depth, and an exhausted job — is under Known gaps. |
+| 2026-09-09 | 1.10 | `72124f3` | The 38 attachments that predate the fetcher have bytes. `enqueue(QUEUES.attachmentFetch)` fired in exactly one place — `storeOne`, as a message is stored — so only files a NEW sync discovered were ever queued, and every row in this database predates that: 38 rows, every `storage_path` null, nothing that would ever ask. `pnpm backfill:attachments` (`--dry-run` to look first) asks. **It could not have been a loop over `enqueue`, and that is the finding**: `external_id` arrived with 1.3 (migration 0055), so on all 38 it was NULL and `fetchAttachmentFor` answers `gone / noGraphId` without spending a request — a backfill that only queued would have queued 38 jobs, stored nothing, and looked like it worked. So each message is listed once, live, and its rows are matched back to what the mailbox still holds. That listing is also the **only** place a reference attachment can be recognised: `intake_attachment` has no `@odata.type` column, so a stored row genuinely cannot say whether it is a OneDrive link, and guessing from a null content type would be inventing a fact about somebody's mail. Graph does send the annotation despite `$select` not naming it — 38 of 38 carried it, none was a reference — and the script prints that ratio either way, because if it ever stopped the only thing left to catch a link would be the 405. `matchToListing` narrows three times (the id we hold, then name AND size, then name alone), claims each entry once, and **refuses to guess**: two candidates is a coin toss, so the row is left unmatched and reported, because the failure mode is not a missing file but the wrong file behind a name on screen 40. Queue options moved to `attachmentFetchOptions` and both callers use it — the poll and the backfill must key the job identically or a backfill during a poll fetches the same 12 MB twice. Each recovered id is an audit entry (`intake_attachment` / `backfill`, both languages). **Real run against the real database with a worker up: 38 queued, 38 stored, 0 failed**, and verified rather than believed — every path non-null, all 38 files on disk under `.data\files\attachments\`, each one's length and SHA-256 recomputed from disk against its row, 19,178,730 bytes, no mismatch; 38 `fetch` audit entries, all `stored`. **The worker was covered by no scheduled task at all** — the installer registered the ERP and the backup and nothing else — so a reboot has always brought back a web app that looks healthy and has silently stopped capturing. `run-worker.ps1` is written (SYSTEM has no `pnpm`, so node is invoked machine-wide against an absolute path, and it waits ten minutes for Docker's Postgres like `run-erp.ps1`) and the installer now registers `SUPSERV worker`, but **registering it needs Administrator and is Abdou's to run** — the single command is in RUNBOOK section 3 and under Known gaps. Tonight's worker is a console window. |
 | 2026-09-09 | 1.5 | `c8580b4` | An attachment opens inside the ERP. `FileViewer` (`src/components/ui/file-viewer.tsx`) is screen 18's `<object type="application/pdf">` lifted out of the document page so the mailbox and screen 60 share one — no new dependency, three modes (object for a PDF, `img` for a picture, iframe for plain text). **Which file is open lives in the URL** (`?file=<id>`): both screens stay server components, a message with fifteen attachments renders one viewer and not fifteen, and the address of a particular file is something one person can send another. `previewMode()` sits beside `contentHeaders()` and is DERIVED from `RENDERABLE` rather than being a second list — a screen whose set were wider than the route's would offer a Show that downloads the file, so a test asserts the containment. `RENDERABLE` untouched: HTML and SVG stay downloads, Office files say "no preview yet" until 1.6. **The stale copy is corrected** — "in Outlook only" stopped being true the day 1.2 shipped, so a row with no bytes now says "not copied here yet" and the list says once that copies arrive in the background. The inbox list gains a paperclip and a count, by correlated subquery rather than a join. A read dossier declares `application/pdf` (its only writer puts it with that mime) so it opens inline too — unless the read failed, because that usually means it was not a PDF. **Verified against a real build in a real Chrome**, not assumed: a throwaway harness seeded four attachments in the TEST database and TEST file store, minted a gérant session, and photographed both locales — the PDF renders, the PNG decodes, the route answers 200 `application/pdf` `inline` and the bytes begin `%PDF-`. Headless Chromium has no PDF viewer and always shows the fallback, so the assertion is that the fallback is NOT visible. **No attachment in the application database has bytes yet** — 38 rows, every `storage_path` null, because no sync has run with a worker since 1.3. What the viewer does is correct and Abdou will see "not copied here yet" on all 38 until `pnpm worker` runs against a sync. The CSP measurement and three smaller gaps are under Known gaps. |
