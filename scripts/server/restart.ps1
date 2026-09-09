@@ -24,6 +24,7 @@
 
 $ErrorActionPreference = "Stop"
 $task = "SUPSERV ERP"
+$worker = "SUPSERV worker"
 $repo = "C:\SUPSERV-ERP"
 $node = "C:\Program Files\nodejs\node.exe"
 $next = "C:\SUPSERV-ERP\node_modules\next\dist\bin\next"
@@ -145,6 +146,50 @@ if (-not $up) {
 
 Write-Host "`nERP is up: http://localhost:3000" -ForegroundColor Green
 Write-Host "Public:    https://erp.supserv-dz.com"
+
+# THE WORKER TOO, and this is not tidiness.
+#
+# Added 9 September 2026, after the trap it prevents had already been walked
+# into. The worker is a long-running node process started from source; it holds
+# whatever handlers existed when it started. On 9 September it had been running
+# since 02:25, so it carried no `dossier.read` handler at all - that queue
+# arrived at 02:31 with 1.6 and 02:49 with 1.8. Restarting only the ERP put a
+# new build on port 3000 in front of a worker that could not do the new work,
+# and nothing on any screen says that: attachments simply arrive and are never
+# read.
+#
+# One restart means one machine, not one process. If the task is not registered
+# there is nothing to restart and the worker is somebody's console window -
+# say so, because that is the same silent-capture failure wearing a hat.
+Say "the worker"
+
+if (Get-ScheduledTask -TaskName $worker -ErrorAction SilentlyContinue) {
+  Restart-ScheduledTask -TaskName $worker
+  Start-Sleep -Seconds 15
+
+  # "Running" means a process exists. The worker announces itself on its first
+  # line; that is what is checked, for the same reason as the port above.
+  $log = "C:\SUPSERV-ERP\.data\worker.log"
+  $recent = if (Test-Path $log) { Get-Content $log -Tail 40 } else { @() }
+
+  if ($recent -match "\[worker\] up") {
+    Write-Host "worker restarted and reading the mailbox on a clock" -ForegroundColor Green
+  } else {
+    Write-Warning "The worker task restarted but has not said '[worker] up'. Read $log"
+  }
+} else {
+  Write-Warning @"
+THERE IS NO '$worker' SCHEDULED TASK.
+
+Nothing reads the mailbox or fetches attachment bytes unless somebody is
+holding a console window open, and after a reboot nobody is. Mail stops
+arriving and no screen says so.
+
+Fix it once, from an Administrator PowerShell:
+    cd C:\SUPSERV-ERP
+    powershell -ExecutionPolicy Bypass -File scripts\server\install-services.ps1
+"@
+}
 
 if (-not $registered) {
   Write-Host "`nStill not a service. One reboot and this is down until somebody runs it by hand." -ForegroundColor Yellow
