@@ -465,7 +465,7 @@ Strictly sequential. Each step is useless without the one above it.
   *Done when:* the deal page always names the next thing to do, with a link
   that lands on the field or screen that does it.
 
-- [ ] **2.6 · Generalise the `/setup` stepper to the two weekly workflows**
+- [~] **2.6 · Generalise the `/setup` stepper to the two weekly workflows**
   `/setup` (screen 85) is the pattern that works: numbered computed steps,
   blocking ones with a filled badge and a primary button, done ones with a
   green badge and no button, a banner naming what is missing. Apply it to the
