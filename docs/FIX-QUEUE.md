@@ -189,6 +189,23 @@ Strictly sequential. Each step is useless without the one above it.
   *Done when:* attachments download in the background with retries, and the
   worker starts from `pnpm worker`.
 
+- [~] **1.10 · Backfill the attachments that predate the fetcher**
+  `enqueue(QUEUES.attachmentFetch, …)` fires only inside `storeOne`
+  (`src/domain/intake/mailbox.ts:246`), so only attachments discovered by a
+  *new* sync are ever queued. Every `intake_attachment` row in the production
+  database was recorded before the fetcher existed: 38 rows, every
+  `storage_path` null, and nothing has ever asked for the bytes. Add
+  `scripts/backfill-attachments.ts` (a `tsx --env-file=.env` script like the
+  others) that enqueues the fetch for every row with a null `storage_path`,
+  skipping reference attachments, using the same `singletonKey: rowId` and
+  retry options as `mailbox.ts:246` so re-running it cannot double-queue.
+  Run it against the real database with a worker running, and say what
+  actually landed. Also: `pnpm worker` is not run by anything durable —
+  `scripts\server\install-services.ps1` registers the ERP and the backup and
+  no worker at all.
+  *Done when:* the rows that can be fetched have a `storage_path` and a file
+  on disk, every failure is named with its reason, and the worker is running.
+
 - [ ] **1.4 · Expand ZIP attachments**
   New `src/capture/archive/zip.ts`. Guard against path traversal and zip
   bombs — mirror `safeJoin` in `src/storage/local.ts:38`, cap the entry count
