@@ -316,7 +316,17 @@ Strictly sequential. Each step is useless without the one above it.
   the button is the same reclassify the select box above it performs. What was
   deliberately left out is under Known gaps.
 
-- [ ] **2.4a · Nothing is ever proposed — find out why before 2.4**
+- [x] **2.4a · Nothing is ever proposed — find out why before 2.4**
+  **Answered, 9 September. It is the cues, and the wire is fine — but neither
+  candidate was right about WHY.** `ingestDocument` calls `proposeFields` on
+  the pages it just read and inserts every proposal into `extraction_field`
+  (`dossier.ts:170`), so the pipeline does not end a function short. Running
+  `proposeFields` by hand over the page text stored for all 32 read dossiers
+  reproduced the same answer exactly: **0 fields**. The line-break theory was
+  measured and is also wrong — every cue was searched again with the whole
+  document's whitespace collapsed to single spaces, and not one cue appeared
+  that had not appeared already. The full finding, the two files that do carry
+  a cue, and what was changed, are under Known gaps.
   *Recorded 9 September 2026 while taking 2.1. Not a guess: measured.*
   The 1.11 catch-up read **31 documents successfully** — page text stored,
   every one reviewable — and **every single one proposed zero fields**. Among
@@ -337,6 +347,32 @@ Strictly sequential. Each step is useless without the one above it.
   **This is ahead of 2.4 on purpose.** 2.4 carries confirmed fields from the
   review screen onto the deal. If nothing is ever proposed, nothing is ever
   confirmed, and 2.4 ships a road with no traffic on it.
+
+- [ ] **2.4b · A cue in a heading must reach the value under it**
+  *Found by 2.4a on 9 September, measured, not guessed. Full evidence under
+  Known gaps.*
+  `proposeFields` only looks for a value inside the cue's OWN sentence, so a
+  document that puts the label on one line and the fact on the next proposes
+  nothing. `F_RFQ-…_Projet de Contrat.pdf` is the proof on this database:
+  "ARTICLE 13 – PENALITES DE RETARD" is a heading, and *"1 % par jour du
+  montant total du bon de commande, jusqu'à un maximum"* is four lines below
+  it. That layout is not a quirk of one file — it is how every numbered French
+  administrative document is written, a public règlement de consultation
+  included, so this costs more than one field the first time a real marché
+  arrives.
+  Give a rule a small window: when the cue's own sentence yields nothing, read
+  the next few lines, and **cite the line the value actually came from** with a
+  caveat saying it was read below the cue — a citation that points at the
+  heading would be a field a person cannot check, which is the one thing screen
+  40 may not do. Two things to get right: the table of contents (the same
+  heading appears there with dot leaders and a page number, and must not
+  produce a proposal), and the window's size, which decides the false-positive
+  rate and is therefore a measurement rather than a preference.
+  *Done when:* `F_RFQ-…_Projet de Contrat.pdf` proposes its late penalty with a
+  citation on the line that states it; the run over all 32 stored dossiers is
+  repeated and the count of NEW proposals on documents that are not tenders is
+  reported here; and no document that proposed nothing before proposes
+  something wrong now.
 
 - [ ] **2.4 · Confirmed extractions reach the deal**
   `intake_dossier` has no `deal_id`, so six confirmed fields — submission
@@ -458,6 +494,69 @@ entry, a number in a series, or anything the row is the last copy of. Until that
 decision exists, the honest options are to soften the copy or to leave the
 countdown as a promise nobody has kept — and softening copy the day before
 somebody writes the purge is its own churn.
+
+### 2.4a — the RFQ is not a règlement de consultation, and two things follow
+
+**The premise of the task was wrong, and finding that out was the task.** 2.4a
+was written expecting the seven files of the real RFQ to be "full of *caution
+de soumission*, *date limite de dépôt des offres*, *délai de validité* and
+*séance d'ouverture des plis*". They are not. Every cue in
+`src/domain/intake/extract.ts` was searched against the stored page text of all
+32 read dossiers, and **exactly two documents contain any cue at all**:
+
+| File | Cue found | Proposed |
+|---|---|---|
+| `B_…Instructions aux Soumissionnaires.pdf` | `date limite de depot` | nothing |
+| `F_…Projet de Contrat.pdf` | `penalites de retard` | nothing |
+
+`RFQ-10023604-26 · Fourniture de Bureau` is a **private *consultation
+restreinte*** — an introduction, instructions to bidders, a scope, commercial
+requirements, a draft contract and invoicing instructions. It is not a public
+marché. It has no *avis d'appel d'offres*, no *séance d'ouverture des plis* and
+no *caution de soumission*, because a private client asking six suppliers for
+office furniture holds none of those. The six fields `proposeFields` looks for
+are the six facts on the front page of a **public** RC, and this reader has
+never yet met one on this database. Thirty-one for thirty-one was not a broken
+wire; it was a reader built for a document class that has not arrived.
+
+**There is no submission deadline in this dossier, in any shape.** Every line
+of all six readable files was scanned for a French date — named month or
+numeric, any format — and there is **not one date anywhere**. The instructions
+*refer* to "la date limite de depot de l'offre" and to "les cinq (5) jours qui
+précédent la date limite de la soumission des offres", and never state it. The
+deadline for this RFQ arrived in the covering email, not in the attachments.
+So 2.4a's own "done when — a real French dossier proposes at least its
+submission deadline" cannot be satisfied by this dossier by any reader that is
+not inventing one, and a reader that answered here would be the exact failure
+LAW 2 exists to prevent. That is written into `extract.test.ts` as a test that
+asserts nothing is proposed from those two verbatim lines.
+
+**What WAS taken: one cue, measured, one true positive, no false ones.** The
+same file states, at 1.6.18, *"L'offre doit rester valable pour une période
+minimale de 180 jours calendaires"* — that is `offerValidity`, stated as an
+obligation on the bidder rather than labelled as a field, which is why none of
+`delai de validite` / `validite des offres` / `duree de validite` sees it.
+Adding `rester valable` and `demeurer valable` takes the whole database from
+**0 proposals to 1**: `offerValidity = 180 jours` at 0.9, cited to page 4 of
+that file, and *nothing else on the database gained anything*, which is the
+number that matters — a widened cue that had lit up CVs and catalogues would
+have been worse than none. The real sentence is the test fixture, and so is
+the delivery clause it must not fire on.
+
+**What was NOT taken, and is now task 2.4b: a cue in a heading never reaches
+its value.** `F_…Projet de Contrat.pdf` says *penalités de retard* twice, both
+times as an **article heading** — once in the table of contents with dot
+leaders, once as "ARTICLE 13 – PENALITES DE RETARD" — and the rate is four
+lines below it: *"retard comme suit : 1 % par jour du montant total du bon de
+commande, jusqu'à un maximum…"*. `proposeFields` only ever looks for the value
+inside the cue's own sentence, so a document that puts the label on one line
+and the fact on the next is unreadable by construction. That is not a quirk of
+this file — it is how **every** numbered French administrative document is laid
+out, a public RC included, so it will cost more than one field the first time a
+real marché arrives. It was not fixed here because a window over following
+lines is a change to how every rule reads, needing its own false-positive
+measurement against all 32 documents, and 2.4a's job was to find out what was
+wrong rather than to rebuild the reader on the way past.
 
 ### 2.3 — four signals, and the four the audit named that were not taken
 
@@ -1012,3 +1111,4 @@ above. It is marked blocked rather than skipped.
 | 2026-09-09 | 2.1 | `2ec873f` | An RFQ becomes a tender in one press. `makeTender` had been written, transactional, guarded against double conversion, seeding `tender_piece` from the procedure and writing an audit entry, since the tender module was built — with **zero callers outside `tests/`**. There was no `/tenders/new`, no `actions.ts` under `tenders/[id]`, and no create affordance anywhere, so screen 07 was structurally empty for ever and its own empty state instructed a workflow that did not exist. This is the caller. The form sits on screen 06 and asks for the procedure — **the five values read out of `PROCEDURES` in `dossier.ts`, not a list retyped in a component**, so a sixth would reach the select, `seedFor` and the label in one move or in none — the place of deposit, the séance d'ouverture, the caution as an amount *or* a percent (whichever the cahier des charges wrote; converting needs an estimate nobody has made), and how long our offer must stand. Its copy names the owner's own distinction between "a simple RFQ" and "a real tender", because `seedFor` already expresses it: an RFQ and a consultation start their folder without the caution, the qualification and the casier judiciaire, so four permanent red rows never appear on screen 08 to teach somebody to ignore red. On success it lands on `/tenders/[id]` — the pipeline is the point of the press. **`unmakeTender` makes a wrong press reversible**, which is the half that took the thinking: a misclassification that can only be undone with SQL is not a feature. It refuses on four things, each read off `src/db/schema/tender.ts` rather than guessed — a deposit (`submitted_at` / `deposit_receipt_ref`: "no document in this system records that a man carried an envelope to a counter in Adrar"), a caution **requested or received** (the schema calls both "facts nobody can infer: the bank takes days", and a request in flight is a week of somebody's time), an imported bordereau's provenance (`bpu_source` — the lines survive on the deal, the record of which file forty-two prices came from would not), and a folder piece carrying a file or a hand-typed `label` (the seed writes neither, so either means a person read the cahier des charges). It deliberately does **not** refuse on the untouched seed, which would mean no conversion was ever undoable. `unmakeRefusalFor` is pure and consulted twice — once by the page to grey the button with the sentence, once inside the transaction to actually say no — because `Button`'s `disabledReason` sets `aria-disabled`, not `disabled`, so a greyed submit still submits. The row goes rather than gaining a `deleted_at`: `tender` has no deletion columns and giving it three would mean every reader here and in `bpu-store.ts` filtering forever to keep a row that says only "this deal answers a procedure" — precedent is `removePiece`, which has removed rather than hidden since the module was written, and what the HARD RULE asks for is an audit entry that outlives the record, so the whole row and every piece key go into `before`. The action is `unmake`, not `delete`: "Tender · Deleted" reads as though a deal went missing. Both actions ask **`offers.issue`** — the same as `decideAction` and `lostAction` beside them, because classifying a deal is the same judgement as deciding to pursue it; not `records.delete` even for the undo, since nothing leaves the world and gating the correction harder than the press that caused it would leave a Commercial in Adrar waiting for the office. `tenders.none` now names the button in both languages instead of describing a workflow. `tests/unit/tender-conversion.test.ts` pins all five refusals, the seed claim the form's copy makes, and that every procedure and every refusal has a sentence in EN and FR — template-literal key families `messages.test.ts` cannot see. **Not seen in a browser**: port 3000 still serves an older build. |
 | 2026-09-09 | 2.2 | `4d78af7` | The deal says what it is. `deals/[id]/page.tsx` contained the word "tender" **nought times**, so even with 2.1 shipped a deal answering a formal procedure looked exactly like one that was not, and nothing led to its folder. The header now carries an accent badge naming the procedure — "Tender · AONR", not merely that it is one — and the tab row gains links to `/tenders/[id]` and to **`/tenders/[id]/bpu`**, screen 42, the bordereau import, which was reachable from nowhere but itself and is where a tender's prices are actually entered. **The completeness is read, not recomputed**: `getTender` has already run the pure `dossier()` over this tender's pieces, the company's papers and the closing date, so the card shows that object — the bar, the three sections as ready-of-total, and screen 08's own blocking sentence while it can still be acted on. A second arithmetic here could disagree with screen 08 about the same folder, and a stored percentage would still read 100 in September after the CASNOS attestation expired in August. **`/deals/[id]/items` (screen 73) is linked too** — it has existed since the item-list hole was filled and nothing in the codebase pointed at it, so correcting a quantity read wrong from an email meant knowing the URL. Four tests hold it, including one that fails the day screen 42 is again linked from nothing but itself. `tender.onDeal.*` in EN and FR. **Not seen in a browser**: port 3000 still serves an older build; `pnpm build` has been run so the build on disk is current, and the restart needs Administrator. |
 | 2026-09-09 | 2.3 | `2d5252d` | The screen says what it noticed. Four signals were being computed and thrown away: the router reads the subject for *consultation · avis · appel d'offres* and discards that reading whenever an earlier rule wins, `attachmentLooksLike` writes `tender_dossier` on the row where nothing but a badge ever reads it, and a dossier arrives as a zip and is expanded without anybody asking what an archive on an enquiry usually means. So an RFQ that is plainly an appel d'offres opened as a plain enquiry. `tenderHint()` reads all four off one message and returns a reading rather than a verdict — which signals fired, and whether they add up. The two strong ones each carry it alone because each is somebody ELSE's word rather than our inference: the subject was typed by the authority announcing the procedure, and `tender_dossier` is the filename the sender chose. The two weak ones carry it only together — an archive by itself is a supplier's photographs as often as a dossier, and four attachments by itself is a catalogue. The procedure words are read off the seeded tender rule rather than retyped, and a test walks that rule's own list, so a word added on screen 38 is gained here and the two lists cannot drift. LAW 2 is the whole design: it writes nothing, `route()` and `classified_as` are untouched, it fires only where a person is looking, the panel prints every signal so somebody can disagree with one of them rather than with the machine, and the button is the same reclassify the select box above it already performs — after which the primary button changes from an enquiry to a tender and a person still presses the thing that creates. Quiet when the router already said tender; speaks on `needsReview`, which is where a real dossier lands when its subject is a reference number and nothing else. Attachments counted off what the MESSAGE carried, never what came out of a zip, so the archive is one signal and its contents are not eight more. Twelve tests. |
+| 2026-09-09 | 2.4a | `e9a2a38` | The answer, and neither candidate was right about why. The wire is fine: `ingestDocument` calls `proposeFields` on the pages it just read and inserts every proposal into `extraction_field`, so the pipeline does not end a function short — running it by hand over the stored page text of all 32 read dossiers reproduced **0 fields** exactly. The line-break theory is wrong too: every cue was searched again with each document's whitespace collapsed to single spaces and not one cue appeared that had not appeared already. It is the cues, and the reason is that **`RFQ-10023604-26 · Fourniture de Bureau` is a private *consultation restreinte*, not a public marché** — introduction, instructions to bidders, scope, commercial requirements, draft contract, invoicing instructions, with no *avis d'appel d'offres*, no *séance d'ouverture des plis* and no *caution de soumission*, because a private client asking six suppliers for office furniture holds none of those. The six fields `proposeFields` looks for are the six facts on the front page of a PUBLIC règlement de consultation, and this reader has not yet met one on this database; exactly two of the 32 documents contain any cue at all. **And there is no submission deadline in this dossier in any shape** — every line of all six readable files was scanned for a French date, named month or numeric, and there is not one date anywhere: the instructions *refer* to "la date limite de depot de l'offre" and never state it, because it came in the covering email. So 2.4a's own done-when cannot be met by this dossier by any reader that is not inventing one, and that is now a test asserting nothing is proposed from those two verbatim lines. One cue was taken, on evidence: the same file says at 1.6.18 "L'offre doit rester valable pour une période minimale de 180 jours calendaires", which is `offerValidity` stated as an obligation rather than labelled as a field — adding `rester valable` and `demeurer valable` takes the whole database from **0 proposals to 1** (`offerValidity = 180 jours`, 0.9, cited to page 4) with **nothing else on the database gaining anything**, which is the number that matters. The real sentence is the fixture, and so is the delivery clause it must not fire on. What was not taken is now **2.4b**: a cue in a heading never reaches its value, which makes every numbered French administrative document — a public RC included — unreadable wherever the label and the fact sit on different lines. |
