@@ -292,6 +292,162 @@ export async function makeTender(opts: {
 }
 
 /**
+ * WHY A CONVERSION CAN BE UNDONE, and what stops it.
+ *
+ * `makeTender` is one press. A press that can only be reversed by opening
+ * psql is not a reversible press, and misclassifying a deal is the ordinary
+ * mistake here: a ZIP of eleven files is usually a tender and sometimes it is
+ * a client sending eleven datasheets. So the undo exists, and everything
+ * interesting about it is what it refuses.
+ *
+ * Removing a tender takes the `tender` row and its `tender_piece` rows with
+ * it — the deal, its lines, its documents and its outcome are untouched,
+ * because a tender IS a deal and this only removes the classification. So the
+ * question each refusal answers is narrow: does one of those two tables hold
+ * a fact that no other row in this database records? Each of the four is read
+ * off `src/db/schema/tender.ts`, which says so in its own comments.
+ *
+ *  · `submitted_at` / `deposit_receipt_ref` — the schema: "no document in
+ *    this system records that a man carried an envelope to a counter in
+ *    Adrar." Nothing else knows, and it is no longer a classification anyway:
+ *    it is a thing that happened.
+ *
+ *  · `caution_requested_at` / `caution_received_at` — the schema calls these
+ *    "the two facts nobody can infer: the bank takes days". BOTH refuse, not
+ *    only the received one. Asking the bank is itself an act nobody can
+ *    reconstruct from anything else here, and a request in flight is a week
+ *    of somebody's time that would vanish with the row.
+ *
+ *  · a piece with a `file_id`, or a piece somebody typed a `label` on — the
+ *    seed inserts neither (`makeTender` writes `key`, `section`, `position`
+ *    and `added_by`, and `addPiece` is the only writer of `label`). So either
+ *    one means a person has read the cahier des charges and worked this
+ *    folder, and that reading has no other home.
+ *
+ *  · `bpu_source` / `bpu_imported_at` — screen 42's provenance, "read from
+ *    BPU.xls". The forty-two lines it produced live on the deal and survive;
+ *    the record of where they came from lives here and would not.
+ *
+ * What deliberately does NOT refuse is the seed itself. Nineteen rows written
+ * by `seedFor` and untouched since are a template's opinion, not anybody's
+ * work — refusing on those would mean no conversion is ever undoable, which
+ * is the situation this task exists to end.
+ */
+export const UNMAKE_REFUSALS = [
+  "notATender",
+  "alreadySubmitted",
+  "cautionRecorded",
+  "bpuImported",
+  "folderStarted",
+] as const;
+export type UnmakeRefusal = (typeof UNMAKE_REFUSALS)[number];
+
+type UnmakeRow = Pick<
+  typeof tender.$inferSelect,
+  | "submittedAt"
+  | "depositReceiptRef"
+  | "cautionRequestedAt"
+  | "cautionReceivedAt"
+  | "bpuSource"
+  | "bpuImportedAt"
+>;
+
+/**
+ * Pure, so the screen and the write cannot disagree.
+ *
+ * `Button`'s `disabledReason` sets `aria-disabled`, not `disabled` — a truly
+ * disabled button fires no events and so can never be read aloud — which means
+ * a greyed submit button still submits. The refusal therefore has to live in
+ * the domain and be consulted twice: once by the page to grey the control and
+ * name the reason, once by `unmakeTender` to actually say no.
+ */
+export function unmakeRefusalFor(
+  row: UnmakeRow | undefined,
+  pieces: { fileId: string | null; label: string | null }[],
+): UnmakeRefusal | null {
+  if (!row) return "notATender";
+  if (row.submittedAt || row.depositReceiptRef) return "alreadySubmitted";
+  if (row.cautionRequestedAt || row.cautionReceivedAt) return "cautionRecorded";
+  if (row.bpuSource || row.bpuImportedAt) return "bpuImported";
+  if (pieces.some((piece) => piece.fileId !== null || piece.label !== null)) return "folderStarted";
+  return null;
+}
+
+/** Why this deal's conversion cannot be undone, for the screen. Null when it can. */
+export async function unmakeTenderBlockedBy(dealId: string): Promise<UnmakeRefusal | null> {
+  const [row] = await db.select().from(tender).where(eq(tender.dealId, dealId)).limit(1);
+  const pieces = await db
+    .select({ fileId: tenderPiece.fileId, label: tenderPiece.label })
+    .from(tenderPiece)
+    .where(eq(tenderPiece.dealId, dealId));
+  return unmakeRefusalFor(row, pieces);
+}
+
+/**
+ * Turn a tender back into an ordinary deal.
+ *
+ * The check is repeated INSIDE the transaction rather than trusted from the
+ * page, because between drawing a live button and pressing it somebody in the
+ * next room can record the caution.
+ *
+ * The row goes rather than gaining a `deleted_at`: `tender` has no deletion
+ * columns and giving it three would mean every reader in this module and in
+ * `bpu-store.ts` filtering on them forever, to hold a row that says only
+ * "this deal answers a procedure" — a sentence, not a record. The precedent
+ * is `removePiece` a few functions below, which has removed rather than
+ * hidden since the module was written. What the HARD RULE actually asks for
+ * is "an audit entry that outlives the record", so the whole row and every
+ * piece key it carried are written into `before` first, and the audit trail
+ * can still answer what this deal was classified as in September.
+ */
+export async function unmakeTender(opts: {
+  dealId: string;
+  actorId: string;
+  reason?: string | null;
+}): Promise<void> {
+  await db.transaction(async (tx) => {
+    const [row] = await tx.select().from(tender).where(eq(tender.dealId, opts.dealId)).limit(1);
+    const pieces = await tx
+      .select()
+      .from(tenderPiece)
+      .where(eq(tenderPiece.dealId, opts.dealId))
+      .orderBy(asc(tenderPiece.position));
+
+    const refusal = unmakeRefusalFor(row, pieces);
+    if (refusal) throw new TenderRefused(refusal);
+
+    await tx.delete(tenderPiece).where(eq(tenderPiece.dealId, opts.dealId));
+    await tx.delete(tender).where(eq(tender.dealId, opts.dealId));
+
+    await tx.insert(auditEntry).values({
+      entity: "tender",
+      entityId: opts.dealId,
+      // Not the generic "delete". The audit table prints the entity beside the
+      // action, and "Tender · Deleted" reads as though a deal went missing —
+      // what happened is that a classification was withdrawn and the deal is
+      // still there.
+      action: "unmake",
+      actorId: opts.actorId,
+      actorKind: "user",
+      // Screen 06. The press is on the deal, which is where the mistake is
+      // noticed — `makeTender` names 07 because that is the screen the folder
+      // it seeds belongs to.
+      sourceScreen: "06",
+      before: {
+        procedure: row?.procedure ?? null,
+        submissionPlace: row?.submissionPlace ?? null,
+        opensAt: row?.opensAt?.toISOString() ?? null,
+        cautionAmount: row?.cautionAmount ?? null,
+        cautionPct: row?.cautionPct ?? null,
+        offerValidityDays: row?.offerValidityDays ?? null,
+        pieces: pieces.map((piece) => piece.key),
+      },
+      reason: opts.reason?.trim() || null,
+    });
+  });
+}
+
+/**
  * The company's papers. One row per key, upserted.
  *
  * `updatedBy` and an audit entry on every write, because an expiry date is the

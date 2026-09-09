@@ -15,11 +15,14 @@ import { badgeMessageKey, DEADLINE_WARNING_HOURS } from "@/domain/deal/stage";
 import { formatMoney } from "@/domain/money";
 import { offersForDeal } from "@/domain/offer/store";
 import { projectForDeal } from "@/domain/project/store";
+import { PROCEDURES } from "@/domain/tender/dossier";
+import { getTender, unmakeTenderBlockedBy } from "@/domain/tender/store";
 import { Link } from "@/i18n/navigation";
 import { decideAction, lostAction, reopenAction } from "./actions";
 import { askSuppliersAction } from "./ask-actions";
 import { buildOfferAction } from "./build-actions";
 import { discardDealAction } from "./delete-actions";
+import { makeTenderAction, unmakeTenderAction } from "./tender-actions";
 
 /**
  * Screen 06 — the enquiry.
@@ -82,7 +85,15 @@ export default async function EnquiryPage({
       ? t("enquiry.discard.hasIssued")
       : undefined;
 
-  const [suppliers, requests, offers, projectOpened] = await Promise.all([
+  /**
+   * Is this deal answering a formal procedure?
+   *
+   * `getTender` returns null for an ordinary enquiry, which is most of them,
+   * and that null is what decides between offering the conversion and offering
+   * the undo. Nothing about it is stored on the deal — a tender IS a deal, and
+   * the `tender` row's existence is the whole of the classification.
+   */
+  const [suppliers, requests, offers, projectOpened, tenderOn] = await Promise.all([
     db
       .selectDistinct({ id: party.id, legalName: party.legalName, tradeName: party.tradeName })
       .from(party)
@@ -92,7 +103,21 @@ export default async function EnquiryPage({
     requestsForDeal(id),
     offersForDeal(id),
     projectForDeal(id),
+    getTender(id),
   ]);
+
+  // Why the undo is grey, when it is. Asked only when there is something to
+  // undo, and answered by the same function the domain refuses with.
+  const unmakeBlockedBy = tenderOn ? await unmakeTenderBlockedBy(id) : null;
+
+  /**
+   * `offers.issue` — saying a deal answers a formal procedure is the same
+   * judgement as deciding to pursue it, and the same permission. Greyed with
+   * the reason rather than absent, both ways round: a Compta who cannot
+   * classify should be able to read why, not wonder where the button is.
+   */
+  const mayClassify = session.role ? can(session.role, "offers.issue") : false;
+  const classifyBlockedBy = mayClassify ? undefined : t("tender.make.notAllowed");
 
   const when = new Intl.DateTimeFormat(locale === "fr" ? "fr-DZ" : "en-GB", {
     dateStyle: "medium",
@@ -377,6 +402,132 @@ export default async function EnquiryPage({
               </p>
             ) : null}
           </section>
+
+          {/*
+            WHAT THIS DEAL IS.
+            "Some clients send an RFQ, but when it's a ZIP file with a lot of
+            files it means it's a tender." Both of those arrive as the same
+            record on this screen, and until now nothing on it could say which
+            one it was — `makeTender` has existed, transactional and tested,
+            since the tender module was written, with no caller outside
+            `tests/`. This is the caller, and the undo beside it.
+          */}
+          {tenderOn ? (
+            <section className="rounded-[var(--radius-card)] border border-line bg-surface p-5">
+              <h2 className="text-tiny font-semibold text-ink">{t("tender.unmake.title")}</h2>
+              <p className="mt-1.5 text-micro leading-relaxed text-muted">
+                {t("tender.unmake.what", {
+                  procedure: t(`tenders.procedure.${tenderOn.procedure}`),
+                })}
+              </p>
+              <form action={unmakeTenderAction.bind(null, locale, id)} className="mt-3">
+                <label className="block">
+                  <span className="text-micro text-secondary">{t("tender.unmake.reason")}</span>
+                  <input name="reason" className={`${INPUT} mt-1`} />
+                </label>
+                <div className="mt-3 flex justify-end">
+                  <Button
+                    type="submit"
+                    variant="secondary"
+                    disabledReason={
+                      classifyBlockedBy ??
+                      (unmakeBlockedBy ? t(`tender.unmake.refused.${unmakeBlockedBy}`) : undefined)
+                    }
+                  >
+                    {t("tender.unmake.action")}
+                  </Button>
+                </div>
+              </form>
+            </section>
+          ) : (
+            <section className="rounded-[var(--radius-card)] border border-line bg-surface p-5">
+              <h2 className="text-tiny font-semibold text-ink">{t("tender.make.title")}</h2>
+              <p className="mt-1.5 text-micro leading-relaxed text-muted">{t("tender.make.why")}</p>
+
+              <form action={makeTenderAction.bind(null, locale, id)} className="mt-3">
+                <label className="block">
+                  <span className="text-micro text-secondary">{t("tender.make.procedure")}</span>
+                  {/*
+                    The five values come from `PROCEDURES` in `dossier.ts`, not
+                    from a list retyped here — a sixth would reach this select,
+                    `seedFor` and the label in one move or in none.
+                  */}
+                  <select name="procedure" defaultValue="aonr" className={`${INPUT} mt-1`}>
+                    {PROCEDURES.map((procedure) => (
+                      <option key={procedure} value={procedure}>
+                        {t(`tenders.procedure.${procedure}`)}
+                      </option>
+                    ))}
+                  </select>
+                </label>
+                {/*
+                  The distinction the owner draws between "a simple RFQ" and "a
+                  real tender" is already in the data: `seedFor` leaves the
+                  caution, the qualification and the casier judiciaire out of an
+                  RFQ and a consultation. Saying so here is cheaper than four
+                  permanently red rows on screen 08 teaching somebody to ignore
+                  red.
+                */}
+                <p className="mt-1.5 text-micro leading-relaxed text-muted">
+                  {t("tender.make.seedHint")}
+                </p>
+
+                <label className="mt-3 block">
+                  <span className="text-micro text-secondary">{t("tender.make.place")}</span>
+                  <input
+                    name="submissionPlace"
+                    placeholder={t("tender.make.placeExample")}
+                    className={`${INPUT} mt-1`}
+                  />
+                </label>
+
+                <label className="mt-3 block">
+                  <span className="text-micro text-secondary">{t("tender.make.opensAt")}</span>
+                  <input type="datetime-local" name="opensAt" className={`${INPUT} mt-1`} />
+                </label>
+                <p className="mt-1 text-micro text-muted">{t("tender.make.opensAtHint")}</p>
+
+                <div className="mt-3 grid grid-cols-1 gap-3 sm:grid-cols-2">
+                  <label>
+                    <span className="text-micro text-secondary">
+                      {t("tender.make.cautionAmount", { currency: row.currency })}
+                    </span>
+                    <input
+                      name="cautionAmount"
+                      inputMode="decimal"
+                      className={`${INPUT} mt-1 text-end tabular-nums`}
+                    />
+                  </label>
+                  <label>
+                    <span className="text-micro text-secondary">{t("tender.make.cautionPct")}</span>
+                    <input
+                      name="cautionPct"
+                      inputMode="decimal"
+                      className={`${INPUT} mt-1 text-end tabular-nums`}
+                    />
+                  </label>
+                </div>
+                {/* Whichever the cahier des charges wrote. Converting between
+                    them needs an estimate that has not been made yet. */}
+                <p className="mt-1 text-micro text-muted">{t("tender.make.cautionHint")}</p>
+
+                <label className="mt-3 block">
+                  <span className="text-micro text-secondary">{t("tender.make.validity")}</span>
+                  <input
+                    name="offerValidityDays"
+                    inputMode="numeric"
+                    className={`${INPUT} mt-1 text-end tabular-nums`}
+                  />
+                </label>
+
+                <div className="mt-4 flex justify-end">
+                  <Button type="submit" variant="primary" disabledReason={classifyBlockedBy}>
+                    {t("tender.make.action")}
+                  </Button>
+                </div>
+              </form>
+            </section>
+          )}
 
           {open ? (
             <section className="rounded-[var(--radius-card)] border border-line bg-surface p-5">

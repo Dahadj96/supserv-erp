@@ -2143,7 +2143,16 @@
       "unknownReason": "Choisissez une des raisons listées pour qu’elle puisse être comptée.",
       "alreadyClosed": "Celle-ci est déjà terminée. Rouvrez-la d’abord si c’est une erreur.",
       "notAllowed": "Votre rôle ne permet pas cela.",
-      "hasIssuedDocuments": "Cette consultation porte un document émis, elle ne peut donc pas aller à la corbeille. Un document émis ne se supprime jamais — la correction est un nouveau document."
+      "hasIssuedDocuments": "Cette consultation porte un document émis, elle ne peut donc pas aller à la corbeille. Un document émis ne se supprime jamais — la correction est un nouveau document.",
+      "alreadyATender": "Cette affaire est déjà enregistrée comme appel d’offres.",
+      "unknownProcedure": "Choisissez l’une des procédures proposées.",
+      "cautionNotANumber": "La caution doit être un chiffre — un montant ou un pourcentage, en chiffres seulement. Mettez le reste dans la note.",
+      "validityNotANumber": "La validité de l’offre est un nombre de jours.",
+      "alreadySubmitted": "Le pli a été déposé. Ce n’est plus une classification — rien d’autre ici n’enregistre que quelqu’un l’a porté au guichet.",
+      "cautionRecorded": "Une caution de soumission a été demandée ou reçue. Les dates de la banque ne sont écrites nulle part ailleurs.",
+      "bpuImported": "Un bordereau a été importé. Ses lignes restent sur l’affaire ; la trace du fichier d’où quarante-deux prix ont été lus, non.",
+      "folderStarted": "Quelqu’un a travaillé ce dossier — une pièce porte un fichier, ou a été ajoutée à la main. Cette lecture du cahier des charges n’a pas d’autre foyer.",
+      "notATender": "Aucun appel d’offres sur cette affaire."
     }
   },
   "facts": {
@@ -3757,7 +3766,8 @@
       "importBpu": "a importé le bordereau",
       "applyLastPrices": "a repris les derniers prix payés",
       "sweep": "Effacé en une fois",
-      "credit": "Annulé par un avoir"
+      "credit": "Annulé par un avoir",
+      "unmake": "N’est plus un appel d’offres"
     }
   },
   "complianceNow": {
@@ -4216,7 +4226,7 @@
   },
   "tenders": {
     "summary": "{open, plural, one {# en cours} other {# en cours}} · {closing, plural, =0 {aucun ne clôture sous 48 heures} one {# clôture sous 48 heures} other {# clôturent sous 48 heures}} · {incomplete, plural, =0 {tous les dossiers sont complets} one {# dossier incomplet} other {# dossiers incomplets}}",
-    "none": "Aucun appel d'offres pour l'instant. Un appel d'offres est une consultation répondant à une procédure formelle — ouvrez la consultation, enregistrez la procédure, le lieu de dépôt et la caution, et elle apparaît ici avec son dossier.",
+    "none": "Aucun appel d’offres pour l’instant. Lorsqu’une affaire répond à une procédure formelle — un AONR, une consultation, une demande de prix arrivée sous forme de dossier de fichiers — ouvrez l’affaire et appuyez sur « En faire un appel d’offres ». Elle apparaît ici avec son dossier initialisé.",
     "noDeadline": "aucune heure de clôture enregistrée",
     "submittedOn": "Déposé le {on}",
     "facet": {
@@ -4303,7 +4313,36 @@
       "why": "Manquant, expiré, ou valable aujourd'hui et expiré le jour du dépôt. La date qui décide n'est pas celle d'aujourd'hui."
     },
     "thisIsAnEnquiry": "C'est une consultation",
-    "thisIsAnEnquiryWhy": "Un appel d'offres est une consultation avec une procédure. Le client, les lignes, l'offre et l'issue vivent sur la consultation, et tous les écrans qui les lisent lisent le même enregistrement."
+    "thisIsAnEnquiryWhy": "Un appel d'offres est une consultation avec une procédure. Le client, les lignes, l'offre et l'issue vivent sur la consultation, et tous les écrans qui les lisent lisent le même enregistrement.",
+    "make": {
+      "title": "Est-ce un appel d’offres ?",
+      "why": "Un appel d’offres est cette même affaire répondant à une procédure formelle. Enregistrez la procédure et elle apparaît dans Appels d’offres avec son dossier de pièces. Rien du client, des lignes, de l’offre ou de l’issue ne bouge — tout reste sur cette affaire, et tous les écrans continuent de lire le même enregistrement.",
+      "procedure": "Procédure",
+      "seedHint": "Une demande de prix et une consultation démarrent leur dossier sans la caution de soumission, le certificat de qualification ni le casier judiciaire. Un AONR, un AOO et un gré à gré démarrent avec. Dans les deux cas le dossier appartient ensuite à cet appel d’offres : ajoutez ce que son cahier des charges demande, retirez ce qu’il ne demande pas.",
+      "place": "Lieu de dépôt",
+      "placeExample": "DD Adrar, bureau des marchés",
+      "opensAt": "Séance d’ouverture",
+      "opensAtHint": "La séance d’ouverture des plis, lorsqu’il y en a une. Souvent quelques heures après l’heure de clôture, et quelqu’un voudra peut-être y assister.",
+      "cautionAmount": "Caution de soumission ({currency})",
+      "cautionPct": "ou, en pourcentage",
+      "cautionHint": "Celle que le cahier des charges indique. Convertir l’une en l’autre demande une estimation que personne n’a encore faite : seul ce qui est écrit est conservé.",
+      "validity": "Notre offre doit tenir (jours)",
+      "action": "En faire un appel d’offres",
+      "notAllowed": "Déclarer qu’une affaire répond à une procédure formelle est le même jugement que décider de la poursuivre, et votre rôle ne le porte pas. Demandez au gérant ou à un commercial."
+    },
+    "unmake": {
+      "title": "C’est un appel d’offres",
+      "what": "Enregistré comme {procedure}. Le retour en arrière supprime la procédure et le dossier de pièces, et rien d’autre — l’affaire, ses lignes, ses offres et son issue restent telles quelles. Il refuse dès que quelque chose de réel a eu lieu.",
+      "reason": "Pourquoi (consigné dans le journal)",
+      "action": "Finalement pas un appel d’offres",
+      "refused": {
+        "notATender": "Aucun appel d’offres sur cette affaire.",
+        "alreadySubmitted": "Le pli a été déposé. Ce n’est plus une classification — rien d’autre ici n’enregistre que quelqu’un l’a porté au guichet.",
+        "cautionRecorded": "Une caution de soumission a été demandée ou reçue. Les dates de la banque ne sont écrites nulle part ailleurs.",
+        "bpuImported": "Un bordereau a été importé. Ses lignes restent sur l’affaire ; la trace du fichier d’où quarante-deux prix ont été lus, non.",
+        "folderStarted": "Quelqu’un a travaillé ce dossier — une pièce porte un fichier, ou a été ajoutée à la main. Cette lecture du cahier des charges n’a pas d’autre foyer."
+      }
+    }
   },
   "projects": {
     "summary": "{active, plural, one {# en cours} other {# en cours}} · {warranty, plural, =0 {aucun en garantie} one {# en garantie} other {# en garantie}} · {retention} retenus en retenue de garantie",

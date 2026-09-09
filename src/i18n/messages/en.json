@@ -2143,7 +2143,16 @@
       "unknownReason": "Choose one of the listed reasons so it can be counted later.",
       "alreadyClosed": "This one is already finished. Reopen it first if that is wrong.",
       "notAllowed": "Your role does not allow that.",
-      "hasIssuedDocuments": "This enquiry has an issued document, so it cannot go in the bin. An issued document is never deleted — correction is a new document."
+      "hasIssuedDocuments": "This enquiry has an issued document, so it cannot go in the bin. An issued document is never deleted — correction is a new document.",
+      "alreadyATender": "This deal is already recorded as a tender.",
+      "unknownProcedure": "Choose one of the listed procedures.",
+      "cautionNotANumber": "The caution has to be a figure — an amount or a percent, digits only. Put anything else in the note.",
+      "validityNotANumber": "Offer validity is a number of days.",
+      "alreadySubmitted": "The envelope has been deposited. That is no longer a classification — nothing else in this system records that somebody carried it to the counter.",
+      "cautionRecorded": "A caution de soumission has been requested or received. The bank’s dates are written down nowhere else.",
+      "bpuImported": "A bordereau has been imported. Its lines stay on the deal; the record of which file forty-two prices were read from would not.",
+      "folderStarted": "Somebody has worked this folder — a piece carries a file, or was added by hand. That reading of the cahier des charges has no other home.",
+      "notATender": "There is no tender on this deal."
     }
   },
   "facts": {
@@ -3757,7 +3766,8 @@
       "importBpu": "imported the bordereau",
       "applyLastPrices": "applied the last prices paid",
       "sweep": "Cleared in one act",
-      "credit": "Cancelled by avoir"
+      "credit": "Cancelled by avoir",
+      "unmake": "No longer a tender"
     }
   },
   "complianceNow": {
@@ -4216,7 +4226,7 @@
   },
   "tenders": {
     "summary": "{open, plural, one {# open} other {# open}} · {closing, plural, =0 {none closing within 48 hours} one {# closing within 48 hours} other {# closing within 48 hours}} · {incomplete, plural, =0 {every folder complete} one {# folder incomplete} other {# folders incomplete}}",
-    "none": "No tenders yet. A tender is an enquiry answering a formal procedure — open the enquiry and record the procedure, the place of deposit and the bid bond, and it appears here with its folder.",
+    "none": "No tenders yet. When a deal is answering a formal procedure — an AONR, a consultation, an RFQ that arrived as a folder of files — open the deal and press “Make this a tender”. It appears here with its folder seeded.",
     "noDeadline": "no closing time recorded",
     "submittedOn": "Submitted {on}",
     "facet": {
@@ -4303,7 +4313,36 @@
       "why": "Missing, expired, or valid today and expired on the day of the deposit. The date that decides is not today."
     },
     "thisIsAnEnquiry": "This is an enquiry",
-    "thisIsAnEnquiryWhy": "A tender is a deal with a procedure. The client, the lines, the offer and the outcome all live on the enquiry, and every screen that reads them reads the same record."
+    "thisIsAnEnquiryWhy": "A tender is a deal with a procedure. The client, the lines, the offer and the outcome all live on the enquiry, and every screen that reads them reads the same record.",
+    "make": {
+      "title": "Is this a tender?",
+      "why": "A tender is this same deal answering a formal procedure. Record the procedure and it appears in Tenders with its folder of pieces. Nothing about the client, the lines, the offer or the outcome moves — they stay on this deal, and every screen keeps reading the same record.",
+      "procedure": "Procedure",
+      "seedHint": "An RFQ and a consultation start their folder without the caution de soumission, the certificat de qualification and the casier judiciaire. An AONR, an AOO and a gré à gré start with them. Either way the folder is this tender’s from then on: add what its cahier des charges asks for, remove what it does not.",
+      "place": "Place of deposit",
+      "placeExample": "DD Adrar, bureau des marchés",
+      "opensAt": "Opening session",
+      "opensAtHint": "The séance d’ouverture des plis, when there is one. Usually hours after the closing time, and somebody may want to be there.",
+      "cautionAmount": "Caution de soumission ({currency})",
+      "cautionPct": "or, as a percent",
+      "cautionHint": "Whichever the cahier des charges states. Converting one into the other needs an estimate nobody has made yet, so only what was written down is kept.",
+      "validity": "Our offer must stand for (days)",
+      "action": "Make this a tender",
+      "notAllowed": "Saying a deal answers a formal procedure is the same judgement as deciding to pursue it, and your role does not carry it. Ask the gérant or a commercial."
+    },
+    "unmake": {
+      "title": "This is a tender",
+      "what": "Recorded as a {procedure}. Turning it back removes the procedure and the folder of pieces and nothing else — the deal, its lines, its offers and its outcome stay exactly as they are. It refuses once anything real has happened.",
+      "reason": "Why (kept in the log)",
+      "action": "Not a tender after all",
+      "refused": {
+        "notATender": "There is no tender on this deal.",
+        "alreadySubmitted": "The envelope has been deposited. That is no longer a classification — nothing else in this system records that somebody carried it to the counter.",
+        "cautionRecorded": "A caution de soumission has been requested or received. The bank’s dates are written down nowhere else.",
+        "bpuImported": "A bordereau has been imported. Its lines stay on the deal; the record of which file forty-two prices were read from would not.",
+        "folderStarted": "Somebody has worked this folder — a piece carries a file, or was added by hand. That reading of the cahier des charges has no other home."
+      }
+    }
   },
   "projects": {
     "summary": "{active, plural, one {# active} other {# active}} · {warranty, plural, =0 {none in warranty} one {# in warranty} other {# in warranty}} · {retention} held in retenue de garantie",

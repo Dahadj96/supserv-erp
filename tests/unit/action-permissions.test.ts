@@ -124,6 +124,19 @@ const EXPECTED: Record<string, string[]> = {
   "deals/[id]/actions.ts:lostAction": ["offers.issue"],
   "deals/[id]/actions.ts:reopenAction": ["offers.issue"],
   "deals/[id]/build-actions.ts:buildOfferAction": ["offers.issue"],
+  // Screen 06's "Make this a tender", and its undo. `offers.issue` — the same
+  // permission as `decideAction` two lines up, on purpose: saying a deal is
+  // answering a formal procedure is the same kind of judgement as deciding to
+  // pursue it or writing down that it was lost, made by whoever answers
+  // clients. NOT `records.delete`, even though the undo removes the `tender`
+  // row and its seeded pieces: nothing leaves the world, the deal and every
+  // document on it survive untouched, and gating the correction harder than
+  // the press that caused it would leave a Commercial in Adrar waiting for the
+  // office to unpick a classification he made himself two minutes earlier. The
+  // undo's real guard is not a permission at all — `unmakeRefusalFor` refuses
+  // once a deposit, a caution, a BPU import or a worked folder piece exists.
+  "deals/[id]/tender-actions.ts:makeTenderAction": ["offers.issue"],
+  "deals/[id]/tender-actions.ts:unmakeTenderAction": ["offers.issue"],
   "offers/[id]/build/actions.ts:markSubmittedAction": ["offers.issue"],
   // Both halves: writing a price onto an offer is `offers.issue`, and pricing
   // FROM a cost also needs the permission that shows the cost. Compta holds
