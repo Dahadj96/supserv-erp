@@ -570,6 +570,36 @@ The rule for every task in this wave: **a screen must say what it is for, what
 state it is in right now, and what the person can do next.** A screen that only
 displays rows has failed, even when every row is correct.
 
+### HOW WAVE U IS BUILT — design first, and this is not optional
+
+**Added 9 September 2026 by Abdou, and it overrides the loop's normal cadence:**
+
+> "Are you using Figma to design screens and some examples so I can improve?
+> Because that's what you need to do. When you're trying to work on the UI you
+> should show me what you have designed on Figma, and from that I see if I like
+> it or not, so you can implement. Do not waste tokens making changes in the
+> implementation, and after that I tell you I don't like them."
+
+So for every task in this wave, and for every change with a visible surface:
+
+1. **Design it in Figma first** — in the existing file `v4 - Complete`
+   (`https://www.figma.com/design/p0zcsZTobPL8zZAeYhyYBt`), which already holds
+   the 86 screens and the `_Shell` master this repository was built from. Use
+   the components and variables that are already there. Do not invent a second
+   design language beside the one on disk.
+2. **Show Abdou and wait.** A design he has not seen is not approved, and a
+   screen built from an unapproved design is the waste this rule exists to end.
+3. **Only then implement**, matching the approved frame.
+
+**A scheduled run may not implement a task with a visible surface unless the
+queue records that Abdou approved its design.** When the next unblocked task is
+one of those, the run's job is to produce the Figma frames and stop. Domain
+work, backfills, jobs, bug fixes and anything with no screen carry on exactly
+as before — this rule is about pixels, not about pace.
+
+U1 and U2 were built before this rule existed. They ship as they are; if Abdou
+wants them redrawn that is a new task against a new frame.
+
 - [x] **U1 · A backup screen, because a promise nobody can see is not a promise**
   `/settings/backup` exists, and the warning backup.ps1 has printed every night
   since August is now the loudest thing on it, in red: `BACKUP_LOCAL_PATH` is
@@ -626,7 +656,7 @@ displays rows has failed, even when every row is correct.
   *Done when:* a credential expiring in three weeks is impossible to miss, and
   every tender whose folder it breaks is named beside it.
 
-- [ ] **U3 · Settings a person can read**
+- [!] **U3 · Settings a person can read**
   Every row states what it is for and its live state — not a name and a link.
   Group by what a person is trying to do, not by module. Anything unbuilt says
   so (that pattern already exists and works). Add the two orphans nobody can
@@ -634,7 +664,7 @@ displays rows has failed, even when every row is correct.
   *Done when:* somebody who has never seen the system can open Settings and say
   what each row would do before clicking it.
 
-- [ ] **U4 · The flow, drawn on the screen it happens on** *(2.5 and 2.6 do this
+- [!] **U4 · The flow, drawn on the screen it happens on** *(2.5 and 2.6 do this
   for deals and tenders — this is the same job everywhere else)*
   A person new to the ERP cannot see the shape: mail arrives → it becomes a
   deal → the deal is priced → an offer goes out → an order comes back →
@@ -643,12 +673,17 @@ displays rows has failed, even when every row is correct.
   *Done when:* on any screen in the chain, a person can see where they are, what
   came before, and what happens next.
 
-- [ ] **U5 · No screen without an action**
+- [!] **U5 · No screen without an action**
   ~20 screens have no `variant="primary"` at all. Every one gets either a real
   primary action or an honest sentence saying why there is nothing to do here
   and where to go instead. `StateBlock` already has the `action` slot.
   *Done when:* `grep -rL 'variant="primary"' src/app/**/page.tsx` returns only
   screens that genuinely are read-only, and each of those says so.
+
+**U3, U4 and U5 are `[!]` deliberately** — not blocked by a problem, blocked
+on a Figma design Abdou has approved. Draw the frames, show him, then unblock.
+**If you are a scheduled run and U3 was in flight when you read this: stop,
+commit nothing half-written, and leave it `[!]`.**
 
 ## WAVE 3 — shrink the surface
 
