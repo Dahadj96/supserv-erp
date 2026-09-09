@@ -617,7 +617,12 @@ files and will conflict with everything above.
   empty states and errors, and `grep -c enquiry src/i18n/messages/en.json`
   returns 0.
 
-- [ ] **3.1 · Rail from 24 rows to about 11**
+- [!] **3.1 · Rail from 24 rows to about 11** *(blocked 9 September: the eleven
+  rows are decided and five current destinations are not. Question under Needs
+  Abdou — it is one paragraph to answer and the task is a day's work after it.
+  Nothing else about the task is unclear, and 3.5 was taken instead because it
+  removes three of the rows this one would remove, without pre-empting any of
+  the five placements.)*
   Today (absorbing Week and Waiting on as tabs) · Inbox (absorbing Scan,
   Quick capture, Conversations) · Enquiries · Offers · Orders+Deliveries ·
   Chantiers · Invoices (absorbing Payments and Ageing) · Approvals ·
@@ -626,7 +631,7 @@ files and will conflict with everything above.
   already is in the data, since a tender *is* a deal. `docs/UI_INDEX.md`
   specified 18 rows and the sidebar's own comment admits 24 do not fit.
 
-- [ ] **3.5 · Retire or demote what nobody touches weekly**
+- [~] **3.5 · Retire or demote what nobody touches weekly**
   `/dashboard` duplicates Today and Reports; `/files` is a file browser inside
   an ERP; `/week` is a view of Today. Demote rather than delete.
 
@@ -1430,6 +1435,36 @@ none of them writes.
 ---
 
 ## Needs Abdou
+
+### Where do five screens live, once the rail is eleven rows? (3.1)
+
+**The eleven rows are decided and I am not going to guess the rest.** The queue
+and the audit both name the same list — Today · Inbox · Deals · Offers ·
+Orders+Deliveries · Sites · Invoices · Approvals · Companies · Compliance, with
+Settings in the footer, Tenders as a facet of the deal list — and every screen
+it names has a home: Week and Waiting on become tabs of Today, Scan and Quick
+capture and Conversations become tabs of Inbox, Payments and Ageing go under
+Invoices, Contacts and People under Companies.
+
+**Five of today's rows are named nowhere in that list**, and a rail that drops a
+row without giving it a home is the fault 3.4 just spent a commit fixing. Here
+they are, with what I would do and why I have not:
+
+| Row | What I would do | Why it is a question and not a default |
+|---|---|---|
+| **Sourcing** | Keep it as a twelfth row | This is the one that matters. It is a weekly work screen — "what am I waiting on from suppliers, everywhere" — and the whole of wave 2 treats it as a step of the run. Burying it behind Deals is a decision about how a morning starts in Adrar, and only you know whether somebody opens it every day or only from a deal. |
+| **Personnel requests** | A tab of Companies, beside People | Fits the "Companies absorbs Contacts and People" row exactly. Low risk, but it is your fourth-most-used screen or your fortieth and I cannot tell. |
+| **Reports** | A tab of Compliance, or the footer beside Settings | It is a control screen rather than a work screen, so it belongs with Compliance or in the footer. Both are defensible and they read differently. |
+| **Dashboard** | Retire into Reports (3.5) | 3.5 already says it duplicates Today and Reports, and 3.5 is doing this one. |
+| **Files** | Retire into Settings (3.5) | Same — 3.5 is doing this one. |
+
+**One paragraph from you unblocks it**: keep Sourcing as a row or fold it into
+Deals, and say where Personnel requests and Reports go. Everything else is
+mechanical — a tab strip on four parent screens, one new `NAV_GROUPS`, and the
+routes all stay where they are so no saved link breaks.
+
+Worth knowing before you answer: 3.4 added Approvals, so the rail is 25 rows
+today, and 3.5 takes it to 22 without touching any of the five above.
 
 ### Two French words for the same thing, twice (3.3)
 
