@@ -286,7 +286,7 @@ Strictly sequential. Each step is useless without the one above it.
 
 ## WAVE 2 — the deal knows what it is, and what happens next
 
-- [ ] **2.1 · "Make this a tender" on the deal page**
+- [~] **2.1 · "Make this a tender" on the deal page**
   `makeTender()` (`src/domain/tender/store.ts:235`) is written, transactional,
   guarded and tested, with zero callers outside `tests/`. Add a server action
   and a form on the deal page: `procedure` (the five values already exist),
@@ -310,6 +310,28 @@ Strictly sequential. Each step is useless without the one above it.
   screen beside the existing buttons. **Propose, never decide** — LAW 2.
   *Done when:* a ZIP dossier arrives and the suggestion is on screen, and a
   person still chooses.
+
+- [ ] **2.4a · Nothing is ever proposed — find out why before 2.4**
+  *Recorded 9 September 2026 while taking 2.1. Not a guess: measured.*
+  The 1.11 catch-up read **31 documents successfully** — page text stored,
+  every one reviewable — and **every single one proposed zero fields**. Among
+  them are the seven files of a real French RFQ that are full of *caution de
+  soumission*, *date limite de dépôt des offres*, *délai de validité* and
+  *séance d'ouverture des plis*: the exact six facts `proposeFields` exists to
+  find. Thirty-one for thirty-one is not a bad hit rate, it is a wire that is
+  not connected.
+  Two candidates, and the first thing to do is tell them apart: either the cues
+  in `src/capture/extract/` do not match how these documents are actually
+  written (French, accented, often across a line break, sometimes in a table
+  cell), or nothing calls `proposeFields` on the text that 1.6 and 1.8 store —
+  in which case the reading pipeline ends one function short and no cue would
+  ever have fired. Start by running `proposeFields` by hand over the stored
+  page text of one of those seven files and looking at what comes back.
+  *Done when:* it is known which of the two it is, written down here, and a
+  real French dossier proposes at least its submission deadline.
+  **This is ahead of 2.4 on purpose.** 2.4 carries confirmed fields from the
+  review screen onto the deal. If nothing is ever proposed, nothing is ever
+  confirmed, and 2.4 ships a road with no traffic on it.
 
 - [ ] **2.4 · Confirmed extractions reach the deal**
   `intake_dossier` has no `deal_id`, so six confirmed fields — submission
