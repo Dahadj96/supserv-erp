@@ -570,7 +570,7 @@ The rule for every task in this wave: **a screen must say what it is for, what
 state it is in right now, and what the person can do next.** A screen that only
 displays rows has failed, even when every row is correct.
 
-- [ ] **U1 · A backup screen, because a promise nobody can see is not a promise**
+- [~] **U1 · A backup screen, because a promise nobody can see is not a promise**
   There is no `/settings/backup`. Everything about backups is invisible: the
   schedule lives in `BACKUP_AT` in `.env`, the destination in
   `BACKUP_LOCAL_PATH`, the last result in `.data/last-backup.json`, and the
