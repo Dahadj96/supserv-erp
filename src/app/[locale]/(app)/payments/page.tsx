@@ -3,6 +3,7 @@ import { getTranslations, setRequestLocale } from "next-intl/server";
 import { getSession } from "@/auth/session";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import { StateBlock } from "@/components/ui/state-block";
 import { profile } from "@/domain/compliance-profile";
 import { formatMoney } from "@/domain/money";
 import { ageingOf, ageOf, balanceOf } from "@/domain/money/ageing";
@@ -218,15 +219,24 @@ export default async function PaymentsPage({
             </section>
           }
         >
-          <section className="rounded-[var(--radius-card)] border border-line bg-surface">
-            <div className="flex flex-wrap items-baseline gap-x-3 border-b border-line-subtle px-5 py-3.5">
-              <h2 className="text-tiny font-semibold text-ink">{t("payments.recent")}</h2>
-              <span className="ms-auto text-micro text-muted">{t("payments.newestFirst")}</span>
-            </div>
+          {/*
+            Task 3.2, and the one empty state here with NO button, on purpose.
+            The thing to do is the form this list is rendered inside — the
+            recorder is on this same screen, above — so a button would scroll
+            somebody four inches to a control they can already see. What was
+            missing was the sentence saying so, and where to look for what is
+            still owed. Replaces the card rather than sitting in it, for the
+            same reason as Deliveries: `StateBlock` draws its own border.
+          */}
+          {payments.length === 0 ? (
+            <StateBlock title={t("payments.noneTitle")} body={t("payments.noneYet")} />
+          ) : (
+            <section className="rounded-[var(--radius-card)] border border-line bg-surface">
+              <div className="flex flex-wrap items-baseline gap-x-3 border-b border-line-subtle px-5 py-3.5">
+                <h2 className="text-tiny font-semibold text-ink">{t("payments.recent")}</h2>
+                <span className="ms-auto text-micro text-muted">{t("payments.newestFirst")}</span>
+              </div>
 
-            {payments.length === 0 ? (
-              <p className="px-5 py-4 text-tiny text-muted">{t("payments.noneYet")}</p>
-            ) : (
               <div className="overflow-x-auto">
                 <table className="w-full border-collapse text-tiny">
                   <thead>
@@ -336,8 +346,8 @@ export default async function PaymentsPage({
                   </tbody>
                 </table>
               </div>
-            )}
-          </section>
+            </section>
+          )}
         </RecordPayment>
       </div>
     </main>

@@ -2,6 +2,8 @@ import { redirect as hardRedirect } from "next/navigation";
 import { getFormatter, getTranslations, setRequestLocale } from "next-intl/server";
 import { getSession } from "@/auth/session";
 import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
+import { StateBlock } from "@/components/ui/state-block";
 import { badgeMessageKey } from "@/domain/deal/stage";
 import { listTenders, tenderCounts } from "@/domain/tender/store";
 import { Link } from "@/i18n/navigation";
@@ -90,9 +92,25 @@ export default async function TendersPage({
 
       <div className="min-h-0 flex-1 overflow-auto">
         {rows.length === 0 ? (
-          <p className="max-w-[620px] p-7 text-tiny leading-relaxed text-muted">
-            {t("tenders.none")}
-          </p>
+          /*
+            Task 3.2. The words were already right — 2.1 made "open the deal and
+            press Make this a tender" a true instruction rather than a
+            description of something that did not exist — and they were a grey
+            paragraph in the corner of an empty screen. `StateBlock` is what
+            screen 34 drew for this, and its `action` slot had never been used
+            outside an error page.
+          */
+          <div className="p-4 md:p-7">
+            <StateBlock
+              title={t("tenders.noneTitle")}
+              body={t("tenders.none")}
+              action={
+                <Link href="/deals">
+                  <Button variant="primary">{t("common.openADeal")}</Button>
+                </Link>
+              }
+            />
+          </div>
         ) : (
           <table className="w-full border-collapse text-tiny">
             <thead>

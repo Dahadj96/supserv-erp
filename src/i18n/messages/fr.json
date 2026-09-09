@@ -77,7 +77,8 @@
     "yes": "Oui",
     "close": "Fermer",
     "done": "Fait",
-    "doneOf": "{done} sur {total}"
+    "doneOf": "{done} sur {total}",
+    "openADeal": "Ouvrir une affaire"
   },
   "list": {
     "applied": "Appliqué",
@@ -2411,7 +2412,7 @@
     "leadTimeDays": "Délai, en jours",
     "subtitle": "{waiting} consultation(s) sans réponse complète, {unsent} pas encore envoyée(s).",
     "noneYet": "Aucune consultation fournisseur pour l'instant.",
-    "none": "Aucune consultation enregistrée.",
+    "none": "Une consultation part de l’affaire : ouvrez-en une, choisissez les lignes, puis qui interroger. Ce que vous attendez apparaît ici, avec depuis combien de temps.",
     "notSent": "Pas envoyée",
     "quotedOf": "{quoted}/{asked} ont répondu",
     "silent": "{count} sans réponse",
@@ -2426,7 +2427,9 @@
       "answers": "Réponses"
     },
     "orderFromThem": "Commander chez eux",
-    "counterPrice": "Prix relevé au comptoir"
+    "counterPrice": "Prix relevé au comptoir",
+    "noneTitle": "Personne n’a encore été consulté",
+    "noneYetTitle": "Rien de demandé sur cette affaire"
   },
   "ask": {
     "title": "Consulter des fournisseurs",
@@ -2533,7 +2536,8 @@
     },
     "costSource": {
       "previous_offer": "coût repris d'une offre précédente"
-    }
+    },
+    "noneAction": "Ouvrir une affaire"
   },
   "technical": {
     "title": "Dossier technique — {ref}",
@@ -2748,7 +2752,7 @@
     "heldUnallocated": "{amount} en attente d'affectation",
     "recent": "Encaissements récents",
     "newestFirst": "les plus récents d'abord",
-    "noneYet": "Aucun encaissement n'a encore été enregistré.",
+    "noneYet": "Enregistrez un encaissement avec le formulaire ci-dessus : il est affecté aux factures qu’il règle. Ce qui reste dû est sur l’écran des relances.",
     "nDays": "{n} j",
     "instrumentName": {
       "virement": "Virement",
@@ -2817,7 +2821,8 @@
       "exceedsBalance": "C'est plus que ce que cette facture doit encore."
     },
     "seeAgeing": "Balance âgée et relances",
-    "neverRemoved": "L’argent arrivé en banque ne se retire jamais. Un règlement imputé sur la mauvaise facture se réimpute ; un montant qui n’aurait jamais dû être facturé se corrige par un avoir."
+    "neverRemoved": "L’argent arrivé en banque ne se retire jamais. Un règlement imputé sur la mauvaise facture se réimpute ; un montant qui n’aurait jamais dû être facturé se corrige par un avoir.",
+    "noneTitle": "Rien encaissé pour l’instant"
   },
   "convert": {
     "title": "Convertir {number} en {kind}",
@@ -2926,7 +2931,7 @@
   "deliveries": {
     "title": "Livraisons",
     "subtitle": "{n, plural, =0 {Aucun bon de livraison} one {# bon de livraison} other {# bons de livraison}} · {unsigned, plural, =0 {tous les exemplaires signés sont au dossier} one {# sans exemplaire signé} other {# sans exemplaire signé}}",
-    "empty": "Aucun bon de livraison n'a encore été créé.",
+    "empty": "Un bon de livraison est ce qui prouve que la marchandise est partie et a été reçue. Il se fait à partir du document que le client a accepté, et l’exemplaire signé y revient.",
     "draft": "Brouillon — non expédié",
     "number": "Numéro",
     "client": "Client",
@@ -3021,7 +3026,8 @@
     },
     "notDeliverable": "On ne fait pas de bon de livraison contre un document de ce type ({kind}). Un BL se fait contre ce que le client a commandé — son bon de commande, un devis, une proforma, une facture ou une situation.",
     "new": "Nouvelle livraison",
-    "newNotAllowed": "Émettre un bon de livraison relève de la permission livraisons, que votre rôle ne porte pas."
+    "newNotAllowed": "Émettre un bon de livraison relève de la permission livraisons, que votre rôle ne porte pas.",
+    "emptyTitle": "Rien n’est encore sorti"
   },
   "newInvoice": {
     "title": "Nouvelle facture — à partir de {number}",
@@ -4036,7 +4042,7 @@
   },
   "orders": {
     "subtitle": "Ce que les clients nous ont commandé et ce que nous avons commandé aux fournisseurs. Deux sens, une seule liste.",
-    "none": "Aucune commande enregistrée.",
+    "none": "Une commande arrive de deux façons, et cette liste tient les deux. La commande d’un client arrive contre une offre que nous avons envoyée — enregistrez-la depuis l’affaire. Un bon de commande part vers un fournisseur une fois son prix retenu, depuis le comparatif des consultations.",
     "draft": "Brouillon",
     "undelivered": "{count} émise(s) sans livraison",
     "deliveredCount": "{count} bon(s)",
@@ -4053,7 +4059,9 @@
       "total": "Montant",
       "issued": "Émise le",
       "delivered": "Livraison"
-    }
+    },
+    "noneTitle": "Aucune commande pour l’instant",
+    "noneFromSourcing": "Aller aux consultations"
   },
   "dealItems": {
     "title": "Liste des articles",
@@ -4320,7 +4328,8 @@
       "caution": "Caution",
       "dossier": "Dossier",
       "closes": "Clôture"
-    }
+    },
+    "noneTitle": "Aucun appel d’offres pour l’instant"
   },
   "tender": {
     "closes": "clôture {at}",

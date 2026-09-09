@@ -3,6 +3,8 @@ import { getTranslations, setRequestLocale } from "next-intl/server";
 import { can } from "@/auth/can";
 import { getSession } from "@/auth/session";
 import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
+import { StateBlock } from "@/components/ui/state-block";
 import { formatMoney } from "@/domain/money";
 import { listOffers } from "@/domain/offer/store";
 import { Link } from "@/i18n/navigation";
@@ -42,11 +44,23 @@ export default async function OffersPage({ params }: { params: Promise<{ locale:
       </div>
 
       {rows.length === 0 ? (
-        <div className="px-4 py-10 text-center md:px-7">
-          <h2 className="text-lead font-semibold text-ink">{t("offer.noneTitle")}</h2>
-          <p className="mx-auto mt-1.5 max-w-[460px] text-tiny leading-relaxed text-secondary">
-            {t("offer.noneBody")}
-          </p>
+        /*
+          Task 3.2. This screen had the right words in hand-written markup that
+          reproduced `StateBlock` line for line — the same heading size, the
+          same 460px measure, the same centring — and stopped one element short
+          of it: the button. Two copies of a component is how the third one
+          comes to look slightly different.
+        */
+        <div className="px-4 py-6 md:px-7">
+          <StateBlock
+            title={t("offer.noneTitle")}
+            body={t("offer.noneBody")}
+            action={
+              <Link href="/deals">
+                <Button variant="primary">{t("offer.noneAction")}</Button>
+              </Link>
+            }
+          />
         </div>
       ) : (
         <div className="overflow-x-auto px-4 py-5 md:px-7">

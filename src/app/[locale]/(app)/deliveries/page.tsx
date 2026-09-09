@@ -5,6 +5,7 @@ import { can } from "@/auth/can";
 import { getSession } from "@/auth/session";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import { StateBlock } from "@/components/ui/state-block";
 import { deliveries } from "@/domain/delivery/store";
 import { Link } from "@/i18n/navigation";
 
@@ -96,10 +97,33 @@ export default async function DeliveriesPage({
       ) : null}
 
       <div className="px-4 py-5 md:px-7">
-        <section className="rounded-[var(--radius-card)] border border-line bg-surface">
-          {rows.length === 0 ? (
-            <p className="px-5 py-4 text-tiny text-muted">{t("deliveries.empty")}</p>
-          ) : (
+        {/*
+          Task 3.2. The empty state REPLACES the card rather than sitting inside
+          it: `StateBlock` draws its own border and its own padding, and one
+          bordered box centred inside another is the look of a component used
+          where it does not belong. An empty table has no header worth keeping.
+        */}
+        {rows.length === 0 ? (
+          <StateBlock
+            title={t("deliveries.emptyTitle")}
+            body={t("deliveries.empty")}
+            action={
+              <Link href="/deliveries/new">
+                <Button
+                  variant="primary"
+                  disabledReason={
+                    can(session.role, "deliveries.issue")
+                      ? undefined
+                      : t("deliveries.newNotAllowed")
+                  }
+                >
+                  {t("deliveries.new")}
+                </Button>
+              </Link>
+            }
+          />
+        ) : (
+          <section className="rounded-[var(--radius-card)] border border-line bg-surface">
             <div className="overflow-x-auto">
               <table className="w-full border-collapse text-tiny">
                 <thead>
@@ -150,11 +174,11 @@ export default async function DeliveriesPage({
                 </tbody>
               </table>
             </div>
-          )}
-          <p className="border-t border-line-subtle px-5 py-3 text-micro leading-relaxed text-muted">
-            {t("deliveries.whyItMatters")}
-          </p>
-        </section>
+            <p className="border-t border-line-subtle px-5 py-3 text-micro leading-relaxed text-muted">
+              {t("deliveries.whyItMatters")}
+            </p>
+          </section>
+        )}
       </div>
     </main>
   );

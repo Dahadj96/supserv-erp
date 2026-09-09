@@ -2,6 +2,8 @@ import { redirect as hardRedirect } from "next/navigation";
 import { getFormatter, getTranslations, setRequestLocale } from "next-intl/server";
 import { getSession } from "@/auth/session";
 import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
+import { StateBlock } from "@/components/ui/state-block";
 import { isOrderKind, listOrders, ORDER_KINDS, orderCounts } from "@/domain/order/list";
 import { Link } from "@/i18n/navigation";
 
@@ -80,9 +82,33 @@ export default async function OrdersPage({
 
       <div className="min-h-0 flex-1 overflow-auto">
         {rows.length === 0 ? (
-          <p className="max-w-[620px] p-7 text-tiny leading-relaxed text-muted">
-            {t("orders.none")}
-          </p>
+          /*
+            Task 3.2, and the one screen here with TWO honest actions rather
+            than one. A client's order arrives against an offer we sent and is
+            recorded from the deal; a purchase order goes out to a supplier once
+            their price has been chosen, from the sourcing comparison. This list
+            holds both kinds — the facets above it say so — so a single primary
+            button would be the wrong one about half the time, which is the
+            failure `dealChecks` avoids by giving its invoice check no link at
+            all. Two buttons name both roads instead of guessing which one this
+            person is on.
+          */
+          <div className="p-4 md:p-7">
+            <StateBlock
+              title={t("orders.noneTitle")}
+              body={t("orders.none")}
+              action={
+                <div className="flex flex-wrap items-center justify-center gap-2">
+                  <Link href="/deals">
+                    <Button variant="primary">{t("common.openADeal")}</Button>
+                  </Link>
+                  <Link href="/sourcing">
+                    <Button variant="secondary">{t("orders.noneFromSourcing")}</Button>
+                  </Link>
+                </div>
+              }
+            />
+          </div>
         ) : (
           <table className="w-full border-collapse text-tiny">
             <thead>

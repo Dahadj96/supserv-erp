@@ -77,7 +77,8 @@
     "yes": "Yes",
     "close": "Close",
     "done": "Done",
-    "doneOf": "{done} of {total}"
+    "doneOf": "{done} of {total}",
+    "openADeal": "Open a deal"
   },
   "list": {
     "applied": "Applied",
@@ -2411,7 +2412,7 @@
     "leadTimeDays": "Lead time, in days",
     "subtitle": "{waiting} request(s) not fully answered, {unsent} not sent yet.",
     "noneYet": "No supplier requests yet.",
-    "none": "No requests recorded.",
+    "none": "Asking a supplier starts on the deal: open one, pick the lines, and choose who to ask. What you are waiting on appears here, with how long it has been.",
     "notSent": "Not sent",
     "quotedOf": "{quoted}/{asked} answered",
     "silent": "{count} silent",
@@ -2426,7 +2427,9 @@
       "answers": "Answers"
     },
     "orderFromThem": "Order from them",
-    "counterPrice": "Price from a counter"
+    "counterPrice": "Price from a counter",
+    "noneTitle": "Nobody has been asked yet",
+    "noneYetTitle": "Nothing asked on this deal yet"
   },
   "ask": {
     "title": "Ask suppliers",
@@ -2533,7 +2536,8 @@
     },
     "costSource": {
       "previous_offer": "cost carried from a previous offer"
-    }
+    },
+    "noneAction": "Open a deal"
   },
   "technical": {
     "title": "Technical file — {ref}",
@@ -2748,7 +2752,7 @@
     "heldUnallocated": "{amount} held, not yet assigned",
     "recent": "Recent payments",
     "newestFirst": "newest first",
-    "noneYet": "No payment has been recorded yet.",
+    "noneYet": "Record a payment with the form above and it is allocated against the invoices it settles. What is still owed is on the ageing screen.",
     "nDays": "{n} d",
     "instrumentName": {
       "virement": "Virement",
@@ -2817,7 +2821,8 @@
       "exceedsBalance": "That is more than this invoice still owes."
     },
     "seeAgeing": "Ageing and relances",
-    "neverRemoved": "Money that arrived at the bank is never removed. A payment against the wrong invoice is re-allocated; an amount that should never have been invoiced is corrected by an avoir."
+    "neverRemoved": "Money that arrived at the bank is never removed. A payment against the wrong invoice is re-allocated; an amount that should never have been invoiced is corrected by an avoir.",
+    "noneTitle": "Nothing received yet"
   },
   "convert": {
     "title": "Convert {number} into a {kind}",
@@ -2926,7 +2931,7 @@
   "deliveries": {
     "title": "Deliveries",
     "subtitle": "{n, plural, =0 {No delivery note yet} one {# delivery note} other {# delivery notes}} · {unsigned, plural, =0 {every signed copy is on file} one {# without a signed copy} other {# without a signed copy}}",
-    "empty": "No delivery note has been created yet.",
+    "empty": "A bon de livraison is what proves goods left and were received. It is made from the document the client agreed to, and the signed copy comes back onto it.",
     "draft": "Draft — not dispatched",
     "number": "Number",
     "client": "Client",
@@ -3021,7 +3026,8 @@
     },
     "notDeliverable": "A delivery note is not raised against a document of this kind ({kind}). It is raised against what the client ordered — their purchase order, a quotation, a pro forma, an invoice or a progress statement.",
     "new": "New delivery",
-    "newNotAllowed": "Issuing a bon de livraison is the delivery permission, and your role does not carry it."
+    "newNotAllowed": "Issuing a bon de livraison is the delivery permission, and your role does not carry it.",
+    "emptyTitle": "Nothing has gone out yet"
   },
   "newInvoice": {
     "title": "New invoice — from {number}",
@@ -4036,7 +4042,7 @@
   },
   "orders": {
     "subtitle": "What clients ordered from us, and what we ordered from suppliers. Two directions, one list.",
-    "none": "No orders recorded.",
+    "none": "An order arrives two ways, and this list holds both. A client's order comes in against an offer we sent — record it from the deal. A purchase order goes out to a supplier once their price has been chosen, from the sourcing comparison.",
     "draft": "Draft",
     "undelivered": "{count} issued with nothing delivered",
     "deliveredCount": "{count} note(s)",
@@ -4053,7 +4059,9 @@
       "total": "Amount",
       "issued": "Issued",
       "delivered": "Delivery"
-    }
+    },
+    "noneTitle": "No orders yet",
+    "noneFromSourcing": "Go to sourcing"
   },
   "dealItems": {
     "title": "Item list",
@@ -4320,7 +4328,8 @@
       "caution": "Caution",
       "dossier": "Dossier",
       "closes": "Closes"
-    }
+    },
+    "noneTitle": "No tenders yet"
   },
   "tender": {
     "closes": "closes {at}",

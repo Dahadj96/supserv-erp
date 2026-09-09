@@ -4,6 +4,7 @@ import { getFormatter, getTranslations, setRequestLocale } from "next-intl/serve
 import { getSession } from "@/auth/session";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import { StateBlock } from "@/components/ui/state-block";
 import { listSourcingRequests, sourcingCounts } from "@/domain/deal/sourcing-list";
 import { Link } from "@/i18n/navigation";
 
@@ -76,9 +77,20 @@ export default async function SourcingPage({ params }: { params: Promise<{ local
 
       <div className="min-h-0 flex-1 overflow-auto">
         {rows.length === 0 ? (
-          <p className="max-w-[620px] p-7 text-tiny leading-relaxed text-muted">
-            {t("sourcing.none")}
-          </p>
+          // Task 3.2. "No requests recorded." was true and said nothing: it did
+          // not name what a request IS, where one starts, or what the screen
+          // would show once one existed.
+          <div className="p-4 md:p-7">
+            <StateBlock
+              title={t("sourcing.noneTitle")}
+              body={t("sourcing.none")}
+              action={
+                <Link href="/deals">
+                  <Button variant="primary">{t("common.openADeal")}</Button>
+                </Link>
+              }
+            />
+          </div>
         ) : (
           <table className="w-full border-collapse text-tiny">
             <thead>
