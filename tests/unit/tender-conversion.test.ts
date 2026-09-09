@@ -1,4 +1,4 @@
-import { readFileSync } from "node:fs";
+import { readdirSync, readFileSync, statSync } from "node:fs";
 import { join } from "node:path";
 import { describe, expect, it } from "vitest";
 import { PROCEDURES } from "@/domain/tender/dossier";
@@ -102,5 +102,55 @@ describe("what turning a tender back refuses", () => {
       expect(en.enquiry.error[refusal], `en enquiry.error.${refusal}`).toBeTruthy();
       expect(fr.enquiry.error[refusal], `fr enquiry.error.${refusal}`).toBeTruthy();
     }
+  });
+});
+
+/**
+ * Nothing about a tender is reachable only by typing a URL.
+ *
+ * Screen 06 contained the word "tender" nought times, so a deal answering a
+ * formal procedure looked exactly like one that was not, and neither its
+ * folder (08) nor the bordereau import (42) was linked from anywhere but
+ * itself. The item-list builder (73) was orphaned in the same way. Four
+ * `<Link>`s fix that and one deletion would undo it silently, which is what
+ * this holds.
+ */
+describe("screen 06 leads where a tender goes next", () => {
+  const app = join(root, "src/app");
+
+  function walk(dir: string): string[] {
+    const out: string[] = [];
+    for (const name of readdirSync(dir)) {
+      const full = join(dir, name);
+      if (statSync(full).isDirectory()) out.push(...walk(full));
+      else if (full.endsWith(".tsx")) out.push(full);
+    }
+    return out;
+  }
+
+  const screens = walk(app).map((file) => readFileSync(file, "utf8"));
+  const deal = readFileSync(join(app, "[locale]/(app)/deals/[id]/page.tsx"), "utf8");
+
+  it("puts the tender's own screens on the deal", () => {
+    expect(deal).toContain("`/tenders/${id}`");
+    expect(deal).toContain("`/tenders/${id}/bpu`");
+    // And says WHICH procedure it is, rather than only that it is one.
+    expect(deal).toContain("tender.onDeal.badge");
+  });
+
+  it("links the item list, which nothing in the codebase pointed at", () => {
+    expect(deal).toContain("`/deals/${id}/items`");
+  });
+
+  it("reads the folder from `dossier()` rather than counting pieces again", () => {
+    // `getTender` has already run the pure function. A second arithmetic here
+    // could disagree with screen 08 about the same folder.
+    expect(deal).toContain("tenderOn.folder.percent");
+    expect(deal).not.toMatch(/pieces\.filter\([^)]*ready/);
+  });
+
+  it("leaves no screen 42 that only screen 42 knows about", () => {
+    const linkers = screens.filter((source) => /\/tenders\/\$\{[^}]+\}\/bpu/.test(source));
+    expect(linkers.length).toBeGreaterThan(1);
   });
 });

@@ -4342,6 +4342,12 @@
         "bpuImported": "A bordereau has been imported. Its lines stay on the deal; the record of which file forty-two prices were read from would not.",
         "folderStarted": "Somebody has worked this folder — a piece carries a file, or was added by hand. That reading of the cahier des charges has no other home."
       }
+    },
+    "onDeal": {
+      "title": "Tender folder",
+      "badge": "Tender · {procedure}",
+      "folder": "Tender folder",
+      "bpu": "Bordereau"
     }
   },
   "projects": {

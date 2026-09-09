@@ -145,6 +145,18 @@ export default async function EnquiryPage({
               · {t("enquiry.received")} {when.format(row.receivedAt)}
             </span>
             <Badge tone={TONE[badge] ?? "neutral"}>{t(badgeMessageKey(badge))}</Badge>
+            {/*
+              Until now this page contained the word "tender" nought times, so
+              nothing on it said that this deal is answering a formal procedure
+              — the one fact that changes what everybody does next.
+            */}
+            {tenderOn ? (
+              <Badge tone="accent">
+                {t("tender.onDeal.badge", {
+                  procedure: t(`tenders.procedure.${tenderOn.procedure}`),
+                })}
+              </Badge>
+            ) : null}
           </p>
         </div>
         <div className="ms-auto flex flex-wrap items-center gap-2">
@@ -159,6 +171,30 @@ export default async function EnquiryPage({
           <Link href={`/deals/${id}/technical`}>
             <Button variant="secondary">{t("technical.tab")}</Button>
           </Link>
+          {/*
+            Screen 73. It has existed since the item-list hole was filled and
+            NOTHING in the codebase linked to it — the only way to correct a
+            quantity read wrong from an email was to know the URL. It belongs
+            beside the other three tabs of the same deal.
+          */}
+          <Link href={`/deals/${id}/items`}>
+            <Button variant="secondary">{t("dealItems.title")}</Button>
+          </Link>
+          {tenderOn ? (
+            <>
+              <Link href={`/tenders/${id}`}>
+                <Button variant="secondary">{t("tender.onDeal.folder")}</Button>
+              </Link>
+              {/*
+                Screen 42, the bordereau import — reachable from nowhere but
+                itself until now, which on a tender is the screen the work
+                actually happens on.
+              */}
+              <Link href={`/tenders/${id}/bpu`}>
+                <Button variant="secondary">{t("tender.onDeal.bpu")}</Button>
+              </Link>
+            </>
+          ) : null}
         </div>
       </div>
 
@@ -414,8 +450,85 @@ export default async function EnquiryPage({
           */}
           {tenderOn ? (
             <section className="rounded-[var(--radius-card)] border border-line bg-surface p-5">
-              <h2 className="text-tiny font-semibold text-ink">{t("tender.unmake.title")}</h2>
-              <p className="mt-1.5 text-micro leading-relaxed text-muted">
+              <div className="flex flex-wrap items-baseline gap-x-3">
+                <h2 className="text-tiny font-semibold text-ink">{t("tender.onDeal.title")}</h2>
+                <span className="ms-auto text-micro text-muted">
+                  {t(`tenders.procedure.${tenderOn.procedure}`)}
+                </span>
+              </div>
+
+              {/*
+                THE FOLDER, AND WHERE THE NUMBER COMES FROM.
+                `getTender` has already run the pure `dossier()` over this
+                tender's pieces, the company's papers and the closing date.
+                Nothing is recomputed here and nothing is stored — a folder that
+                was 100 % in July is not 100 % in September when the CASNOS
+                attestation expired in between, and a second arithmetic on this
+                page could disagree with screen 08 about the same folder.
+              */}
+              <div className="mt-3 flex items-center gap-2">
+                <span className="h-1.5 flex-1 overflow-hidden rounded-full bg-line" aria-hidden>
+                  <span
+                    className={`block h-full rounded-full ${
+                      tenderOn.folder.blocking.length > 0
+                        ? "bg-critical"
+                        : tenderOn.folder.percent === 100
+                          ? "bg-good"
+                          : "bg-warning"
+                    }`}
+                    style={{ width: `${tenderOn.folder.percent}%` }}
+                  />
+                </span>
+                <span className="tabular-nums text-micro text-secondary">
+                  {tenderOn.folder.percent}%
+                </span>
+              </div>
+
+              {tenderOn.folder.total === 0 ? (
+                <p className="mt-2 text-micro leading-relaxed text-muted">{t("tender.noPieces")}</p>
+              ) : (
+                <dl className="mt-3 flex flex-col gap-1.5 text-micro">
+                  {tenderOn.folder.sections.map((section) => (
+                    <div key={section.section} className="flex items-baseline gap-3">
+                      <dt className="text-secondary">{t(`tender.section.${section.section}`)}</dt>
+                      <dd className="ms-auto tabular-nums text-ink">
+                        {t("tender.readyOf", { ready: section.ready, total: section.total })}
+                      </dd>
+                    </div>
+                  ))}
+                </dl>
+              )}
+
+              {/* The sentence screen 08 leads with, on the screen a person is
+                  already looking at. Only while it can still be acted on. */}
+              {tenderOn.folder.blocking.length > 0 && !tenderOn.submittedAt ? (
+                <p className="mt-3 rounded-[var(--radius-control)] bg-critical-bg px-3 py-2 text-micro leading-relaxed text-critical-ink">
+                  {t("tender.banner", {
+                    percent: tenderOn.folder.percent,
+                    blocking: tenderOn.folder.blocking.length,
+                  })}
+                </p>
+              ) : null}
+
+              {tenderOn.submittedAt ? (
+                <p className="mt-3 text-micro text-muted">
+                  {t("tenders.submittedOn", { on: day.format(tenderOn.submittedAt) })}
+                </p>
+              ) : null}
+
+              {/* Screen 08 and screen 42. The second was reachable from nowhere
+                  but itself, which is where a tender's prices are actually
+                  entered. */}
+              <div className="mt-3 flex flex-wrap gap-2">
+                <Link href={`/tenders/${id}`}>
+                  <Button variant="secondary">{t("tender.onDeal.folder")}</Button>
+                </Link>
+                <Link href={`/tenders/${id}/bpu`}>
+                  <Button variant="secondary">{t("tender.onDeal.bpu")}</Button>
+                </Link>
+              </div>
+
+              <p className="mt-4 border-t border-line-subtle pt-4 text-micro leading-relaxed text-muted">
                 {t("tender.unmake.what", {
                   procedure: t(`tenders.procedure.${tenderOn.procedure}`),
                 })}

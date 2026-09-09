@@ -4342,6 +4342,12 @@
         "bpuImported": "Un bordereau a été importé. Ses lignes restent sur l’affaire ; la trace du fichier d’où quarante-deux prix ont été lus, non.",
         "folderStarted": "Quelqu’un a travaillé ce dossier — une pièce porte un fichier, ou a été ajoutée à la main. Cette lecture du cahier des charges n’a pas d’autre foyer."
       }
+    },
+    "onDeal": {
+      "title": "Dossier de l’appel d’offres",
+      "badge": "Appel d’offres · {procedure}",
+      "folder": "Dossier",
+      "bpu": "Bordereau"
     }
   },
   "projects": {
