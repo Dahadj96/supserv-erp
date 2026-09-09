@@ -589,7 +589,22 @@ files and will conflict with everything above.
   a workflow — once 2.1 ships, that instruction becomes true, so update the
   copy to name the button.
 
-- [~] **3.3 · One word per concept** — *decided, no longer blocked*
+- [x] **3.3 · One word per concept** — *decided, no longer blocked*
+  **Not one English string in `en.json` says "enquiry" any more** — 78 did —
+  and the Chantier screens say Site rather than Project. French is untouched.
+  The two words left to judge are decided: **Sourcing stays Sourcing** for
+  *Approvisionnement* (the standard English procurement word, and the route
+  and nav already say it), and **"Ageing and relances" becomes "Ageing and
+  reminders"** — that was a French word inside an English sentence on two
+  screens, which is a gap in a translation rather than a translation.
+  `project` was deliberately NOT swept by regex: it is a real English word here
+  meaning a job title, a research project and a repository folder, so only 36
+  strings under an explicit key list moved, and 23 more were rewritten by hand
+  where the right English was a judgement. The static KEYS moved too — the
+  `enquiry` and `newEnquiry` namespaces became `deal` and `newDeal`, 87
+  references across 16 files — and `messages.test.ts` caught the one reference
+  a literal rewrite could not see. **The done-when's grep reads 7, not 0**, and
+  why is under Known gaps: all seven are keys built from a database value.
   **Deal**, not enquiry: `enquiry` appears 178 times in `en.json` against 54
   for `deal`, for the same object, while the nav and the route already say
   Deals. **Site**, not project, for *Chantier*. French keeps *Affaire* and
@@ -625,6 +640,32 @@ files and will conflict with everything above.
 ## Known gaps
 
 Work a later run must finish. Written down rather than left half-done.
+
+### 3.3 — seven keys the copy pass could not reach, and the French is drifting
+
+**`grep -c enquiry src/i18n/messages/en.json` reads 7, not 0, and each of the
+seven is a key built from a database value.** Renaming any of them means
+renaming data, not copy:
+
+| Key | Built from | What renaming it costs |
+|---|---|---|
+| `inbox.type.enquiry`, `inbox.facet.enquiry`, `inbox.action.enquiry` | `intake_message.classified_as` | A migration over every classified message, the classifier's own list, the routing rules seeded against it, and `tenderHint`'s reclassify. |
+| `capture.shape.enquiry` | the capture shape enum | Screen 61 and the phone job. Small, and it travels with the one above. |
+| `emailTemplates.name.enquiryAck`, `emailTemplates.when.enquiryAck` | `email_template.key` | A migration over the template rows, and any draft already written against that key. |
+| `assistantSafety.tool.draftEnquiryReply` | the assistant's tool name | The tool registry, and the unit test that asserts what the assistant may and may not do. |
+
+None is user-visible: a person reads the VALUE, and every value now says deal.
+The right time to move them is when somebody is already migrating that data for
+another reason, and the wrong time is inside a copy pass.
+
+**The French has the same drift the English just lost, and nobody has decided
+it.** `nav.deals` is *Affaires* while `offer.fromWhich` and
+`scorecard.column.enquiry` head the same column *Consultation*, and
+`enquiry.discard.*` says *consultation* throughout; `nav.payments` is
+*Règlements* while `payments.title` is *Encaissements*. Left alone on purpose —
+the decision of 8 September settled the ENGLISH words and said French stays
+idiomatic, and picking between *Affaire* and *Consultation* on our own is the
+kind of guess this queue forbids. It is a question under Needs Abdou.
 
 ### 3.2 — six of about sixty, and the other fifty-four are not all the same
 
@@ -1390,6 +1431,32 @@ none of them writes.
 
 ## Needs Abdou
 
+### Two French words for the same thing, twice (3.3)
+
+The English is now one word per concept: **Deal** and **Site**, decided on
+8 September and carried out on the 9th. The French was left exactly as it was,
+because that decision settled the English words and said French stays idiomatic
+— and the French has the same drift the English just lost, in two places.
+
+1. **The record is *Affaire* in the nav and *Consultation* on two columns.**
+   `nav.deals` says *Affaires*. `offer.fromWhich` and `scorecard.column.deal`
+   head a column naming the same record *Consultation*, and the whole
+   `deal.discard.*` block says *consultation* — "Mettre cette consultation à la
+   corbeille". **Is the French word for the record *Affaire* everywhere?**
+   The complication is that *consultation* is also the name of a PROCEDURE —
+   `tenders.procedure.consultation`, a consultation restreinte — so the word
+   has to stay there whatever is decided about the record, and a sweep would
+   break it. That is why nothing was changed on a guess.
+
+2. **Payments is *Règlements* in the nav and *Encaissements* as the page
+   title.** The screen records money coming in against invoices.
+   **Which one?** *Encaissement* is narrower and more exact; *Règlements* is
+   what the nav has taught anybody who has used the system.
+
+Neither is urgent and neither is a bug. Both are the kind of thing that is
+cheap to fix in one pass and expensive to notice six months later, when half
+the office says one word and half says the other.
+
 ### Five questions an avoir raises that are accounting, not code (0.8)
 
 Cancelling an issued invoice now works for the case that is not in doubt: the
@@ -1455,13 +1522,13 @@ carries this out; anything written before 3.3 ships should already use it.
 
 ### Wave 1 is written and nobody has seen it work (1.4–1.8, and 1.11)
 
-**Now eighteen tasks, and the restart is still the whole of it.** The run of
+**Now nineteen tasks, and the restart is still the whole of it.** The run of
 9 September added 2.3, 2.4a, 2.4b, 2.4, 2.4c and 2.5 on top of wave 1's six,
 and a later run the same day added 2.7 and 2.6 — screen 08's five forms, and a
 numbered run on screens 06 and 08 saying where an enquiry or a folder has got to,
 and 2.8, which makes screen 42 tell the truth about where its lines came from, and
 3.4, which gives six screens that had no way in one, and 3.2, which makes six empty
-screens say what to do next.
+screens say what to do next, and 3.3, which makes every English screen say Deal and Site.
 2.7 also carries **migration 0059**, which is already applied to the dev
 database: two nullable columns on `company_credential`, so a build serving the
 old code against the new schema is harmless either way round.
@@ -1556,3 +1623,4 @@ above. It is marked blocked rather than skipped.
 | 2026-09-09 | 2.8 | `e5ca970` | The bordereau says where it came from on a deal that is not a tender. `importBpu` updated the `tender` row unconditionally; on a plain enquiry there is no such row, so the update matched nothing, returned cleanly, and the filename went nowhere — screen 42's header went on saying the lines had been typed, about forty-two figures that came out of a spreadsheet. Not an unreachable path: `bpu()` leftJoins the tender and the page only 404s on a missing deal, so screen 42 has always worked on a plain enquiry. **The provenance was never actually lost, only unreachable by the header**, and that is what decided the fix: `commitBpuBatch` writes one `import_batch` row per sheet with the filename, the deal and the moment it was imported, and screen 42's own Sources tab has been listing them all along. `importedFrom` reads the newest of them — `becomes: deal_line`, `status: imported`, newest first — and `bpu()` falls back to it when the tender column is null. **No new column**: the two `tender` columns turn out to be a cache of that batch, and they are still written, because `unmakeRefusalFor` refuses to undo a tender conversion once a BPU has been imported and that refusal reads them. A fallback rather than a replacement, so a deal whose lines were imported before `import_batch` carried them keeps whatever the tender row remembers, and so a tender costs no extra query. `importBpu` now also knows which of the two happened and says so — `{ imported, provenanceOn: "tender" | "batch" }` — with `provenanceOn` written into the audit entry beside the filename, where it answers "where did these forty-two lines come from" whatever later happens to the tender row, including the conversion being undone, which deletes it. Deliberately **not** a refusal: importing a bordereau onto a plain enquiry is a legitimate thing to do, and refusing it would remove a working path in order to fix a header. Four integration tests — both branches the done-when named, plus the two batches that must NOT be mistaken for the source: an erratum, which is a different sheet answering a different question, and a batch abandoned at the mapping step, which is a file somebody opened and thought better of. Either one claiming to be where the bordereau came from would be worse than a header that says nothing. |
 | 2026-09-09 | 3.4 | `159f69b` | Six routes that existed, worked, and could be reached only by typing a URL. Two of them are the ones that exist ONLY to make gaps visible — screen 31 says what this system does and does not do and why there are no module switches, screen 46 says the website intake form is the one way in that is not built and names what it would need — so a screen about what is missing was itself missing from every menu, which is a joke the system was playing on itself. They go on the settings hub in **a group of their own** rather than appended to `control`, because nothing on either can be changed: they answer "what is here", not "how is it set up". That hub's own opening paragraph had already asked for it — "a setting that exists in the design and nowhere in the app should still be visible, or nobody knows it is missing". `/deliveries/new` gets a primary button on Deliveries, greyed with the reason for a role that cannot issue one: the screen that STARTS a delivery was missing from the screen that lists them. `/candidates` gets a button on People, the other half of that screen. **The two phone-bar-only routes are treated differently, on purpose**, and the phone bar is `md:hidden` so on a laptop neither existed at all. Approving is a DESTINATION somebody opens between two other things, so it joins the rail's control group — and 3.1 keeps Approvals as one of its eleven rows, so it is arriving early rather than moving twice. The counter price is not a destination: `src/mobile.ts` is explicit that there are four phone jobs and this is one of them, so it gets a button on Sourcing, the screen about gathering prices, where capturing one on a laptop is the exception rather than the shape of the screen. No new screens, no new domain code, nothing that can be pressed twice — six links and their copy in both languages. What this does NOT do is stop the next one: nothing in the gate checks that a route is linked from anywhere, and all six were found by a person reading the tree. That check, and the fact that the rail is 25 rows now on the wave that exists to cut it to eleven, are under Known gaps. |
 | 2026-09-09 | 3.2 | `f6e285f` | Six empty screens that now say what to do. Tenders, Sourcing, Offers, Orders, Deliveries and Payments had zero primary buttons between them, and five of the six answered an empty screen with a grey sentence in a corner — "No requests recorded." is true, and it does not say what a request is, where one starts, or what would appear here once one existed. `StateBlock` was drawn for exactly this on screen 34 and its `action` slot had never been used outside an error page. **Three of the six are judgements rather than defaults.** **Orders gets TWO buttons**: a client's order arrives against an offer we sent and is recorded from the deal, a purchase order goes out to a supplier once their price has been chosen, from the sourcing comparison — this list holds both kinds and its own facets say so, so a single primary would be the wrong one about half the time, which is the failure `dealChecks` avoids by giving its invoice check no link at all. **Payments gets NONE**: the recorder is on the same screen, above the list it is rendered inside, so a button would scroll somebody four inches to a control they can already see — what was missing was the sentence saying so and where to find what is still owed. **Deliveries reuses `/deliveries/new`**, which 3.4 had linked an hour earlier and which had no way in at all before that, and it greys with the same reason the header button does for a role that cannot issue one. Offers changed least and matters most as a precedent: it already had the right words in hand-written markup that reproduced `StateBlock` line for line — same heading size, same 460px measure, same centring — and stopped one element short of it, and two copies of a component is how the third comes to look slightly different. On Deliveries and Payments the block REPLACES the card rather than sitting inside it, because `StateBlock` draws its own border and one bordered box centred inside another is the look of a component used where it does not belong. `tenders.none` needed no fixing — 2.1 had already made "open the deal and press Make this a tender" a true instruction — so it reads as the body here. The other ~54 are three different problems wearing one number, and which of them is worth a sweep is under Known gaps. |
+| 2026-09-09 | 3.3 | `979c3ff` | Deals and Sites, in English, everywhere. **Not one English string in `en.json` says "enquiry" any more** — 78 of them did — and the Chantier screens say Site rather than Project across nav, titles, body copy, empty states and errors. French is untouched and the routes do not move. **The two words the queue left to judge are decided.** *Sourcing* stays Sourcing for *Approvisionnement*: it is the standard English procurement word, the route is already `/sourcing`, the nav already says it, and the screen is exactly what the word means. And **"Ageing and relances" becomes "Ageing and reminders"** — a French word sitting inside an English sentence on two screens, which is a gap in a translation rather than a translation; English now reads Payments beside Ageing and reminders, one word each. **`project` was deliberately NOT swept by regex**, and that is the care this needed: it is a real English word in this file meaning a job title ("Project manager"), a research project, and the repository folder a storage path falls back to. Only the 36 strings under an explicit key list moved, and the storage one was renamed to "Fallback inside the repository" so no English string here uses the word for two things. Six English strings still contain *project* or *chantier* and every one is right — a role name, two job titles, a French trade placeholder, "a research project", and "A projection". Twenty-three more were rewritten BY HAND rather than substituted, because the right English was a judgement: an email template acknowledges a REQUEST and not a record (French says *demande* there and *affaire* for the record, and English draws the same line), the Inbox creates the deal, a person is put on a site. **The static keys moved too** — the `enquiry` and `newEnquiry` namespaces became `deal` and `newDeal`, plus twelve individual keys, 87 references across 16 files — and `messages.test.ts` is what made that safe, resolving every literal key used in the interface and the literal prefix of every key built from a value. It earned its keep on the first run: it caught a property-access reference in `tender-conversion.test.ts` that a literal rewrite could not see. **Seven keys stay, and they are the honest limit of a copy pass**: `inbox.type/facet/action.*` and `capture.shape.*` are built from `intake_message.classified_as` and the capture enum, `emailTemplates.name/when.*` from `email_template.key`, `assistantSafety.tool.*` from the assistant's tool name. Renaming any of them is a migration over data, not a copy change, and none is user-visible — a person reads the value, and every value now says deal. So the done-when's grep reads 7 rather than 0; the seven are tabulated under Known gaps with what each would cost. The French drift the English just lost — *Affaire* against *Consultation*, *Règlements* against *Encaissements* — is a question under Needs Abdou rather than a guess taken here. |
