@@ -232,6 +232,14 @@ export type Review = {
   locale: string | null;
   unreadPages: number[];
   status: string;
+  /**
+   * Whether the ORIGINAL is here, and what it is — so screen 40 can put the
+   * document itself beside the fields instead of only our transcription of it.
+   * LAW 2 asks a person to confirm a field against the source, and page text
+   * is not the source, it is what a reader made of it.
+   */
+  storagePath: string | null;
+  contentType: string | null;
   fields: ReviewField[];
   /** Screen 40's "field 3 of 24". */
   confirmedCount: number;
@@ -271,6 +279,9 @@ export async function loadReview(dossierId: string): Promise<Review | null> {
     locale: dossier.locale,
     unreadPages: (dossier.unreadPages as number[]) ?? [],
     status: dossier.status,
+    // Empty string is what the row carries between the insert and the store.
+    storagePath: dossier.storagePath || null,
+    contentType: dossier.contentType,
     fields,
     confirmedCount: fields.filter((f) => f.status === "confirmed" || f.status === "corrected")
       .length,

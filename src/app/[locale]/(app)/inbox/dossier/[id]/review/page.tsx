@@ -3,6 +3,9 @@ import { notFound } from "next/navigation";
 import { getTranslations, setRequestLocale } from "next-intl/server";
 import { Badge, type BadgeTone } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import { FileViewer } from "@/components/ui/file-viewer";
+import { fileId } from "@/domain/files";
+import { previewMode } from "@/domain/files/serving";
 import { loadReview, pageText, REVIEW_THRESHOLD } from "@/domain/intake/dossier";
 import { Link } from "@/i18n/navigation";
 import { confirm, confirmAll, reject } from "./actions";
@@ -50,10 +53,10 @@ export default async function ReviewPage({
   searchParams,
 }: {
   params: Promise<{ locale: string; id: string }>;
-  searchParams: Promise<{ page?: string; field?: string; confirmed?: string }>;
+  searchParams: Promise<{ page?: string; field?: string; confirmed?: string; view?: string }>;
 }) {
   const { locale, id } = await params;
-  const { page: rawPage, field: activeField, confirmed } = await searchParams;
+  const { page: rawPage, field: activeField, confirmed, view } = await searchParams;
   setRequestLocale(locale);
   const t = await getTranslations();
 
@@ -68,8 +71,34 @@ export default async function ReviewPage({
 
   const focused = review.fields.find((f) => f.id === activeField) ?? open[0] ?? null;
 
-  const href = (p: number, fieldId?: string) =>
-    `/inbox/dossier/${id}/review?page=${p}${fieldId ? `&field=${fieldId}` : ""}`;
+  /*
+    THE DOCUMENT ITSELF, NOT ONLY WHAT WE MADE OF IT — task 1.7.
+
+    LAW 2: nothing becomes a fact until a person confirms it AGAINST THE SOURCE.
+    Page text is not the source; it is what a reader produced from the source,
+    and confirming a deadline against our own transcription of it proves only
+    that the transcription is self-consistent. So the original goes on screen
+    beside the field, opened at the page the citation names.
+
+    It is the default whenever the browser can draw it, because that is the
+    check the law asks for. The text stays one press away and keeps the
+    highlight, which is the thing text is better at: it can point at the
+    sentence. `previewMode` is the same function the serving route uses, so
+    this screen can never offer a view that would arrive as a download — a
+    Word or Excel dossier (1.6) is read but not drawable, and says so.
+  */
+  const sourceMode = previewMode(review.contentType);
+  const canShowSource = review.storagePath !== null && sourceMode !== null;
+  const showingSource = canShowSource && view !== "text";
+
+  const bytesHref = `/api/files/${encodeURIComponent(fileId("dossier", id))}`;
+
+  const href = (p: number, fieldId?: string, as?: "text" | "source") => {
+    const wanted = as ?? (showingSource ? "source" : "text");
+    return `/inbox/dossier/${id}/review?page=${p}${fieldId ? `&field=${fieldId}` : ""}${
+      wanted === "text" ? "&view=text" : ""
+    }`;
+  };
 
   return (
     <main className="min-h-0 flex-1 overflow-auto">
@@ -127,25 +156,90 @@ export default async function ReviewPage({
                 {review.locale}
               </span>
             ) : null}
-            {review.provider === "text-layer" ? (
-              <Badge tone="good">{t("review.textLayer")}</Badge>
-            ) : (
+            {/* `-partial` is the suffix every reader adds when it could not
+                read the whole file. Since 1.6 the provider may be `docx` or
+                `xlsx` as well as `text-layer`, and matching one name meant
+                a Word file that read perfectly was labelled partially read. */}
+            {review.provider?.endsWith("-partial") ? (
               <Badge tone="warning">{t("review.partiallyRead")}</Badge>
+            ) : (
+              <Badge tone="good">{t("review.textLayer")}</Badge>
             )}
             <span className="ms-auto text-micro text-muted">
               {t("review.pageOf", { page: current, pages: review.pages })}
             </span>
           </div>
 
-          <div className="max-h-[560px] overflow-auto px-5 py-4 text-tiny leading-relaxed text-ink">
-            {text ? (
-              <Highlighted text={text} quote={focused?.citation.quote ?? ""} />
-            ) : (
-              <p className="py-10 text-center text-micro text-muted">
-                {t("review.pageNotRead", { page: current })}
-              </p>
-            )}
-          </div>
+          {/* Which of the two is on screen. Two links and not a control,
+              because this screen is a server component and the choice belongs
+              in the address beside the page and the field — a person checking
+              a deadline can send somebody the exact thing they were looking at. */}
+          {canShowSource ? (
+            <div className="flex items-center gap-1.5 border-b border-line-subtle px-4 py-2">
+              {(["source", "text"] as const).map((which) => {
+                const on = which === (showingSource ? "source" : "text");
+                return (
+                  <Link
+                    key={which}
+                    href={href(current, focused?.id, which)}
+                    aria-current={on ? "true" : undefined}
+                    className={`rounded-[var(--radius-control)] border px-2.5 py-1 text-micro ${
+                      on
+                        ? "border-ink bg-surface font-semibold text-ink"
+                        : "border-line bg-surface text-secondary hover:bg-sunken"
+                    }`}
+                  >
+                    {t(which === "source" ? "review.viewSource" : "review.viewText")}
+                  </Link>
+                );
+              })}
+              <span className="ms-auto text-micro text-muted">
+                {t(showingSource ? "review.sourceIsTheDocument" : "review.textIsWhatWasRead")}
+              </span>
+            </div>
+          ) : null}
+
+          {showingSource && sourceMode ? (
+            <div className="px-4 py-3">
+              {/*
+                `#page=N` is the PDF fragment every browser viewer understands,
+                so the document opens AT the page the citation names rather than
+                at page one with an instruction to scroll. `key` forces a fresh
+                frame when the page changes: the same element with a new
+                fragment is not guaranteed to move.
+              */}
+              <FileViewer
+                key={current}
+                src={`${bytesHref}#page=${current}`}
+                filename={review.filename}
+                mode={sourceMode}
+                chrome="none"
+                height="h-[560px]"
+              />
+            </div>
+          ) : (
+            <div className="max-h-[560px] overflow-auto px-5 py-4 text-tiny leading-relaxed text-ink">
+              {text ? (
+                <Highlighted text={text} quote={focused?.citation.quote ?? ""} />
+              ) : (
+                <p className="py-10 text-center text-micro text-muted">
+                  {t("review.pageNotRead", { page: current })}
+                </p>
+              )}
+              {/* A dossier whose bytes are gone, or one this cannot draw — a
+                  Word or Excel file — is read but not shown. Naming which is
+                  more use than leaving the tabs off with no explanation. */}
+              {!canShowSource ? (
+                <p className="mt-4 border-t border-line-subtle pt-3 text-micro leading-relaxed text-muted">
+                  {t(
+                    review.storagePath === null
+                      ? "review.sourceMissing"
+                      : "review.sourceNotDrawable",
+                  )}
+                </p>
+              ) : null}
+            </div>
+          )}
 
           <div className="flex flex-wrap gap-1.5 border-t border-line-subtle px-4 py-3">
             {Array.from({ length: review.pages }, (_, i) => i + 1).map((p) => (

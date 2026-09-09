@@ -27,14 +27,28 @@ export async function FileViewer({
   src,
   filename,
   mode,
+  /**
+   * `card` draws the bordered panel with the filename above it — the mailbox
+   * and the files list, where the viewer is a thing on the page.
+   *
+   * `none` draws the frame alone, for a screen that already has a header
+   * saying which file this is and how tall the pane should be. Screen 40 is
+   * that: the document sits INSIDE the pane whose tabs chose it, and a second
+   * bordered box with the same filename on it would say the same thing twice.
+   */
+  chrome = "card",
+  /** Overrides the default height, for a pane that has its own. */
+  height,
 }: {
   src: string;
   filename: string;
   mode: PreviewMode;
+  chrome?: "card" | "none";
+  height?: string;
 }) {
   const t = await getTranslations();
 
-  const frame = "h-[70vh] min-h-[420px] w-full rounded-[var(--radius-control)] bg-plane";
+  const frame = `${height ?? "h-[70vh] min-h-[420px]"} w-full rounded-[var(--radius-control)] bg-plane`;
 
   /** Shown above every preview, and again when the browser declines to draw one. */
   const openInTab = (
@@ -49,13 +63,8 @@ export async function FileViewer({
     </a>
   );
 
-  return (
-    <div className="rounded-[var(--radius-card)] border border-line bg-surface p-3">
-      <div className="mb-2 flex items-center gap-3">
-        <span className="min-w-0 truncate text-tiny font-medium text-ink">{filename}</span>
-        <span className="ms-auto shrink-0">{openInTab}</span>
-      </div>
-
+  const body = (
+    <>
       {mode === "pdf" ? (
         <object
           data={src}
@@ -87,6 +96,18 @@ export async function FileViewer({
         // the response's own `sandbox` CSP is what contains it.
         <iframe src={src} title={t("viewer.label", { name: filename })} className={frame} />
       )}
+    </>
+  );
+
+  if (chrome === "none") return body;
+
+  return (
+    <div className="rounded-[var(--radius-card)] border border-line bg-surface p-3">
+      <div className="mb-2 flex items-center gap-3">
+        <span className="min-w-0 truncate text-tiny font-medium text-ink">{filename}</span>
+        <span className="ms-auto shrink-0">{openInTab}</span>
+      </div>
+      {body}
     </div>
   );
 }
