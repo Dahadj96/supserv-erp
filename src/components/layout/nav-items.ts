@@ -6,7 +6,6 @@ import {
   Contact,
   FileCheck2,
   FileText,
-  FolderOpen,
   Gavel,
   Hourglass,
   Inbox,
@@ -61,7 +60,16 @@ export const NAV_GROUPS: NavGroup[] = [
       },
       { key: "waitingOn", messageKey: "waitingOn", href: "/waiting-on", icon: Hourglass },
       { key: "deals", messageKey: "deals", href: "/deals", icon: Search },
-      { key: "dashboard", messageKey: "dashboard", href: "/dashboard", icon: LayoutDashboard },
+      /*
+        Task 3.5. The Dashboard row is gone. It answered the question Today
+        answers and the question Reports answers, and did neither as well —
+        three competing answers to "what should I look at" is how a person
+        stops trusting all three. Demoted rather than deleted: the screen is
+        still there and Reports is the one link to it, which is where somebody
+        who wants a summary of the numbers is already standing.
+        `/week` was never in this list — Today has linked it since it was
+        built — so it needed no demoting, only saying so.
+      */
     ],
   },
   {
@@ -110,7 +118,17 @@ export const NAV_GROUPS: NavGroup[] = [
       */
       { key: "approvals", messageKey: "approvals", href: "/approvals", icon: Check },
       { key: "compliance", messageKey: "compliance", href: "/compliance", icon: FileCheck2 },
-      { key: "files", messageKey: "files", href: "/files", icon: FolderOpen },
+      /*
+        Task 3.5. Files is gone from here too, and for a sharper reason than
+        the dashboard's: a file browser is not a destination inside an ERP.
+        Every file the system holds already belongs to the message, dossier,
+        import, item or company paper that brought it in — `src/domain/files`
+        is explicit that there is no `file` table and there is not going to be
+        one — so somebody looking for a file looks at the thing it belongs to.
+        What screen 60 is genuinely for is "the bytes are somewhere, where",
+        which is a storage question, so it now sits beside Storage on the
+        settings hub, one click in rather than two.
+      */
       { key: "reports", messageKey: "reports", href: "/reports", icon: LayoutDashboard },
       { key: "settings", messageKey: "settings", href: "/settings", icon: Settings },
     ],

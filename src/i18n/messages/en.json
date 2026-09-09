@@ -1477,6 +1477,10 @@
       "forms": {
         "name": "Website intake form",
         "what": "The one way in that does not exist. What it would need, and what to do until it does."
+      },
+      "files": {
+        "name": "Files",
+        "what": "Everything the system holds bytes for, and whether the copy is really here. Not a place to file things — every file already belongs to what brought it in."
       }
     },
     "builtOf": "{built} of {total} built"
@@ -4023,7 +4027,8 @@
     "draftsAreNotSales": "A draft is not a sale",
     "noDocuments": "No documents.",
     "drafts": "{count} draft(s)",
-    "computedNow": "These figures are recomputed on every view. A stored total is a total that can disagree with the rows it claims to summarise, and nobody notices which of the two is wrong."
+    "computedNow": "These figures are recomputed on every view. A stored total is a total that can disagree with the rows it claims to summarise, and nobody notices which of the two is wrong.",
+    "seeDashboard": "Dashboard"
   },
   "dashboard": {
     "subtitle": "What matters today, seen as {role}.",

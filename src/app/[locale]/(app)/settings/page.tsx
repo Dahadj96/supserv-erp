@@ -13,6 +13,7 @@ import { documentType } from "@/db/schema/document-type";
 import { emailTemplate } from "@/db/schema/email-template";
 import { intakeChannel } from "@/db/schema/intake";
 import { moduleCounts } from "@/domain/control/modules";
+import { fileCounts } from "@/domain/files";
 import { setupState } from "@/domain/setup";
 import { Link } from "@/i18n/navigation";
 
@@ -49,6 +50,9 @@ export default async function SettingsPage({ params }: { params: Promise<{ local
   // Pure — a list in `src/domain/control/modules.ts`, no query. The chip on the
   // Modules row is the same count that screen's own subtitle prints.
   const modules = moduleCounts();
+  // The same union screen 60 lists, counted. It reads five tables, which is
+  // why it is awaited beside `setupState` rather than in the batch below.
+  const files = await fileCounts();
 
   const [
     [banks],
@@ -131,6 +135,17 @@ export default async function SettingsPage({ params }: { params: Promise<{ local
         { key: "channels", href: "/settings/channels", state: some(channels?.n ?? 0) },
         { key: "import", href: "/settings/import", state: null },
         { key: "storage", href: "/settings/storage", state: null },
+        /*
+          Task 3.5. Screen 60 left the rail — a file browser is not a
+          destination inside an ERP, because every file in it already belongs
+          to the message, dossier, import, item or company paper that brought
+          it in, and those are where somebody looks. It is not deleted: it is
+          the screen that answers "the bytes are somewhere, where", which is a
+          storage question, so it sits beside Storage. It was already reachable
+          from `/settings/storage`; this makes it one click from Settings
+          rather than two, which is what taking a rail row away owes it.
+        */
+        { key: "files", href: "/files", state: some(files.all) },
       ],
     },
     {

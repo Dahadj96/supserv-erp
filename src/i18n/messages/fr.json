@@ -1477,6 +1477,10 @@
       "forms": {
         "name": "Formulaire du site web",
         "what": "La seule entrée qui n’existe pas. Ce qu’il faudrait pour la faire, et quoi faire en attendant."
+      },
+      "files": {
+        "name": "Fichiers",
+        "what": "Tout ce dont le système détient les octets, et si la copie est bien là. Ce n’est pas un endroit où ranger : chaque fichier appartient déjà à ce qui l’a apporté."
       }
     },
     "builtOf": "{built} sur {total} construits"
@@ -4023,7 +4027,8 @@
     "draftsAreNotSales": "Un brouillon n'est pas une vente",
     "noDocuments": "Aucun document.",
     "drafts": "{count} brouillon(s)",
-    "computedNow": "Ces chiffres sont recalculés à chaque affichage. Un total stocké est un total qui peut contredire les lignes qu'il prétend résumer, et personne ne remarque lequel des deux a tort."
+    "computedNow": "Ces chiffres sont recalculés à chaque affichage. Un total stocké est un total qui peut contredire les lignes qu'il prétend résumer, et personne ne remarque lequel des deux a tort.",
+    "seeDashboard": "Tableau de bord"
   },
   "dashboard": {
     "subtitle": "Ce qui compte aujourd'hui, vu comme {role}.",

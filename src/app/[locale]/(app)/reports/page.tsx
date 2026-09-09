@@ -69,9 +69,27 @@ export default async function ReportsPage({ params }: { params: Promise<{ locale
 
   return (
     <main className="min-h-0 flex-1 overflow-auto">
-      <div className="border-b border-line-subtle bg-surface px-4 md:px-7 py-5">
-        <h1 className="text-[19px] font-semibold text-ink">{t("reports.title")}</h1>
-        <p className="mt-1 text-tiny text-muted">{t("reports.subtitle")}</p>
+      <div className="flex flex-wrap items-start gap-3 border-b border-line-subtle bg-surface px-4 md:px-7 py-5">
+        <div className="min-w-0">
+          <h1 className="text-[19px] font-semibold text-ink">{t("reports.title")}</h1>
+          <p className="mt-1 text-tiny text-muted">{t("reports.subtitle")}</p>
+        </div>
+        {/*
+          Task 3.5. The dashboard left the rail because it answers the question
+          Today answers and the question this screen answers, and does neither
+          as well. It is not deleted — it is a real screen somebody may prefer —
+          so it lives here, one click from the numbers it summarises, and this
+          is now the ONLY way to reach it. That is the whole of the demotion: a
+          row fewer in a rail that does not fit, and nothing lost.
+        */}
+        <div className="ms-auto shrink-0">
+          <Link
+            href="/dashboard"
+            className="rounded-[var(--radius-control)] border border-line px-3 py-1.5 text-tiny text-secondary hover:bg-plane"
+          >
+            {t("reports.seeDashboard")}
+          </Link>
+        </div>
       </div>
 
       {data.everIssued ? null : (
