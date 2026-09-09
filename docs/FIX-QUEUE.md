@@ -493,7 +493,26 @@ Strictly sequential. Each step is useless without the one above it.
   its forms — worth doing the two together, or 2.7 first, since a stepper whose
   steps have no buttons is a list of things you cannot do.
 
-- [ ] **2.7 · Give the tender page its actions**
+- [x] **2.7 · Give the tender page its actions** *(taken before 2.6 on 2.6's own
+  instruction: "worth doing the two together, or 2.7 first, since a stepper
+  whose steps have no buttons is a list of things you cannot do." 2.6 was
+  untouched and is the next task.)*
+  Five forms on screen 08, and the one that mattered is `saveCredential`:
+  `pieceState` returns `missing` while the company paper behind a piece has no
+  scan ON FILE, so nine of the nineteen rows a new tender seeds could go red
+  and stay red with nothing in the ERP able to file one. The form is on the red
+  row rather than behind a link — the person who finds out that the CASNOS
+  attestation expires four days before the deposit is the person holding the
+  folder. Filing a scan needed somewhere to put it, so `company_credential`
+  gains `file_name` / `file_type` (migration 0059) and `credential` is the
+  fifth kind in `FILE_KINDS`, keyed on the credential KEY rather than a uuid so
+  a link keeps resolving to whatever is current. Two permissions, not one:
+  the four presses about THIS tender are `offers.issue` like screen 06's
+  conversion, and filing a company paper is `settings.company`, because that
+  row is read by every open folder at once. Three things tightened on the way
+  past — `removePiece`'s audit entry, `saveCredential`'s upsert blanking the
+  file, and both piece presses refused after a deposit — are in the commit
+  message; what is still open is under Known gaps.
   The tender detail page has no form and no `actions.ts`. `markSubmitted`,
   `recordCaution`, `addPiece`, `removePiece` and above all `saveCredential`
   are exported and unreachable — without the last, every credential-backed
@@ -565,6 +584,51 @@ files and will conflict with everything above.
 ## Known gaps
 
 Work a later run must finish. Written down rather than left half-done.
+
+### 2.7 — the company's papers have no screen of their own, and nothing warns
+
+**Nine rows shared by every folder, edited from whichever tender is open.** The
+credential form is on the piece row, which is right for the moment somebody
+notices a problem — and it means there is no list anywhere of what SUPSERV
+holds and when each paper expires. That is the screen somebody wants in the
+week before three deposits, and it is a settings screen: one table, nine rows,
+`credentialDetails()` already returns exactly it. 3.4 is already about making
+settings screens reachable and this is a natural companion, but it is a new
+screen rather than a link, so it was not smuggled in here.
+
+**Nothing warns before an attestation expires.** `EXPIRING_WITHIN_DAYS` is 30
+and it computes a badge on a folder somebody is already looking at. A CNAS
+expiring in nine days with no open tender is invisible until a tender exists to
+make it visible — and renewing one is a morning at a counter, so nine days'
+notice is the whole value. It is a computed fact with no row behind it, which
+is exactly what screen 55 is built from: Today should say "CASNOS expires in 9
+days" whether or not anything is being deposited. Not built here because Today
+is its own screen and this task was the folder.
+
+**The scan is filed and never read.** 1.6 and 1.8 extract text from a dossier;
+a credential scan goes into working storage and nothing reads it, so the expiry
+date is typed by hand even when it is printed on the paper being uploaded. That
+is deliberate rather than lazy — reading it would make the date a proposal, and
+LAW 2 says a proposal stops at a review step with a citation, which is screen
+40's shape and not a one-line form's. Worth doing the day somebody mistypes a
+year; worth NOT doing as a silent auto-fill.
+
+**A forced deposit does not say so on screen afterwards.** `markSubmitted` takes
+`force` with a reason and writes both into the audit entry beside the list of
+what was blocking at that moment, so the record is complete. But the panel
+afterwards prints only `tender.submittedOn` — the date and the receipt — so
+"this folder went in knowing three pieces were missing" lives in the log and
+nowhere a person looks. One line on the submission panel, reading the audit
+entry, is the fix; it needs a query the panel does not make today.
+
+**`removePiece` still removes rather than hides.** Recorded rather than changed:
+2.1 argued this out for `unmakeTender` — `tender` and `tender_piece` have no
+deletion columns, giving them three would mean every reader in this module and
+in `bpu-store.ts` filtering forever, and what the HARD RULE asks for is "an
+audit entry that outlives the record". This commit made that true rather than
+nominal: the row's key, label, section and file go into `before` before it
+goes. If Abdou would rather a removed piece be restorable, it is a migration
+and a filter in three readers, and it is a decision rather than a bug fix.
 
 ### 0.3 — the bin counts down to nothing
 
@@ -1252,8 +1316,12 @@ carries this out; anything written before 3.3 ships should already use it.
 
 ### Wave 1 is written and nobody has seen it work (1.4–1.8, and 1.11)
 
-**Now thirteen tasks, and the restart is still the whole of it.** The run of
-9 September added 2.3, 2.4a, 2.4b, 2.4, 2.4c and 2.5 on top of wave 1's six.
+**Now fourteen tasks, and the restart is still the whole of it.** The run of
+9 September added 2.3, 2.4a, 2.4b, 2.4, 2.4c and 2.5 on top of wave 1's six,
+and a later run the same day added 2.7 — screen 08's five forms.
+2.7 also carries **migration 0059**, which is already applied to the dev
+database: two nullable columns on `company_credential`, so a build serving the
+old code against the new schema is harmless either way round.
 `pnpm build` has been run again and succeeded, so the build on disk carries all
 of it. Nothing has changed about what is needed: **double-click
 `restart-erp.cmd`** and say yes, then `Restart-ScheduledTask -TaskName "SUPSERV
@@ -1340,3 +1408,4 @@ above. It is marked blocked rather than skipped.
 | 2026-09-09 | 2.4 | `a4c57f2` | The last arrow. Six facts a person had checked against the page they came from stopped at `extraction_field`, which nothing outside screen 40 reads — so a deadline confirmed on Tuesday was still not on the deal on Friday, and `deal.required_validity_days` and `deal.late_penalty` had **no writer anywhere in `src/app`**, meaning the checks in `sourcing-store.ts` and `offer/submit.ts` that compare a supplier's answer against what the client requires had been comparing against null, silently, on every deal there has ever been. `intake_dossier.deal_id` (migration 0058, one additive column) and `commitDossierToDeal`. **LAW 2 governs the whole module**: it reads `status IN (confirmed, corrected) AND confirmed_at IS NOT NULL` and nothing else, and a test proves a dossier of proposed and rejected rows leaves the deal untouched. The mapping: deadline → `deal.deadline_at`; penalty → `deal.late_penalty` **verbatim**, because it is contractual language; validity → **both** `deal.required_validity_days` (what screen 67 checks a supplier against) and `tender.offer_validity_days` (what screen 08 reads), since writing one leaves the other screen empty, which is the shape of bug this task exists to end; place, opening session and bid bond → `tender`. **Three refusals, each rather than a guess.** A column that already has a value is left alone and reported as `alreadySet` — the deadline on the deal may have been typed by somebody who read the covering email, this dossier is one attachment of seven, and the newest reading is not automatically the truest, so the screen shows what it did not write and a person settles it. A deal with no tender row skips the three tender fields as `noTender` rather than failing the carry, because losing all six over three is worse and "Make this a tender" is one press away. A validity in months is refused as `unitNotDays` rather than multiplied by thirty: the column counts days, and an invisible assumption inside the figure that decides whether our offer still stands is not worth the convenience. A **corrected** value arrives in the format the person typed rather than as ISO, because the box is prefilled with `display` — so `dateFrom` reads ISO first and falls back to `readFrenchDateTime`, and 15/10 does not become the tenth of something; a test pins it. On screen 40 the deal is **not picked from a list**: `intake_message.committed_entity` already holds it, written by screen 02 the moment somebody turned the message into a deal, so the panel names the deal and offers, and it appears only once something has been confirmed. Gated on `offers.issue` on top of `inbox.view` — the same permission 2.1 chose for "Make this a tender", because both change what the company commits itself to, and a server action is a public endpoint a triager must not set a deadline through. Eight integration tests. |
 | 2026-09-09 | 2.4c | `64fe4ef` | The seventh field. `deal.required_delivery_days` was the one column 2.4's done-when named that still had no writer, and the gap was upstream: `FIELD_KEYS` had six entries and none was a delivery time, so nothing ever proposed one — while `requestFor` in `sourcing-store.ts` selects that column on every sourcing request and screen 67 compares each supplier's promised lead time against it. **A check that cannot fail is a check nobody knows is off**, and that one had been comparing against null on every deal there has ever been. `deliveryTime` is the seventh key with its own rule, kept apart from `offerValidity` in the VOCABULARY rather than in a rule ordering somebody could break by moving a line — *validité* and *livraison* are different words. They are opposite obligations: a validity is how long OUR price stands, a delivery time is how fast the CLIENT requires the goods, and reading one as the other would put a lead time into the field screen 12 uses to decide whether our offer has expired. What the rule reads is a NUMBER and a person confirms the meaning: *"inférieur ou égal à 15 jours"* is a maximum the client set, which is what the column holds, and *"à partir de 15 jours"* is the opposite claim in nearly the same words — no regular expression should be trusted to tell those apart on a document that decides a penalty. Base 0.8, under a validity's 0.9, because a contract mentions delivery in a dozen clauses and one of them is the requirement. **Weeks are converted and months are still refused**: a week is seven days everywhere and always, which is exactly what a month is not — one is arithmetic, the other an assumption. The extract test that asserted nothing was read from the real delivery clause becomes the boundary between the two rules; that assertion was true and was only half the point, since the requirement was sitting on the page unread and the column had no writer because of it. **Measured over the 32 stored dossiers: 2 proposals → 3.** The new one is `deliveryTime = 15 jours` at 0.65 with `readBelowCue`, cited to page 3 of `C_RFQ-…_EtenduedesFournitures_.pdf` on the line that states it — 2.4b's window reaching under a heading with no new mechanism. Nothing else gained anything: three of the six readable RFQ files now each propose one field, and the other 29 documents propose nothing, as they should. |
 | 2026-09-09 | 2.5 | `68ac49e` | The deal names the next thing to do. Eight cards rendered at once in the order somebody happened to write them, every one equally loud, so a person opening an enquiry had to read all eight to find the one waiting on them — and the answer is usually one line. `dealChecks` returns `submitChecks`' shape and **imports `CheckState` rather than redeclaring it**, so screens 12, 18 and 06 cannot drift into meaning different things by the same four names. The order is the run itself — decide, know what was asked for, know when it is due, get prices, put an offer out, hear back, invoice — and `nextStep` takes a blocker before a warning before a note, which is the one line the header prints with the button that does it. **LAW 1 throughout**: computed from `DealFacts`, which `getDeal` already builds on every load, plus four columns the page has in its hands; no new query and no column, because a stored `progress` would be a second opinion that goes wrong the first time somebody issues an offer from a screen that forgot to update it. Three judgements worth naming: **asking suppliers warns rather than blocks**, since a price on file from last month is a legitimate way to build an offer and an ERP that refuses to quote without a fresh sourcing round is one people work around in Word — and it stops asking once an offer exists; **waiting on the client is a note, not a failure**, the same reasoning screen 12 gives "proof of submission — pending"; and **a closed deal gets one line saying how it ended** rather than a list of everything it never did, all of which would be true and none of it anything to do. Two links are deliberately absent and both are recorded under Known gaps. The offer check points at the **draft** when there is one, because LAW 5 says a draft is not an offer out and sending somebody to a form that makes a second one is how you get two drafts. Every check carries its own `detail` including the failing one — the sentences are ICU `select` and `plural`, which throw rather than degrade when their argument is absent, so a check that supplied it only on success would have crashed the deal page on exactly the deals the panel exists for; a test walks every shape and asserts it. Twelve unit tests. |
+| 2026-09-09 | 2.7 | `39633bd` | Screen 08 gets its five presses. `markSubmitted`, `recordCaution`, `addPiece`, `removePiece` and `saveCredential` were written, transactional and tested when the tender module was built and had no caller outside `tests/`, so the folder could only be read. **`saveCredential` is the one that mattered, and the reason is `pieceState`**: a credential-backed piece is `missing` until the company paper behind it has a scan ON FILE, so nine of the nineteen rows a new tender seeds could go red and stay red with nothing anywhere in the ERP able to file one — the screen would have been all red the day it first had data, for a reason nobody could act on. The form is on the red row rather than behind a link to a settings screen: the person who finds out that the CASNOS attestation expires four days before the deposit is the person holding the folder. Filing a scan needed somewhere to put it and something to serve it with, so **migration 0059** adds `file_name` and `file_type` to `company_credential` and `credential` becomes the fifth kind in `FILE_KINDS` — the id is the credential KEY and not a uuid, because the key is the primary key of that table, so a link printed on a tender page keeps resolving to whatever is current rather than to the scan that was current when the page was written. `NEEDS.credential` is `null`, the same decision `serving.ts` makes for an item datasheet: the company's own attestation is a record, and whoever is assembling a folder at eight in the morning is exactly who needs to open it. **Two permissions, not one.** The four presses about THIS tender are `offers.issue`, the same as "Make this a tender" on screen 06 — a Commercial who cannot tick off the pieces of the tender he is depositing keeps the list on paper instead. Filing a company paper is `settings.company` and deliberately narrower: that row is held once and read by every open folder at once, so one wrong expiry date turns nine folders green together, which is the class of fact the RC and the NIF are. Both controls grey with a sentence rather than disappearing. **Three things tightened on the way past rather than left.** `removePiece` wrote `{ removedPiece: <uuid> }` into the audit entry of a row it had just deleted — the id of something that no longer exists, which outlives nothing anybody can read, while the HARD RULE's words are "an audit entry that outlives the record"; the row is now read inside the transaction and its key, label, section and file go into `before` first, and a piece that is not this tender's is refused instead of deleting nothing and logging that it had. `saveCredential`'s upsert replaced the whole row, so a save with no file chosen would have blanked `file_id` and taken every folder that paper backs from ready to missing because somebody corrected a reference number — absent now means keep, `null` means take it off, and they are different presses. And both piece presses are refused after a deposit, in the action as well as greyed on the screen, because `disabledReason` sets `aria-disabled` and a greyed submit still submits. Eleven unit tests in `tender-folder.test.ts`, holding the three lists that have to agree — what the actions can redirect with, what the page will print, and what both message files have words for: an action refusing with a code the page does not allow lands on a screen showing nothing at all, so the press looks as though it worked, the folder is unchanged, and nobody is told. What is still open is under Known gaps. |
