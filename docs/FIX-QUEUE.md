@@ -589,7 +589,7 @@ files and will conflict with everything above.
   a workflow — once 2.1 ships, that instruction becomes true, so update the
   copy to name the button.
 
-- [ ] **3.3 · One word per concept** — *decided, no longer blocked*
+- [~] **3.3 · One word per concept** — *decided, no longer blocked*
   **Deal**, not enquiry: `enquiry` appears 178 times in `en.json` against 54
   for `deal`, for the same object, while the nav and the route already say
   Deals. **Site**, not project, for *Chantier*. French keeps *Affaire* and
