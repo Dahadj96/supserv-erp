@@ -91,7 +91,7 @@ export async function readTextLayer(file: Buffer): Promise<TextLayer> {
  * because "sep-\ntembre" must be findable as "septembre".
  */
 function normalise(raw: string): string {
-  return raw
+  return stripUnstorable(raw)
     .replace(/\r\n?/g, "\n")
     .replace(/­/g, "")
     .replace(/(\p{Ll})-\n(\p{Ll})/gu, "$1$2")
@@ -99,6 +99,27 @@ function normalise(raw: string): string {
     .replace(/ *\n */g, "\n")
     .replace(/\n{3,}/g, "\n\n")
     .trim();
+}
+
+/**
+ * The one character Postgres will not hold, taken out at the reader.
+ *
+ * A PDF whose font mapping has no glyph for a character maps it to U+0000, and
+ * one of the CVs in this mailbox does exactly that. `text` in Postgres is UTF-8
+ * and has NO representation for a NUL: the insert is refused outright (22P05,
+ * "unsupported Unicode escape sequence"), so one character nobody typed costs
+ * the whole document — its pages, its dossier and its fields — and the job
+ * carrying the failure fails to be recorded too, because the error message
+ * quotes the text.
+ *
+ * Removed rather than replaced. A NUL is the absence of a character, not a
+ * character that could not be read: putting U+FFFD there would show a person a
+ * replacement mark for something the document never said. `split`/`join`
+ * rather than a regular expression, because a control character in a pattern is
+ * a thing every linter and every later reader has to be talked out of.
+ */
+export function stripUnstorable(text: string): string {
+  return text.split("\u0000").join("");
 }
 
 /** Every page has real text on it. Nothing needs OCR. */

@@ -1,7 +1,12 @@
 import { PDFDocument, StandardFonts } from "pdf-lib";
 import { describe, expect, it } from "vitest";
 import { extractText, NeedsOcr } from "@/capture/ocr/provider";
-import { isFullyDigital, readTextLayer, toOcrResult } from "@/capture/ocr/text-layer";
+import {
+  isFullyDigital,
+  readTextLayer,
+  stripUnstorable,
+  toOcrResult,
+} from "@/capture/ocr/text-layer";
 import { proposeFields } from "@/domain/intake/extract";
 
 /**
@@ -123,5 +128,32 @@ describe("reading a digital PDF without OCR", () => {
     expect(validity?.value).toBe("90 jours");
     expect(validity?.citation.page, "page 3 of the file").toBe(3);
     expect(validity?.citation.article).toBe("article 11");
+  });
+});
+
+describe("the one character Postgres will not hold", () => {
+  /**
+   * Found by 1.11's catch-up on the real mailbox: a CV whose font mapping had
+   * no glyph for one character, so pdf.js returned U+0000. `text` in Postgres
+   * has no representation for a NUL, so the page insert was refused (22P05)
+   * and the whole document was lost over a character nobody typed.
+   */
+  it("takes a NUL out of the text rather than losing the document to it", () => {
+    const read = "BOUDEBA MOHAMED / AIDE-SOIGNANT\u0000\nAide-soignant motive";
+
+    expect(read).toContain("\u0000");
+    expect(stripUnstorable(read)).toBe("BOUDEBA MOHAMED / AIDE-SOIGNANT\nAide-soignant motive");
+  });
+
+  it("removes it rather than replacing it, because nothing was there to read", () => {
+    // A replacement mark would tell a person the document said something it
+    // did not. The absence of a character is not an unreadable character.
+    expect(stripUnstorable("a\u0000b")).toBe("ab");
+    expect(stripUnstorable("a\u0000b")).not.toContain("\ufffd");
+  });
+
+  it("leaves every other character alone", () => {
+    const text = "Article 7 — dépôt des offres · 10 heures 00\nالمادة 7";
+    expect(stripUnstorable(text)).toBe(text);
   });
 });

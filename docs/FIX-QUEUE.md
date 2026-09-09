@@ -58,8 +58,8 @@ Facts learned the hard way. Do not rediscover them.
 | Biome import order | Biome sorts imports and will fail the gate over it. Run `pnpm format` before `pnpm check`, then `git status --short` before staging — format touches only what it needs, but stage files by name, never `git add -A`. |
 | Scheduled runs | A scheduled run may have no mounted folder, so `device_bash` fails. Everything can be done through Desktop Commander instead: `read_file`, `write_file`, `edit_block`, `start_process`. Do not stop over it. |
 | **Seeing the work** | **A commit is not a deployment.** The ERP is served by `next start` over a *built* `.next`, so code on disk changes nothing a person can see. After finishing a task: `pnpm build`, then `restart-erp.cmd` (or `scripts\server\restart.ps1`). **The restart needs Administrator** — the process on port 3000 will not die without it, and Windows shows a prompt on the machine that only Abdou can answer. So: build unattended, then tell him to double-click `restart-erp.cmd` and say yes. Never claim a change is live until port 3000 has been restarted onto the new build. `pnpm smoke` afterwards. |
-| Worker | `pnpm worker` is what empties the queue: no worker means no mailbox poll and every attachment stuck at "not copied here yet", with nothing on screen saying so. It is **not covered by any scheduled task** on this machine yet (1.10, under Known gaps) — check with `tasklist /FI "IMAGENAME eq node.exe"` and `type .data\worker.log`, and start one with `start "supserv-worker" /min cmd /c "pnpm worker > .data\worker.log 2>&1"` before running anything that queues jobs. |
-| Reboot | There is **no `SUPSERV ERP` scheduled task** on this machine, so the ERP does not come back after a reboot or a power cut, while cloudflared does — the tunnel answers with a Cloudflare error page pointing at nothing. `scripts\server\install-services.ps1` fixes it once, from an Administrator PowerShell. Abdou's call, and it needs his machine. |
+| Worker | `pnpm worker` is what empties the queue: no worker means no mailbox poll and every attachment stuck at "not copied here yet", with nothing on screen saying so. The `SUPSERV worker` scheduled task has run it at startup since 9 September and it polls every ten minutes — read `.data\worker.log` rather than `tasklist`, which cannot see a SYSTEM process from an unelevated session. **It runs `tsx` against the source, so it is only as new as the moment it started**: after changing anything the worker runs, either restart the task (Administrator) or start your own with `start "supserv-worker" /min cmd /c "pnpm worker > .data\worker-<task>.log 2>&1"`, use it, and close it. |
+| Reboot | Fixed, 9 September: `SUPSERV ERP`, `SUPSERV worker` and `SUPSERV backup` are all registered and start at boot, so the machine comes back on its own. An unelevated session cannot query them — `schtasks /query` answers "Access is denied" — so read `.data\worker.log` and `.data\last-backup.json` for the truth, not the task list. |
 | MCP timeouts | A `start_process` call can time out at the tool layer while the process keeps running on the machine. Do not re-run the command — call `list_sessions`, find the pid, and `read_process_output`. Re-running is how you get "the file is being used by another process". |
 
 ---
@@ -256,6 +256,21 @@ Strictly sequential. Each step is useless without the one above it.
   copy of every file the company is ever sent. The reading is linked from the
   message it arrived on, because screen 39's list is a log, not a route.
 
+- [~] **1.11 · One catch-up that brings every stored attachment up to date**
+  Every capability in wave 1 runs **on arrival** and nothing applies it to what
+  is already stored — which has cost three separate catch-ups in one night:
+  1.10 for the bytes, a throwaway script for the one archive 1.4 never
+  re-opened, and nothing at all for the text 1.6 and 1.8 extract.
+  `pnpm backfill:attachments` becomes the one tool for all three, in the order
+  the stages depend on each other — bytes, then archive expansion, then text,
+  because a file inside a zip only exists after the second stage — each stage
+  idempotent and safely re-runnable, reusing the same paths the worker runs
+  (`expandArchiveFor`, the `dossier.read` queue) rather than writing a second
+  one. The dry run and the per-row reporting are kept.
+  *Done when:* one command brings the whole database up to date and says, per
+  stage, how many were already done, how many it brought up to date, and how
+  many failed and why.
+
 - [ ] **1.9 · Images and scans** *(BLOCKED — waiting on 1.1–1.8 in daily use,
   which needs the build on port 3000 restarted and a worker running against
   the real mailbox. Not a fault; the gate is the queue's own.)*
@@ -413,48 +428,28 @@ decision exists, the honest options are to soften the copy or to leave the
 countdown as a promise nobody has kept — and softening copy the day before
 somebody writes the purge is its own churn.
 
-### 1.10 — the worker does not come back after a reboot, and that is Abdou's to fix
+### 1.10 — the worker comes back after a reboot now, and one thing about it does not
 
-**The one thing from this task that is not done, because it needs
-Administrator.** `scripts\server\install-services.ps1` registered `SUPSERV ERP`
-and `SUPSERV backup` and nothing else, and `run-erp.ps1` does not start a
-worker. So the machine has always come back from a reboot with a web app and no
-worker — and the worker is the process that reads the mailbox every ten minutes
-and fetches attachment bytes. The web app only enqueues.
+**Done, 9 September, 02:25.** `install-services.ps1` registered `SUPSERV worker`
+beside `SUPSERV ERP` and `SUPSERV backup`; the worker has been up since and has
+polled the mailbox every ten minutes, and the backup has run twice and verified
+itself — `.data\last-backup.json` says `verified: true`, 68 tables, 714 rows.
+The gap this section used to describe — a machine that came back from a reboot
+with a web app and no worker, silently — is closed.
 
-**Nothing on any screen says the worker is missing.** Mail simply stops
-arriving, "Sync now" keeps saying the mailbox is being read, and every
-attachment that does arrive says "not copied here yet" for ever. It is the exact
-silence this wave exists to end, and it has been the machine's state since 1.3
-shipped.
+**What is left is not registration but the process's age.** A worker started at
+02:25 is running the source as it stood at 02:25, and 1.6 landed at 02:31 and
+1.8 at 02:49: that process fetches bytes and expands archives and has no
+`dossier.read` handler at all, because the queue did not exist when it started.
+Nothing already stored is waiting on it — 1.11's catch-up read all of that
+through a worker on current source — but a document arriving NOW gets its bytes
+and no reading until the worker is restarted, which `restart-erp.cmd` does not
+do: that script stops and starts the ERP task and the process on port 3000, and
+touches neither the worker nor the tunnel. `Restart-ScheduledTask -TaskName
+"SUPSERV worker"` in an **Administrator** PowerShell, or any reboot, is the
+whole of it. It is the same restart the build is waiting on, and the same
+Administrator prompt.
 
-`scripts\server\run-worker.ps1` is now written and the installer now registers
-`SUPSERV worker` beside the other two — but **registering a scheduled task needs
-an elevated PowerShell, which only Abdou can approve on his own machine.** The
-whole of it, in an **Administrator** PowerShell, touching neither the tunnel nor
-the ERP nor the backup:
-
-```powershell
-cd C:\SUPSERV-ERP
-Register-ScheduledTask -TaskName "SUPSERV worker" -Force `
-  -Action (New-ScheduledTaskAction -Execute "powershell.exe" `
-            -Argument "-NoProfile -ExecutionPolicy Bypass -WindowStyle Hidden -File C:\SUPSERV-ERP\scripts\server\run-worker.ps1" `
-            -WorkingDirectory "C:\SUPSERV-ERP") `
-  -Trigger (New-ScheduledTaskTrigger -AtStartup) `
-  -Principal (New-ScheduledTaskPrincipal -UserId "SYSTEM" -RunLevel Highest) `
-  -Settings (New-ScheduledTaskSettingsSet -AllowStartIfOnBatteries -DontStopIfGoingOnBatteries `
-            -RestartCount 3 -RestartInterval (New-TimeSpan -Minutes 1) `
-            -ExecutionTimeLimit (New-TimeSpan -Seconds 0))
-Start-ScheduledTask -TaskName "SUPSERV worker"
-```
-
-Then read `.data\worker.log` for a `[worker] up` line, rather than trusting that
-the task says Running — that is the mistake the tunnel taught. Close the
-minimised **supserv-worker** console window first: two workers are harmless,
-pg-boss gives each job to one of them, but only the task's own writes that log.
-
-**Until that command is run, the worker on this machine is the console window
-this task started, and it dies with the next reboot or the next log-out.**
 
 ### 1.10 — the content type is the sender's word, and two files pay for it
 
@@ -535,17 +530,13 @@ yet" still shows for Office attachments, because `RENDERABLE` is about what a
 BROWSER can display in place and neither format is. Extracting text from a file
 and rendering it in a frame are different questions; 1.6 answered the first.
 
-### 1.8 — the 38 attachments already here are not read either, and two questions the first real run will ask
+### 1.8 — two questions the first real run asked, and one it answered badly
 
-**Nothing re-reads what arrived before this existed.** A reading is queued by
-the worker after a fetch, and all 38 attachments in this database were fetched
-by 1.10's backfill before `dossier.read` existed. So the mailbox has bytes for
-every file and a reading for none of them. It is the same shape as 1.4's gap and
-has the same one-line answer — select the attachments with a `storage_path`, no
-dossier and a readable kind, and enqueue — and it was left out for the same
-reason: neither is worth a script until somebody has watched the automatic path
-work once on a real message. Both want the same `backfill:` script when they are
-written, not two.
+**The attachments already here are read now** — 1.11, which is the `backfill:`
+script this section asked for, doing this and 1.4's gap and 1.10's in one pass
+because they are one bug. 31 of the 46 files became reviewable dossiers on
+9 September. The paragraph that used to be here, about nothing re-reading what
+arrived before the reader existed, is answered.
 
 **Everything readable is read, and that is a choice.** A PDF, a .docx or an
 .xlsx arriving on any message becomes a dossier, whether or not it looks like a
@@ -560,29 +551,31 @@ the problem, the fix is a filter on the screen, not a narrower reader — the pa
 text is worth having either way, because it is what makes an attachment
 searchable.
 
-**A re-read has no route.** `readAttachmentIntoDossier` answers `already` once a
-dossier points at the attachment, which is what stops a redelivered job making
-two. It also means a file whose reading failed — a PDF that was half downloaded,
-say — can never be read again without deleting a row by hand. The honest fix is
-a "read it again" on screen 39 beside the failed row, which is the same missing
-row as the exhausted-fetch retry 1.3 wrote down and 1.5 unblocked. Three
+**A re-read has no route, and there is now one real file waiting on it.**
+`readAttachmentIntoDossier` answers `already` once a dossier points at the
+attachment, which is what stops a redelivered job making two. It also means a
+file whose reading failed can never be read again without deleting a row by
+hand. **`CV_Boudeba_Mohamed_Aide_Soignant_ATS.pdf` is that file**: its text
+layer carries a NUL, the page insert was refused by Postgres, and its dossier
+row is stuck at `reading` with no pages. 1.11 fixed the cause — `stripUnstorable`
+in `text-layer.ts` — so no file will do this again, but that row is already
+written and stage 3 will answer `already` for it for ever. It is one CV, and it
+is the cheapest possible demonstration of why this screen is wanted. The honest
+fix is a "read it again" on screen 39 beside the failed row, which is the same
+missing row as the exhausted-fetch retry 1.3 wrote down and 1.5 unblocked. Four
 different tasks now want that one screen.
 
-### 1.4 — nothing re-opens an archive whose bytes are already here
+### 1.4 — the archive already here is open, and what is still true about the caps
 
-Expansion runs in the worker, straight after a fetch reports `stored` or
-`already`. An archive whose bytes arrived BEFORE this existed is therefore never
-opened: no job will run for it again, because `fetchAttachmentFor` answers
-`already` only when something asks, and nothing asks a second time.
-
-On this database that is one file — the .zip 1.5 named among the seven that
-download rather than preview. It costs nothing to fix by hand (queue one
-`attachment.fetch` for that row and the worker does the rest), so a script was
-not written for one row. If a second mailbox is ever imported, or the caps
-change and an archive that was refused should be reconsidered, the shape is
-`backfill:attachments`: select the archives whose rows have bytes and no
-children, and enqueue. That is a loop, not a mechanism — 1.10's difficulty was
-recovering a Graph id, and an archive already here needs nothing recovered.
+**Done in 1.11.** Expansion runs in the worker straight after a fetch, so an
+archive whose bytes arrived before that existed was never opened — on this
+database, the one .zip, which 1.10's own backfill had fetched an hour earlier.
+`backfill:attachments` stage 2 now walks every stored top-level attachment
+through `expandArchiveFor`, whose own guards make that safe; the RFQ dossier
+came out as its 8 files on 9 September. It was written off here as "a loop, not
+a mechanism" and not worth a script for one row, which was wrong twice over —
+the same gap existed for text at the same moment, and a catch-up nobody writes
+is a catch-up somebody does by hand in `.bg/` at three in the morning.
 
 **The caps are numbers, not a policy.** 512 files, 100 MB an entry, 400 MB an
 archive, chosen against the largest real dossier anybody has sent SUPSERV.
@@ -599,6 +592,34 @@ place in this repository that infers a type, and it deliberately maps into a
 *subset* of `RENDERABLE`: never `text/html`, never `image/svg+xml`. If 1.6 or a
 later task widens it, that is a change to the same door `serving.ts` guards, and
 it wants reading first.
+
+### 1.11 — what the catch-up does not do, and the fields nobody proposed
+
+**It queues; the worker reads.** Stages 1 and 3 put jobs on a queue, so their
+counts are a promise until `pnpm worker` has emptied it — the script says so,
+and a second run is what turns the promise into `already`. Stage 2 is the
+exception and unpacks as it runs, because that is local work on bytes already
+here. A database whose attachments have no bytes yet therefore needs two runs to
+converge, and nothing is lost in between: the worker expands and reads whatever
+it fetches, on the normal path.
+
+**31 documents were read and not one field was proposed.** Every dossier on
+screen 39 says "nothing was read from this document that matches a field we know
+how to check", and for most of them that is the honest answer rather than a
+fault: the majority are CVs, invoices, catalogues and company profiles, and
+`proposeFields` looks for a submission deadline, an opening session, a bid bond
+and three other things that appear in a règlement de consultation and nowhere
+else. The seven readable files of the RFQ dossier are the real test of that, and
+they proposed nothing either — worth reading once against the documents
+themselves, on screen 40, before deciding whether the rules or the documents are the surprise. It is the first
+time this reader has ever met an Algerian tender it did not have a fixture for.
+
+**The `.doc` and the `.pptx` are not read, and that is a decision, not a bug.**
+One of the 8 files in the RFQ dossier — `D_..._ExigencesTechnique.doc` — is a
+Word 97 binary, a format nothing here reads and no free library reads well; the
+`.pptx` in the mailbox is a supplier's slide deck. Both are stored, both
+download, both say what they are. Widening the readers is a task with a
+dependency, not a line.
 
 ### 1.5 — the route's CSP never reaches the browser, and three smaller things
 
@@ -851,32 +872,45 @@ French is unchanged and stays idiomatic: *Affaire* and *Chantier*. The route
 every saved link for a word, and the label is what a person reads. Task 3.3
 carries this out; anything written before 3.3 ships should already use it.
 
-### Wave 1 is written and nobody has seen it work (1.4–1.8)
+### Wave 1 is written and nobody has seen it work (1.4–1.8, and 1.11)
 
-Five tasks shipped on 9 September and **none of them is live**. Port 3000 still
+Six tasks shipped on 9 September and **none of them is live**. Port 3000 still
 serves the build from before 1.4: a commit is not a deployment. `pnpm build` has
 been run and succeeded, so the only thing left needs Abdou's own machine and
 Administrator, which a scheduled run cannot answer.
 
-1. **Double-click `restart-erp.cmd`** in `C:\SUPSERV-ERP` and say yes to the
-   prompt. Then `pnpm smoke`. Nothing from 1.4 to 1.8 is visible until this
-   happens.
+**Double-click `restart-erp.cmd`** in `C:\SUPSERV-ERP` and say yes to the
+prompt. Then `pnpm smoke`. Nothing from 1.4 to 1.8 is visible until this
+happens.
 
-2. **Start a worker if none is running** — `tasklist /FI "IMAGENAME eq node.exe"`
-   and `type .data\worker.log`. The three queues (`mailbox.poll`,
-   `attachment.fetch`, `dossier.read`) are all emptied by it, and nothing in
-   wave 1 happens without one. The scheduled task that would survive a reboot is
-   the one command under Known gaps (1.10), still unrun, still Administrator.
+That is the whole list. What used to be the second item here — "start a worker,
+nothing schedules one" — was true when it was written and is not now: `SUPSERV
+worker` was registered at 02:25 on 9 September beside `SUPSERV ERP` and `SUPSERV
+backup`, the worker has been up and polling every ten minutes since, and the
+backup has run twice and verified itself (`.data\last-backup.json`:
+`verified: true`, 68 tables, 714 rows). One thing about that worker is still
+outstanding and it is the same restart — the running process started before 1.6
+and 1.8 landed, so it reads no documents until it is restarted, and
+`restart-erp.cmd` does not restart it. `Restart-ScheduledTask -TaskName "SUPSERV
+worker"`, in the same Administrator window, or a reboot. Under Known gaps.
 
-Then a real message with a `dossier.zip` or a `.docx` is the acceptance test for
-all five at once: the files inside the archive appear on screen 40, each
-openable; a CCTP is read without anybody uploading it; and the deadline it
-proposes is checked against the document itself on screen 40, not against our
-transcription of it.
+Every attachment ALREADY in this database is caught up and waiting for that
+build: 46 files with bytes, the one archive expanded into its 8 files, and 31
+documents read into reviewable dossiers with their page text (1.11). So the
+restart is not the beginning of the acceptance test — it is the end of it. What
+Abdou sees on screen 39 the moment the new build answers is a list of 31 read
+documents, and screen 40 shows each of them beside the file it was read from.
+
+A real message with a `dossier.zip` or a `.docx` arriving afterwards is what
+proves the automatic path as well as the catch-up: the files inside the archive
+appear on the message, each openable; a CCTP is read without anybody uploading
+it; and the deadline it proposes is checked against the document itself on
+screen 40, not against our transcription of it.
 
 **This is also what unblocks 1.9.** That task says in its own words not to start
 until 1.1–1.8 are in daily use, and "daily use" cannot begin until the restart
 above. It is marked blocked rather than skipped.
+
 
 ---
 
