@@ -202,15 +202,17 @@ Strictly sequential. Each step is useless without the one above it.
   against `.data\files`. The worker was covered by no scheduled task at all;
   that is under Known gaps with the one command that fixes it.
 
-- [ ] **1.4 · Expand ZIP attachments**
-  New `src/capture/archive/zip.ts`. Guard against path traversal and zip
-  bombs — mirror `safeJoin` in `src/storage/local.ts:38`, cap the entry count
-  and the uncompressed total, and refuse nested archives beyond one level.
-  Each entry becomes its own `intake_attachment` row keeping its path inside
-  the archive as the display name. **Never delete the original archive.**
-  A free package is fine (`yauzl` or `adm-zip`) — record it in `STACK.md`.
-  *Done when:* a message with a `dossier.zip` lists every file inside it,
-  each openable, and a malicious zip is refused with a logged reason.
+- [x] **1.4 · Expand ZIP attachments**
+  `src/capture/archive/zip.ts` opens a `dossier.zip` and each file inside it
+  becomes an `intake_attachment` row keeping its path in the archive as its
+  name, pointing back at the archive through `parent_attachment_id`
+  (migration 0056). The archive keeps its own row and its own bytes — a tender
+  dossier is evidence, and what was sent is the archive, not our unpacking of
+  it. `yauzl` (recorded in `STACK.md`) because it reads the central directory
+  first: a declared size is refused before a byte is inflated, and the stream
+  is counted as it arrives so a header that lies costs one entry rather than
+  the disk. Traversal, nesting and the two size caps are each refused by name
+  and written to the audit trail. What is left is under Known gaps.
 
 - [x] **1.5 · View a file inside the ERP**
   `inbox/[id]/page.tsx:196` renders attachments with no anchor at all. Make
@@ -222,7 +224,7 @@ Strictly sequential. Each step is useless without the one above it.
   *Done when:* a PDF or image attachment opens inside the ERP without going
   to Outlook.
 
-- [ ] **1.6 · Read Word and Excel**
+- [~] **1.6 · Read Word and Excel**
   `extractText()` (`src/capture/ocr/provider.ts:100`) is PDF-only and throws
   for everything else. `exceljs` is already a dependency and reads XLSX. DOCX
   is a zip of XML — you will already have the unzip from 1.4. Extract into
@@ -487,6 +489,38 @@ asked for again — but there is no "try again" anywhere on screen 60, and no
 list of what gave up. `deadLetter` on the queue plus a row on the files screen
 is the shape; it wants 1.5's viewer to exist first, so that the button has
 somewhere to sit.
+
+### 1.4 — nothing re-opens an archive whose bytes are already here
+
+Expansion runs in the worker, straight after a fetch reports `stored` or
+`already`. An archive whose bytes arrived BEFORE this existed is therefore never
+opened: no job will run for it again, because `fetchAttachmentFor` answers
+`already` only when something asks, and nothing asks a second time.
+
+On this database that is one file — the .zip 1.5 named among the seven that
+download rather than preview. It costs nothing to fix by hand (queue one
+`attachment.fetch` for that row and the worker does the rest), so a script was
+not written for one row. If a second mailbox is ever imported, or the caps
+change and an archive that was refused should be reconsidered, the shape is
+`backfill:attachments`: select the archives whose rows have bytes and no
+children, and enqueue. That is a loop, not a mechanism — 1.10's difficulty was
+recovering a Graph id, and an archive already here needs nothing recovered.
+
+**The caps are numbers, not a policy.** 512 files, 100 MB an entry, 400 MB an
+archive, chosen against the largest real dossier anybody has sent SUPSERV.
+Nothing on any screen says an archive was refused for being too large: the
+reason is in the audit trail and the files simply are not listed. When somebody
+first meets a refused dossier, that silence is the thing to fix — the row on
+screen 60 that names an exhausted fetch is the same row, and both are waiting on
+somewhere to sit.
+
+**Word and Excel inside an archive are still not readable**, and neither is a
+nested zip. They become rows with bytes and no preview, which is 1.6's business.
+The extension → content type table in `src/domain/intake/archive.ts` is the only
+place in this repository that infers a type, and it deliberately maps into a
+*subset* of `RENDERABLE`: never `text/html`, never `image/svg+xml`. If 1.6 or a
+later task widens it, that is a change to the same door `serving.ts` guards, and
+it wants reading first.
 
 ### 1.5 — the route's CSP never reaches the browser, and three smaller things
 
@@ -761,3 +795,4 @@ carries this out; anything written before 3.3 ships should already use it.
 | 2026-09-08 | 1.3 | `a951b41` | `src/jobs/` exists — pg-boss was installed, `pnpm worker` declared and compose running `node dist/jobs/worker.js` since before there was anything there to run. Two queues, separate because the retry is: `mailbox.poll` reads the mailbox, `attachment.fetch` pulls one file, and the link dropping on file nine of a dozen must cost file nine, not the message, not the other eleven, not the poll. Each file queues with five tries and exponential backoff from a minute, keyed on its own row so overlapping polls cannot queue it twice. The poll now only NOTICES files; `intake_attachment` gains `external_id` (migration 0055) because a job running ten minutes later has nothing else to ask Graph for, and a reference attachment never becomes a job at all. `src/domain/intake/attachments.ts` fetches and **reports rather than decides** — whether to try again is a queue's business — with five outcomes of which `failed` is the only one the worker throws on: `already` because a queue may deliver twice and re-pulling 12 MB to write identical bytes is not free on this link, `linked`, `gone` for a row whose message was dismissed while the job waited, and a 403 counted as `failed` because after a successful listing it is the permission cache catching up. The worker refuses to retry exactly one thing that reads like a failure — a poll raising `MailboxNotScoped`, which is configuration not weather, and would otherwise fill the queue with the same refusal and tell nobody. **Capture is now on a clock** (`MAILBOX_POLL_CRON`, ten minutes): an ERP that reads the mailbox only when somebody presses a button is a mailbox somebody still has to watch. "Sync now" enqueues that same job and returns; `inbox.synced` ("3 new messages") is deleted from both message files because the count is not knowable at the moment of pressing, replaced by a line saying the mailbox is being read and files appear as they arrive. `intake_attachment` and `fetch` needed words in both languages too — `tests/unit/audit.test.ts` caught that, correctly. The web app starts pg-boss with `supervise` and `schedule` off: two processes share the queue and cron belongs to the worker alone, or every Next server instance is a second scheduler racing the first. `pnpm worker` is now in CLAUDE.md's commands, because in dev it is a second terminal and nothing said so. What the screen still cannot see — queue depth, and an exhausted job — is under Known gaps. |
 | 2026-09-09 | 1.10 | `72124f3` | The 38 attachments that predate the fetcher have bytes. `enqueue(QUEUES.attachmentFetch)` fired in exactly one place — `storeOne`, as a message is stored — so only files a NEW sync discovered were ever queued, and every row in this database predates that: 38 rows, every `storage_path` null, nothing that would ever ask. `pnpm backfill:attachments` (`--dry-run` to look first) asks. **It could not have been a loop over `enqueue`, and that is the finding**: `external_id` arrived with 1.3 (migration 0055), so on all 38 it was NULL and `fetchAttachmentFor` answers `gone / noGraphId` without spending a request — a backfill that only queued would have queued 38 jobs, stored nothing, and looked like it worked. So each message is listed once, live, and its rows are matched back to what the mailbox still holds. That listing is also the **only** place a reference attachment can be recognised: `intake_attachment` has no `@odata.type` column, so a stored row genuinely cannot say whether it is a OneDrive link, and guessing from a null content type would be inventing a fact about somebody's mail. Graph does send the annotation despite `$select` not naming it — 38 of 38 carried it, none was a reference — and the script prints that ratio either way, because if it ever stopped the only thing left to catch a link would be the 405. `matchToListing` narrows three times (the id we hold, then name AND size, then name alone), claims each entry once, and **refuses to guess**: two candidates is a coin toss, so the row is left unmatched and reported, because the failure mode is not a missing file but the wrong file behind a name on screen 40. Queue options moved to `attachmentFetchOptions` and both callers use it — the poll and the backfill must key the job identically or a backfill during a poll fetches the same 12 MB twice. Each recovered id is an audit entry (`intake_attachment` / `backfill`, both languages). **Real run against the real database with a worker up: 38 queued, 38 stored, 0 failed**, and verified rather than believed — every path non-null, all 38 files on disk under `.data\files\attachments\`, each one's length and SHA-256 recomputed from disk against its row, 19,178,730 bytes, no mismatch; 38 `fetch` audit entries, all `stored`. **The worker was covered by no scheduled task at all** — the installer registered the ERP and the backup and nothing else — so a reboot has always brought back a web app that looks healthy and has silently stopped capturing. `run-worker.ps1` is written (SYSTEM has no `pnpm`, so node is invoked machine-wide against an absolute path, and it waits ten minutes for Docker's Postgres like `run-erp.ps1`) and the installer now registers `SUPSERV worker`, but **registering it needs Administrator and is Abdou's to run** — the single command is in RUNBOOK section 3 and under Known gaps. Tonight's worker is a console window. |
 | 2026-09-09 | 1.5 | `c8580b4` | An attachment opens inside the ERP. `FileViewer` (`src/components/ui/file-viewer.tsx`) is screen 18's `<object type="application/pdf">` lifted out of the document page so the mailbox and screen 60 share one — no new dependency, three modes (object for a PDF, `img` for a picture, iframe for plain text). **Which file is open lives in the URL** (`?file=<id>`): both screens stay server components, a message with fifteen attachments renders one viewer and not fifteen, and the address of a particular file is something one person can send another. `previewMode()` sits beside `contentHeaders()` and is DERIVED from `RENDERABLE` rather than being a second list — a screen whose set were wider than the route's would offer a Show that downloads the file, so a test asserts the containment. `RENDERABLE` untouched: HTML and SVG stay downloads, Office files say "no preview yet" until 1.6. **The stale copy is corrected** — "in Outlook only" stopped being true the day 1.2 shipped, so a row with no bytes now says "not copied here yet" and the list says once that copies arrive in the background. The inbox list gains a paperclip and a count, by correlated subquery rather than a join. A read dossier declares `application/pdf` (its only writer puts it with that mime) so it opens inline too — unless the read failed, because that usually means it was not a PDF. **Verified against a real build in a real Chrome**, not assumed: a throwaway harness seeded four attachments in the TEST database and TEST file store, minted a gérant session, and photographed both locales — the PDF renders, the PNG decodes, the route answers 200 `application/pdf` `inline` and the bytes begin `%PDF-`. Headless Chromium has no PDF viewer and always shows the fallback, so the assertion is that the fallback is NOT visible. **No attachment in the application database has bytes yet** — 38 rows, every `storage_path` null, because no sync has run with a worker since 1.3. What the viewer does is correct and Abdou will see "not copied here yet" on all 38 until `pnpm worker` runs against a sync. The CSP measurement and three smaller gaps are under Known gaps. |
+| 2026-09-09 | 1.4 | `b9e2114` | A `dossier.zip` becomes files a person can read. `src/capture/archive/zip.ts` treats the archive as hostile throughout — it was written by whoever emailed us — and `yauzl` was chosen over a one-call unzip for one reason: `lazyEntries` reads the central directory first, so an entry's declared size is refused BEFORE a byte is inflated, and each stream is counted as it arrives, so a header that lies costs one entry rather than the disk. A library that returns a map of decompressed buffers has already spent the disk by the time you could check. Caps are 512 files, 100 MB an entry, 400 MB an archive. **`decodeStrings: false` is the finding the tests produced**: with names decoded yauzl validates them itself and errors on the WHOLE archive the moment it meets `../../.env` — safe, and the wrong answer, because one hostile name would cost every honest file in a dossier and the person who needed the bordereau would be told only that the archive was refused. Names come back as bytes and `safeEntryPath` refuses that one entry, mirroring `safeJoin` in `src/storage/local.ts` but one step earlier, at the name, and **refusing rather than repairing** — quietly turning `../../.env` into `.env` keeps the file and loses the warning. **The archive is never touched**: it keeps its row, its name and its bytes, and the files inside become rows beside it through `parent_attachment_id` (migration 0056, one additive column), which is also the guard against unpacking twice — a queue may deliver a job twice — and against a second level, since a row that HAS a parent is never opened. A nested zip is stored and not opened, and keeps its bytes so it can still be downloaded; that is where a zip quine wins. Each child carries its path inside the archive as its name, because on a dossier that structure is most of what the sender meant, and a null `external_id`, because an unpacked file was never in the mailbox and nothing must ever ask Graph for it. **The content type is the one thing this infers**, and it overrides nobody: a zip has no field for one, so the extension is the only source there is — mapped into a *subset* of `RENDERABLE`, never `text/html` or `image/svg+xml`, which is the door that set exists to hold shut. Expansion runs in the worker after the fetch rather than inside `fetchAttachmentFor`, for the same reason the fetch reports rather than decides: unpacking is local work on bytes already here and every way it can fail is terminal, so failing the job would pull 12 MB over the fibre again to be refused again, five times. The inbox paperclip counts what the MESSAGE carried, so a zip counts once; the message screen lists what came out of it, indented, with a count. `tests/unit/zip-attachment.test.ts` builds its archives by hand — no zip tool a person would use produces a traversing name, a directory that understates a file by three orders of magnitude, or an archive holding an archive — and it found both bugs above; `tests/integration/archive-expand.test.ts` proves the writing half against the real database and the real store. What is left, including the one .zip already in this mailbox that no job will re-open, is under Known gaps. |
