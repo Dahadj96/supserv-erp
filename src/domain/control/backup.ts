@@ -125,15 +125,37 @@ export function receiptPath(): string {
   return resolve(process.cwd(), ".data", "last-backup.json");
 }
 
-export async function backupReport(now = new Date()): Promise<BackupReport> {
-  let receipt: BackupReceipt | null = null;
+/**
+ * Read one of the JSON files `backup.ps1` writes.
+ *
+ * THE BOM IS NOT A DETAIL. PowerShell's UTF-8 is UTF-8 *with a byte order
+ * mark*, `readFile(..., "utf8")` hands that mark through as U+FEFF, and
+ * `JSON.parse` rejects it as an unexpected token before it reads a single
+ * field. Every caller here wraps the parse in a `catch` that treats failure as
+ * "there is no receipt", so a backup that ran and verified itself came out on
+ * screen 66 as **never taken** — the one sentence on that screen that must
+ * never be wrong when it is.
+ *
+ * Found on 10 September 2026: `.data\last-backup.json` said `"verified": true`
+ * for a run at 02:30 that morning, 68 tables and 927 rows compared, while
+ * /settings/backup said no backup had ever succeeded on this machine.
+ *
+ * Returns null on every other failure — missing, unreadable, not JSON — which
+ * is what the callers already meant by their catch.
+ */
+async function readPowershellJson<T>(path: string): Promise<T | null> {
   try {
-    receipt = JSON.parse(await readFile(receiptPath(), "utf8")) as BackupReceipt;
+    const text = await readFile(path, "utf8");
+    return JSON.parse(text.replace(/^﻿/, "")) as T;
   } catch {
-    // Missing, unreadable or not JSON. All three mean the same thing to the
-    // person reading the screen: there is no backup you can point at.
-    receipt = null;
+    return null;
   }
+}
+
+export async function backupReport(now = new Date()): Promise<BackupReport> {
+  // Missing, unreadable or not JSON all mean the same thing to the person
+  // reading the screen: there is no backup you can point at.
+  const receipt = await readPowershellJson<BackupReceipt>(receiptPath());
   return assessBackup(receipt, now);
 }
 
@@ -457,12 +479,8 @@ export function assessRun(
 }
 
 export async function readMarker(): Promise<RunMarker | null> {
-  try {
-    const parsed = JSON.parse(await readFile(markerPath(), "utf8")) as RunMarker;
-    return typeof parsed?.startedAt === "string" ? parsed : null;
-  } catch {
-    return null;
-  }
+  const parsed = await readPowershellJson<RunMarker>(markerPath());
+  return typeof parsed?.startedAt === "string" ? parsed : null;
 }
 
 /* --------------------------------------------------------- the whole picture */
@@ -486,12 +504,7 @@ export type BackupScreen = {
 export async function backupScreen(now = new Date()): Promise<BackupScreen> {
   const env = await readEnvFile();
 
-  let receipt: BackupReceipt | null = null;
-  try {
-    receipt = JSON.parse(await readFile(receiptPath(), "utf8")) as BackupReceipt;
-  } catch {
-    receipt = null;
-  }
+  const receipt = await readPowershellJson<BackupReceipt>(receiptPath());
 
   const destination = await destinationPlan(env);
   const [copies, marker] = await Promise.all([listCopies(destination.resolved), readMarker()]);
