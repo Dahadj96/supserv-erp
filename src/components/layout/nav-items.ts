@@ -1,4 +1,5 @@
 import {
+  Boxes,
   Building2,
   CalendarClock,
   Check,
@@ -17,6 +18,7 @@ import {
   Search,
   Settings,
   ShoppingCart,
+  Trash2,
   Truck,
   UserPlus,
   Users,
@@ -81,6 +83,19 @@ export const NAV_GROUPS: NavGroup[] = [
       { key: "orders", messageKey: "orders", href: "/orders", icon: ShoppingCart },
       { key: "deliveries", messageKey: "deliveries", href: "/deliveries", icon: Truck },
       { key: "projects", messageKey: "projects", href: "/projects", icon: Package },
+      /*
+        V0. The catalogue had no row, no list and no link from anywhere, while
+        `/items/[id]/technical` sat there fully built — an upload form for
+        datasheets, certificates and photographs that no route in the
+        application pointed at. The owner tested the ERP, could not find a way
+        to attach a fiche technique to an item, and wrote down that it did not
+        exist. It did. This is the door.
+
+        Yes, the rail is long (3.4). That is a real problem and it is not this
+        row's: a capability nobody can reach is worse than a list that is one
+        row longer, and 3.4 regroups all of them at once.
+      */
+      { key: "items", messageKey: "items", href: "/items", icon: Boxes },
     ],
   },
   {
@@ -130,6 +145,16 @@ export const NAV_GROUPS: NavGroup[] = [
         settings hub, one click in rather than two.
       */
       { key: "reports", messageKey: "reports", href: "/reports", icon: LayoutDashboard },
+      /*
+        V3. "Put the bin where he will find it — he did not know it was there."
+
+        It was two clicks in, behind Settings, which is where a person goes when
+        they want to configure something and not where they go when they have
+        just lost a record. A bin nobody can find is a bin nobody trusts, and
+        somebody who does not trust the bin does not use Delete either — which
+        is exactly what happened.
+      */
+      { key: "bin", messageKey: "bin", href: "/settings/bin", icon: Trash2 },
       { key: "settings", messageKey: "settings", href: "/settings", icon: Settings },
     ],
   },

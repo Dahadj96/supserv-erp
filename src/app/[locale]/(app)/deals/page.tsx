@@ -8,6 +8,7 @@ import { listDeals } from "@/domain/deal/deal";
 import { badgeMessageKey, DEADLINE_WARNING_HOURS, isStage, STAGES } from "@/domain/deal/stage";
 import { formatMoney } from "@/domain/money";
 import { Link } from "@/i18n/navigation";
+import { describeDealDiscard, discardDealFromListAction } from "./[id]/delete-actions";
 import { type DealRow, DealsList } from "./deals-list";
 
 /**
@@ -138,7 +139,16 @@ export default async function DealsPage({
         ))}
       </div>
 
-      <DealsList rows={listRows} total={total} />
+      <DealsList
+        rows={listRows}
+        total={total}
+        // V2 — both halves bound to the locale here, so the client component
+        // never has to know one. The description is asked when the
+        // confirmation opens; the discard is the same domain call the record's
+        // own page makes, and refuses on the same rule.
+        describeDiscard={describeDealDiscard.bind(null, locale)}
+        discard={discardDealFromListAction.bind(null, locale)}
+      />
     </main>
   );
 }

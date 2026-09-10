@@ -112,6 +112,8 @@ nothing gets built into this ERP without a line saying what it is for.
 | `/companies/duplicates` | 84 Merge duplicates — the finder that feeds it |
 | `/contacts/new` | 76 Contacts — the create form |
 | `/deals/new` | 05 Deals — the create form |
+| `/deals/[id]/edit` | 06 Deal — the edit form (V4). A deal had no edit path at all, so a deadline read off a PDF was unfixable for the life of the enquiry |
+| `/items` | 77 Item technical file — the catalogue, and the only door to it. The upload form shipped complete with nothing anywhere linking to it (V0) |
 | `/deliveries/new` | 14 Deliveries — the create form |
 | `/documents/new` | 47 Document builder — picking a kind before there is a draft |
 | `/inbox/[id]` | 02 Inbox — one item, opened |

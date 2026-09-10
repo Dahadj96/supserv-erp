@@ -45,6 +45,19 @@ export const PERMISSIONS = [
   "settings.company",
   "users.manage",
   "records.delete",
+  /**
+   * V3 — destroying a row in the bin, for good.
+   *
+   * Its own permission and not part of `records.delete`, because they are not
+   * the same act. Putting a record in the bin is reversible and is how a
+   * mistyped enquiry gets tidied away; taking it out of the database is not
+   * reversible by anybody, at any time, for any reason. Whoever binned it does
+   * not get to finish the job — that is the whole point of a bin.
+   *
+   * The Gérant only, by holding every permission. It is not written into any
+   * other role's list and it should not be.
+   */
+  "records.purge",
   "merge.execute",
 ] as const;
 export type Permission = (typeof PERMISSIONS)[number];
@@ -170,9 +183,15 @@ export function mayIssue(role: Role | null, kind: string): boolean {
 /**
  * LAW 6 — the assistant holds EXACTLY the caller's permissions. There is no
  * service account, no elevation, and no delete tool anywhere in its registry.
+ *
+ * `records.purge` is stripped alongside `records.delete` and for a stronger
+ * reason: there is no undo, so an assistant that could be talked into one by a
+ * sentence in an email would be the worst tool in this system.
  */
 export function assistantPermissions(role: Role): readonly Permission[] {
-  return (ROLES[role] as readonly Permission[]).filter((p) => p !== "records.delete");
+  return (ROLES[role] as readonly Permission[]).filter(
+    (p) => p !== "records.delete" && p !== "records.purge",
+  );
 }
 
 /**

@@ -135,14 +135,40 @@ export async function InboxRowView({
                 {t(`inbox.action.${row.classifiedAs}`)}
               </Button>
             </Link>
+          ) : blocker ? (
+            /*
+              T5 — the commit really is blocked (there is no picker yet to say
+              WHICH invoice this advice pays, or which sourcing request this
+              quote answers), so the commit button stays refused and says why.
+              What was wrong was that the refusal was the ONLY control on the
+              row: the message itself can still be read, reclassified and
+              dismissed, and none of that was reachable from here. So the row
+              now carries a way in as well as a reason it cannot commit.
+            */
+            <span className="flex items-center gap-1.5">
+              <Button variant="primary" size="small" disabledReason={t(blocker)}>
+                {t(`inbox.action.${row.classifiedAs ?? "needsReview"}`)}
+              </Button>
+              <Link href={`/inbox/${row.id}`}>
+                <Button variant="secondary" size="small">
+                  {t("inbox.readIt")}
+                </Button>
+              </Link>
+            </span>
           ) : (
-            <Button
-              variant="primary"
-              size="small"
-              disabledReason={blocker ? t(blocker) : t("inbox.nothingToCreate")}
-            >
-              {t(`inbox.action.${row.classifiedAs ?? "needsReview"}`)}
-            </Button>
+            /*
+              T5 — `needsReview` is not blocked (COMMIT_BLOCKER.needsReview is
+              null: the answer is to reclassify, not to commit), and the screen
+              that reclassifies is the message itself. This used to render a
+              greyed "Classify" saying "Say what this is first", beside rows
+              where classifying plainly worked — which is exactly the shape of
+              not knowing how to use your own software. It is a link now.
+            */
+            <Link href={`/inbox/${row.id}`}>
+              <Button variant="secondary" size="small">
+                {t(`inbox.action.${row.classifiedAs ?? "needsReview"}`)}
+              </Button>
+            </Link>
           )}
 
           <form action={dismissMessage.bind(null, locale, row.id)}>

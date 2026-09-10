@@ -6,6 +6,9 @@ import { getSession } from "@/auth/session";
 import { addItemMedia, MediaRefused } from "@/domain/item-technical";
 import { redirect } from "@/i18n/navigation";
 
+/** Anything that is not one is not a deal, and is dropped rather than trusted. */
+const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+
 /**
  * Screen 77 — attaching a datasheet.
  *
@@ -22,7 +25,24 @@ export async function addMediaAction(locale: string, id: string, form: FormData)
     return;
   }
 
-  const back = (query: string) => redirect({ href: `/items/${id}/technical${query}`, locale });
+  /*
+   * V0 — the enquiry travels with the upload.
+   *
+   * `item_media.deal_id` exists so that "a picture the client sent belongs to
+   * that enquiry" is recordable, and NOTHING was writing it: every upload
+   * landed item-wide with no idea which tender it was gathered for. The form
+   * carries the deal it came from, and the redirect carries it back so the
+   * person stays where they were.
+   */
+  const rawDeal = String(form.get("dealId") ?? "").trim();
+  const dealId = UUID.test(rawDeal) ? rawDeal : null;
+  const keep = dealId ? `deal=${dealId}` : "";
+
+  const back = (query: string) =>
+    redirect({
+      href: `/items/${id}/technical${query}${query && keep ? `&${keep}` : keep ? `?${keep}` : ""}`,
+      locale,
+    });
 
   if (!canWrite(session.role)) {
     back("?error=notAllowed");
@@ -44,6 +64,7 @@ export async function addMediaAction(locale: string, id: string, form: FormData)
       mediaKind: String(form.get("mediaKind") ?? ""),
       provenance: String(form.get("provenance") ?? ""),
       capturedAtPlace: String(form.get("capturedAtPlace") ?? ""),
+      dealId,
       actorId: session.userId,
     });
   } catch (error) {

@@ -1,12 +1,17 @@
 import { and, eq, isNull } from "drizzle-orm";
-import { AlertCircle } from "lucide-react";
+import { AlertCircle, Pencil } from "lucide-react";
 import { redirect as hardRedirect, notFound } from "next/navigation";
 import { getTranslations, setRequestLocale } from "next-intl/server";
+import {
+  describeDocumentDiscard,
+  discardDocumentFromListAction,
+} from "@/app/[locale]/(app)/documents/[id]/delete-actions";
 import { INPUT } from "@/app/[locale]/(app)/setup/field";
 import { can } from "@/auth/can";
 import { getSession } from "@/auth/session";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import { RowDelete } from "@/components/ui/row-delete";
 import { Stepper } from "@/components/ui/stepper";
 import { db } from "@/db";
 import { party, partyRole } from "@/db/schema/party";
@@ -14,6 +19,7 @@ import { dealChecks, nextStep } from "@/domain/deal/checks";
 import { getDeal, NO_BID_REASONS } from "@/domain/deal/deal";
 import { requestsForDeal } from "@/domain/deal/sourcing-store";
 import { badgeMessageKey, DEADLINE_WARNING_HOURS } from "@/domain/deal/stage";
+import { dealDiscardEffect } from "@/domain/deletion";
 import { formatMoney } from "@/domain/money";
 import { offersForDeal } from "@/domain/offer/store";
 import { liveCompanies } from "@/domain/party";
@@ -62,10 +68,10 @@ export default async function EnquiryPage({
   searchParams,
 }: {
   params: Promise<{ locale: string; id: string }>;
-  searchParams: Promise<{ error?: string }>;
+  searchParams: Promise<{ error?: string; issued?: string; corrected?: string }>;
 }) {
   const { locale, id } = await params;
-  const { error } = await searchParams;
+  const { error, issued, corrected } = await searchParams;
   setRequestLocale(locale);
   const t = await getTranslations();
 
@@ -89,6 +95,8 @@ export default async function EnquiryPage({
   const mayDelete = session.role ? can(session.role, "records.delete") : false;
   const hasIssuedDocuments =
     facts.offersIssued > 0 || facts.ordersReceived > 0 || facts.invoicesIssued > 0;
+  // V1 — read once, for the sentence under the button and nothing else.
+  const discardEffect = await dealDiscardEffect(id);
   const discardBlockedBy = !mayDelete
     ? t("deal.discard.notAllowed")
     : hasIssuedDocuments
@@ -190,6 +198,21 @@ export default async function EnquiryPage({
           </p>
         </div>
         <div className="ms-auto flex flex-wrap items-center gap-2">
+          {/*
+            V4 — the enquiry can be corrected.
+
+            There was no edit route for a deal at all: not its subject, not its
+            client, not its deadline. A deadline read off a PDF by the extractor
+            and agreed to in a hurry was unfixable for the life of the enquiry,
+            and the deadline is the field that loses the bid.
+          */}
+          {open ? (
+            <Link href={`/deals/${id}/edit`}>
+              <Button variant="secondary" icon={<Pencil className="size-4" aria-hidden />}>
+                {t("dealEdit.editLink")}
+              </Button>
+            </Link>
+          ) : null}
           {/* Screen 56 — everything that happened, and the only place a note
               or a logged call can be written down. */}
           <Link href={`/deals/${id}/timeline`}>
@@ -251,9 +274,22 @@ export default async function EnquiryPage({
         </div>
       ) : null}
 
+      {corrected ? (
+        <p className="mx-4 mt-4 rounded-[var(--radius-control)] bg-good-bg px-4 py-2.5 text-tiny text-good-ink md:mx-7">
+          {t("dealEdit.corrected", { n: Number(corrected) })}
+        </p>
+      ) : null}
+
       {error ? (
         <p className="mx-4 mt-4 rounded-[var(--radius-control)] bg-critical-bg px-4 py-2.5 text-tiny text-critical-ink md:mx-7">
-          {t.has(`deal.error.${error}`) ? t(`deal.error.${error}`) : error}
+          {error === "hasIssuedDocuments" && issued
+            ? // V1 — the refusal names the paper. Which document blocked it is
+              // the thing somebody has to know to do anything about it, and the
+              // answer is an avoir, not a bin.
+              t("deal.error.hasIssuedDocumentsNamed", { documents: issued })
+            : t.has(`deal.error.${error}`)
+              ? t(`deal.error.${error}`)
+              : error}
         </p>
       ) : null}
 
@@ -743,6 +779,26 @@ export default async function EnquiryPage({
             <h2 className="text-tiny font-semibold text-ink">{t("deal.discard.title")}</h2>
             <p className="mt-1 text-micro text-secondary">{t("deal.discard.what")}</p>
             {/*
+              V1 — the sentence is true now.
+
+              Discarding used to write one row and leave the enquiry's drafts on
+              `/offers` pointing at a deal nobody could open, so a confirmation
+              claiming to take "the enquiry" was accurate and useless. It takes
+              the lines, the unissued drafts, the supplier requests and the
+              tender folder with it, and comes back with all of them — so the
+              screen counts them out loud before anybody presses the button.
+            */}
+            {discardBlockedBy ? null : (
+              <p className="mt-2 text-micro leading-relaxed text-muted">
+                {t("deal.discard.takesWithIt", {
+                  lines: discardEffect.lines,
+                  drafts: discardEffect.drafts.length,
+                  requests: discardEffect.sourcingRequests,
+                })}
+                {discardEffect.hasTender ? ` ${t("deal.discard.andTheTender")}` : ""}
+              </p>
+            )}
+            {/*
               No restore button here: `getDeal` filters on `deleted_at`, so a
               binned enquiry has no page to put one on. Taking it back out is
               screen 83's job, and `restoreDealAction` is what the bin calls.
@@ -869,6 +925,25 @@ export default async function EnquiryPage({
                         <Badge tone={offer.number ? "good" : "neutral"}>
                           {offer.number ? t("offer.issued") : t("offer.draft")}
                         </Badge>
+                        {/*
+                          V2 — the same delete the invoices list grew, on the
+                          drafts hanging off this enquiry. Only on a draft: an
+                          issued offer keeps its number for ever, and a control
+                          that exists only to refuse is worse than no control.
+                        */}
+                        {offer.number ? null : (
+                          <RowDelete
+                            label={t("offer.noNumberYet")}
+                            what={t("rowDelete.what.document")}
+                            describe={describeDocumentDiscard.bind(null, locale, offer.id)}
+                            action={discardDocumentFromListAction.bind(
+                              null,
+                              locale,
+                              `/deals/${id}`,
+                              offer.id,
+                            )}
+                          />
+                        )}
                       </span>
                     </li>
                   ))}

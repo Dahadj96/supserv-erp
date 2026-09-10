@@ -30,7 +30,9 @@
     "scan": "Numérisation",
     "capture": "Saisie rapide",
     "menu": "Menu",
-    "approvals": "Approbations"
+    "approvals": "Approbations",
+    "items": "Articles",
+    "bin": "Corbeille"
   },
   "auth": {
     "signIn": "Connexion",
@@ -274,7 +276,35 @@
     "notAllowed": "Seul le Gérant peut mettre une fiche à la corbeille.",
     "cannotDiscardIssued": "Cette société porte des documents émis : elle ne peut pas aller à la corbeille. Archivez-la — elle sort des listes et chaque document continue de résoudre.",
     "personOnSite": "{count, plural, =1 {Encore dans l’équipe d’un chantier.} other {Encore dans l’équipe de # chantiers.}} Retirez-la du chantier d’abord, puis retirez le nom.",
-    "blockedByCrew": "Cette personne n’a pas quitté l’équipe d’un chantier : le nom reste. Retirez-la de l’équipe sur la page du chantier, puis retirez le nom ici."
+    "blockedByCrew": "Cette personne n’a pas quitté l’équipe d’un chantier : le nom reste. Retirez-la de l’équipe sur la page du chantier, puis retirez le nom ici.",
+    "inTheBin": "À la corbeille depuis",
+    "readyToGo": "Prêt à être supprimé",
+    "purge": {
+      "open": "Supprimer définitivement",
+      "cancel": "Conserver",
+      "confirm": "Supprimer définitivement",
+      "typeItFirst": "Saisissez la référence ci-dessus pour activer ce bouton.",
+      "typeItBack": "Saisissez {label} pour confirmer",
+      "warning": "Ceci retire {what} de la base. Personne ne pourra le restaurer ensuite — ni le Gérant, ni depuis une sauvegarde postérieure. La trace d’audit demeure.",
+      "done": "Supprimé définitivement. La trace d’audit dit ce que c’était.",
+      "howItWorks": "Restaurer remet l’enregistrement à sa place. Supprimer définitivement le retire de la base et rien ne le ramène — un enregistrement à la fois, le Gérant seul, et jamais un enregistrement qui a émis du papier. Rien n’est supprimé automatiquement : une ligne reste ici jusqu’à ce que quelqu’un décide.",
+      "stillReferenced": "Quelque chose référence encore cet enregistrement — la table {table}. Retirez ou détachez cela d’abord. Rien n’a été supprimé.",
+      "what": {
+        "company": "cette société",
+        "deal": "cette affaire et ses brouillons",
+        "document": "ce brouillon",
+        "person": "cette personne",
+        "note": "cette note"
+      },
+      "error": {
+        "notAllowedToPurge": "La suppression définitive relève du Gérant. La restauration reste ouverte à qui peut supprimer.",
+        "confirmDidNotMatch": "La saisie ne correspond pas à la référence de la ligne : rien n’a été supprimé.",
+        "notInBin": "Cet enregistrement n’est pas à la corbeille.",
+        "hasIssuedDocuments": "Cet enregistrement porte des documents émis. Le papier sorti de l’entreprise ne se supprime pas — la correction est un avoir.",
+        "personIsOnSite": "Cette personne n’a pas quitté un chantier. Retirez-la de l’équipe d’abord.",
+        "stillReferenced": "Quelque chose référence encore cet enregistrement. Rien n’a été supprimé."
+      }
+    }
   },
   "companies": {
     "code": "Code",
@@ -697,6 +727,7 @@
       "needsReview": "Classer"
     },
     "nothingToCreate": "Dites d'abord de quoi il s'agit.",
+    "readIt": "L’ouvrir",
     "unreadOnly": "Non lus seulement",
     "from": "De",
     "subject": "Objet",
@@ -2220,7 +2251,9 @@
       "action": "Mettre à la corbeille",
       "restore": "La sortir de la corbeille",
       "notAllowed": "Seul le Gérant peut mettre une fiche à la corbeille.",
-      "hasIssued": "Cette consultation porte un document émis. Un document émis ne se supprime jamais — corrigez-le par un avoir."
+      "hasIssued": "Cette consultation porte un document émis. Un document émis ne se supprime jamais — corrigez-le par un avoir.",
+      "takesWithIt": "Emporte {lines} lignes, {drafts} brouillons non émis et {requests} demandes fournisseurs. La restauration depuis la corbeille ramène l’ensemble.",
+      "andTheTender": "Le dossier d’appel d’offres suit également."
     },
     "error": {
       "noSuchDeal": "Cette consultation n’existe plus.",
@@ -2237,7 +2270,8 @@
       "cautionRecorded": "Une caution de soumission a été demandée ou reçue. Les dates de la banque ne sont écrites nulle part ailleurs.",
       "bpuImported": "Un bordereau a été importé. Ses lignes restent sur l’affaire ; la trace du fichier d’où quarante-deux prix ont été lus, non.",
       "folderStarted": "Quelqu’un a travaillé ce dossier — une pièce porte un fichier, ou a été ajoutée à la main. Cette lecture du cahier des charges n’a pas d’autre foyer.",
-      "notATender": "Aucun appel d’offres sur cette affaire."
+      "notATender": "Aucun appel d’offres sur cette affaire.",
+      "hasIssuedDocumentsNamed": "Cette affaire ne peut pas aller à la corbeille : {documents} a été émis et le client en détient une copie. Un document émis se corrige par un avoir, jamais par une suppression."
     }
   },
   "facts": {
@@ -4029,7 +4063,8 @@
       "sweep": "Effacé en une fois",
       "credit": "Annulé par un avoir",
       "unmake": "N’est plus un appel d’offres",
-      "run": "Exécution lancée"
+      "run": "Exécution lancée",
+      "purge": "Supprimé définitivement"
     }
   },
   "complianceNow": {
@@ -4368,8 +4403,12 @@
       "reference": "Référence",
       "designation": "Désignation",
       "qty": "Qté",
-      "unit": "Unité"
-    }
+      "unit": "Unité",
+      "technical": "Dossier technique"
+    },
+    "technicalFile": "Fiches techniques",
+    "notMatched": "Non rattachée",
+    "notMatchedHelp": "Cette ligne n’est rattachée à aucun article du catalogue : il n’y a donc rien à quoi joindre une fiche technique. Rattachez-la et ceci devient un lien."
   },
   "itemTechnical": {
     "noDatasheet": "Sans fiche technique",
@@ -4402,7 +4441,8 @@
       "where": "D'où elle vient, en clair",
       "wherePlaceholder": "ENAGEO, par e-mail du 12/06 — ou Ets Chergui, Adrar",
       "why": "Ce qu'est la pièce et d'où elle vient sont demandés, jamais déduits du nom du fichier : « ce PDF est le certificat du fabricant » est une affirmation, et une affirmation a besoin de quelqu'un derrière elle. 10 Mo au maximum.",
-      "add": "Joindre la pièce"
+      "add": "Joindre la pièce",
+      "filedUnder": "Rattaché à {ref} — pièce réunie pour cette affaire, et qui reste consultable depuis l’article."
     },
     "error": {
       "notAllowed": "Votre rôle ne peut pas joindre de pièce.",
@@ -5678,5 +5718,68 @@
     "label": "{name}, affiché ici",
     "openInNewTab": "Ouvrir dans un nouvel onglet",
     "cannotEmbed": "Ce navigateur n’affiche pas un PDF à l’intérieur d’une page."
+  },
+  "items": {
+    "title": "Articles",
+    "state": "{n} au catalogue · {missing} sans fiche technique",
+    "stateSearch": "{n} pour « {q} »",
+    "noActionReason": "Un article se crée en rattachant une ligne d’affaire au catalogue, pas ici — pour que le nom porté sur l’offre soit un nom qu’un client a employé.",
+    "searchPlaceholder": "Code, désignation, marque ou modèle",
+    "empty": "Rien au catalogue pour l’instant. Un article apparaît ici dès qu’une ligne d’affaire lui est rattachée.",
+    "emptySearch": "Rien ne correspond à « {q} ».",
+    "column": {
+      "code": "Code",
+      "designation": "Désignation",
+      "brand": "Marque et modèle",
+      "technical": "Dossier technique",
+      "usedOn": "Affaires"
+    },
+    "held": "{n} pièces",
+    "noDatasheet": "Pas de fiche technique",
+    "othersHeld": "{n} autre(s)",
+    "generic": "Rien à conserver",
+    "genericHelp": "Câble, boulonnerie, main-d’œuvre. Aucun fabricant ne publie de fiche pour cela : c’est complet, pas manquant.",
+    "missingHelp": "{n} articles sans fiche technique et non génériques. Une consultation qui exige une fiche technique le découvre en général le jour du dépôt."
+  },
+  "rowDelete": {
+    "open": "Supprimer {what}",
+    "title": "Supprimer {what} ?",
+    "working": "Lecture de ce qui part avec…",
+    "reason": "Motif (facultatif — conservé sur la trace d’audit)",
+    "restorable": "Va à la corbeille et reste restaurable 30 jours.",
+    "cancel": "Annuler",
+    "confirm": "Mettre à la corbeille",
+    "close": "Fermer",
+    "what": {
+      "deal": "cette affaire",
+      "document": "ce brouillon"
+    },
+    "takes": {
+      "document": "Un brouillon non émis. Rien à l’extérieur ne l’a jamais vu et rien ne le référence."
+    }
+  },
+  "dealEdit": {
+    "title": "Corriger cette affaire",
+    "state": "{ref} — chaque modification est enregistrée avec votre nom et l’heure.",
+    "back": "Retour à l’affaire",
+    "cancel": "Annuler",
+    "save": "Enregistrer la correction",
+    "clientHint": "Changer le client déplace l’affaire vers lui. Les documents déjà émis conservent le client auquel ils ont été émis.",
+    "referenceHint": "Leur numéro pour cette consultation, tel qu’ils l’ont écrit.",
+    "deadlineHint": "Lue sur le document par l’extraction puis validée par une personne. C’est ici qu’on la corrige.",
+    "contact": "Interlocuteur chez le client",
+    "noContact": "Personne d’identifié",
+    "owner": "Responsable",
+    "noOwner": "Personne",
+    "ownerHint": "Qui en répond. C’est la colonne Responsable de la liste des affaires.",
+    "recorded": "Seuls les champs réellement modifiés sont écrits dans l’historique, avec leur valeur avant et après. Enregistrer sans rien changer n’écrit rien.",
+    "corrected": "{n, plural, =0 {Rien n’a changé.} one {Un champ corrigé. La modification figure dans le fil ci-dessous.} other {# champs corrigés. Les modifications figurent dans le fil ci-dessous.}}",
+    "editLink": "Corriger",
+    "error": {
+      "notAllowed": "Votre rôle est en lecture seule.",
+      "clientAndSubject": "Une affaire exige un client et un objet.",
+      "noSuchDeal": "Cette affaire n’existe plus.",
+      "inTheBin": "Cette affaire est à la corbeille. Restaurez-la d’abord — c’est une décision que l’on prend délibérément."
+    }
   }
 }

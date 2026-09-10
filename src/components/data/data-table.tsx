@@ -26,6 +26,7 @@ export function DataTable<Row extends { id: string }>({
   bulkActions = [],
   emptyState,
   getRowHref,
+  rowAction,
 }: {
   rows: Row[];
   /** Unfiltered total. The count always shows both. */
@@ -36,6 +37,16 @@ export function DataTable<Row extends { id: string }>({
   bulkActions?: BulkAction<Row>[];
   emptyState: ReactNode;
   getRowHref?: (row: Row) => string;
+  /**
+   * V2 — the one thing a row can do that is not opening it.
+   *
+   * Deliberately a render prop and not a list of action descriptors: the only
+   * caller so far is removal, removal needs a confirmation that names what it
+   * takes, and a generic "actions" API would have every list inventing its own
+   * confirmation again. When a second kind of row action appears this becomes
+   * a menu; until then it is one slot with one thing in it.
+   */
+  rowAction?: (row: Row) => ReactNode;
 }) {
   const t = useTranslations();
   const list = useListState();
@@ -160,6 +171,7 @@ export function DataTable<Row extends { id: string }>({
                     )}
                   </th>
                 ))}
+                {rowAction ? <th className="w-10 px-3 py-2.5" /> : null}
               </tr>
             </thead>
             <tbody>
@@ -201,6 +213,7 @@ export function DataTable<Row extends { id: string }>({
                       )}
                     </td>
                   ))}
+                  {rowAction ? <td className="px-3 py-2.5 text-end">{rowAction(row)}</td> : null}
                 </tr>
               ))}
             </tbody>

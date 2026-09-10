@@ -4,10 +4,14 @@ import { restorePersonAction } from "@/app/[locale]/(app)/contacts/delete-action
 import { restoreDealAction } from "@/app/[locale]/(app)/deals/[id]/delete-actions";
 import { restoreNoteAction } from "@/app/[locale]/(app)/deals/[id]/timeline/delete-actions";
 import { restoreDocumentAction } from "@/app/[locale]/(app)/documents/[id]/delete-actions";
+import { can } from "@/auth/can";
+import { getSession } from "@/auth/session";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { type BinKind, listBin } from "@/domain/deletion";
+import { PurgeRow } from "@/components/ui/purge-row";
+import { BIN_DAYS, type BinKind, listBin, purgeBlockedBy } from "@/domain/deletion";
 import { Link } from "@/i18n/navigation";
+import { purgeAction } from "./purge-actions";
 
 /**
  * Screen 83 — the bin. Restorable for 30 days, then the record is gone but its
@@ -33,10 +37,20 @@ const RESTORE: Record<BinKind, (locale: string, id: string) => () => Promise<voi
   note: (locale, id) => restoreNoteAction.bind(null, locale, id),
 };
 
-export default async function BinPage({ params }: { params: Promise<{ locale: string }> }) {
+export default async function BinPage({
+  params,
+  searchParams,
+}: {
+  params: Promise<{ locale: string }>;
+  searchParams: Promise<{ error?: string; by?: string; purged?: string }>;
+}) {
   const { locale } = await params;
+  const { error, by, purged } = await searchParams;
   setRequestLocale(locale);
   const t = await getTranslations();
+
+  const session = await getSession();
+  const mayPurge = session?.role ? can(session.role, "records.purge") : false;
 
   const rows = await listBin();
   const fmt = (d: Date) => d.toLocaleDateString(locale === "fr" ? "fr-DZ" : "en-GB");
@@ -89,6 +103,25 @@ export default async function BinPage({ params }: { params: Promise<{ locale: st
     restore: RESTORE[row.kind](locale, row.id),
   }));
 
+  /*
+    V3 — whether each row could be destroyed, asked with the same function the
+    purge itself calls, so the greyed button and the refusal cannot disagree.
+    Only for the Gérant: nobody else may see a control they can never use.
+
+    In parallel and not in a loop — the bin holds what a handful of people
+    binned in thirty days, and five short reads per row is still one round trip.
+  */
+  const blocked = mayPurge
+    ? await Promise.all(shown.map((row) => purgeBlockedBy(row.kind, row.id)))
+    : shown.map(() => "notInBin" as const);
+
+  /*
+    The label the person has to type back, and the one the row already shows.
+    A company's code, an enquiry's ref — something you can only produce by
+    looking at the row you are standing on.
+  */
+  const purgeLabel = (row: (typeof shown)[number]) => row.code || row.label;
+
   return (
     <main className="min-h-0 flex-1 overflow-auto">
       <div className="border-b border-line-subtle bg-surface px-4 md:px-7 py-5">
@@ -97,6 +130,23 @@ export default async function BinPage({ params }: { params: Promise<{ locale: st
       </div>
 
       <div className="max-w-[1000px] px-4 md:px-7 py-6">
+        {purged ? (
+          <p className="mb-4 rounded-[var(--radius-control)] bg-good-bg px-4 py-2.5 text-tiny text-good-ink">
+            {t("bin.purge.done")}
+          </p>
+        ) : null}
+        {error ? (
+          <p className="mb-4 rounded-[var(--radius-control)] bg-critical-bg px-4 py-2.5 text-tiny leading-relaxed text-critical-ink">
+            {error === "stillReferenced"
+              ? // Postgres's own answer, with the table it named. Not translated
+                // and not meant to be: it is the answer to "why not", and vague
+                // would be worse than technical here.
+                t("bin.purge.stillReferenced", { table: by ?? "—" })
+              : t.has(`bin.purge.error.${error}`)
+                ? t(`bin.purge.error.${error}`)
+                : error}
+          </p>
+        ) : null}
         {shown.length === 0 ? (
           <div className="rounded-[var(--radius-card)] border border-line bg-card px-6 py-14 text-center">
             <h2 className="text-lead font-semibold text-ink">{t("bin.emptyTitle")}</h2>
@@ -111,12 +161,12 @@ export default async function BinPage({ params }: { params: Promise<{ locale: st
                 <th className="px-4 py-2.5 text-start font-medium">{t("bin.what")}</th>
                 <th className="px-4 py-2.5 text-start font-medium">{t("bin.when")}</th>
                 <th className="px-4 py-2.5 text-start font-medium">{t("bin.reason")}</th>
-                <th className="px-4 py-2.5 text-start font-medium">{t("bin.goneIn")}</th>
+                <th className="px-4 py-2.5 text-start font-medium">{t("bin.inTheBin")}</th>
                 <th className="px-4 py-2.5" />
               </tr>
             </thead>
             <tbody>
-              {shown.map((row) => (
+              {shown.map((row, index) => (
                 <tr
                   key={`${row.kind}:${row.id}`}
                   className="border-b border-line-subtle last:border-0"
@@ -138,17 +188,45 @@ export default async function BinPage({ params }: { params: Promise<{ locale: st
                   </td>
                   <td className="px-4 py-2.5 text-secondary">{fmt(row.deletedAt)}</td>
                   <td className="px-4 py-2.5 text-secondary">{row.reason || "—"}</td>
+                  {/*
+                    V3 — this column used to count DOWN to a purge that did not
+                    exist: "gone in 4 days" beside rows that would still be here
+                    in a year. A number that does not come true teaches a person
+                    that the numbers in this system are decoration, and once that
+                    is learned it applies to the ageing ladder too.
+
+                    So it counts UP, which is a fact, and a row past thirty days
+                    says it is ready to be removed for good — which is now a
+                    thing somebody can actually do, one row at a time, in the
+                    next column.
+                  */}
                   <td className="px-4 py-2.5">
-                    <Badge tone={row.daysLeft <= 5 ? "critical" : "neutral"} fill="solid">
-                      {t("bin.days", { count: row.daysLeft })}
-                    </Badge>
+                    {row.daysLeft > 0 ? (
+                      <span className="text-secondary">
+                        {t("bin.days", { count: BIN_DAYS - row.daysLeft })}
+                      </span>
+                    ) : (
+                      <Badge tone="warning">{t("bin.readyToGo")}</Badge>
+                    )}
                   </td>
-                  <td className="px-4 py-2.5 text-end">
-                    <form action={row.restore}>
-                      <Button type="submit" variant="secondary" size="small">
-                        {t("bin.restore")}
-                      </Button>
-                    </form>
+                  <td className="px-4 py-2.5">
+                    <div className="flex flex-col items-end gap-2">
+                      <form action={row.restore}>
+                        <Button type="submit" variant="secondary" size="small">
+                          {t("bin.restore")}
+                        </Button>
+                      </form>
+                      {mayPurge ? (
+                        <PurgeRow
+                          label={purgeLabel(row)}
+                          what={t(`bin.purge.what.${row.kind}`)}
+                          action={purgeAction.bind(null, locale, row.kind, row.id, purgeLabel(row))}
+                          disabledReason={
+                            blocked[index] ? t(`bin.purge.error.${blocked[index]}`) : undefined
+                          }
+                        />
+                      ) : null}
+                    </div>
                   </td>
                 </tr>
               ))}
@@ -157,7 +235,7 @@ export default async function BinPage({ params }: { params: Promise<{ locale: st
         )}
 
         <p className="mt-4 max-w-[720px] text-micro leading-relaxed text-muted">
-          {t("bin.afterThirtyDays")}
+          {mayPurge ? t("bin.purge.howItWorks") : t("bin.afterThirtyDays")}
         </p>
       </div>
     </main>

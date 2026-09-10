@@ -30,7 +30,9 @@
     "scan": "Scan station",
     "capture": "Quick capture",
     "menu": "Menu",
-    "approvals": "Approvals"
+    "approvals": "Approvals",
+    "items": "Items",
+    "bin": "Bin"
   },
   "auth": {
     "signIn": "Sign in",
@@ -274,7 +276,35 @@
     "notAllowed": "Only the Gérant may put records in the bin.",
     "cannotDiscardIssued": "This company has issued documents, so it cannot go in the bin. Archive it instead — it leaves the lists and every document still resolves.",
     "personOnSite": "{count, plural, =1 {Still on the crew of one site.} other {Still on the crew of # sites.}} Take them off the site first, then remove the name.",
-    "blockedByCrew": "That person has not left a site crew, so the name stays. Take them off the crew on the site page, then remove the name here."
+    "blockedByCrew": "That person has not left a site crew, so the name stays. Take them off the crew on the site page, then remove the name here.",
+    "inTheBin": "In the bin",
+    "readyToGo": "Ready to be removed",
+    "purge": {
+      "open": "Delete forever",
+      "cancel": "Keep it",
+      "confirm": "Delete forever",
+      "typeItFirst": "Type the reference above to enable this.",
+      "typeItBack": "Type {label} to confirm",
+      "warning": "This takes {what} out of the database. Nobody can restore it afterwards — not the Gérant, not from a backup taken later. The audit entry stays.",
+      "done": "Removed for good. The audit entry says what it was.",
+      "howItWorks": "Restore puts a record back where it came from. Delete forever takes it out of the database and nothing brings it back — one row at a time, the Gérant only, and never a record that issued paper. Nothing is removed automatically: a row sits here until somebody decides.",
+      "stillReferenced": "Something still points at this record — the {table} table. Remove or detach that first. Nothing has been deleted.",
+      "what": {
+        "company": "this company",
+        "deal": "this enquiry and its drafts",
+        "document": "this draft",
+        "person": "this person",
+        "note": "this note"
+      },
+      "error": {
+        "notAllowedToPurge": "Deleting for good is the Gérant's. Restore is available to anybody who may delete.",
+        "confirmDidNotMatch": "That did not match the reference on the row, so nothing was deleted.",
+        "notInBin": "This record is not in the bin.",
+        "hasIssuedDocuments": "This record has issued documents. Paper that has left the building is never deleted — a correction is an avoir.",
+        "personIsOnSite": "This person has not left a crew. Take them off the site first.",
+        "stillReferenced": "Something still points at this record. Nothing has been deleted."
+      }
+    }
   },
   "companies": {
     "code": "Code",
@@ -697,6 +727,7 @@
       "needsReview": "Classify"
     },
     "nothingToCreate": "Say what this is first.",
+    "readIt": "Read it",
     "unreadOnly": "Unread only",
     "from": "From",
     "subject": "Subject",
@@ -2220,7 +2251,9 @@
       "action": "Put in the bin",
       "restore": "Take it back out of the bin",
       "notAllowed": "Only the Gérant may put records in the bin.",
-      "hasIssued": "This deal has an issued document. An issued document is never deleted — correct it with an avoir instead."
+      "hasIssued": "This deal has an issued document. An issued document is never deleted — correct it with an avoir instead.",
+      "takesWithIt": "Takes {lines} lines, {drafts} unissued drafts and {requests} supplier requests with it. Restoring from the bin brings all of it back.",
+      "andTheTender": "The tender folder goes too."
     },
     "error": {
       "noSuchDeal": "That deal no longer exists.",
@@ -2237,7 +2270,8 @@
       "cautionRecorded": "A caution de soumission has been requested or received. The bank’s dates are written down nowhere else.",
       "bpuImported": "A bordereau has been imported. Its lines stay on the deal; the record of which file forty-two prices were read from would not.",
       "folderStarted": "Somebody has worked this folder — a piece carries a file, or was added by hand. That reading of the cahier des charges has no other home.",
-      "notATender": "There is no tender on this deal."
+      "notATender": "There is no tender on this deal.",
+      "hasIssuedDocumentsNamed": "This enquiry cannot go in the bin: {documents} has been issued and a client holds a copy. An issued document is corrected with an avoir, never removed."
     }
   },
   "facts": {
@@ -4029,7 +4063,8 @@
       "sweep": "Cleared in one act",
       "credit": "Cancelled by avoir",
       "unmake": "No longer a tender",
-      "run": "Run started"
+      "run": "Run started",
+      "purge": "Deleted for good"
     }
   },
   "complianceNow": {
@@ -4368,8 +4403,12 @@
       "reference": "Reference",
       "designation": "Designation",
       "qty": "Qty",
-      "unit": "Unit"
-    }
+      "unit": "Unit",
+      "technical": "Technical file"
+    },
+    "technicalFile": "Datasheets",
+    "notMatched": "Not matched",
+    "notMatchedHelp": "This line has not been matched to an item in the catalogue, so there is nothing to attach a datasheet to yet. Match it first and this becomes a link."
   },
   "itemTechnical": {
     "noDatasheet": "No datasheet",
@@ -4402,7 +4441,8 @@
       "where": "Where it came from, in words",
       "wherePlaceholder": "ENAGEO, by email of 12/06 — or Ets Chergui, Adrar",
       "why": "What the piece IS and where it came from are asked, never guessed from the filename: \"this PDF is the manufacturer's certificate\" is a claim, and a claim needs somebody behind it. 10 MB at most.",
-      "add": "Attach the piece"
+      "add": "Attach the piece",
+      "filedUnder": "Filed under {ref} — this is a file gathered for that enquiry, and it stays findable from the item as well."
     },
     "error": {
       "notAllowed": "Your role may not attach a piece.",
@@ -5678,5 +5718,68 @@
     "label": "{name}, shown here",
     "openInNewTab": "Open in a new tab",
     "cannotEmbed": "This browser will not show a PDF inside a page."
+  },
+  "items": {
+    "title": "Items",
+    "state": "{n} in the catalogue · {missing} without a datasheet",
+    "stateSearch": "{n} matching “{q}”",
+    "noActionReason": "An item is created by matching a line on a deal to the catalogue, not from here — so the name on the offer is a name a client used.",
+    "searchPlaceholder": "Code, designation, brand or model",
+    "empty": "Nothing in the catalogue yet. An item appears here the first time a deal line is matched to one.",
+    "emptySearch": "Nothing matches “{q}”.",
+    "column": {
+      "code": "Code",
+      "designation": "Designation",
+      "brand": "Brand and model",
+      "technical": "Technical file",
+      "usedOn": "Enquiries"
+    },
+    "held": "{n} held",
+    "noDatasheet": "No datasheet",
+    "othersHeld": "{n} other",
+    "generic": "Nothing to hold",
+    "genericHelp": "Câble, boulonnerie, main-d’œuvre. No manufacturer publishes a datasheet for these, so this is complete rather than missing.",
+    "missingHelp": "{n} items have no datasheet and are not generic. A consultation asking for a fiche technique is where that is discovered, usually on the day it is due."
+  },
+  "rowDelete": {
+    "open": "Remove {what}",
+    "title": "Remove {what}?",
+    "working": "Reading what goes with it…",
+    "reason": "Why (optional — it is kept on the audit entry)",
+    "restorable": "It goes to the bin and can be restored for 30 days.",
+    "cancel": "Cancel",
+    "confirm": "Move to the bin",
+    "close": "Close",
+    "what": {
+      "deal": "this enquiry",
+      "document": "this draft"
+    },
+    "takes": {
+      "document": "An unissued draft. Nothing outside the company has ever seen it, and nothing points at it."
+    }
+  },
+  "dealEdit": {
+    "title": "Correct this enquiry",
+    "state": "{ref} — every change is recorded with your name and the time.",
+    "back": "Back to the enquiry",
+    "cancel": "Cancel",
+    "save": "Save the correction",
+    "clientHint": "Changing the client moves the enquiry to them. Documents already issued keep the client they were issued to.",
+    "referenceHint": "Their number for this consultation, as they wrote it.",
+    "deadlineHint": "Read off the document by the extractor and agreed by a person. This is where it gets fixed.",
+    "contact": "Contact at the client",
+    "noContact": "Nobody named yet",
+    "owner": "Owner",
+    "noOwner": "Nobody",
+    "ownerHint": "Who is answerable for it. This is the Owner column on the deals list.",
+    "recorded": "Only the fields you actually change are written to the history, with what they were before and what they became. Saving without changing anything records nothing.",
+    "corrected": "{n, plural, =0 {Nothing changed.} one {One field corrected. The change is in the timeline below.} other {# fields corrected. The changes are in the timeline below.}}",
+    "editLink": "Correct it",
+    "error": {
+      "notAllowed": "Your role is read only.",
+      "clientAndSubject": "An enquiry needs a client and a subject.",
+      "noSuchDeal": "That enquiry no longer exists.",
+      "inTheBin": "That enquiry is in the bin. Restore it first — that is a decision somebody makes deliberately."
+    }
   }
 }

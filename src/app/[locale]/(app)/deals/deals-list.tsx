@@ -4,6 +4,7 @@ import { useTranslations } from "next-intl";
 import type { BulkAction, ColumnDef, FilterField, SavedView } from "@/components/data";
 import { DataTable, downloadCsv, toCsv } from "@/components/data";
 import { Badge } from "@/components/ui/badge";
+import { RowDelete, type RowDeleteDescription } from "@/components/ui/row-delete";
 
 export type DealRow = {
   id: string;
@@ -172,7 +173,24 @@ const bulkActions = (t: (key: string) => string): BulkAction<DealRow>[] => [
   },
 ];
 
-export function DealsList({ rows, total }: { rows: DealRow[]; total: number }) {
+export function DealsList({
+  rows,
+  total,
+  describeDiscard,
+  discard,
+}: {
+  rows: DealRow[];
+  total: number;
+  /*
+    V2 — the two halves of removing one row, handed in as server actions so
+    this stays a client component and the list does not learn about the domain.
+
+    `describeDiscard` is asked when the panel OPENS, not once per row: drawing
+    a hundred trash icons must not cost a hundred count queries.
+  */
+  describeDiscard: (id: string) => Promise<RowDeleteDescription>;
+  discard: (id: string, form: FormData) => void;
+}) {
   const t = useTranslations();
 
   const views: SavedView[] = SEED_VIEWS.map(({ nameKey, questionKey, ...rest }) => ({
@@ -190,6 +208,20 @@ export function DealsList({ rows, total }: { rows: DealRow[]; total: number }) {
       savedViews={views}
       bulkActions={bulkActions((key) => t(key))}
       getRowHref={(row) => `/deals/${row.id}`}
+      /*
+        The bulk bar still refuses deletion and always will — see the note above
+        `bulkActions`. This is the other thing, and the thing the note was
+        asking for: one record, from the row somebody is looking at, with a
+        confirmation that names what goes with it.
+      */
+      rowAction={(row) => (
+        <RowDelete
+          label={row.reference}
+          what={t("rowDelete.what.deal")}
+          describe={() => describeDiscard(row.id)}
+          action={discard.bind(null, row.id)}
+        />
+      )}
       emptyState={
         <>
           <h2 className="text-lead font-semibold text-ink">{t("empty.noDealsTitle")}</h2>

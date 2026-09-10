@@ -1,7 +1,7 @@
-import { desc, eq, sql } from "drizzle-orm";
+import { and, desc, eq, sql } from "drizzle-orm";
 import { db } from "@/db";
 import { auditEntry } from "@/db/schema/control";
-import { deal } from "@/db/schema/deal";
+import { deal, dealLine } from "@/db/schema/deal";
 import { item, itemCoverage, itemMedia } from "@/db/schema/item";
 import { party } from "@/db/schema/party";
 import { fileId } from "@/domain/files";
@@ -198,4 +198,92 @@ export async function addItemMedia(opts: {
   });
 
   return created?.id as string;
+}
+
+/* ────────────────────────── the way in (V0) ─────────────────────────────
+ *
+ * `/items/[id]/technical` was a complete, working upload form that nothing in
+ * the application linked to. No nav row, no list, no link from a deal line —
+ * so the owner tested the ERP, found no way to attach a datasheet to an item,
+ * and concluded the capability did not exist. It did; it had no door.
+ *
+ * This is the door: the catalogue itself, with the one fact that decides
+ * whether the technical file needs attention — whether we hold a datasheet —
+ * computed rather than stored, like everything else here.
+ */
+
+export type CatalogueRow = {
+  id: string;
+  code: string;
+  designation: string;
+  brand: string | null;
+  model: string | null;
+  unit: string | null;
+  kind: string;
+  isGeneric: boolean;
+  mediaCount: number;
+  hasDatasheet: boolean;
+  /** How many enquiries have asked for this item. */
+  usedOnCount: number;
+};
+
+/**
+ * The catalogue, with what we hold on each item.
+ *
+ * A generic item — câble HP, boulonnerie, main-d'œuvre — is not missing a
+ * datasheet, because no manufacturer publishes one. `isGeneric` is carried
+ * through so the screen can say "complete" rather than nag for ever.
+ */
+export async function catalogue(opts?: {
+  search?: string;
+  limit?: number;
+}): Promise<CatalogueRow[]> {
+  const needle = opts?.search?.trim();
+
+  const rows = await db
+    .select({
+      id: item.id,
+      code: item.code,
+      designation: item.designation,
+      brand: item.brand,
+      model: item.model,
+      unit: item.unit,
+      kind: item.kind,
+      isGeneric: item.isGeneric,
+      mediaCount: sql<number>`(select count(*)::int from ${itemMedia} where ${itemMedia.itemId} = ${item.id})`,
+      datasheets: sql<number>`(select count(*)::int from ${itemMedia} where ${itemMedia.itemId} = ${item.id} and ${itemMedia.mediaKind} = 'datasheet')`,
+      usedOnCount: sql<number>`(select count(*)::int from ${itemCoverage} where ${itemCoverage.itemId} = ${item.id})`,
+    })
+    .from(item)
+    .where(
+      needle
+        ? sql`(${item.code} ilike ${`%${needle}%`} or ${item.designation} ilike ${`%${needle}%`} or coalesce(${item.brand}, '') ilike ${`%${needle}%`} or coalesce(${item.model}, '') ilike ${`%${needle}%`})`
+        : undefined,
+    )
+    .orderBy(item.code)
+    .limit(opts?.limit ?? 200);
+
+  return rows.map(({ datasheets, ...r }) => ({ ...r, hasDatasheet: datasheets > 0 }));
+}
+
+/**
+ * The enquiry an upload should be filed under, or null.
+ *
+ * The link from a deal's item table carries `?deal=`, and a query string is
+ * not evidence. This is the check: the deal must exist AND one of its lines
+ * must actually be matched to this item. `item_coverage` is the wrong test —
+ * a line matched to the catalogue does not create a coverage row, so asking
+ * that question would refuse the ordinary case.
+ */
+export async function dealBehindMedia(
+  itemId: string,
+  dealId: string,
+): Promise<{ dealId: string; ref: string; subject: string } | null> {
+  const [found] = await db
+    .select({ dealId: deal.id, ref: deal.ref, subject: deal.subject })
+    .from(deal)
+    .innerJoin(dealLine, eq(dealLine.dealId, deal.id))
+    .where(and(eq(deal.id, dealId), eq(dealLine.itemId, itemId)))
+    .limit(1);
+  return found ?? null;
 }

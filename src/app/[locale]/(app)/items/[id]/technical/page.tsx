@@ -6,7 +6,12 @@ import { canWrite } from "@/auth/can";
 import { getSession } from "@/auth/session";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { itemTechnicalFile, MEDIA_KINDS, PROVENANCES } from "@/domain/item-technical";
+import {
+  dealBehindMedia,
+  itemTechnicalFile,
+  MEDIA_KINDS,
+  PROVENANCES,
+} from "@/domain/item-technical";
 import { Link } from "@/i18n/navigation";
 import { addMediaAction } from "./actions";
 
@@ -31,10 +36,10 @@ export default async function ItemTechnicalPage({
   searchParams,
 }: {
   params: Promise<{ locale: string; id: string }>;
-  searchParams: Promise<{ recorded?: string; error?: string }>;
+  searchParams: Promise<{ recorded?: string; error?: string; deal?: string }>;
 }) {
   const { locale, id } = await params;
-  const { recorded, error } = await searchParams;
+  const { recorded, error, deal } = await searchParams;
   setRequestLocale(locale);
   const t = await getTranslations();
 
@@ -44,9 +49,33 @@ export default async function ItemTechnicalPage({
   const file = await itemTechnicalFile(id);
   if (!file) notFound();
 
+  /*
+    V0 — arriving from a deal line.
+
+    `item_media.deal_id` exists so a picture the client sent can belong to the
+    enquiry it came with, and nothing was writing it. The link from the deal's
+    item table carries `?deal=`, and a query string is not evidence: the deal
+    must exist and one of its lines must actually be matched to this item.
+    Anything else is ignored, and the upload stays item-wide.
+  */
+  const filedUnder = deal ? await dealBehindMedia(id, deal) : null;
+
   return (
     <main className="min-h-0 flex-1 overflow-auto">
       <div className="border-b border-line-subtle bg-surface px-4 md:px-7 py-5">
+        <nav className="mb-1 flex flex-wrap items-center gap-x-2 text-micro text-muted">
+          <Link className="hover:underline" href="/items">
+            {t("items.title")}
+          </Link>
+          {filedUnder ? (
+            <>
+              <span aria-hidden>/</span>
+              <Link className="hover:underline" href={`/deals/${filedUnder.dealId}/items`}>
+                {filedUnder.ref}
+              </Link>
+            </>
+          ) : null}
+        </nav>
         <div className="flex items-baseline gap-3">
           <span className="font-mono text-tiny text-muted">{file.item.code}</span>
           <h1 className="text-title font-semibold text-ink">{file.item.designation}</h1>
@@ -168,6 +197,20 @@ export default async function ItemTechnicalPage({
               encType="multipart/form-data"
               className="grid grid-cols-1 sm:grid-cols-2 gap-3 border-t border-line-subtle px-5 py-4"
             >
+              {/*
+                The enquiry this was gathered for, carried into the row. Empty
+                when somebody opened the item directly, which is the normal
+                case and stays item-wide.
+              */}
+              {filedUnder ? (
+                <>
+                  <input type="hidden" name="dealId" value={filedUnder.dealId} />
+                  <p className="sm:col-span-2 rounded-[var(--radius-control)] bg-accent-bg px-3 py-2 text-micro leading-relaxed text-accent-ink">
+                    {t("itemTechnical.f.filedUnder", { ref: filedUnder.ref })}
+                  </p>
+                </>
+              ) : null}
+
               <label className="sm:col-span-2">
                 <span className="text-micro text-secondary">{t("itemTechnical.f.file")}</span>
                 <input

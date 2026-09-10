@@ -1,11 +1,13 @@
 import { and, eq, inArray, isNotNull, isNull, sql } from "drizzle-orm";
 import { db } from "@/db";
 import { auditEntry } from "@/db/schema/control";
-import { deal } from "@/db/schema/deal";
+import { deal, dealLine } from "@/db/schema/deal";
 import { document } from "@/db/schema/document";
 import { note } from "@/db/schema/note";
 import { party, person } from "@/db/schema/party";
 import { projectCrew } from "@/db/schema/project";
+import { sourcingRequest } from "@/db/schema/sourcing";
+import { tender } from "@/db/schema/tender";
 
 /**
  * Screen 83 — three words that are not the same.
@@ -144,36 +146,168 @@ async function issuedDocumentCountForDeal(dealId: string): Promise<number> {
   return rows[0]?.n ?? 0;
 }
 
+/**
+ * V1 — WHAT GOES WITH IT.
+ *
+ * `discardDeal` used to write ONE row: `deleted_at` on the deal. The foreign
+ * keys look like they would take care of the rest and do not — `deal_line` is
+ * `ON DELETE cascade` and `price_quote.deal_id` is `ON DELETE set null`, and
+ * both fire on a HARD delete, which this system never does.
+ *
+ * So the state before this was: an enquiry out of every list, with its unissued
+ * proforma still sitting on `/offers` pointing at a deal nobody could open —
+ * and that draft was not in the bin either, because the bin lists a document
+ * only when the DOCUMENT's own `deleted_at` is set.
+ *
+ * This says, before the confirmation is shown, exactly what the discard will
+ * take. The same function answers the refusal: if issued documents exist, it
+ * names them, because "this enquiry has 1 issued document" is a fact somebody
+ * then has to go and find, and naming FA-2026-0007 is not.
+ */
+export type DealDiscardEffect = {
+  /** Drafts that will go to the bin with it, and come back with it. */
+  drafts: { id: string; kind: string }[];
+  /** Rows only reachable through the deal — counted so the sentence is true. */
+  lines: number;
+  sourcingRequests: number;
+  hasTender: boolean;
+  /**
+   * Issued documents. Non-empty means the discard REFUSES (LAW 5): the paper
+   * has left the building and a bin is not a correction — an avoir is.
+   */
+  issued: { id: string; kind: string; number: string | null }[];
+};
+
+export async function dealDiscardEffect(dealId: string): Promise<DealDiscardEffect> {
+  const [documents, lines, requests, tenders] = await Promise.all([
+    db
+      .select({
+        id: document.id,
+        kind: document.kind,
+        number: document.number,
+        lockedAt: document.lockedAt,
+      })
+      .from(document)
+      .where(and(eq(document.dealId, dealId), liveDocument)),
+    db.select({ n: sql<number>`count(*)::int` }).from(dealLine).where(eq(dealLine.dealId, dealId)),
+    db
+      .select({ n: sql<number>`count(*)::int` })
+      .from(sourcingRequest)
+      .where(eq(sourcingRequest.dealId, dealId)),
+    db.select({ n: sql<number>`count(*)::int` }).from(tender).where(eq(tender.dealId, dealId)),
+  ]);
+
+  // The same pair `discardDocument` refuses on, and for the same reason: a
+  // client's bon de commande carries THEIR reference and never takes one of
+  // ours, so `number` alone would let a locked order through.
+  const issued = documents.filter((d) => d.number !== null || d.lockedAt !== null);
+  const drafts = documents.filter((d) => d.number === null && d.lockedAt === null);
+
+  return {
+    drafts: drafts.map((d) => ({ id: d.id, kind: d.kind })),
+    lines: lines[0]?.n ?? 0,
+    sourcingRequests: requests[0]?.n ?? 0,
+    hasTender: (tenders[0]?.n ?? 0) > 0,
+    issued: issued.map((d) => ({ id: d.id, kind: d.kind, number: d.number })),
+  };
+}
+
+/**
+ * Which issued document refused, so the banner can name it.
+ *
+ * `NotDiscardable` carries a count because that is all a company's refusal can
+ * honestly offer — a company may have hundreds. An enquiry has a handful, and
+ * "FA-2026-0007 has been issued" is a sentence somebody can act on where
+ * "1 issued document" is a sentence somebody has to go and investigate.
+ */
+export class DealNotDiscardable extends NotDiscardable {
+  constructor(readonly documents: { kind: string; number: string | null }[]) {
+    super(documents.length);
+  }
+}
+
 export async function discardDeal(opts: {
   id: string;
   reason: string;
   actorId: string;
   fromWhere?: string;
 }) {
-  const issued = await issuedDocumentCountForDeal(opts.id);
-  if (issued > 0) throw new NotDiscardable(issued);
+  const effect = await dealDiscardEffect(opts.id);
+  if (effect.issued.length > 0) {
+    throw new DealNotDiscardable(effect.issued.map(({ kind, number }) => ({ kind, number })));
+  }
 
   const [before] = await db.select().from(deal).where(eq(deal.id, opts.id)).limit(1);
   if (!before) throw new Error("No such enquiry");
   if (before.deletedAt) return;
 
-  await db
-    .update(deal)
-    .set({
-      deletedAt: new Date(),
-      deletedBy: opts.actorId,
-      deleteReason: opts.reason.trim() || null,
-    })
-    .where(eq(deal.id, opts.id));
+  const reason = opts.reason.trim() || null;
 
-  await db.insert(auditEntry).values({
-    actorId: opts.actorId,
-    entity: "deal",
-    entityId: opts.id,
-    action: "discard",
-    before: { ref: before.ref, subject: before.subject },
-    reason: opts.reason.trim() || null,
-    sourceScreen: opts.fromWhere ?? "06",
+  /*
+   * ONE instant for every row this act touches, and that is not cosmetic.
+   *
+   * Restore has to put back exactly what THIS discard took, and no more: a
+   * draft somebody binned on Tuesday for its own reasons must not come back
+   * because the enquiry was restored on Friday. Sharing the timestamp makes
+   * "binned by this act" a fact the rows carry themselves, so restore needs no
+   * new column and no marker in a reason string to find them again.
+   */
+  const at = new Date();
+
+  await db.transaction(async (tx) => {
+    await tx
+      .update(deal)
+      .set({ deletedAt: at, deletedBy: opts.actorId, deleteReason: reason })
+      .where(eq(deal.id, opts.id));
+
+    if (effect.drafts.length > 0) {
+      await tx
+        .update(document)
+        .set({ deletedAt: at, deletedBy: opts.actorId, deleteReason: reason })
+        .where(
+          and(
+            eq(document.dealId, opts.id),
+            isNull(document.number),
+            isNull(document.lockedAt),
+            isNull(document.deletedAt),
+          ),
+        );
+    }
+
+    await tx.insert(auditEntry).values({
+      actorId: opts.actorId,
+      entity: "deal",
+      entityId: opts.id,
+      action: "discard",
+      before: { ref: before.ref, subject: before.subject },
+      // What went with it. The audit entry outlives the rows, so in two years
+      // this line is the only place that says the enquiry did not go alone.
+      after: {
+        drafts: effect.drafts.length,
+        lines: effect.lines,
+        sourcingRequests: effect.sourcingRequests,
+        tender: effect.hasTender,
+      },
+      reason,
+      sourceScreen: opts.fromWhere ?? "06",
+    });
+
+    // One entry per draft, so the bin's restore and the document's own history
+    // both read the same way whether it was binned alone or with its enquiry.
+    if (effect.drafts.length > 0) {
+      await tx.insert(auditEntry).values(
+        effect.drafts.map((draft) => ({
+          actorId: opts.actorId,
+          entity: "document",
+          entityId: draft.id,
+          action: "discard",
+          before: { kind: draft.kind, number: null },
+          after: { withDeal: before.ref },
+          reason,
+          sourceScreen: opts.fromWhere ?? "06",
+        })),
+      );
+    }
   });
 }
 
@@ -181,18 +315,52 @@ export async function restoreDeal(opts: { id: string; actorId: string }) {
   const [before] = await db.select().from(deal).where(eq(deal.id, opts.id)).limit(1);
   if (!before?.deletedAt) return;
 
-  await db
-    .update(deal)
-    .set({ deletedAt: null, deletedBy: null, deleteReason: null })
-    .where(eq(deal.id, opts.id));
+  const at = before.deletedAt;
 
-  await db.insert(auditEntry).values({
-    actorId: opts.actorId,
-    entity: "deal",
-    entityId: opts.id,
-    action: "restore",
-    after: { ref: before.ref, subject: before.subject },
-    sourceScreen: "83",
+  /*
+   * Exactly what went down with it, and nothing else — see the note in
+   * `discardDeal`. A draft binned separately has a different `deleted_at` and
+   * stays in the bin, where its own row can restore it.
+   */
+  const withIt = await db
+    .select({ id: document.id, kind: document.kind })
+    .from(document)
+    .where(and(eq(document.dealId, opts.id), eq(document.deletedAt, at)));
+
+  await db.transaction(async (tx) => {
+    await tx
+      .update(deal)
+      .set({ deletedAt: null, deletedBy: null, deleteReason: null })
+      .where(eq(deal.id, opts.id));
+
+    if (withIt.length > 0) {
+      await tx
+        .update(document)
+        .set({ deletedAt: null, deletedBy: null, deleteReason: null })
+        .where(and(eq(document.dealId, opts.id), eq(document.deletedAt, at)));
+    }
+
+    await tx.insert(auditEntry).values({
+      actorId: opts.actorId,
+      entity: "deal",
+      entityId: opts.id,
+      action: "restore",
+      after: { ref: before.ref, subject: before.subject, drafts: withIt.length },
+      sourceScreen: "83",
+    });
+
+    if (withIt.length > 0) {
+      await tx.insert(auditEntry).values(
+        withIt.map((draft) => ({
+          actorId: opts.actorId,
+          entity: "document",
+          entityId: draft.id,
+          action: "restore",
+          after: { kind: draft.kind, number: null, withDeal: before.ref },
+          sourceScreen: "83",
+        })),
+      );
+    }
   });
 }
 
@@ -706,3 +874,216 @@ export const liveParty = and(
  * "Known gaps", for the sites left uncovered and why.
  */
 export const liveDocument = isNull(document.deletedAt);
+
+/* ─────────────────────────── V3 · delete forever ───────────────────────────
+ *
+ * `BIN_DAYS` counted down on screen and nothing purged at zero. Line 543 of
+ * this file used to say so out loud, `grep purge` returned nothing, and screen
+ * 83 drew "gone in 4 days" beside rows that would still be there in a year.
+ *
+ * That is worse than not having a bin. A countdown that does not happen teaches
+ * a person that the numbers in this system are decoration, and once that is
+ * learned it applies to the ageing ladder and the folder deadline too.
+ *
+ * So: a purge exists, and it is deliberately the narrowest thing that could
+ * work.
+ *
+ *   ONE ROW AT A TIME.  Not "empty the bin". There is no button in this ERP
+ *                       that destroys a set of records, and there should not be.
+ *   THE GÉRANT ONLY.    `records.purge`, its own permission, held by nobody
+ *                       else — including whoever put the row in the bin.
+ *   TYPED CONFIRMATION. The screen asks for the record's own code back.
+ *   NEVER ISSUED PAPER. Checked here, not left to a foreign key.
+ *   THE AUDIT SURVIVES. The entry is written in the same transaction as the
+ *                       delete, and outlives the row by design — in two years
+ *                       it is the only thing that says the record existed.
+ *
+ * And the honest part: STRUCTURE IS NOT GUESSED. Thirty-eight foreign keys
+ * point at these five tables and twenty of them are ON DELETE NO ACTION. Rather
+ * than hand-maintaining a list of them here — which would be wrong the first
+ * time somebody adds a table — the delete is attempted inside a transaction and
+ * Postgres's own refusal is caught and reported, naming the table that still
+ * points at the row. Nothing is ever orphaned to make a delete succeed.
+ */
+
+export type PurgeKind = BinKind;
+
+export class PurgeRefused extends Error {
+  constructor(
+    readonly reason: "notInBin" | "hasIssuedDocuments" | "personIsOnSite" | "stillReferenced",
+    /** The table still pointing at it, for `stillReferenced`. */
+    readonly by?: string,
+  ) {
+    super(reason);
+    this.name = "PurgeRefused";
+  }
+}
+
+/**
+ * Whether this row could be destroyed, asked before the button is drawn.
+ *
+ * The same rule the purge enforces, so the screen and the action cannot
+ * disagree — the pattern screen 22's greyed buttons already follow. What it
+ * CANNOT know in advance is the foreign-key answer: that is the database's to
+ * give, and asking it would mean running the delete. So a row may look
+ * purgeable here and still be refused, with the table named.
+ */
+export async function purgeBlockedBy(
+  kind: PurgeKind,
+  id: string,
+): Promise<PurgeRefused["reason"] | null> {
+  if (kind === "company") {
+    const [row] = await db
+      .select({ deletedAt: party.deletedAt })
+      .from(party)
+      .where(eq(party.id, id))
+      .limit(1);
+    if (!row?.deletedAt) return "notInBin";
+    return (await issuedDocumentCount(id)) > 0 ? "hasIssuedDocuments" : null;
+  }
+
+  if (kind === "deal") {
+    const [row] = await db
+      .select({ deletedAt: deal.deletedAt })
+      .from(deal)
+      .where(eq(deal.id, id))
+      .limit(1);
+    if (!row?.deletedAt) return "notInBin";
+    return (await issuedDocumentCountForDeal(id)) > 0 ? "hasIssuedDocuments" : null;
+  }
+
+  if (kind === "document") {
+    const [row] = await db
+      .select({
+        number: document.number,
+        lockedAt: document.lockedAt,
+        deletedAt: document.deletedAt,
+      })
+      .from(document)
+      .where(eq(document.id, id))
+      .limit(1);
+    if (!row?.deletedAt) return "notInBin";
+    // Belt and braces: a numbered row can never reach the bin, and if one ever
+    // does the answer is still no.
+    return row.number !== null || row.lockedAt !== null ? "hasIssuedDocuments" : null;
+  }
+
+  if (kind === "person") {
+    const [row] = await db
+      .select({ deletedAt: person.deletedAt })
+      .from(person)
+      .where(eq(person.id, id))
+      .limit(1);
+    if (!row?.deletedAt) return "notInBin";
+    const [crew] = await db
+      .select({ n: sql<number>`count(*)::int` })
+      .from(projectCrew)
+      .where(and(eq(projectCrew.personId, id), isNull(projectCrew.leftOn)));
+    return (crew?.n ?? 0) > 0 ? "personIsOnSite" : null;
+  }
+
+  const [row] = await db
+    .select({ deletedAt: note.deletedAt })
+    .from(note)
+    .where(eq(note.id, id))
+    .limit(1);
+  return row?.deletedAt ? null : "notInBin";
+}
+
+/** Postgres's own answer, turned into the name of the table that refused. */
+function referencedBy(error: unknown): string | null {
+  const e = error as { code?: string; table_name?: string; table?: string; detail?: string };
+  if (e?.code !== "23503") return null;
+  // `detail` reads: is still referenced from table "document".
+  const named = e.detail?.match(/table "([^"]+)"/)?.[1];
+  return named ?? e.table_name ?? e.table ?? "unknown";
+}
+
+/**
+ * Destroy one row in the bin. There is no undo after this and the screen says so.
+ *
+ * A DEAL takes its own still-binned drafts with it, in the same transaction and
+ * with an audit entry each: `document.deal_id` is ON DELETE NO ACTION, so the
+ * alternative is refusing every deal whose drafts went into the bin alongside
+ * it — which is every deal V1 ever binned. A draft somebody restored on its own
+ * is live, and then the delete is refused and says which table held it.
+ */
+export async function purgeFromBin(opts: {
+  kind: PurgeKind;
+  id: string;
+  actorId: string;
+}): Promise<void> {
+  const blocked = await purgeBlockedBy(opts.kind, opts.id);
+  if (blocked) throw new PurgeRefused(blocked);
+
+  try {
+    await db.transaction(async (tx) => {
+      // The entry first, and in the same transaction: if the delete fails the
+      // entry rolls back with it, and if it succeeds the entry is already there.
+      // An audit trail written after the fact is one that can be missing.
+      const write = (entity: string, entityId: string, before: Record<string, unknown>) =>
+        tx.insert(auditEntry).values({
+          actorId: opts.actorId,
+          actorKind: "user",
+          entity,
+          entityId,
+          action: "purge",
+          before,
+          sourceScreen: "83",
+        });
+
+      if (opts.kind === "company") {
+        const [row] = await tx.select().from(party).where(eq(party.id, opts.id)).limit(1);
+        await write("party", opts.id, { code: row?.code, legalName: row?.legalName });
+        await tx.delete(party).where(eq(party.id, opts.id));
+        return;
+      }
+
+      if (opts.kind === "deal") {
+        const [row] = await tx.select().from(deal).where(eq(deal.id, opts.id)).limit(1);
+        const drafts = await tx
+          .select({ id: document.id, kind: document.kind })
+          .from(document)
+          .where(and(eq(document.dealId, opts.id), isNotNull(document.deletedAt)));
+
+        for (const draft of drafts) {
+          await write("document", draft.id, { kind: draft.kind, number: null, withDeal: row?.ref });
+          await tx.delete(document).where(eq(document.id, draft.id));
+        }
+
+        await write("deal", opts.id, {
+          ref: row?.ref,
+          subject: row?.subject,
+          drafts: drafts.length,
+        });
+        await tx.delete(deal).where(eq(deal.id, opts.id));
+        return;
+      }
+
+      if (opts.kind === "document") {
+        const [row] = await tx.select().from(document).where(eq(document.id, opts.id)).limit(1);
+        await write("document", opts.id, { kind: row?.kind, number: null });
+        await tx.delete(document).where(eq(document.id, opts.id));
+        return;
+      }
+
+      if (opts.kind === "person") {
+        const [row] = await tx.select().from(person).where(eq(person.id, opts.id)).limit(1);
+        await write("person", opts.id, { fullName: row?.fullName, trade: row?.trade });
+        await tx.delete(person).where(eq(person.id, opts.id));
+        return;
+      }
+
+      const [row] = await tx.select().from(note).where(eq(note.id, opts.id)).limit(1);
+      await write("note", opts.id, {
+        about: row ? `${row.entity}:${row.entityId}` : null,
+        said: row?.body.slice(0, 200),
+      });
+      await tx.delete(note).where(eq(note.id, opts.id));
+    });
+  } catch (error) {
+    const table = referencedBy(error);
+    if (table) throw new PurgeRefused("stillReferenced", table);
+    throw error;
+  }
+}

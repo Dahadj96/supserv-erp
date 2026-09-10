@@ -571,3 +571,133 @@ export async function getDeal(id: string) {
     deadline: deadlineDisplay(facts, row.deal.deadlineAt, new Date()),
   };
 }
+
+/* ─────────────────────────── V4 · correcting a deal ────────────────────────
+ *
+ * `find src/app -type d -name edit` returned exactly TWO routes in the whole
+ * application: `companies/[id]/edit` and `documents/[id]/edit`. A deal had no
+ * edit path at all — not its subject, not its client, not its deadline, not its
+ * owner. `db.update(deal)` appeared at seven sites and none of them wrote those
+ * fields.
+ *
+ * Which means a deadline read off a PDF by the extractor and confirmed by a
+ * person in a hurry was unfixable for the life of the enquiry, and a deadline is
+ * the field that loses the bid.
+ *
+ * WHAT IS EDITABLE HERE, and what deliberately is not:
+ *
+ *   subject, client, contact, client reference, deadline, submission method,
+ *   currency, owner, the client's instructions   — all things a person typed or
+ *                                                   an extractor guessed
+ *
+ *   ref            allocated once, printed on things, and the one handle
+ *                  anybody uses to talk about the enquiry
+ *   receivedAt     when the email arrived. Not an opinion
+ *   decision       has its own screen, its own reasons and its own audit
+ *   deletedAt      the bin's, not a form's
+ *
+ * AND THE CHANGE HISTORY IS THE POINT, not a side effect. T6 asked for it by
+ * name, and the reason is exactly the deadline case: six weeks later somebody
+ * has to be able to see that the date was read as the 12th, corrected to the
+ * 22nd, and by whom. So the audit entry carries only the fields that ACTUALLY
+ * changed, before and after — an entry listing nine unchanged fields is one
+ * nobody reads twice.
+ */
+
+export const dealEdit = z.object({
+  partyId: z.string().uuid(),
+  contactPersonId: z.string().uuid().nullable().default(null),
+  subject: z.string().trim().min(1),
+  clientReference: z.string().trim().nullable().default(null),
+  deadlineAt: z.date().nullable().default(null),
+  submissionMethod: z.enum(SUBMISSION_METHODS),
+  currency: z.string().trim().min(1).default("DZD"),
+  ownerId: z.string().trim().nullable().default(null),
+  clientInstructions: z.string().trim().nullable().default(null),
+});
+export type DealEdit = z.infer<typeof dealEdit>;
+
+/** The fields this form owns, so the diff cannot drift from the update. */
+const EDITABLE = [
+  "partyId",
+  "contactPersonId",
+  "subject",
+  "clientReference",
+  "deadlineAt",
+  "submissionMethod",
+  "currency",
+  "ownerId",
+  "clientInstructions",
+] as const;
+
+export class DealNotEditable extends Error {
+  constructor(readonly reason: "noSuchDeal" | "inTheBin") {
+    super(reason);
+    this.name = "DealNotEditable";
+  }
+}
+
+/**
+ * Correct an enquiry, and say what changed.
+ *
+ * Returns the fields that actually moved. Nothing is written and no audit entry
+ * is made when a person opens the form and saves it unchanged — an audit trail
+ * full of entries saying nothing happened is one nobody reads when something
+ * did.
+ */
+export async function editDeal(opts: {
+  id: string;
+  input: DealEdit;
+  actorId: string;
+}): Promise<{ changed: string[] }> {
+  const next = dealEdit.parse(opts.input);
+
+  const [before] = await db.select().from(deal).where(eq(deal.id, opts.id)).limit(1);
+  if (!before) throw new DealNotEditable("noSuchDeal");
+  // A binned enquiry has no page and should not have a form either. Restore it
+  // first: that is a decision somebody makes on screen 83, deliberately.
+  if (before.deletedAt) throw new DealNotEditable("inTheBin");
+
+  const same = (a: unknown, b: unknown) =>
+    a instanceof Date || b instanceof Date
+      ? (a as Date | null)?.getTime() === (b as Date | null)?.getTime()
+      : (a ?? null) === (b ?? null);
+
+  const changed = EDITABLE.filter((field) => !same(before[field], next[field]));
+  if (changed.length === 0) return { changed: [] };
+
+  await db.transaction(async (tx) => {
+    await tx
+      .update(deal)
+      .set({
+        partyId: next.partyId,
+        contactPersonId: next.contactPersonId,
+        subject: next.subject,
+        clientReference: next.clientReference,
+        deadlineAt: next.deadlineAt,
+        submissionMethod: next.submissionMethod,
+        currency: next.currency,
+        ownerId: next.ownerId,
+        clientInstructions: next.clientInstructions,
+      })
+      .where(eq(deal.id, opts.id));
+
+    // Only what moved, both sides of it. `deadline_at: 12 Sept → 22 Sept` is
+    // the sentence somebody needs six weeks from now; nine unchanged fields
+    // beside it is how that sentence gets missed.
+    const asText = (v: unknown) => (v instanceof Date ? v.toISOString() : (v ?? null));
+
+    await tx.insert(auditEntry).values({
+      actorId: opts.actorId,
+      actorKind: "user",
+      entity: "deal",
+      entityId: opts.id,
+      action: "edit",
+      before: Object.fromEntries(changed.map((f) => [f, asText(before[f])])),
+      after: Object.fromEntries(changed.map((f) => [f, asText(next[f])])),
+      sourceScreen: "06",
+    });
+  });
+
+  return { changed: [...changed] };
+}

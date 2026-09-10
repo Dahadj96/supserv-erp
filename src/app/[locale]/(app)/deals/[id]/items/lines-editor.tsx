@@ -1,11 +1,12 @@
 "use client";
 
-import { ChevronDown, ChevronUp, FileText, Mail, Plus, X } from "lucide-react";
+import { ChevronDown, ChevronUp, FileText, Mail, Paperclip, Plus, X } from "lucide-react";
 import { useTranslations } from "next-intl";
 import { useState, useTransition } from "react";
 import { INPUT } from "@/app/[locale]/(app)/setup/field";
 import { Button } from "@/components/ui/button";
 import type { LineSource } from "@/domain/deal/sources";
+import { Link } from "@/i18n/navigation";
 import { readPasteAction, readSourceAction } from "./actions";
 import type { Proposal, ProposedRow } from "./proposal";
 
@@ -35,6 +36,13 @@ export type EditorRow = {
   designation: string;
   qty: string;
   unit: string;
+  /**
+   * V0 — `deal_line.item_id`, set when a person matched this line to the
+   * catalogue. Null is normal and always was. It is carried into the editor so
+   * the row can offer the one thing the owner could not find: the place that
+   * holds this item's datasheets.
+   */
+  itemId: string | null;
 };
 
 type Row = EditorRow & { key: number };
@@ -46,6 +54,7 @@ const blank = (key: number): Row => ({
   designation: "",
   qty: "1",
   unit: "",
+  itemId: null,
 });
 
 /** What the last read said. Cleared when another one starts. */
@@ -74,7 +83,7 @@ export function LinesEditor({
   const [notice, setNotice] = useState<Notice | null>(null);
   const [busy, startReading] = useTransition();
 
-  const set = (key: number, field: keyof EditorRow, value: string) =>
+  const set = (key: number, field: "reference" | "designation" | "qty" | "unit", value: string) =>
     setRows((all) => all.map((row) => (row.key === key ? { ...row, [field]: value } : row)));
 
   const move = (index: number, by: number) =>
@@ -95,7 +104,15 @@ export function LinesEditor({
     }
     setRows((all) => [
       ...all,
-      ...proposal.rows.map((row: ProposedRow, i) => ({ ...row, id: null, key: next + i })),
+      ...proposal.rows.map((row: ProposedRow, i) => ({
+        ...row,
+        id: null,
+        // A proposed row has been read off a document, not matched to the
+        // catalogue. That match is a person's decision (LAW 2), so the row
+        // arrives with no item behind it and the technical column says so.
+        itemId: null,
+        key: next + i,
+      })),
     ]);
     setNext((n) => n + proposal.rows.length);
     setNotice({
@@ -152,6 +169,9 @@ export function LinesEditor({
                   </th>
                   <th className="w-[80px] py-2 pe-2 text-start font-medium">
                     {t("dealItems.column.unit")}
+                  </th>
+                  <th className="w-[112px] py-2 pe-2 text-start font-medium">
+                    {t("dealItems.column.technical")}
                   </th>
                   <th className="w-[76px] py-2 pe-4" />
                 </tr>
@@ -216,6 +236,39 @@ export function LinesEditor({
                         className={`${INPUT} w-full`}
                       />
                     </td>
+                    {/*
+                      V0 — the door, one per line.
+
+                      `/items/[id]/technical` was a working upload form that
+                      nothing linked to, so the owner concluded there was no way
+                      to attach a datasheet to an item. There is; it had no way
+                      in. `?deal=` travels with the link because a picture the
+                      client sent belongs to THAT enquiry — `item_media.deal_id`
+                      exists for exactly this and nothing was ever writing it.
+
+                      A line that has not been matched to the catalogue has no
+                      item to hold anything, so it says so rather than showing a
+                      dead link: the fix is upstream, on the matching screen.
+                    */}
+                    <td className="py-1.5 pe-2">
+                      {row.itemId ? (
+                        <Link
+                          href={`/items/${row.itemId}/technical?deal=${dealId}`}
+                          className="inline-flex items-center gap-1 text-micro text-accent-ink hover:underline"
+                        >
+                          <Paperclip className="size-3.5" aria-hidden />
+                          {t("dealItems.technicalFile")}
+                        </Link>
+                      ) : (
+                        <span
+                          className="text-micro text-muted"
+                          title={t("dealItems.notMatchedHelp")}
+                        >
+                          {t("dealItems.notMatched")}
+                        </span>
+                      )}
+                    </td>
+
                     <td className="py-1.5 pe-4">
                       {/*
                         24px targets, not 14px icons. The icon is what a person

@@ -1,4 +1,4 @@
-import { desc, eq, sql } from "drizzle-orm";
+import { desc, eq, isNull, sql } from "drizzle-orm";
 import { db } from "@/db";
 import { deal } from "@/db/schema/deal";
 import { party } from "@/db/schema/party";
@@ -35,47 +35,58 @@ export type SourcingRow = {
 };
 
 export async function listSourcingRequests(limit = 200): Promise<SourcingRow[]> {
-  return db
-    .select({
-      id: sourcingRequest.id,
-      ref: sourcingRequest.ref,
-      subject: sourcingRequest.subject,
-      dealId: sourcingRequest.dealId,
-      dealRef: deal.ref,
-      clientName: sql<
-        string | null
-      >`coalesce(nullif(trim(${party.tradeName}), ''), ${party.legalName})`,
-      sentAt: sourcingRequest.sentAt,
-      replyBy: sourcingRequest.replyBy,
+  return (
+    db
+      .select({
+        id: sourcingRequest.id,
+        ref: sourcingRequest.ref,
+        subject: sourcingRequest.subject,
+        dealId: sourcingRequest.dealId,
+        dealRef: deal.ref,
+        clientName: sql<
+          string | null
+        >`coalesce(nullif(trim(${party.tradeName}), ''), ${party.legalName})`,
+        sentAt: sourcingRequest.sentAt,
+        replyBy: sourcingRequest.replyBy,
 
-      asked: sql<number>`(
+        asked: sql<number>`(
         select count(*)::int from ${sourcingResponse} r
         where r.request_id = ${sourcingRequest.id}
       )`,
-      quoted: sql<number>`(
+        quoted: sql<number>`(
         select count(*)::int from ${sourcingResponse} r
         where r.request_id = ${sourcingRequest.id} and r.status = 'quoted'
       )`,
-      declined: sql<number>`(
+        declined: sql<number>`(
         select count(*)::int from ${sourcingResponse} r
         where r.request_id = ${sourcingRequest.id} and r.status = 'declined'
       )`,
-      // Asked and nothing back. The two that matter to chase.
-      silent: sql<number>`(
+        // Asked and nothing back. The two that matter to chase.
+        silent: sql<number>`(
         select count(*)::int from ${sourcingResponse} r
         where r.request_id = ${sourcingRequest.id} and r.status in ('asked', 'no_reply')
       )`,
-      // A broken address, not a slow supplier. Counted apart, on purpose.
-      bounced: sql<number>`(
+        // A broken address, not a slow supplier. Counted apart, on purpose.
+        bounced: sql<number>`(
         select count(*)::int from ${sourcingResponse} r
         where r.request_id = ${sourcingRequest.id} and r.status = 'bounced'
       )`,
-    })
-    .from(sourcingRequest)
-    .innerJoin(deal, eq(deal.id, sourcingRequest.dealId))
-    .leftJoin(party, eq(party.id, deal.partyId))
-    .orderBy(desc(sourcingRequest.createdAt))
-    .limit(limit);
+      })
+      .from(sourcingRequest)
+      .innerJoin(deal, eq(deal.id, sourcingRequest.dealId))
+      .leftJoin(party, eq(party.id, deal.partyId))
+      /*
+      V1 — a request belonging to a binned enquiry is not work anybody is
+      doing. `sourcing_request.deal_id` is `ON DELETE cascade`, which fires on a
+      hard delete and this system never hard-deletes, so until now discarding an
+      enquiry left its supplier requests sitting on this list pointing at a deal
+      nobody could open. The tenders list has always filtered this way; this one
+      did not, and that is the whole of the bug.
+    */
+      .where(isNull(deal.deletedAt))
+      .orderBy(desc(sourcingRequest.createdAt))
+      .limit(limit)
+  );
 }
 
 export type SourcingCounts = { all: number; waiting: number; bounced: number; unsent: number };

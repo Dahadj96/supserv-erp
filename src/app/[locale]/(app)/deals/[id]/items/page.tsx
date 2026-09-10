@@ -93,6 +93,10 @@ export default async function DealItemsPage({
               // typed.
               qty: String(Number(line.qty)),
               unit: line.unit ?? "",
+              // V0 — set when a person matched the line to the catalogue.
+              // Null is normal; the row then says the technical file needs a
+              // match first rather than showing a link that goes nowhere.
+              itemId: line.itemId ?? null,
             }))}
           />
         </div>

@@ -26,7 +26,17 @@ describe("every document kind has an owner", () => {
 
   it("gives every permission to at least one role besides the Gérant, or says why", () => {
     // Permissions only the Gérant holds are the governance ones, by design.
-    const gerantOnly = ["invoices.cancel", "settings.company", "users.manage", "records.delete"];
+    // `records.purge` (V3) joins them and is the strongest of the five: binning
+    // a record is reversible and is how a mistyped enquiry gets tidied away,
+    // while destroying one is not reversible by anybody. Whoever binned it does
+    // not get to finish the job — that is what a bin is for.
+    const gerantOnly = [
+      "invoices.cancel",
+      "settings.company",
+      "users.manage",
+      "records.delete",
+      "records.purge",
+    ];
     const roles = (Object.keys(ROLES) as Role[]).filter((r) => r !== "gerant");
     for (const permission of PERMISSIONS) {
       const holders = roles.filter((r) => can(r, permission));

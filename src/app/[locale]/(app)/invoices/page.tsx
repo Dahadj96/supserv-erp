@@ -1,8 +1,13 @@
 import { AlertCircle } from "lucide-react";
 import { getTranslations, setRequestLocale } from "next-intl/server";
+import {
+  describeDocumentDiscard,
+  discardDocumentFromListAction,
+} from "@/app/[locale]/(app)/documents/[id]/delete-actions";
 import { PageHeader } from "@/components/layout/page-header";
 import { Badge, type BadgeTone } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import { RowDelete } from "@/components/ui/row-delete";
 import { formatMoney } from "@/domain/money";
 import { ageOf, balanceOf, daysLate } from "@/domain/money/ageing";
 import { isOwing, over90, type PaidState, paidStateOf } from "@/domain/money/invoices";
@@ -206,9 +211,10 @@ export default async function InvoicesPage({
                       {t("invoices.col.issued")}
                     </th>
                     <th className="py-2.5 pe-4 text-start font-medium">{t("invoices.col.age")}</th>
-                    <th className="py-2.5 pe-5 text-start font-medium">
+                    <th className="py-2.5 pe-4 text-start font-medium">
                       {t("invoices.col.status")}
                     </th>
+                    <th className="w-10 py-2.5 pe-5" />
                   </tr>
                 </thead>
                 <tbody>
@@ -259,10 +265,38 @@ export default async function InvoicesPage({
                           </Badge>
                         )}
                       </td>
-                      <td className="py-2.5 pe-5">
+                      <td className="py-2.5 pe-4">
                         <Badge tone={STATE_TONE[row.state]}>
                           {t(`invoices.state.${row.state}`)}
                         </Badge>
+                      </td>
+                      {/*
+                        V2 — `discardDocument` existed and was callable from the
+                        document's own page and nowhere else, so a draft typed
+                        for the wrong client had to be opened before it could be
+                        removed. It is on the row now.
+
+                        Only on a DRAFT, and not because of tidiness: an issued
+                        invoice can never be binned by anybody (LAW 5), so a
+                        trash icon beside one would be a control that exists
+                        only to refuse. The correction for an issued invoice is
+                        an avoir, and that is a different button on the document
+                        itself.
+                      */}
+                      <td className="py-2.5 pe-5 text-end">
+                        {row.state === "draft" ? (
+                          <RowDelete
+                            label={row.number ?? t("invoices.noNumber")}
+                            what={t("rowDelete.what.document")}
+                            describe={describeDocumentDiscard.bind(null, locale, row.documentId)}
+                            action={discardDocumentFromListAction.bind(
+                              null,
+                              locale,
+                              "/invoices",
+                              row.documentId,
+                            )}
+                          />
+                        ) : null}
                       </td>
                     </tr>
                   ))}

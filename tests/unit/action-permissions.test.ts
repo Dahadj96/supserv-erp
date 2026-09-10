@@ -70,6 +70,11 @@ const EXPECTED: Record<string, string[]> = {
   "companies/actions.ts:createCompany": ["*write"],
   "companies/actions.ts:updateCompany": ["*write"],
   "contacts/actions.ts:newContact": ["*write"],
+  // V4 — correcting an enquiry. `*write` and not a narrower permission:
+  // fixing a mis-read deadline is the same kind of act as typing the enquiry
+  // in the first place. What makes it safe is that every change is recorded
+  // with a name, not that fewer people may do it.
+  "deals/[id]/edit/actions.ts:editDealAction": ["*write"],
   "deals/[id]/items/actions.ts:readPasteAction": ["*write"],
   "deals/[id]/items/actions.ts:saveLinesAction": ["*write"],
   "deals/[id]/technical/actions.ts:clearNotApplicableAction": ["*write"],
@@ -104,6 +109,12 @@ const EXPECTED: Record<string, string[]> = {
   "contacts/delete-actions.ts:restorePersonAction": ["records.delete"],
   // The same permission on an enquiry. Screen 06's bin button: an enquiry
   // carrying an issued document refuses, because LAW 5 outranks tidiness.
+  // V2 — the same discard reached from the deals list instead of the record,
+  // and the question the confirmation asks before it is shown. Both hold the
+  // permission the discard itself holds: a description that leaked what a
+  // person may not delete would be a permission hole with a friendly face.
+  "deals/[id]/delete-actions.ts:describeDealDiscard": ["records.delete"],
+  "deals/[id]/delete-actions.ts:discardDealFromListAction": ["records.delete"],
   "deals/[id]/delete-actions.ts:discardDealAction": ["records.delete"],
   "deals/[id]/delete-actions.ts:restoreDealAction": ["records.delete"],
   // AND WIDER THAN THIS LINE SAYS, on purpose. `discardNoteAction` lets the
@@ -119,6 +130,10 @@ const EXPECTED: Record<string, string[]> = {
   // And on a document — `records.delete`, not the kind's issue permission: may
   // this person take a row out of the world is a different question from may
   // they put paper into it. Only a draft can go at all (LAW 5).
+  // V2 — the same pair for a draft document, reached from /invoices and from
+  // the enquiry's own list of offers.
+  "documents/[id]/delete-actions.ts:describeDocumentDiscard": ["records.delete"],
+  "documents/[id]/delete-actions.ts:discardDocumentFromListAction": ["records.delete"],
   "documents/[id]/delete-actions.ts:discardDocumentAction": ["records.delete"],
   "documents/[id]/delete-actions.ts:restoreDocumentAction": ["records.delete"],
   // The whole of the above, once, on everything older than a moment somebody
@@ -127,6 +142,10 @@ const EXPECTED: Record<string, string[]> = {
   // discard functions so every guard those carry still refuses. `previewSweep`
   // writes nothing at all and still asks — reading how much of this database
   // one press would empty is not a thing a Commercial needs to know.
+  // V3 — destroying a row in the bin. Its own permission, held by the Gérant
+  // alone: binning is reversible and this is not, so whoever binned a record
+  // does not get to finish the job.
+  "settings/bin/purge-actions.ts:purgeAction": ["records.purge"],
   "settings/clear/actions.ts:clearTestData": ["records.delete"],
   "settings/clear/actions.ts:previewSweep": ["records.delete"],
   "companies/delete-actions.ts:discardCompany": ["records.delete"],
