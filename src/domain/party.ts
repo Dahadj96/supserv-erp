@@ -1,8 +1,9 @@
-import { and, eq, isNull, sql } from "drizzle-orm";
+import { and, asc, eq, isNull, sql } from "drizzle-orm";
 import { z } from "zod";
 import { db } from "@/db";
 import { auditEntry } from "@/db/schema/control";
 import { party, partyAlias, partyRole } from "@/db/schema/party";
+import { liveParty } from "./deletion";
 
 /**
  * Screens 21 and 22 — companies.
@@ -240,4 +241,94 @@ export async function listContacts(partyId: string) {
     })
     .from(person)
     .where(and(eq(person.employerPartyId, partyId), isNull(person.deletedAt)));
+}
+
+/**
+ * ONE QUERY FOR EVERY LIST OF COMPANIES, AND FOR EVERY COUNT OF THEM.
+ *
+ * T9. Companies said two. "New deal" offered five in its client selector. Both
+ * numbers were honest reports of what their own query asked, and the queries
+ * did not agree: screen 21 asks `liveParty`, which is three clauses — not
+ * binned, not archived, not merged away — and `deals/new` asked one of them,
+ * `deleted_at is null`. So the archived company and the two merged into
+ * survivors were offered as clients on a screen that creates real work, while
+ * the directory correctly refused to list them.
+ *
+ * `liveParty` was already the shared contract and was already documented as
+ * "the cost paid once instead of everywhere". It only works if everybody uses
+ * it, and a constant cannot make anybody. A shared FUNCTION can: a screen that
+ * calls this cannot half-remember the predicate, and a count taken with
+ * `liveCompanyCount` cannot disagree with a list taken with `liveCompanies`
+ * because there is one `where` between them.
+ *
+ * The rule this serves is the owner's, and it is general: *every count must
+ * reconcile with the list it leads to.*
+ */
+export type CompanyOption = {
+  id: string;
+  code: string;
+  legalName: string;
+  tradeName: string | null;
+  wilaya: string | null;
+  nif: string | null;
+  docLocale: string;
+  currency: string;
+};
+
+const COMPANY_COLUMNS = {
+  id: party.id,
+  code: party.code,
+  legalName: party.legalName,
+  tradeName: party.tradeName,
+  wilaya: party.wilaya,
+  nif: party.nif,
+  docLocale: party.docLocale,
+  currency: party.currency,
+};
+
+export async function liveCompanies(
+  opts: { role?: PartyRole; limit?: number } = {},
+): Promise<CompanyOption[]> {
+  const limit = opts.limit ?? 500;
+
+  // `selectDistinct` because the role join can only ever widen the row set, and
+  // a company listed twice in a selector is the same bug wearing a different
+  // hat: the list and its count stop agreeing.
+  if (opts.role) {
+    return db
+      .selectDistinct(COMPANY_COLUMNS)
+      .from(party)
+      .innerJoin(partyRole, eq(partyRole.partyId, party.id))
+      .where(and(eq(partyRole.role, opts.role), liveParty))
+      .orderBy(asc(party.legalName))
+      .limit(limit);
+  }
+
+  return db
+    .select(COMPANY_COLUMNS)
+    .from(party)
+    .where(liveParty)
+    .orderBy(asc(party.legalName))
+    .limit(limit);
+}
+
+/**
+ * How many there are, under exactly the same rule.
+ *
+ * Not `liveCompanies().length`: the list is capped, and a screen that says
+ * "showing 100 of 100" when there are 150 is the same lie in miniature. The
+ * cap belongs to the page, the total does not.
+ */
+export async function liveCompanyCount(opts: { role?: PartyRole } = {}): Promise<number> {
+  if (opts.role) {
+    const [row] = await db
+      .select({ n: sql<number>`count(distinct ${party.id})::int` })
+      .from(party)
+      .innerJoin(partyRole, eq(partyRole.partyId, party.id))
+      .where(and(eq(partyRole.role, opts.role), liveParty));
+    return row?.n ?? 0;
+  }
+
+  const [row] = await db.select({ n: sql<number>`count(*)::int` }).from(party).where(liveParty);
+  return row?.n ?? 0;
 }

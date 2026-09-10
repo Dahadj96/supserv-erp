@@ -1,13 +1,10 @@
-import { asc } from "drizzle-orm";
 import { Plus } from "lucide-react";
 import { getTranslations, setRequestLocale } from "next-intl/server";
 import { Button } from "@/components/ui/button";
-import { db } from "@/db";
-import { party } from "@/db/schema/party";
-import { liveParty } from "@/domain/deletion";
 import { suggestDuplicateParties } from "@/domain/merge";
+import { liveCompanies, liveCompanyCount } from "@/domain/party";
 import { Link } from "@/i18n/navigation";
-import { CompaniesList, type CompanyRow } from "./companies-list";
+import { CompaniesList } from "./companies-list";
 
 /**
  * Screen 21 — Companies. The first screen backed by the real database.
@@ -24,19 +21,14 @@ export default async function CompaniesPage({ params }: { params: Promise<{ loca
   setRequestLocale(locale);
   const t = await getTranslations();
 
-  const rows: CompanyRow[] = await db
-    .select({
-      id: party.id,
-      code: party.code,
-      legalName: party.legalName,
-      wilaya: party.wilaya,
-      nif: party.nif,
-      docLocale: party.docLocale,
-    })
-    .from(party)
-    .where(liveParty)
-    .orderBy(asc(party.legalName))
-    .limit(100);
+  /*
+    T9. The list and the total come from one place now — `liveCompanies` and
+    `liveCompanyCount` share a `where`, so no screen can offer a company this
+    one refuses to list. And the total is COUNTED rather than taken from the
+    length of a capped list: "showing 100 of 100" with 150 companies on file is
+    the same defect in miniature.
+  */
+  const [rows, total] = await Promise.all([liveCompanies({ limit: 100 }), liveCompanyCount()]);
 
   // Screen 84 — "every list since has had two rows for one client". The list is
   // where a duplicate is felt, so it is where the offer to fix it belongs.
@@ -48,7 +40,7 @@ export default async function CompaniesPage({ params }: { params: Promise<{ loca
         <div>
           <h1 className="text-title font-semibold text-ink">{t("nav.companies")}</h1>
           <p className="mt-1 text-tiny text-muted">
-            {t("common.showing", { shown: rows.length, total: rows.length })}
+            {t("common.showing", { shown: rows.length, total })}
           </p>
         </div>
         <div className="ms-auto">
@@ -75,7 +67,7 @@ export default async function CompaniesPage({ params }: { params: Promise<{ loca
         </div>
       ) : null}
 
-      <CompaniesList rows={rows} total={rows.length} />
+      <CompaniesList rows={rows} total={total} />
     </main>
   );
 }

@@ -4,10 +4,8 @@ import { Field, INPUT } from "@/app/[locale]/(app)/setup/field";
 import { mayIssue } from "@/auth/can";
 import { getSession } from "@/auth/session";
 import { Button } from "@/components/ui/button";
-import { db } from "@/db";
-import { party } from "@/db/schema/party";
-import { liveParty } from "@/domain/deletion";
 import { listTypes } from "@/domain/document-types";
+import { liveCompanies } from "@/domain/party";
 import { setupState } from "@/domain/setup";
 import { Link } from "@/i18n/navigation";
 import { createDraft } from "./actions";
@@ -50,16 +48,7 @@ export default async function NewDocumentPage({
     .map((type) => type.kind)
     .filter((k) => mayIssue(session.role, k));
 
-  const clients = await db
-    .select({
-      id: party.id,
-      code: party.code,
-      legalName: party.legalName,
-      docLocale: party.docLocale,
-    })
-    .from(party)
-    .where(liveParty)
-    .orderBy(party.legalName);
+  const clients = await liveCompanies();
 
   const kindName = (k: string) => (t.has(`docTypes.kind.${k}`) ? t(`docTypes.kind.${k}`) : k);
 

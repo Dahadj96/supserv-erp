@@ -2,6 +2,7 @@ import { and, desc, inArray, isNotNull, sql } from "drizzle-orm";
 import { db } from "@/db";
 import { deal } from "@/db/schema/deal";
 import { document } from "@/db/schema/document";
+import { liveDocument } from "@/domain/deletion";
 import { ageingOf } from "@/domain/money/ageing";
 import { owings } from "@/domain/money/store";
 
@@ -51,6 +52,10 @@ export async function issuedByMonth(kinds: string[], months = 12): Promise<Month
       and(
         inArray(document.kind, kinds),
         isNotNull(document.number),
+        // True by construction today — a discarded row can never have a number
+        // — and stated anyway, so the two charts and the kind table are read
+        // off the same rule rather than off an argument about what is possible.
+        liveDocument,
         isNotNull(document.issuedOn),
         sql`${document.issuedOn}::date > current_date - make_interval(months => ${months})`,
       ),
@@ -63,7 +68,20 @@ export async function issuedByMonth(kinds: string[], months = 12): Promise<Month
 
 export type KindRow = { kind: string; issued: number; drafts: number };
 
-/** What this company actually produces, by document kind. */
+/**
+ * What this company actually produces, by document kind.
+ *
+ * T9 — `liveDocument`, and it is the whole of the owner's first disagreement.
+ * Invoices showed zero while this screen and Compliance both saw an invoice
+ * draft, and all three were reading the same single row: a draft somebody had
+ * discarded. Screen 17 filters the bin because it is the one money query that
+ * can see a draft at all; this did not, so a document in the bin was still
+ * counted as work in hand.
+ *
+ * Screen 17 was right. Making the numbers agree by showing binned drafts on
+ * screen 17 would have been the wrong direction — the fix is that a discarded
+ * document is counted nowhere, not that it is counted everywhere.
+ */
 export async function byKind(): Promise<KindRow[]> {
   return db
     .select({
@@ -72,6 +90,7 @@ export async function byKind(): Promise<KindRow[]> {
       drafts: sql<number>`count(*) filter (where ${document.status} = 'draft')::int`,
     })
     .from(document)
+    .where(liveDocument)
     .groupBy(document.kind)
     .orderBy(desc(sql`count(*)`));
 }

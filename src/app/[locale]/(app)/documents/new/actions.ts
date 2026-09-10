@@ -1,12 +1,13 @@
 "use server";
 
-import { and, eq, isNull } from "drizzle-orm";
+import { and, eq } from "drizzle-orm";
 import { mayIssue } from "@/auth/can";
 import { getSession } from "@/auth/session";
 import { db } from "@/db";
 import { auditEntry } from "@/db/schema/control";
 import { document } from "@/db/schema/document";
 import { party, partyRole } from "@/db/schema/party";
+import { liveParty } from "@/domain/deletion";
 import { issuingRules } from "@/domain/document-types";
 import { computeTotals } from "@/domain/money";
 import { redirect } from "@/i18n/navigation";
@@ -41,12 +42,19 @@ export async function createDraft(locale: string, form: FormData) {
     return;
   }
 
+  /*
+    T9. The form offered `liveParty` and this accepted two of its three clauses,
+    so an archived company could be posted through by hand and became the
+    counterparty on a real document. What a screen OFFERS and what its action
+    ACCEPTS is a count and its list wearing different clothes: the same rule has
+    to answer both.
+  */
   const partyId = str(form, "partyId");
   const [client] = partyId
     ? await db
         .select()
         .from(party)
-        .where(and(eq(party.id, partyId), isNull(party.deletedAt), isNull(party.supersededBy)))
+        .where(and(eq(party.id, partyId), liveParty))
         .limit(1)
     : [];
 

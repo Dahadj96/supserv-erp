@@ -1,7 +1,8 @@
-import { desc, eq, inArray, sql } from "drizzle-orm";
+import { and, desc, eq, inArray, sql } from "drizzle-orm";
 import { db } from "@/db";
 import { document, documentLink } from "@/db/schema/document";
 import { party } from "@/db/schema/party";
+import { liveDocument } from "@/domain/deletion";
 
 /**
  * Screen 13 — Orders.
@@ -43,29 +44,35 @@ export type OrderRow = {
 export async function listOrders(kind?: OrderKind, limit = 200): Promise<OrderRow[]> {
   const kinds = kind ? [kind] : [...ORDER_KINDS];
 
-  return db
-    .select({
-      id: document.id,
-      kind: document.kind,
-      number: document.number,
-      status: document.status,
-      counterparty: sql<
-        string | null
-      >`coalesce(nullif(trim(${party.tradeName}), ''), ${party.legalName})`,
-      issuedOn: document.issuedOn,
-      total: sql<string>`coalesce(${document.totals}->>'totalIncl', '0')`,
-      currency: document.currency,
-      delivered: sql<number>`(
+  return (
+    db
+      .select({
+        id: document.id,
+        kind: document.kind,
+        number: document.number,
+        status: document.status,
+        counterparty: sql<
+          string | null
+        >`coalesce(nullif(trim(${party.tradeName}), ''), ${party.legalName})`,
+        issuedOn: document.issuedOn,
+        total: sql<string>`coalesce(${document.totals}->>'totalIncl', '0')`,
+        currency: document.currency,
+        delivered: sql<number>`(
         select count(*)::int from ${documentLink} l
         join ${document} d on d.id = l.to_document
         where l.from_document = ${document.id} and d.kind = 'delivery_note'
       )`,
-    })
-    .from(document)
-    .leftJoin(party, eq(party.id, document.partyId))
-    .where(inArray(document.kind, kinds))
-    .orderBy(desc(document.createdAt))
-    .limit(limit);
+      })
+      .from(document)
+      .leftJoin(party, eq(party.id, document.partyId))
+      // T9. The chips are counted off this same function, so the one thing that
+      // must be true is that it excludes what the bin holds — otherwise "3 client
+      // orders" leads to a list of two and the discarded one is invisible in both
+      // directions.
+      .where(and(inArray(document.kind, kinds), liveDocument))
+      .orderBy(desc(document.createdAt))
+      .limit(limit)
+  );
 }
 
 export type OrderCounts = Record<OrderKind | "all" | "undelivered", number>;

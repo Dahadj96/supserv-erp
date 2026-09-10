@@ -6,7 +6,7 @@ import { blockingRule } from "@/db/schema/interface";
 import { party, partyRole } from "@/db/schema/party";
 import { check, type Finding } from "@/documents/compliance";
 import { type ProfileRule, profile, STRUCTURAL } from "@/domain/compliance-profile";
-import { liveParty } from "@/domain/deletion";
+import { liveDocument, liveParty } from "@/domain/deletion";
 import { type SetupState, setupState } from "@/domain/setup";
 
 /**
@@ -75,6 +75,12 @@ export async function complianceStatus(): Promise<ComplianceStatus> {
    * `status = 'draft'` rather than `number is null`: after screen 64 the state
    * is what says whether a document has been issued, and a kind numbered by
    * client reference has no number either way.
+   *
+   * T9 — and `liveDocument`, which was missing. A discarded draft was still
+   * swept for compliance findings, so this screen and Reports both reported an
+   * invoice draft that screen 17 correctly refused to list. Sending somebody to
+   * fix the NIF on a document their colleague threw away is worse than useless:
+   * it is a screen asking for work that cannot be done.
    */
   const drafts = await db
     .select({
@@ -85,7 +91,7 @@ export async function complianceStatus(): Promise<ComplianceStatus> {
       settlement: document.settlement,
     })
     .from(document)
-    .where(eq(document.status, "draft"))
+    .where(and(eq(document.status, "draft"), liveDocument))
     .orderBy(desc(document.createdAt))
     .limit(200);
 

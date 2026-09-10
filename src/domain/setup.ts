@@ -6,6 +6,7 @@ import { numberingSeries } from "@/db/schema/document";
 import { intakeChannel } from "@/db/schema/intake";
 import { blockingRule } from "@/db/schema/interface";
 import { party, person } from "@/db/schema/party";
+import { liveCompanyCount } from "./party";
 
 /**
  * Screen 85 — Day one.
@@ -107,10 +108,12 @@ export async function setupState(): Promise<SetupState> {
     .where(eq(intakeChannel.key, "mailbox"))
     .limit(1);
 
-  const [records] = await db
-    .select({ n: sql<number>`count(*)::int` })
-    .from(party)
-    .where(isNull(party.deletedAt));
+  /*
+    T9. This counted `deleted_at is null` and screen 21 lists `liveParty`, so
+    the readiness figure could claim companies the directory did not show. The
+    count and its destination share one rule now.
+  */
+  const records = { n: await liveCompanyCount() };
 
   const [people] = await db
     .select({ n: sql<number>`count(*)::int` })

@@ -472,6 +472,10 @@ export async function deliveries(opts: { sourceId?: string } = {}): Promise<Deli
     .where(
       and(
         eq(document.kind, "delivery_note"),
+        // T9. A BL in the bin was still listed and still counted in the amber
+        // "no signed proof" banner, so screen 14's headline and its own table
+        // could disagree with the bin about what exists.
+        liveDocument,
         opts.sourceId ? eq(documentLink.toDocument, opts.sourceId) : sql`true`,
       ),
     )

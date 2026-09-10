@@ -16,6 +16,7 @@ import { requestsForDeal } from "@/domain/deal/sourcing-store";
 import { badgeMessageKey, DEADLINE_WARNING_HOURS } from "@/domain/deal/stage";
 import { formatMoney } from "@/domain/money";
 import { offersForDeal } from "@/domain/offer/store";
+import { liveCompanies } from "@/domain/party";
 import { projectForDeal } from "@/domain/project/store";
 import { PROCEDURES } from "@/domain/tender/dossier";
 import { getTender, unmakeTenderBlockedBy } from "@/domain/tender/store";
@@ -103,12 +104,9 @@ export default async function EnquiryPage({
    * the `tender` row's existence is the whole of the classification.
    */
   const [suppliers, requests, offers, projectOpened, tenderOn] = await Promise.all([
-    db
-      .selectDistinct({ id: party.id, legalName: party.legalName, tradeName: party.tradeName })
-      .from(party)
-      .innerJoin(partyRole, eq(partyRole.partyId, party.id))
-      .where(and(eq(partyRole.role, "supplier"), isNull(party.deletedAt)))
-      .orderBy(party.legalName),
+    // T9 — the same rule the directory uses, so a supplier this deal offers is
+    // a supplier screen 21 lists.
+    liveCompanies({ role: "supplier" }),
     requestsForDeal(id),
     offersForDeal(id),
     projectForDeal(id),

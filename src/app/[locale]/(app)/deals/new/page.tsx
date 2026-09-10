@@ -1,12 +1,10 @@
-import { asc, eq, isNull } from "drizzle-orm";
 import { redirect as hardRedirect } from "next/navigation";
 import { getTranslations, setRequestLocale } from "next-intl/server";
 import { INPUT } from "@/app/[locale]/(app)/setup/field";
 import { getSession } from "@/auth/session";
 import { Button } from "@/components/ui/button";
-import { db } from "@/db";
-import { party, partyRole } from "@/db/schema/party";
 import { SUBMISSION_METHODS } from "@/domain/deal/deal";
+import { liveCompanies } from "@/domain/party";
 import { Link } from "@/i18n/navigation";
 import { createAction } from "./actions";
 
@@ -40,17 +38,14 @@ export default async function NewEnquiryPage({
   const session = await getSession();
   if (!session) hardRedirect(`/${locale}/sign-in`);
 
-  const clients = await db
-    .selectDistinct({
-      id: party.id,
-      legalName: party.legalName,
-      tradeName: party.tradeName,
-      code: party.code,
-    })
-    .from(party)
-    .leftJoin(partyRole, eq(partyRole.partyId, party.id))
-    .where(isNull(party.deletedAt))
-    .orderBy(asc(party.legalName));
+  /*
+    T9. This asked `deleted_at is null` — one of `liveParty`'s three clauses —
+    so the selector offered five clients while screen 21 listed two: one
+    archived company and two that had been merged into survivors. Both numbers
+    were an honest report of their own query, and the queries did not agree.
+    One function now, shared with the directory it must reconcile with.
+  */
+  const clients = await liveCompanies();
 
   return (
     <main className="min-h-0 flex-1 overflow-auto">
