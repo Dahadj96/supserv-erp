@@ -3,6 +3,7 @@ import { redirect as hardRedirect } from "next/navigation";
 import { getTranslations, setRequestLocale } from "next-intl/server";
 import { can } from "@/auth/can";
 import { getSession } from "@/auth/session";
+import { PageHeader } from "@/components/layout/page-header";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { StateBlock } from "@/components/ui/state-block";
@@ -53,21 +54,19 @@ export default async function DeliveriesPage({
 
   return (
     <main className="min-h-0 flex-1 overflow-auto">
-      <div className="flex flex-wrap items-start gap-3 border-b border-line-subtle bg-surface px-4 py-4 md:px-7 md:py-5">
-        <div className="min-w-0">
-          <h1 className="text-title font-semibold text-ink">{t("deliveries.title")}</h1>
-          <p className="mt-1 text-tiny text-muted">
-            {t("deliveries.subtitle", { n: rows.length, unsigned: unsigned.length })}
-          </p>
-        </div>
-        {/*
-          Task 3.4. `/deliveries/new` was reachable from nowhere — from screen
-          06's next-step panel since 2.6, and before that from a typed URL and
-          nothing else — so the one screen that STARTS a delivery was missing
-          from the screen that lists them. Greyed with the reason rather than
-          hidden, per the law: a permission never hides that a thing exists.
-        */}
-        <div className="ms-auto shrink-0">
+      {/*
+        P1. Task 3.4's button keeps its place and its reason: `/deliveries/new`
+        was reachable from nowhere — from screen 06's next-step panel since 2.6,
+        and before that from a typed URL and nothing else — so the one screen
+        that STARTS a delivery was missing from the screen that lists them.
+        Greyed with the reason rather than hidden, per the law: a permission
+        never hides that a thing exists.
+      */}
+      <PageHeader
+        crumb={[{ label: "SUPSERV", href: "/today" }, { label: t("deliveries.title") }]}
+        title={t("deliveries.title")}
+        state={t("deliveries.subtitle", { n: rows.length, unsigned: unsigned.length })}
+        actions={
           <Link href="/deliveries/new">
             <Button
               variant="primary"
@@ -78,8 +77,8 @@ export default async function DeliveriesPage({
               {t("deliveries.new")}
             </Button>
           </Link>
-        </div>
-      </div>
+        }
+      />
 
       {unsigned.length > 0 ? (
         <div className="mx-4 mt-4 flex flex-wrap items-center gap-3 rounded-[var(--radius-control)] border border-warning bg-warning-bg px-4 py-3 md:mx-7">

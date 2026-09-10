@@ -2,6 +2,7 @@ import { redirect as hardRedirect } from "next/navigation";
 import { getTranslations, setRequestLocale } from "next-intl/server";
 import { can } from "@/auth/can";
 import { getSession } from "@/auth/session";
+import { PageHeader } from "@/components/layout/page-header";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { StateBlock } from "@/components/ui/state-block";
@@ -33,15 +34,32 @@ export default async function OffersPage({ params }: { params: Promise<{ locale:
 
   return (
     <main className="flex min-h-0 flex-1 flex-col">
-      <div className="shrink-0 border-b border-line-subtle bg-surface px-4 py-4 md:px-7 md:py-5">
-        <h1 className="text-title font-semibold text-ink">{t("nav.offers")}</h1>
-        <p className="mt-1 text-tiny text-muted">
-          {t("offer.listSummary", {
-            n: rows.length,
-            drafts: rows.filter((r) => !r.number).length,
-          })}
-        </p>
-      </div>
+      {/*
+        P1. The queue's fourth v5 decision settles this button: it reads "Build
+        offer from a deal" rather than "New offer", because `offer.noneBody`
+        already says an offer is built from a deal and a button that immediately
+        asks "which one?" teaches nothing. The name is what tells somebody what
+        an offer IS. It opens the deals list, which is the picker.
+
+        The frame's state line reads "7 awaiting client decision · 4 130 000 DZD
+        at stake" and this one does not, because it cannot: a document is
+        draft / issued / credited / written_off, and nothing anywhere records
+        that a client accepted or refused an offer. `offer.listSummary` is the
+        live line the data can actually support. Named in the report.
+      */}
+      <PageHeader
+        crumb={[{ label: "SUPSERV", href: "/today" }, { label: t("nav.offers") }]}
+        title={t("nav.offers")}
+        state={t("offer.listSummary", {
+          n: rows.length,
+          drafts: rows.filter((r) => !r.number).length,
+        })}
+        actions={
+          <Link href="/deals">
+            <Button variant="primary">{t("offer.buildFromDeal")}</Button>
+          </Link>
+        }
+      />
 
       {rows.length === 0 ? (
         /*

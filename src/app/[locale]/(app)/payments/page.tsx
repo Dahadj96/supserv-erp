@@ -1,6 +1,7 @@
 import { redirect as hardRedirect } from "next/navigation";
 import { getTranslations, setRequestLocale } from "next-intl/server";
 import { getSession } from "@/auth/session";
+import { PageHeader } from "@/components/layout/page-header";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { StateBlock } from "@/components/ui/state-block";
@@ -103,31 +104,32 @@ export default async function PaymentsPage({
 
   return (
     <main className="min-h-0 flex-1 overflow-auto">
-      <div className="flex flex-wrap items-start gap-3 border-b border-line-subtle bg-surface px-4 py-4 md:px-7 md:py-5">
-        <div className="min-w-0">
-          <h1 className="text-title font-semibold text-ink">{t("payments.title")}</h1>
-          <p className="mt-1 text-tiny text-muted">
-            {t("payments.subtitle", {
-              n: collection.payments,
-              received: money(collection.received),
-            })}
-          </p>
-        </div>
-        {/*
-          The frame's header carries Export here. This carries the way to
-          screen 20 instead, which is otherwise unreachable from the rail —
-          and a person looking at what came in is one thought away from what
-          has not.
-        */}
-        <div className="ms-auto flex flex-wrap items-center gap-2">
-          <Link
-            href="/payments/ageing"
-            className="rounded-[var(--radius-control)] border border-line px-3 py-1.5 text-tiny text-secondary hover:bg-plane"
-          >
-            {t("payments.seeAgeing")}
+      {/*
+        P1. The frame's header carries Export here. This carries the way to
+        screen 20 instead, which is otherwise unreachable from the rail — and a
+        person looking at what came in is one thought away from what has not.
+        It is now a real secondary button rather than a link wearing a border,
+        so it is the same height as every other control in a header.
+
+        This header has no PRIMARY, and that is honest rather than an omission:
+        recording a payment is the form on this page, not a place to go, so a
+        primary button here would only scroll. Which control ought to be the
+        primary on a screen whose main act is a form is P5's question, not this
+        one — the frame for it is `180:10`.
+      */}
+      <PageHeader
+        crumb={[{ label: "SUPSERV", href: "/today" }, { label: t("payments.title") }]}
+        title={t("payments.title")}
+        state={t("payments.subtitle", {
+          n: collection.payments,
+          received: money(collection.received),
+        })}
+        actions={
+          <Link href="/payments/ageing">
+            <Button variant="secondary">{t("payments.seeAgeing")}</Button>
           </Link>
-        </div>
-      </div>
+        }
+      />
 
       {recorded ? (
         <p className="mx-4 mt-4 rounded-[var(--radius-control)] bg-good-bg px-4 py-2.5 text-tiny text-good-ink md:mx-7">

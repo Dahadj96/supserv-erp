@@ -2567,7 +2567,8 @@
     "costSource": {
       "previous_offer": "coût repris d'une offre précédente"
     },
-    "noneAction": "Ouvrir une affaire"
+    "noneAction": "Ouvrir une affaire",
+    "buildFromDeal": "Construire une offre à partir d’une affaire"
   },
   "technical": {
     "title": "Dossier technique — {ref}",
@@ -3872,6 +3873,7 @@
   "audit": {
     "title": "Journal d'audit",
     "subtitle": "{total} entrées, depuis le {since}.",
+    "nothingToDo": "Rien à faire ici — le journal est écrit par le système et ne peut pas être modifié.",
     "nothingYet": "Aucune entrée pour l'instant.",
     "banner": "Une entrée d'audit survit à l'enregistrement qu'elle décrit : une société part à la corbeille, la ligne peut disparaître au bout de trente jours, l'entrée qui dit qu'elle a existé et pourquoi elle est partie reste. Ce journal enregistre les changements, et les lectures qui sont elles-mêmes un acte — la relève de la boîte mail. Ouvrir un écran n'est pas enregistré.",
     "empty": "Rien n'a encore été enregistré. La table se remplit toute seule : chaque création, modification, émission et suppression y écrit une ligne.",
@@ -4261,6 +4263,7 @@
   },
   "orders": {
     "subtitle": "Ce que les clients nous ont commandé et ce que nous avons commandé aux fournisseurs. Deux sens, une seule liste.",
+    "stateLine": "{all, plural, =0 {Aucune commande} one {# commande} other {# commandes}} · {undelivered, plural, =0 {rien d’émis n’attend une livraison} one {# émise sans rien livré en face} other {# émises sans rien livré en face}}",
     "none": "Une commande arrive de deux façons, et cette liste tient les deux. La commande d’un client arrive contre une offre que nous avons envoyée — enregistrez-la depuis l’affaire. Un bon de commande part vers un fournisseur une fois son prix retenu, depuis le comparatif des consultations.",
     "draft": "Brouillon",
     "undelivered": "{count} émise(s) sans livraison",

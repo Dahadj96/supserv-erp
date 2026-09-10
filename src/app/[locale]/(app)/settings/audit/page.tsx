@@ -3,6 +3,7 @@ import { redirect as hardRedirect } from "next/navigation";
 import { getFormatter, getTranslations, setRequestLocale } from "next-intl/server";
 import { can } from "@/auth/can";
 import { getSession } from "@/auth/session";
+import { PageHeader } from "@/components/layout/page-header";
 import { Badge } from "@/components/ui/badge";
 import {
   type ActorKind,
@@ -98,14 +99,31 @@ export default async function AuditPage({
 
   return (
     <main className="flex min-h-0 flex-1 flex-col">
-      <div className="shrink-0 border-b border-line-subtle bg-surface px-4 md:px-7 py-5">
-        <h1 className="text-title font-semibold text-ink">{t("audit.title")}</h1>
-        <p className="mt-1 text-tiny text-muted">
-          {since
+      {/*
+        P1, and the case the whole pattern is built around — frame `175:2` draws
+        this exact screen as its example of a legitimate empty actions slot.
+        The log is append-only by design; a log with an edit button is not a
+        log. So `actions` is `null`, which the type will not accept without a
+        sentence, and the sentence is what a person reads when they are
+        wondering whether they have misunderstood the screen. That is the whole
+        point of making the slot required: twenty screens are blank today
+        because nothing ever asked their author to write this line.
+      */}
+      <PageHeader
+        crumb={[
+          { label: "SUPSERV", href: "/today" },
+          { label: t("nav.settings"), href: "/settings" },
+          { label: t("audit.title") },
+        ]}
+        title={t("audit.title")}
+        state={
+          since
             ? t("audit.subtitle", { total: facets.total, since: stamp(since) })
-            : t("audit.nothingYet")}
-        </p>
-      </div>
+            : t("audit.nothingYet")
+        }
+        actions={null}
+        noActionReason={t("audit.nothingToDo")}
+      />
 
       <div className="mx-4 md:mx-7 mt-4 flex items-start gap-3 rounded-[var(--radius-control)] border border-line bg-accent-bg px-4 py-3">
         <Info className="mt-px size-4 shrink-0 text-accent-ink" aria-hidden />

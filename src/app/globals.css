@@ -103,6 +103,22 @@ body {
   font-size: var(--text-base);
 }
 
+/*
+ * P1 — one breadcrumb, not two. The page header owns the crumb, because only
+ * the page knows the record it ends in; the topbar's is derived from
+ * `NAV_GROUPS` and stops at the section. Both exist while the 66 screens that
+ * hand-write their header are being converted, so on a page that renders
+ * `PageHeader` the topbar's is hidden rather than drawn a second line above it.
+ *
+ * Delete this rule together with the `data-topbar-crumb` nav in `topbar.tsx`
+ * when the last screen is converted — P1b in docs/FIX-QUEUE.md. If `:has()` is
+ * ever unavailable the selector is simply ignored and both crumbs show, which
+ * is untidy rather than broken.
+ */
+body:has([data-page-header]) [data-topbar-crumb] {
+  display: none;
+}
+
 /* Icons are drawn with a 1.75px stroke in the design, not lucide's default 2. */
 .lucide {
   stroke-width: 1.75;

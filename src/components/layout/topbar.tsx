@@ -63,7 +63,19 @@ export function Topbar({
         only room for "Aujour…", which reads as something broken rather than
         as a place. The menu button is where you are and where you can go.
       */}
-      <nav aria-label="Breadcrumb" className="hidden min-w-0 text-tiny text-muted sm:block">
+      {/*
+        P1 — a page that renders `PageHeader` carries its own crumb, three
+        levels deep and ending in the record, which this one cannot do: it reads
+        `NAV_GROUPS`, so `/deals/9f2c…` stops at "SUPSERV / Deals". While both
+        exist, `globals.css` hides this one on any page that has the other, so
+        the crumb is never drawn twice. Delete this nav and that rule together
+        when the last screen is converted — P1b in docs/FIX-QUEUE.md.
+      */}
+      <nav
+        data-topbar-crumb
+        aria-label="Breadcrumb"
+        className="hidden min-w-0 text-tiny text-muted sm:block"
+      >
         <span>SUPSERV</span>
         {entry ? (
           <>

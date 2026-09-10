@@ -1,5 +1,6 @@
 import { AlertCircle } from "lucide-react";
 import { getTranslations, setRequestLocale } from "next-intl/server";
+import { PageHeader } from "@/components/layout/page-header";
 import { Badge, type BadgeTone } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { formatMoney } from "@/domain/money";
@@ -98,28 +99,32 @@ export default async function InvoicesPage({
 
   return (
     <main className="min-h-0 flex-1 overflow-auto">
-      <div className="flex flex-wrap items-start gap-3 border-b border-line-subtle bg-surface px-4 py-4 md:px-7 md:py-5">
-        <div className="min-w-0">
-          <h1 className="text-title font-semibold text-ink">{t("invoices.title")}</h1>
-          <p className="mt-1 text-tiny text-muted">
-            {t("invoices.subtitle", {
-              unpaid: owed.length,
-              outstanding: money(outstanding.toFixed(2)),
-            })}
-          </p>
-        </div>
-        <div className="ms-auto flex flex-wrap items-center gap-2">
-          <Button variant="secondary" disabledReason={t("invoices.exportLater")}>
-            {t("invoices.export")}
-          </Button>
-          <Button variant="secondary" disabledReason={t("invoices.proformaLater")}>
-            {t("invoices.newProforma")}
-          </Button>
-          <Link href="/documents/new">
-            <Button variant="primary">{t("invoices.newInvoice")}</Button>
-          </Link>
-        </div>
-      </div>
+      {/*
+        P1. Three buttons, exactly one primary, and the two greys keep their
+        reasons — the header pattern does not change what a control is allowed
+        to do, only where it lives and that it must exist.
+      */}
+      <PageHeader
+        crumb={[{ label: "SUPSERV", href: "/today" }, { label: t("invoices.title") }]}
+        title={t("invoices.title")}
+        state={t("invoices.subtitle", {
+          unpaid: owed.length,
+          outstanding: money(outstanding.toFixed(2)),
+        })}
+        actions={
+          <>
+            <Button variant="secondary" disabledReason={t("invoices.exportLater")}>
+              {t("invoices.export")}
+            </Button>
+            <Button variant="secondary" disabledReason={t("invoices.proformaLater")}>
+              {t("invoices.newProforma")}
+            </Button>
+            <Link href="/documents/new">
+              <Button variant="primary">{t("invoices.newInvoice")}</Button>
+            </Link>
+          </>
+        }
+      />
 
       {alert ? (
         <div className="mx-4 mt-4 flex flex-wrap items-center gap-3 rounded-[var(--radius-control)] border border-critical bg-critical-bg px-4 py-3 md:mx-7">

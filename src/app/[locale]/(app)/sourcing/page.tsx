@@ -2,6 +2,7 @@ import { MailWarning } from "lucide-react";
 import { redirect as hardRedirect } from "next/navigation";
 import { getFormatter, getTranslations, setRequestLocale } from "next-intl/server";
 import { getSession } from "@/auth/session";
+import { PageHeader } from "@/components/layout/page-header";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { StateBlock } from "@/components/ui/state-block";
@@ -39,32 +40,40 @@ export default async function SourcingPage({ params }: { params: Promise<{ local
 
   return (
     <main className="flex min-h-0 flex-1 flex-col">
-      <div className="flex shrink-0 flex-wrap items-start gap-3 border-b border-line-subtle bg-surface px-4 md:px-7 py-5">
-        <div className="min-w-0">
-          <h1 className="text-title font-semibold text-ink">{t("nav.sourcing")}</h1>
-          <p className="mt-1 text-tiny text-muted">
-            {counts.all === 0
-              ? t("sourcing.noneYet")
-              : t("sourcing.subtitle", { waiting: counts.waiting, unsent: counts.unsent })}
-          </p>
-        </div>
-        {/*
-          Task 3.4. Screen 74 — the counter price — is a PHONE job and it was
-          only ever in the phone bar, which is `md:hidden`: on a laptop the one
-          screen for "a man in a shop said 21 400" could be reached by typing
-          its URL and no other way. It belongs here rather than in the rail,
-          because this is the screen about gathering prices, and putting a
-          phone job in the rail would say it is a fifth destination when
-          `src/mobile.ts` is explicit that there are four phone jobs and this
-          is one of them. Capturing on the laptop is the exception, not the
-          shape of the screen.
-        */}
-        <div className="ms-auto shrink-0">
-          <Link href="/prices/new">
-            <Button variant="secondary">{t("sourcing.counterPrice")}</Button>
-          </Link>
-        </div>
-      </div>
+      {/*
+        P1. The screen had a secondary and no primary, so it stated the way to
+        record a price somebody quoted over the counter and not the way to ask
+        for one. Both are here now, in the order the header wants them: the
+        primary opens the deal a consultation is sent from, which is what its
+        own empty state has always said.
+
+        Task 3.4's reason for the counter price still holds and it keeps its
+        place. Screen 74 is a PHONE job that was only ever in the phone bar,
+        which is `md:hidden`: on a laptop the one screen for "a man in a shop
+        said 21 400" could be reached by typing its URL and no other way. It
+        belongs on this screen rather than in the rail, because this is the
+        screen about gathering prices and `src/mobile.ts` is explicit that there
+        are four phone jobs and this is one of them.
+      */}
+      <PageHeader
+        crumb={[{ label: "SUPSERV", href: "/today" }, { label: t("nav.sourcing") }]}
+        title={t("nav.sourcing")}
+        state={
+          counts.all === 0
+            ? t("sourcing.noneYet")
+            : t("sourcing.subtitle", { waiting: counts.waiting, unsent: counts.unsent })
+        }
+        actions={
+          <>
+            <Link href="/prices/new">
+              <Button variant="secondary">{t("sourcing.counterPrice")}</Button>
+            </Link>
+            <Link href="/deals">
+              <Button variant="primary">{t("common.openADeal")}</Button>
+            </Link>
+          </>
+        }
+      />
 
       {counts.bounced > 0 ? (
         <div className="mx-4 md:mx-7 mt-4 flex items-start gap-3 rounded-[var(--radius-control)] border border-line bg-warning-bg px-4 py-3">

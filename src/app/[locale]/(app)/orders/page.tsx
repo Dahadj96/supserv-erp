@@ -1,6 +1,7 @@
 import { redirect as hardRedirect } from "next/navigation";
 import { getFormatter, getTranslations, setRequestLocale } from "next-intl/server";
 import { getSession } from "@/auth/session";
+import { PageHeader } from "@/components/layout/page-header";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { StateBlock } from "@/components/ui/state-block";
@@ -51,10 +52,34 @@ export default async function OrdersPage({
 
   return (
     <main className="flex min-h-0 flex-1 flex-col">
-      <div className="shrink-0 border-b border-line-subtle bg-surface px-4 md:px-7 py-5">
-        <h1 className="text-title font-semibold text-ink">{t("nav.orders")}</h1>
-        <p className="mt-1 text-tiny text-muted">{t("orders.subtitle")}</p>
-      </div>
+      {/*
+        P1. `orders.subtitle` — "two directions, one list" — is a description of
+        the screen, and the header already carries the screen's name one line
+        above it. The state line says the thing that would make somebody act:
+        how many orders, and how many of them were issued with nothing delivered
+        against them. `orderCounts` has counted that since the screen was
+        written; nothing showed it.
+
+        The two actions are the ones the empty state already offered, and they
+        are here in both states now rather than only when the list is empty — an
+        order is not typed into this screen, it is recorded against the deal it
+        answers or raised from the sourcing comparison.
+      */}
+      <PageHeader
+        crumb={[{ label: "SUPSERV", href: "/today" }, { label: t("nav.orders") }]}
+        title={t("nav.orders")}
+        state={t("orders.stateLine", { all: counts.all, undelivered: counts.undelivered })}
+        actions={
+          <>
+            <Link href="/sourcing">
+              <Button variant="secondary">{t("orders.noneFromSourcing")}</Button>
+            </Link>
+            <Link href="/deals">
+              <Button variant="primary">{t("common.openADeal")}</Button>
+            </Link>
+          </>
+        }
+      />
 
       <div className="flex shrink-0 flex-wrap items-center gap-2 border-b border-line-subtle bg-surface px-4 md:px-7 py-2.5">
         {facets.map((facet) => (

@@ -2567,7 +2567,8 @@
     "costSource": {
       "previous_offer": "cost carried from a previous offer"
     },
-    "noneAction": "Open a deal"
+    "noneAction": "Open a deal",
+    "buildFromDeal": "Build offer from a deal"
   },
   "technical": {
     "title": "Technical file — {ref}",
@@ -3872,6 +3873,7 @@
   "audit": {
     "title": "Audit log",
     "subtitle": "{total} entries, reaching back to {since}.",
+    "nothingToDo": "Nothing to do here — the log is written by the system and cannot be edited.",
     "nothingYet": "No entries yet.",
     "banner": "An audit entry outlives the record it describes: a company goes to the bin, the row may go after thirty days, and the entry saying it existed and why it went stays. This log records changes, and the reads that are themselves an act — fetching the mailbox. Opening a screen is not recorded.",
     "empty": "Nothing has been recorded yet. The table fills itself: every creation, edit, issue and deletion writes a line here.",
@@ -4261,6 +4263,7 @@
   },
   "orders": {
     "subtitle": "What clients ordered from us, and what we ordered from suppliers. Two directions, one list.",
+    "stateLine": "{all, plural, =0 {No orders yet} one {# order} other {# orders}} · {undelivered, plural, =0 {nothing issued is waiting on a delivery} one {# issued with nothing delivered against it} other {# issued with nothing delivered against them}}",
     "none": "An order arrives two ways, and this list holds both. A client's order comes in against an offer we sent — record it from the deal. A purchase order goes out to a supplier once their price has been chosen, from the sourcing comparison.",
     "draft": "Draft",
     "undelivered": "{count} issued with nothing delivered",

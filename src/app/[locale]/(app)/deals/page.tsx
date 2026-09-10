@@ -2,6 +2,7 @@ import { Plus } from "lucide-react";
 import { redirect as hardRedirect } from "next/navigation";
 import { getTranslations, setRequestLocale } from "next-intl/server";
 import { getSession } from "@/auth/session";
+import { PageHeader } from "@/components/layout/page-header";
 import { Button } from "@/components/ui/button";
 import { listDeals } from "@/domain/deal/deal";
 import { badgeMessageKey, DEADLINE_WARNING_HOURS, isStage, STAGES } from "@/domain/deal/stage";
@@ -91,22 +92,30 @@ export default async function DealsPage({
 
   return (
     <main className="flex min-h-0 flex-1 flex-col">
-      <div className="flex shrink-0 items-start gap-3 border-b border-line-subtle bg-surface px-4 py-4 md:px-7 md:py-5">
-        <div>
-          <h1 className="text-title font-semibold text-ink">{t("nav.deals")}</h1>
-          <p className="mt-1 text-tiny text-muted">
+      {/*
+        P1. The state line keeps its second clause. It reads as a description
+        and the pattern says a state line should not be one — but "stage is
+        computed from the documents" is LAW 1 stated where the number is, and
+        removing it to satisfy the shape of a header would be dropping the one
+        sentence that explains why nobody can set a stage by hand.
+      */}
+      <PageHeader
+        crumb={[{ label: "SUPSERV", href: "/today" }, { label: t("nav.deals") }]}
+        title={t("nav.deals")}
+        state={
+          <>
             {t("deals.openCount", { n: rows.filter((r) => r.open).length })} ·{" "}
             {t("deals.stageIsDerived")}
-          </p>
-        </div>
-        <div className="ms-auto">
+          </>
+        }
+        actions={
           <Link href="/deals/new">
             <Button variant="primary" icon={<Plus className="size-4" aria-hidden />}>
               {t("deals.newDeal")}
             </Button>
           </Link>
-        </div>
-      </div>
+        }
+      />
 
       <div className="flex shrink-0 flex-wrap items-center gap-2 border-b border-line-subtle bg-surface px-4 py-2.5 md:px-7">
         <span className="me-1 text-micro uppercase tracking-wide text-muted">

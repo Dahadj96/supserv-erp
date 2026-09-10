@@ -1,6 +1,7 @@
 import { redirect as hardRedirect } from "next/navigation";
 import { getFormatter, getTranslations, setRequestLocale } from "next-intl/server";
 import { getSession } from "@/auth/session";
+import { PageHeader } from "@/components/layout/page-header";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { StateBlock } from "@/components/ui/state-block";
@@ -120,16 +121,27 @@ export default async function TendersPage({
 
   return (
     <main className="flex min-h-0 flex-1 flex-col">
-      <div className="shrink-0 border-b border-line-subtle bg-surface px-4 md:px-7 py-5">
-        <h1 className="text-title font-semibold text-ink">{t("nav.tenders")}</h1>
-        <p className="mt-1 text-tiny text-muted">
-          {t("tenders.summary", {
-            open: counts.open,
-            closing: counts.closingSoon,
-            incomplete: counts.incomplete,
-          })}
-        </p>
-      </div>
+      {/*
+        P1. `tenders.summary` was already the live line this pattern asks for —
+        open, closing within 48 hours, folders incomplete — so it moves across
+        unchanged. What the screen did not have was an action: the same one its
+        own empty state offers, because a tender is opened from the deal it
+        belongs to and there is no other way to start one.
+      */}
+      <PageHeader
+        crumb={[{ label: "SUPSERV", href: "/today" }, { label: t("nav.tenders") }]}
+        title={t("nav.tenders")}
+        state={t("tenders.summary", {
+          open: counts.open,
+          closing: counts.closingSoon,
+          incomplete: counts.incomplete,
+        })}
+        actions={
+          <Link href="/deals">
+            <Button variant="primary">{t("common.openADeal")}</Button>
+          </Link>
+        }
+      />
 
       <div className="flex shrink-0 flex-wrap items-center gap-2 border-b border-line-subtle bg-surface px-4 md:px-7 py-2.5">
         {FACETS.map((facet) => (
