@@ -976,13 +976,14 @@ it.
   things at once on the deal page and in the deal list, and `pnpm check` is
   green.
 
-- [ ] **R2 · `--color-muted` fails contrast, in about 845 places**
+- [ ] **R2 · `--color-muted` fails contrast, in 861 places**
   Measured, not asserted: `--color-muted #8a8a85` against `--color-plane
   #fafaf9` is **3.3 : 1**, under the 4.5 : 1 minimum, and much of its use is at
   `text-micro` (11.5px), too small for the large-text exemption. Note the
   second review named the wrong token — `--color-secondary #5c5c58` is
-  **6.4 : 1** and is fine. `text-muted` appears about **845 times** in `src/`,
-  so this is one token and 845 screens.
+  **6.4 : 1** and is fine. `text-muted` appears **861 times** across 117 files
+  in `src/`, so this is one token and 861 call sites. Count it with `grep -ao`:
+  plain `grep -o` skips `tenders/[id]/page.tsx` as binary and loses 16 of them.
   Darken it until it clears 4.5 : 1 on `plane`, `surface` and `card`, then look
   at the places that relied on it being faint — a table's least important column
   should still recede.
