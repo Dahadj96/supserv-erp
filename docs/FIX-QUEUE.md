@@ -826,6 +826,39 @@ cannot go green must be revertible without taking the others with it.
 - [ ] **P4 · The banner** *(frame `179:7`)*
 - [ ] **P6 · The list states** *(frame `181:16`)*
 
+- [ ] **U6 · An offer must be able to say what the client answered** *(blocks P3)*
+  **Decided 10 September 2026, and the precedent is already in this codebase.**
+
+  The frame `/offers` (`186:116`) reads *"7 awaiting client decision"* and its
+  rows carry `Ask for decision` and `Record why we lost`. None of it is
+  buildable today: a document is `draft | issued | credited | written_off`, and
+  **a sent offer and a refused one are the same row**. Nothing records that a
+  client said yes, said no, or went quiet.
+
+  `CLAUDE.md` LAW 1 already asserts the answer — *"`won` lives on the offer as
+  `accepted`; the deal reads it"* — and **`accepted` does not exist in the
+  schema, in `src/domain/offer/`, or anywhere else.** The law names a field
+  nobody built. In practice `stageOf` infers won from `ordersReceived > 0`,
+  which is true but late: it tells you the client accepted only once they have
+  sent an order, and it can never tell you they refused.
+
+  **This is not a stored status of the kind LAW 1 forbids.** The law forbids
+  storing what time or arithmetic decides. A client's answer is neither — it is
+  an event, arriving by telephone, that no document in this system records. The
+  codebase has already made exactly this call once: `deal.lostAt` and
+  `deal.lostReason` are stored, with the comment *"Stored because it is
+  unknowable otherwise — no document we hold records that somebody else won."*
+  An offer's outcome is the same fact one level down.
+
+  So: give the offer a client decision — accepted, refused, or no reply — with
+  the date, who recorded it, and a reason when it is a refusal. Reversible, the
+  way `reopen` already reverses a lost deal, because telephones mishear. The
+  deal's stage reads it instead of waiting for an order. Then fix LAW 1's
+  sentence in `CLAUDE.md` so it names what was actually built.
+  *Done when:* the offers list can honestly say how many are awaiting a
+  decision, a refused offer looks different from a sent one, and P3's row verbs
+  have something true to act on.
+
 ## WAVE 3 — shrink the surface
 
 Do not start Wave 3 until Waves 0–2 are green and pushed. It touches many
