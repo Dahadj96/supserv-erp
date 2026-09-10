@@ -595,8 +595,29 @@ undesigned. Anything here that invents a *new* surface still needs a frame.
   carry the originating order, its client and its lines forward. Nobody should
   retype what the order already says.
 
-- [ ] **T3 · Today's Reply links all point at the general inbox** *(high)*
-  Open the exact message or thread, with its action to hand.
+- [x] **T3 · Today's Reply links all point at the general inbox** *(high)*
+  Two defects in nine lines, and the second is the worse one.
+  **The link went to the list.** `unanswered()` in `src/domain/today/gather.ts`
+  built every row with `href: "/inbox"`, so twenty different messages pointed
+  at one screen and a person who pressed a row arrived at a list and had to
+  find it again by its subject. Every other kind on Today already linked to its
+  own record; this one was the exception. It is `/inbox/{id}` now.
+  **The verb was a lie.** The button said *Reply*, and this ERP holds
+  `Mail.Read` and cannot send — `docs/DECISIONS/2026-08-27-conversations-are-read-only.md`.
+  The one thing the button named was the one thing pressing it could never do.
+  What the message screen actually offers is classifying it and turning it into
+  a record, so the button says which of those two is next: **Classify** when the
+  router did not recognise it (`classified_as` null or `needsReview`), **Open
+  the message** when it did. Two message keys replace `today.do.reply` in both
+  languages.
+  The row-to-item mapping moved into `list.ts` as an exported pure
+  `messageItem()` — `gather.ts` imports `db` at module load and a unit suite
+  that has no database cannot reach it, which is why nothing caught either
+  defect. Seven tests now hold both, including that two messages get two
+  different links and that the action is never `reply` again.
+  *Left for T4:* this query is also what promotes newsletters onto the page,
+  and the band is still called "awaiting reply" for messages nobody is waiting
+  on. That is T4's job, deliberately not done here.
 
 - [ ] **T4 · Today promotes newsletters, and a cloudHQ PDF tutorial reads as an RFQ** *(high)*
   Separate **unread**, **unclassified** and **genuinely actionable**. Require an

@@ -3180,7 +3180,8 @@
       "open": "Open",
       "chase": "Read and send",
       "invoice": "Create invoice",
-      "reply": "Reply",
+      "classify": "Classify",
+      "openMessage": "Open the message",
       "attach": "Attach",
       "fill": "Fill in",
       "review": "Review"

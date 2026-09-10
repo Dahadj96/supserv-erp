@@ -12,7 +12,7 @@ import { paidStateOf } from "@/domain/money/invoices";
 import { dueNow } from "@/domain/money/relance";
 import { billed, owings, policy, relancesFor } from "@/domain/money/store";
 import { notesDue } from "@/domain/timeline/gather";
-import type { Item } from "./list";
+import { type Item, messageItem } from "./list";
 
 /**
  * Screen 55 — where Today's list actually comes from.
@@ -233,17 +233,7 @@ async function unanswered(): Promise<Item[]> {
     .orderBy(desc(intakeMessage.receivedAt))
     .limit(20);
 
-  return rows.map((row) => ({
-    id: `msg:${row.id}`,
-    kind: "awaitingReply" as const,
-    title: row.subject ?? row.fromName ?? row.fromAddress ?? "—",
-    detail: row.fromName ?? row.fromAddress ?? "",
-    href: "/inbox",
-    action: "reply",
-    expiresAt: null,
-    amount: "0",
-    waitingOnThem: false,
-  }));
+  return rows.map(messageItem);
 }
 
 /** The two-minute jobs: unsigned proofs, and identifiers that block an invoice. */

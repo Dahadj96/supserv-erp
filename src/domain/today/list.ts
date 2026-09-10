@@ -255,3 +255,49 @@ export function laterThisWeek(items: Item[], now: Date, days = 7): Upcoming[] {
       href: item.href,
     }));
 }
+
+/**
+ * What one message row has to say for itself on Today.
+ *
+ * Pure, exported and tested, because two things about it were wrong at once and
+ * both were invisible from here (T3, screen 55).
+ *
+ * THE LINK WENT TO THE LIST. Every one of these rows carried `href: "/inbox"` —
+ * so twenty different messages all pointed at the same screen, and a person who
+ * pressed one arrived at a list and had to find the row again by its subject.
+ * Today's whole promise is "the exact record, one press away"; every other kind
+ * on this page already honoured it and this one did not.
+ *
+ * THE VERB WAS A LIE. The button said Reply. This ERP holds `Mail.Read` and
+ * cannot send — `docs/DECISIONS/2026-08-27-conversations-are-read-only.md` — so
+ * the one thing the button named is the one thing pressing it could never do.
+ * What the message screen actually offers is classifying it and turning it into
+ * a record, so that is what the button now says, and it says which of the two,
+ * because they are different amounts of work.
+ */
+export function messageItem(row: {
+  id: string;
+  subject: string | null;
+  fromName: string | null;
+  fromAddress: string | null;
+  classifiedAs: string | null;
+}): Item {
+  /*
+    The router either recognised it or it did not. `needsReview` is what
+    `channels.ts` writes when no rule matched, so it means the same as null here
+    and both lead to the same first job — tell the system what this is.
+  */
+  const routed = row.classifiedAs !== null && row.classifiedAs !== "needsReview";
+
+  return {
+    id: `msg:${row.id}`,
+    kind: "awaitingReply" as const,
+    title: row.subject ?? row.fromName ?? row.fromAddress ?? "—",
+    detail: row.fromName ?? row.fromAddress ?? "",
+    href: `/inbox/${row.id}`,
+    action: routed ? "openMessage" : "classify",
+    expiresAt: null,
+    amount: "0",
+    waitingOnThem: false,
+  };
+}

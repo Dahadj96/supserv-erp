@@ -3180,7 +3180,8 @@
       "open": "Ouvrir",
       "chase": "Relire et envoyer",
       "invoice": "Créer la facture",
-      "reply": "Répondre",
+      "classify": "Classer",
+      "openMessage": "Ouvrir le message",
       "attach": "Joindre",
       "fill": "Compléter",
       "review": "Relire"

@@ -6,6 +6,7 @@ import {
   type ItemKind,
   laterThisWeek,
   MINUTES,
+  messageItem,
   today,
 } from "@/domain/today/list";
 
@@ -200,5 +201,57 @@ describe("later this week", () => {
     const a = item({ id: "a", kind: "tenderDeadline", expiresAt: at("2026-08-24T00:00:00Z") });
     const b = item({ id: "b", kind: "tenderDeadline", expiresAt: at("2026-08-22T00:00:00Z") });
     expect(laterThisWeek([a, b], NOW).map((r) => r.id)).toEqual(["b", "a"]);
+  });
+});
+
+/**
+ * T3 — "every Reply link points at the general inbox", found by walking the
+ * running ERP on 10 September.
+ *
+ * Both halves are held here because both were wrong and neither shows up in a
+ * screenshot: twenty rows carrying one href, and a verb naming something this
+ * ERP is not permitted to do.
+ */
+describe("a message on Today", () => {
+  const row = (over: Partial<Parameters<typeof messageItem>[0]> = {}) => ({
+    id: "8b1f0d2e-0000-4000-8000-000000000001",
+    subject: "RFQ - PR 3000116322 - FRIDGES AND FONTAINS",
+    fromName: "A. Himer",
+    fromAddress: "a.himer@urbacon-intl.com",
+    classifiedAs: "enquiry",
+    ...over,
+  });
+
+  it("links to the message itself, never to the list", () => {
+    expect(messageItem(row()).href).toBe("/inbox/8b1f0d2e-0000-4000-8000-000000000001");
+  });
+
+  it("gives two messages two different links", () => {
+    const a = messageItem(row());
+    const b = messageItem(row({ id: "8b1f0d2e-0000-4000-8000-000000000002" }));
+    expect(a.href).not.toBe(b.href);
+  });
+
+  it("never offers to reply, because the ERP cannot send", () => {
+    // Mail.Read only — docs/DECISIONS/2026-08-27-conversations-are-read-only.md
+    expect(messageItem(row()).action).not.toBe("reply");
+  });
+
+  it("asks for a classification when the router did not recognise it", () => {
+    expect(messageItem(row({ classifiedAs: null })).action).toBe("classify");
+    expect(messageItem(row({ classifiedAs: "needsReview" })).action).toBe("classify");
+  });
+
+  it("opens the message when the router already placed it", () => {
+    expect(messageItem(row({ classifiedAs: "enquiry" })).action).toBe("openMessage");
+    expect(messageItem(row({ classifiedAs: "payment" })).action).toBe("openMessage");
+  });
+
+  it("falls back through the sender when a message has no subject", () => {
+    expect(messageItem(row({ subject: null })).title).toBe("A. Himer");
+    expect(messageItem(row({ subject: null, fromName: null })).title).toBe(
+      "a.himer@urbacon-intl.com",
+    );
+    expect(messageItem(row({ subject: null, fromName: null, fromAddress: null })).title).toBe("—");
   });
 });
