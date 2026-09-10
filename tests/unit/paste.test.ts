@@ -164,3 +164,64 @@ describe("a bare list with nothing marked", () => {
     expect(parsePaste("   \n\n  ")).toEqual({ lines: [], ignored: [], shape: "empty" });
   });
 });
+
+/**
+ * A table that came out of a PDF.
+ *
+ * `text-layer.ts` joins pdf.js's positioned fragments with single spaces, so a
+ * bordereau's five columns arrive as one line and the row number has no `.` or
+ * `)` after it — the document never had one, the number sat in its own cell.
+ * Until this was read, every such row kept its index inside the designation and
+ * every offer built from a PDF said "1 Vanne papillon DN80".
+ */
+describe("a table read out of a PDF, where the row number lost its punctuation", () => {
+  it("takes a leading number as an index when a reference follows it", () => {
+    const paste = parsePaste(
+      [
+        "1 VP-DN80-16 Vanne papillon DN80 PN16 12 pc",
+        "2 RAC-BR-2 Raccord à brides 2 pouces 40 pc",
+      ].join("\n"),
+    );
+
+    expect(paste.lines).toHaveLength(2);
+    expect(paste.lines[0]).toMatchObject({
+      reference: "VP-DN80-16",
+      designation: "Vanne papillon DN80 PN16",
+      qty: "12",
+      unit: "pc",
+      readAs: "numbered",
+    });
+    expect(paste.lines[1]?.reference).toBe("RAC-BR-2");
+  });
+
+  it("takes it as an index when the line ends in a quantity", () => {
+    const paste = parsePaste("1 Vanne papillon DN80 PN16 12 pc\n2 Joint EPDM DN80 24 pc");
+
+    expect(paste.lines[0]).toMatchObject({
+      reference: null,
+      designation: "Vanne papillon DN80 PN16",
+      qty: "12",
+      readAs: "numbered",
+    });
+    expect(paste.lines[1]?.designation).toBe("Joint EPDM DN80");
+  });
+
+  it("leaves the number alone when it is the quantity", () => {
+    // Nothing follows it that says "table row": no reference, no count at the
+    // end. Twelve bolts, not bolt number twelve.
+    const paste = parsePaste("12 boulons M16");
+
+    expect(paste.lines[0]).toMatchObject({
+      designation: "12 boulons M16",
+      qty: "1",
+      qtyAssumed: true,
+      readAs: "bare",
+    });
+  });
+
+  it("leaves a designation that simply begins with a number alone", () => {
+    const paste = parsePaste("2 pouces raccord galvanisé");
+
+    expect(paste.lines[0]?.designation).toBe("2 pouces raccord galvanisé");
+  });
+});

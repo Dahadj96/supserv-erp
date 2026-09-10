@@ -36,6 +36,15 @@ const EXPECTED: Record<string, string[]> = {
   "inbox/actions.ts:openMessage": ["inbox.view"],
   "inbox/actions.ts:setClassification": ["inbox.view"],
   "inbox/actions.ts:startEnquiryWithCompany": ["inbox.view"],
+  /*
+    Screen 73 reads the client's own RFQ — the email body, and the PDF, Word or
+    Excel file attached to it — into proposed enquiry lines. It writes nothing,
+    so `canWrite` alone would let a `lecture` account through; and what it hands
+    back is raw correspondence, which is exactly what `inbox.view` exists to
+    gate. So it asks for both. The paste box beside it asks only `canWrite`:
+    that text is the caller's own, already on their screen.
+  */
+  "deals/[id]/items/actions.ts:readSourceAction": ["*write", "inbox.view"],
   "inbox/actions.ts:syncMailbox": ["inbox.view"],
   "inbox/dossier/[id]/review/actions.ts:confirm": ["inbox.view"],
   "inbox/dossier/[id]/review/actions.ts:confirmAll": ["inbox.view"],
@@ -61,7 +70,8 @@ const EXPECTED: Record<string, string[]> = {
   "companies/actions.ts:createCompany": ["*write"],
   "companies/actions.ts:updateCompany": ["*write"],
   "contacts/actions.ts:newContact": ["*write"],
-  "deals/[id]/items/actions.ts:replaceLinesAction": ["*write"],
+  "deals/[id]/items/actions.ts:readPasteAction": ["*write"],
+  "deals/[id]/items/actions.ts:saveLinesAction": ["*write"],
   "deals/[id]/technical/actions.ts:clearNotApplicableAction": ["*write"],
   "deals/[id]/technical/actions.ts:markNotApplicableAction": ["*write"],
   "deals/[id]/technical/actions.ts:setRequirementAction": ["*write"],

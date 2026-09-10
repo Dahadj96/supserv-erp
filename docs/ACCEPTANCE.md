@@ -1053,3 +1053,57 @@ tells you what you want to hear.
    - `tests/unit/schema-columns.test.ts` :: "reads EVERY table the schema declares, not merely a lot of them"
    - `tests/unit/schema-columns.test.ts` :: "gives every table it opened at least one column"
    - `pnpm audit:schema` :: **716 columns across 68 tables**, 12 disconnected, ceiling 12
+
+31. **The ERP read the client's files and never showed anybody what it read.** **Found 10 September, by the Gérant, testing it.**
+   The report: *"The ERP does not read anything, because they have files,
+   attachments — an Excel file, some PDF, some Word files — and the ERP does
+   not recognise what they ask for. And there is a page where I can manually
+   type what they ask for. That's not convenient, and it's not editable. I
+   cannot edit quantities, I cannot correct something. There's no way to
+   delete it. This is the first thing I struggled with."*
+
+   Both halves were true, and the first one was not true in the way it sounded.
+   **Every one of those files was already being read.** `readXlsx`, `readDocx`
+   and `readTextLayer` have turned attachments into `intake_page` rows since
+   1.6; `parsePaste` has read tab-separated tables and numbered lists since
+   phase 4. The two halves had simply never been introduced to each other, so
+   the only route from a client's bordereau to `deal_line` ran through a person
+   selecting text in Outlook. A capability nobody can reach is not a
+   capability.
+
+   The second half was the whole screen. One textarea holding the list as
+   tab-separated text: a quantity could not be corrected without editing a
+   monospace blob, a line could not be deleted except by deleting its text, and
+   saving REPLACED every row — so correcting line 5's unit cut loose the
+   shop-counter price captured against line 1, because the row it hung off no
+   longer existed.
+
+   `src/domain/deal/sources.ts` is the introduction: the email body and every
+   attachment become proposed lines, fetching and reading on demand rather than
+   waiting for a queue that may never have run. `editLines` makes a correction
+   an UPDATE, so a line that changed quantity is still the same line and keeps
+   its price and its catalogue match. A page of a document that shows no
+   structure at all is not read as a list — otherwise every sentence of a
+   règlement de consultation would become a line of the enquiry.
+
+   And a table read out of a PDF now keeps its designation: pdf.js hands text
+   back as fragments joined with single spaces, so `1 VP-DN80-16 Vanne
+   papillon` has no punctuation after the row number. It is taken as an index
+   only when a reference follows it or the line ends in a quantity — `12
+   boulons M16` is twelve bolts, not bolt number twelve.
+
+   - `tests/integration/deal-line-sources.test.ts` :: "becomes proposed lines, with the header row left out"
+   - `tests/integration/deal-line-sources.test.ts` :: "offers the email and every file, and names the one it cannot open"
+   - `tests/integration/deal-line-sources.test.ts` :: "refuses a file that belongs to somebody else's message"
+   - `tests/integration/deal-line-sources.test.ts` :: "reads the numbered lines and leaves the greeting out"
+   - `tests/integration/deal-line-edit.test.ts` :: "keeps the catalogue match and the price when a quantity is corrected"
+   - `tests/integration/deal-line-edit.test.ts` :: "adds, deletes and reorders in one save, and renumbers from one"
+   - `tests/integration/deal-line-edit.test.ts` :: "lets the list be emptied, which the paste box never could"
+   - `tests/integration/deal-line-edit.test.ts` :: "treats an id that is not on this deal as a new row"
+   - `tests/unit/paste.test.ts` :: "takes a leading number as an index when a reference follows it"
+   - `tests/unit/paste.test.ts` :: "leaves the number alone when it is the quantity"
+
+   **Still not read: an image.** A photograph of a list, and a scanned PDF,
+   need the OCR container (1.9), which is not built. The screen LISTS such a
+   file and says it cannot open it rather than hiding it — a person hunting for
+   the bordereau has to know the ERP can see the file and not the list.

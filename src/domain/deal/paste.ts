@@ -231,6 +231,48 @@ function readTabs(rows: string[][]): { lines: ParsedLine[]; ignored: string[] } 
 }
 
 /**
+ * A quantity at the END of a line: `… 12 pc`, `… x 20`, `… : 60`.
+ *
+ * Named because two readers now ask the same question of the same line —
+ * `readProseLine` to take the quantity off the back, and `withoutBareIndex` to
+ * decide whether the number on the FRONT is an index or part of the words.
+ */
+const TRAILING_QTY = /[\s:x×]\s*([\d][\d\s.,]*)\s*([A-Za-zÀ-ÿ.]{1,8})?\s*$/;
+
+/**
+ * A row number with no punctuation after it — `1 VP-DN80-16 Vanne papillon 12 pc`.
+ *
+ * THIS IS WHAT A TABLE IN A PDF LOOKS LIKE. pdf.js hands text back as
+ * positioned fragments and `text-layer.ts` joins them with single spaces, so a
+ * bordereau's five columns arrive as one line with nothing between them: the
+ * `1.` or `1)` a person would type is not there, because the document never had
+ * it — the number sat in its own cell.
+ *
+ * A leading number is only taken as an index when the line proves it is a table
+ * row, and there are exactly two proofs:
+ *
+ *   1. the next token is a reference — `1 VP-DN80-16 …`. Nobody writes a
+ *      designation that begins with a number and then a part number.
+ *   2. the line ends in a quantity — `1 Vanne papillon DN80 12 pc`. Something
+ *      is being counted at the end, so the number at the front is not the count.
+ *
+ * Without one of them the number stays where the client put it: `12 boulons M8`
+ * is twelve bolts, not bolt number twelve, and the words are the designation.
+ */
+function withoutBareIndex(text: string, wasIndex: () => void): string {
+  const head = text.match(/^(\d{1,3})\s+(?=\S)/);
+  if (!head) return text;
+
+  const rest = text.slice(head[0].length);
+  const firstToken = rest.split(/\s+/)[0] ?? "";
+
+  if (!looksLikeReference(firstToken) && !TRAILING_QTY.test(rest)) return text;
+
+  wasIndex();
+  return rest;
+}
+
+/**
  * A line typed into an email.
  *
  * Read from the OUTSIDE IN: strip the bullet or index off the front, strip the
@@ -255,6 +297,10 @@ function readProseLine(raw: string): Omit<ParsedLine, "position"> | null {
     if (dashed) {
       text = (dashed[1] ?? "").trim();
       readAs = "dashed";
+    } else {
+      text = withoutBareIndex(text, () => {
+        readAs = "numbered";
+      });
     }
   }
   if (!text) return null;
@@ -263,7 +309,7 @@ function readProseLine(raw: string): Omit<ParsedLine, "position"> | null {
   let qty: string | null = null;
   let unit: string | null = null;
 
-  const tail = text.match(/[\s:x×]\s*([\d][\d\s.,]*)\s*([A-Za-zÀ-ÿ.]{1,8})?\s*$/);
+  const tail = text.match(TRAILING_QTY);
   if (tail) {
     const candidateQty = readQty(tail[1] ?? "");
     const candidateUnit = tail[2]?.trim();
