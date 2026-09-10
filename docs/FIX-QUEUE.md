@@ -19,6 +19,10 @@ One task at a time. Never two in flight.
    **WAVE U comes next.** Added 9 September from Abdou directly: the
    ERP is powerful and nobody can tell what it does. Take Wave U before the
    rest of Wave 2 and before Wave 3, whatever the numbering suggests.
+   **WAVE R ranks below both**, and its own heading says why: two of Wave T's
+   tasks already are its biggest recommendation. The one exception is **R1**,
+   which may be taken as soon as Wave T is clear. Read
+   `docs/REVIEW-REDESIGN-2026-09-10.md` before taking anything in Wave R.
 2. Mark it `[~]` (in progress) and write the file back immediately, so a
    session that starts while you work does not take the same task.
 3. Implement it. Follow `CLAUDE.md` — the six laws are not negotiable, and the
@@ -578,7 +582,7 @@ Wave T is step one. Do not start step two while anything below is `[ ]`.
 a route that 404s and a count that disagrees with its own list are broken, not
 undesigned. Anything here that invents a *new* surface still needs a frame.
 
-- [~] **T1 · New delivery opens a 404** *(critical)*
+- [x] **T1 · New delivery opens a 404** *(critical)*
   Repair the route, and give it a source-order selector so a delivery is created
   from what was ordered rather than retyped. **Then add a navigation test that
   presses every primary creation button in the app and asserts it lands
@@ -586,7 +590,7 @@ undesigned. Anything here that invents a *new* surface still needs a frame.
   *Done when:* every creation button in the app is proven to open its form by a
   test that runs in `pnpm check`.
 
-- [~] **T2 · New invoice opens "New document" with Quotation selected** *(critical)*
+- [x] **T2 · New invoice opens "New document" with Quotation selected** *(critical)*
   Among 22 types. Open an invoice-specific form with Invoice already chosen, and
   carry the originating order, its client and its lines forward. Nobody should
   retype what the order already says.
@@ -617,7 +621,7 @@ undesigned. Anything here that invents a *new* surface still needs a frame.
   Preserve incomplete draft rows and highlight what is missing. **Never silently
   discard entered work.** This one costs trust faster than any other on the list.
 
-- [~] **T9 · Counts do not reconcile with their lists** *(high)*
+- [x] **T9 · Counts do not reconcile with their lists** *(high)*
   Invoices shows zero while Reports and Compliance see an invoice draft.
   Companies shows two while New deal offers five clients. Find the filter,
   archived-record and data-source disagreements. **Every count must reconcile
@@ -928,6 +932,97 @@ cannot go green must be revertible without taking the others with it.
   decision, a refused offer looks different from a sent one, and P3's row verbs
   have something true to act on.
 
+## WAVE R — the pattern proposal, after it was checked
+
+**Added 10 September 2026.** A second review arrived after the owner's, from the
+same reading of the running ERP, proposing patterns borrowed from Dynamics 365
+Business Central, SAP Fiori and Odoo. It was read against the code before
+anything was written down here, and the reading is
+**`docs/REVIEW-REDESIGN-2026-09-10.md`** — read it before taking any task below,
+because most of the proposal turned out to be things this queue already owns
+under other names, and the four items here are only what survived.
+
+What did not survive, so nobody re-adds it: the four standard screen types are
+`PageHeader`, `DataTable`, `StateBlock` and `Stepper` and all four exist — that
+recommendation is P1b and 3.6, already queued. Approvals are already nine gates
+with thresholds in `src/domain/approval/gates.ts`. Badges already carry text,
+and there is already exactly one accent colour. Board and calendar views are
+declined for now: the audit's own "what not to do" ends with *do not write a
+third table component*, and 3.6 has not finished adopting the first.
+
+**Wave R ranks below Wave T and Wave U.** Two of Wave T's items — T7 and T8 —
+*are* the proposal's unified editor, and three more (T1, T2, T4) are its
+carry-forward and triage sections, so finishing Wave T delivers most of the
+proposal without touching this wave at all. **R1 is the exception and may be
+taken as soon as Wave T is clear**: it is cheap, it is the one finding no other
+document caught, and the role work the proposal wants most is useless without
+it.
+
+- [ ] **R1 · A deal has four lifecycle answers, not one** *(take first)*
+  `src/domain/deal/stage.ts:21` defines six stages as a single ladder and
+  `stageOf` "reads invoiced → ordered → offerOut → sourcing and stops at the
+  furthest thing that exists". The file's own comment concedes the cost: a bon
+  de livraison is **deliberately not a stage**, because it does not fit. So a
+  deal that is ordered, half-delivered, half-invoiced and unpaid renders one
+  chip reading `invoiced`, and the three facts a person needs are not on screen.
+  Add a pure `dimensionsOf(facts)` **beside** `stageOf`, never replacing it,
+  returning ordered · delivered · invoiced · paid as four independent computed
+  states. Every input already exists: `ordersReceived` on `DealFacts`,
+  `coveredAgainst` in `src/domain/delivery/store.ts`, `billed` and `balanceOf`
+  in `src/domain/money/`. **LAW 1 — store none of them.** `DealFacts` is
+  already computed on every deal page load, so this is a function and a render,
+  not a migration.
+  *Done when:* a part-delivered, part-invoiced, unpaid order says all four
+  things at once on the deal page and in the deal list, and `pnpm check` is
+  green.
+
+- [ ] **R2 · `--color-muted` fails contrast, in about 845 places**
+  Measured, not asserted: `--color-muted #8a8a85` against `--color-plane
+  #fafaf9` is **3.3 : 1**, under the 4.5 : 1 minimum, and much of its use is at
+  `text-micro` (11.5px), too small for the large-text exemption. Note the
+  second review named the wrong token — `--color-secondary #5c5c58` is
+  **6.4 : 1** and is fine. `text-muted` appears about **845 times** in `src/`,
+  so this is one token and 845 screens.
+  Darken it until it clears 4.5 : 1 on `plane`, `surface` and `card`, then look
+  at the places that relied on it being faint — a table's least important column
+  should still recede.
+  *Done when:* every `--color-*` used for text clears 4.5 : 1 on every surface
+  it is drawn on, and a test or a script holds that true.
+
+- [ ] **R3 · Warn before a second deal is made from the same conversation**
+  Nothing detects it. Every `dedupe` in the repository is a pg-boss job key.
+  Two messages in one thread, or two messages from one client about one
+  subject, produce two deals and nobody is told. On the commit screen, show the
+  candidate it would duplicate and offer to link to it instead — propose, never
+  decide, the same shape as `tenderHint()` in 2.3.
+  *Done when:* committing a second message from a thread that already produced a
+  deal names that deal before it creates another.
+
+- [ ] **R4 · Say the verb, and take the architecture out of the interface**
+  Both reviews raised this and no task owned it. The verbs first: **"Do it"**
+  and **"Fix it"** become the actual action; **"Everything that happened"**
+  becomes **Activity**; **"Prices gathered"** becomes **Supplier prices**;
+  **"They went elsewhere"** becomes **Mark lost**; a draft is named
+  *"Draft quotation · client · reference"*, never *"no number yet"*.
+  Then the notes to a developer sitting in a user's interface: `.env` appears
+  **thirteen times** in `src/i18n/messages/en.json`, "phase 5" once, and two
+  keys explain "computed from … not stored". A person needs *"Overdue
+  invoices"* and the amount to collect. Move the explanation to `docs/`.
+  Do French in the same pass or say why not — 3.3's Known gap is that the two
+  languages are drifting.
+  *Done when:* no string in either message file names a file, an environment
+  variable, a phase or a database behaviour, and no button is called "Do it".
+
+- [ ] **R5 · An approval returns you to what you were doing**
+  The gate, the request and the decision all exist — nine gates in
+  `src/domain/approval/gates.ts`, and `/approvals` joined the rail in 3.4. What
+  does not exist is the way back: an approval is granted on `/approvals` and the
+  person who asked for it is sent nowhere. Preserve the draft, show
+  **Waiting for approval** where the person left it, and on a decision put them
+  back on the next action rather than on a list.
+  *Done when:* requesting approval on an offer below the margin floor, and
+  approving it, ends with the requester on the offer and not on `/approvals`.
+
 ## WAVE 3 — shrink the surface
 
 Do not start Wave 3 until Waves 0–2 are green and pushed. It touches many
@@ -1045,6 +1140,30 @@ files and will conflict with everything above.
 ## Known gaps
 
 Work a later run must finish. Written down rather than left half-done.
+
+### T9 — three reconciliations left, and why
+
+**The Orders chips count 1 000 rows and the list draws 200.** `orderCounts()`
+calls `listOrders(undefined, 1000)` and the page calls `listOrders(kind)`, which
+caps at 200. They share the function, which is what T9 asked for, and they still
+disagree the day there are more than 200 orders: the chip would say 240 and the
+table would show 200 with nothing on screen saying so. There are none today, so
+this is a trap rather than a defect. The honest fix is the `common.showing`
+pattern screen 21 now uses — a counted total beside a capped list — and it wants
+the same treatment on every capped list in the app rather than on this one alone.
+
+**`addQuote`'s supplier lookup still asks `deleted_at is null` alone.**
+`src/domain/deal/price-store.ts:96` finds-or-creates a supplier by name. It was
+deliberately left out of the `liveCompanies` sweep: tightening it to `liveParty`
+would make a merged-away supplier invisible to the lookup, which CREATES a
+duplicate of a company somebody has already merged — the opposite of the fix.
+What it should do is resolve through `superseded_by` to the survivor, which is a
+behaviour change with its own decision behind it, not a filter.
+
+**`documents/new` offers every live party, not every live CLIENT.** So does the
+new-deal selector, and so does the directory they must reconcile with — which is
+why they agree, and why this is listed here rather than fixed. A supplier
+appearing in a client picker is a different complaint from the one T9 answers.
 
 ### U1/U2 — three things the two Wave U screens found and did not fix
 
@@ -1920,6 +2039,66 @@ moving on things with no pixels in them, say which — the Known gaps below hold
 several (the bin purge decision, `bpu_source` reconciliation, the route-linkage
 check, screen 85's stepper) and none of them draws anything new.
 
+### Eight groups, or eleven rows? The second review wants a different rail (3.1, R)
+
+**This is the only place the 10 September pattern proposal actually contradicts
+a decision already made, and it is one paragraph to settle.**
+
+It proposes **eight groups with only the active one expanded** — My work · Inbox
+· Sales · Purchasing · Operations · Finance · Directory · Administration. Task
+3.1 proposes **eleven flat rows**. Both cannot ship.
+
+The difference is not cosmetic. The proposal **keeps every destination** and
+moves it one level down: eight headings over the same 23 rows is still 23 rows,
+and it trades a scrollbar for a click. On a screen where somebody moves between
+Deals and Invoices all day, an accordion that collapses the group they just left
+is worse than the scrollbar. 3.1 **removes rows**, by absorbing screens into
+tabs — Conversations into Inbox (decided 10 September), Week and Waiting on into
+Today, Payments and Ageing into Invoices, Tenders into the deal list as a facet.
+
+**What is proposed instead, and needs your word:** keep 3.1's absorptions, and
+take the proposal's group NAMES, which are how the business talks — Sales,
+Purchasing, Operations, Finance, Directory beat our `work`, `money`,
+`companiesPeople`, `control`. And give **Purchasing a row of its own**: sourcing
+and purchase orders are `achats`'s entire job, and today they are split between
+the `work` group and a route with no rail row at all.
+
+That would be eight headings over about fifteen rows rather than eight over
+twenty-three, or eleven over eleven. One line from you picks it, and 3.1 is a
+day's work afterwards — it is already blocked on the question below anyway.
+
+### Does assignment mean anything here, and do you want role home screens? (R, §1)
+
+The second review's largest recommendation is a **different home screen per
+role** — decisions and overdue receivables for the Gérant, quotations to follow
+up for Commercial, orders awaiting receipt for Purchasing, and so on. Two facts
+about this codebase decide whether it is worth building, and both are yours to
+weigh:
+
+**1. The roles already exist and no screen reads them.** `src/auth/can.ts:62`
+defines six — `gerant`, `commercial`, `achats`, `chantier`, `compta`, `lecture`
+— which is the review's five plus read-only. `nav-items.ts` contains the word
+`role` zero times, and `src/domain/today/gather.ts` takes no role, so Today
+assembles the same nine kinds of item for everybody: a `chantier` account is
+shown unpaid invoices it may not touch.
+
+**2. There is no "my".** `deal.ownerId` is written in exactly two places, both
+to `session.userId` at creation — so it records **who created a deal, not who is
+working it**, and T6 is what makes it changeable. Nothing else in the system is
+assigned to anyone at all. Build role homes before that and every home is
+"everything, filtered by job title", which is a weaker product than the one
+proposed.
+
+**And one thing worth knowing before you decide:** you are the Gérant, and
+`gerant` holds every permission, so scoping the rail by role would hide nothing
+from *you*. It changes what the other five accounts see. If what you want is a
+way to stop seeing five departments' work at once, the review's own **workspace
+switcher** is the mechanism, and the role filter is secondary — which is the
+reverse of the order it proposes.
+
+So: is this worth a wave, once Wave T is done? And if it is, is it five homes,
+or one Today that knows who is looking at it?
+
 ### Where do five screens live, once the rail is eleven rows? (3.1)
 
 **The eleven rows are decided and I am not going to guess the rest.** The queue
@@ -2134,6 +2313,9 @@ above. It is marked blocked rather than skipped.
 
 | Date | Task | Commit | Note |
 |---|---|---|---|
+| 2026-09-10 | T1 | `992b0e7` | **The page was never missing — the question was.** `/deliveries/new` began `if (!source) notFound()`, and the primary button on screen 14 links at the bare route because a list of deliveries names no single order. So the one control that STARTS a delivery landed on nothing, while every path that worked was a link that already knew the answer. With no source named the screen now asks which order is going out: `deliverableSources()` lists issued documents of a `DELIVERABLE_KINDS` kind, live, with ordered, delivered and remaining worked out, so the choice is made on what is LEFT rather than on recognising a number; picking one carries the lines and quantities forward exactly as before, still defaulting to the remainder. **Then the part that matters more.** `tests/unit/creation-buttons.test.ts` presses every primary button in the app that navigates and asserts it opens a screen that renders. Nothing is hand-listed: `scripts/lib/creation-buttons.mjs` reads the buttons out of the source (every `<Link>` wrapping a `<Button variant="primary">` in `src/app` and `src/components`), the routes out of the `page.tsx` tree including `[id]` segments and `(group)` folders, and the GUARDS out of each target page — the search params it refuses to render without. **23 buttons across 93 routes today**, and a button written tomorrow is covered the moment it exists. `smoke-routes.mjs` could not have caught this: it proves routes ANSWER and this route answered; the untested half was that the buttons point at them and that the page renders with what the link carries. The reader is held against its own fixtures, including the one that bit it first — it matched the comment in `deliveries/new/page.tsx` QUOTING the removed guard and called the repaired button broken, so it blanks comments without moving a line. `pnpm audit:buttons` prints the list for a person. |
+| 2026-09-10 | T2 | `a742886` | **The right form existed and no button could reach it.** "New invoice" on screen 17 linked at `/documents/new` — the generic builder, which ticks the first kind the person may issue when the query string is silent, and that is Quotation. Twenty-two kinds, the wrong one chosen, and an order's client and lines left to be retyped. `/invoices/new` was already the invoice-specific screen and already carried the client, the lines, the prices, the language and the bank across — "check it rather than type it" is its whole subject — but it opened `if (!source) hardRedirect('/documents/new')`, so it was reachable only from a document that already knew it was the source. The bare route asks the question now: `billableSources()` lists the issued client orders, proformas, quotations and situations with ordered, already invoiced and left to bill, and picking one lands on the carried-over table with everything filled in. **Delivery notes are deliberately not offered** — a BL's lines point at the order they deliver, so billing one would make an invoice whose lines point at the BL, after which "already invoiced" against that order reads zero for ever and the client is billed twice. "Nothing to start from" stays and goes to `/documents/new?kind=invoice`, so the kind a person asked for is the kind that is ticked. T1's navigation test holds `/invoices/new` to the same standard. |
+| 2026-09-10 | T9 | `9a4911a` | **Two queries over the same rows, and in both cases the screen he distrusted was the one telling the truth.** *Invoices zero, Reports and Compliance one:* there is exactly one invoice draft in the database and it is IN THE BIN. `billed()` filters `liveDocument` because screen 17 is the one money query that can see a draft at all; `byKind()` on Reports and the compliance sweep did not, so a discarded document was still counted as work in hand and Compliance was sending somebody to fix the NIF on a draft their colleague had thrown away. Screen 17 was right — the fix is that a discarded document is counted NOWHERE, not that it is counted everywhere. `liveDocument` added there and on the deliveries list and the orders list, which had the same hole. *Companies two, New deal five:* `liveParty` is three clauses — not binned, not archived, not merged away — and `deals/new` asked one of them, `deleted_at is null`. Five parties exist: two live, one archived, two merged into survivors. So a screen that creates real work offered three companies the directory refuses to show, and `mergeParties` repoints nothing, so a deal raised against one would have hung off a retired row. **A shared constant could not prevent that; a shared function can.** `liveCompanies()` and `liveCompanyCount()` in `src/domain/party.ts` are one `where` between them, and the directory, the new-deal selector, the new-document selector, the deal's supplier picker and the setup readiness count all call them. The company total on screen 21 is COUNTED rather than taken from the length of a capped list — it said "100 sur 100" with 334 on file, the same defect in miniature, and now says "100 sur 334". `documents/new`'s action accepts exactly what its own form offers, because what a screen offers and what its action accepts is a count and its list wearing different clothes. `tests/integration/counts-reconcile.test.ts` uses a fixture shaped like the bug — one live row and one of every kind that should be invisible — because a test written against clean data would pass with every one of these filters removed again. **Looked at on the built app, port 3100, `supserv_test`, signed in:** Invoices reads "Toutes 5" over five rows with the chips summing to five, Reports' Facture row reads "1 brouillon(s)" beside the list's "Brouillon 1", and the directory and the new-deal selector both offer 332. |
 | 2026-09-10 | P2 | `50a40d7` | The six levels of frame `176:4` into `@theme` beside the five that were already there, rather than a second scale next to the first. `--text-lead` (14.5, card heading), `--text-base` (13.5, body) and `--text-micro` (11.5, caption) existed and were unused; `--text-title` 24, `--text-section` 16 and `--text-numeric` 23 are new. A script swept `text-[19px]` off every page title — **90 files, 94 occurrences**, all of them on an `h1`, checked before the sweep rather than assumed — and printed what it touched; the diffs were read by hand, including the six that were not the plain `className="text-[19px] font-semibold text-ink"`. One file, `tenders/[id]/page.tsx`, holds a literal NUL as a map-key separator and grep calls it binary: the sweep reads and writes text so it was not silently skipped, and the NUL is still there. **What it deliberately does not do** is move card headings and body onto their levels, which the frame also speaks to. `text-tiny` is used 1 091 times and about 292 of those are an `h2`/`h3`, but which one is a card heading and which is a caption is a judgement per screen rather than a regular expression — a sweep would raise real captions to 14.5px and nobody would see it until a column wrapped. That is P2b. |
 | 2026-09-10 | P1 | `a49cad4` | `src/components/layout/page-header.tsx` from frame `175:2`. `actions` is a required prop and the type is a union: pass a node, or pass `null` and the compiler then demands `noActionReason` — a translated sentence rendered where the button would have been. There is a runtime throw behind the union as well, because the one thing this component exists to prevent should not rest on a rule a future `as never` can walk past. `state` and `crumb` are required for the same reason: a live line rather than a description, and a crumb that ends in the record. **Nine screens, not 66** — Offers, Orders, Tenders, Sourcing, Deliveries, Payments, Deals, Invoices, and `/settings/audit`, which is the frame's own drawn example of a legitimate empty slot. Offers, Orders and Tenders had no action anywhere except inside their empty state; they have one in the header in both states now, and Offers' reads **Build offer from a deal** per the fourth v5 decision. Orders' state line was `orders.subtitle`, a description of the screen, and is now the number `orderCounts` has computed since the screen was written and never shown: how many orders were issued with nothing delivered against them. Three new keys in EN and FR. **The breadcrumb moved into the header** and `topbar.tsx` keeps its two-level one for the 58 unconverted screens, hidden by a `:has()` rule in `globals.css` on any page carrying a `PageHeader` so it is never drawn twice; the rule and the topbar nav are deleted together in P1b. `tests/unit/page-header.test.ts` guards what the types cannot see. **Looked at, not assumed:** the built app on port 3100 against `supserv_test`, signed in, English and French, 1366 and 390 — and the phone pass caught a real regression the gate could not, three buttons squeezing the title column to forty pixels with the state line running one word per line. Fixed with a floor on that column before the commit. |
 | 2026-09-08 | — | `115da43` | Branch `fix/usability-2026-09` opened; in-progress schema-audit work carried over; audit filed. |
