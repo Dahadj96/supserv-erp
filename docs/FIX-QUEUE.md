@@ -63,6 +63,7 @@ Facts learned the hard way. Do not rediscover them.
 | **Seeing the work** | **A commit is not a deployment.** The ERP is served by `next start` over a *built* `.next`, so code on disk changes nothing a person can see. After finishing a task: `pnpm build`, then `restart-erp.cmd` (or `scripts\server\restart.ps1`). **The restart needs Administrator** — the process on port 3000 will not die without it, and Windows shows a prompt on the machine that only Abdou can answer. So: build unattended, then tell him to double-click `restart-erp.cmd` and say yes. Never claim a change is live until port 3000 has been restarted onto the new build. `pnpm smoke` afterwards. |
 | Worker | `pnpm worker` is what empties the queue: no worker means no mailbox poll and every attachment stuck at "not copied here yet", with nothing on screen saying so. The `SUPSERV worker` scheduled task has run it at startup since 9 September and it polls every ten minutes — read `.data\worker.log` rather than `tasklist`, which cannot see a SYSTEM process from an unelevated session. **It runs `tsx` against the source, so it is only as new as the moment it started**: after changing anything the worker runs, either restart the task (Administrator) or start your own with `start "supserv-worker" /min cmd /c "pnpm worker > .data\worker-<task>.log 2>&1"`, use it, and close it. |
 | Reboot | Fixed, 9 September: `SUPSERV ERP`, `SUPSERV worker` and `SUPSERV backup` are all registered and start at boot, so the machine comes back on its own. An unelevated session cannot query them — `schtasks /query` answers "Access is denied" — so read `.data\worker.log` and `.data\last-backup.json` for the truth, not the task list. |
+| Stale git lock | A run that dies leaves `.git/index.lock` behind and every later git command fails with "Another git process seems to be running". Check its age and whether any `git` process actually exists: `Get-Process git`. No process and a lock minutes old means it is stale — remove it and carry on. One sat for 89 minutes on 9 September blocking three commits. |
 | MCP timeouts | A `start_process` call can time out at the tool layer while the process keeps running on the machine. Do not re-run the command — call `list_sessions`, find the pid, and `read_process_output`. Re-running is how you get "the file is being used by another process". |
 
 ---
@@ -701,7 +702,7 @@ wants them redrawn that is a new task against a new frame.
   *Done when:* somebody who has never seen the system can open Settings and say
   what each row would do before clicking it.
 
-- [!] **U4 · The flow, drawn on the screen it happens on** *(2.5 and 2.6 do this
+- [ ] **U4 · The flow, drawn on the screen it happens on** *(2.5 and 2.6 do this
   for deals and tenders — this is the same job everywhere else)*
   A person new to the ERP cannot see the shape: mail arrives → it becomes a
   deal → the deal is priced → an offer goes out → an order comes back →
@@ -710,7 +711,7 @@ wants them redrawn that is a new task against a new frame.
   *Done when:* on any screen in the chain, a person can see where they are, what
   came before, and what happens next.
 
-- [!] **U5 · No screen without an action**
+- [ ] **U5 · No screen without an action**
   ~20 screens have no `variant="primary"` at all. Every one gets either a real
   primary action or an honest sentence saying why there is nothing to do here
   and where to go instead. `StateBlock` already has the `action` slot.
@@ -721,6 +722,52 @@ wants them redrawn that is a new task against a new frame.
 on a Figma design Abdou has approved. Draw the frames, show him, then unblock.
 **If you are a scheduled run and U3 was in flight when you read this: stop,
 commit nothing half-written, and leave it `[!]`.**
+
+### THE v5 FRAMES ARE APPROVED — 10 September 2026
+
+Abdou saw the boards and answered "do what is best", which is a delegation, not
+an absence of an answer. So the four open questions are settled below **with
+their reasoning**, because a decision whose reason is not written down gets
+re-litigated by the next person who reads the screen.
+
+**1 · Conversations folds into Inbox. The rail is 15.**
+Inbox is triage of what arrived; Conversations is the thread of what was said.
+They would deserve separate rows if the second were a place you *act* — but
+`docs/DECISIONS/2026-08-27-conversations-are-read-only.md` says the ERP holds
+`Mail.Read` and cannot send, so it is a reading surface with two of its four
+states drawn. A read-only view does not earn a row in a rail that already does
+not fit. It becomes a tab. If sending ever arrives, it earns its row back.
+
+**2 · The 16px section heading is accepted.**
+The measurement in the scan's §2.14 was wrong (box heights, not font sizes) and
+the truth is worse: card headings and body are **both 13px**, separated only by
+weight. That is why nothing on a screen tells your eye where to look. One new
+level is the smallest change that creates a hierarchy. Two new tokens.
+
+**3 · "Remind client" is a relance, and the ERP cannot send it.**
+Chasing a client about an offer is not the same letter as chasing an unpaid
+invoice, and the ERP cannot send either — same `Mail.Read` limit. So the row
+action does what the system can honestly do: it records a relance and produces
+the letter through the document engine (LAW 3), and the person sends it. The
+verb is **Chase**, matching the vocabulary already used on ageing. A second
+template is its own task, not a blocker: until it exists, the relance carries
+the invoice wording and the screen says so.
+
+**4 · The `/offers` header button reads "Build offer from a deal".**
+`offer.noneBody` already says an offer is built from a deal. A button called
+"New offer" that immediately asks "which deal?" is the same thing with a worse
+name — and the name is what teaches somebody what an offer *is*. It opens a
+picker of open deals. This settles one button on six screens.
+
+**What this unblocks.** U4 and U5 are `[ ]` again and buildable against the
+frames. Implementation order is by inheritance, not by screen:
+P2 type scale → P1 page header → P3 row action → P5 primaries out of empty
+states → P4 banner → P6 list states. Each names its frame in
+`docs/UX-SCAN-2026-09-09.md`.
+
+**The design-first rule still stands** for anything not covered by an approved
+frame. These four decisions approve the frames that exist; they do not approve
+whatever a later run feels like drawing.
 
 ## WAVE 3 — shrink the surface
 
