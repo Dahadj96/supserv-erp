@@ -51,6 +51,7 @@ describe("every primary button that navigates", () => {
       "/contacts/new",
       "/deals/new",
       "/deliveries/new",
+      "/invoices/new",
       "/projects/new",
     ]) {
       expect(hrefs, `no primary button opens ${href}`).toContain(href);

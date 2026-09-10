@@ -3143,7 +3143,21 @@
       "nothingLeftToBill": "Il ne reste rien à facturer sur ce document.",
       "nothingDelivered": "Rien n'a encore été livré dessus.",
       "nothingChosen": "Saisissez une quantité sur au moins une ligne."
-    }
+    },
+    "pickSourceTitle": "Nouvelle facture",
+    "pickSourceSubtitle": "Une facture se fait sur ce que le client a accepté. Choisissez-le : son client, ses lignes et ses prix sont repris.",
+    "whatToBill": "Ce qui est facturé",
+    "pickThisOne": "Facturer ceci",
+    "leftToBill": "Reste à facturer",
+    "openOnlyNote": "commandes émises avec un reste à facturer",
+    "allSourcesNote": "toutes les commandes émises, y compris celles déjà facturées en totalité",
+    "showAllSources": "Afficher les commandes déjà facturées en totalité",
+    "carriedForward": "Le client, les lignes et les prix viennent de la commande. L’écran suivant montre ce qui est livré et ce qui est déjà facturé avant que quoi que ce soit ne soit créé.",
+    "startBlank": "Rien comme point de départ",
+    "nothingOpenTitle": "Rien n’attend d’être facturé",
+    "nothingOpen": "Toutes les commandes émises ont été facturées en totalité. Une facture se fait sur une commande client, une proforma, un devis ou une situation, une fois émis.",
+    "noSourcesTitle": "Rien n’a été émis à facturer",
+    "noSources": "Une facture se fait sur quelque chose que le client a accepté — sa commande, une proforma, un devis ou une situation — et rien n’a encore été émis. Une facture directe, sans rien derrière, reste possible."
   },
   "today": {
     "headline": "{n, plural, one {# chose vous attend aujourd'hui} other {# choses vous attendent aujourd'hui}} · environ {minutes} minutes",

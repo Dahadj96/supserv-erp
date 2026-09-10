@@ -6,11 +6,12 @@ import { INPUT } from "@/app/[locale]/(app)/setup/field";
 import { getSession } from "@/auth/session";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import { StateBlock } from "@/components/ui/state-block";
 import { db } from "@/db";
 import { bankAccount, companyIdentity } from "@/db/schema/company";
 import { document } from "@/db/schema/document";
 import { party } from "@/db/schema/party";
-import { type BillScope, billable } from "@/documents/bill";
+import { type BillableSource, type BillScope, billable, billableSources } from "@/documents/bill";
 import { check } from "@/documents/compliance";
 import { peekNumber } from "@/documents/numbering";
 import { formatMoney } from "@/domain/money";
@@ -51,19 +52,40 @@ export default async function NewInvoicePage({
   searchParams,
 }: {
   params: Promise<{ locale: string }>;
-  searchParams: Promise<{ source?: string; scope?: string; error?: string }>;
+  searchParams: Promise<{ source?: string; scope?: string; error?: string; all?: string }>;
 }) {
   const { locale } = await params;
-  const { source, scope: rawScope, error } = await searchParams;
+  const { source, scope: rawScope, error, all } = await searchParams;
   setRequestLocale(locale);
   const t = await getTranslations();
 
   const session = await getSession();
   if (!session) hardRedirect(`/${locale}/sign-in`);
 
-  // Nothing to start from is a legitimate answer — the frame's fourth chip,
-  // "Nothing — enter it myself" — and the blank builder already exists.
-  if (!source) hardRedirect(`/${locale}/documents/new`);
+  /*
+    THE WRONG FORM, AND WHAT IT ACTUALLY WAS.
+
+    This line read `if (!source) hardRedirect('/documents/new')`. So pressing
+    "New invoice" on screen 17 — whose button linked at `/documents/new`
+    directly, and would have arrived here at the same place anyway — opened the
+    generic builder: twenty-two document kinds with Quotation ticked, because
+    it ticks the first kind the person may issue when the query string does not
+    say otherwise.
+
+    The invoice-specific form was already here. It was reachable only from a
+    document that already knew it was the source, so the one button labelled
+    "New invoice" could never open it.
+
+    Now the bare route asks which order is being invoiced, and the answer is
+    what makes the carried-over table below possible. "Nothing to start from"
+    is still a legitimate answer and still goes to the blank builder — with
+    `?kind=invoice`, so the kind a person asked for is the kind that is ticked.
+  */
+  if (!source) {
+    const openOnly = all !== "1";
+    const sources = await billableSources({ openOnly });
+    return <SourcePicker locale={locale} sources={sources} openOnly={openOnly} />;
+  }
 
   const scope: BillScope = rawScope === "remaining" ? "remaining" : "delivered";
 
@@ -460,5 +482,155 @@ function Row({ label, children }: { label: string; children: React.ReactNode }) 
       <dt className="min-w-0 text-secondary">{label}</dt>
       <dd className="ms-auto shrink-0">{children}</dd>
     </div>
+  );
+}
+
+/**
+ * Step zero — which order is being invoiced.
+ *
+ * The frame's own first question, drawn as its four chips: an order, an offer,
+ * a situation, or nothing. Three of them were grey with "orders arrive in phase
+ * 5" written underneath. Orders arrived. So they are rows now, with the figures
+ * that decide between them — ordered, already invoiced, left to bill — and the
+ * fourth is a link to the blank builder with Invoice already chosen.
+ */
+async function SourcePicker({
+  locale,
+  sources,
+  openOnly,
+}: {
+  locale: string;
+  sources: BillableSource[];
+  openOnly: boolean;
+}) {
+  const t = await getTranslations();
+  const day = new Intl.DateTimeFormat(locale === "fr" ? "fr-DZ" : "en-GB", {
+    day: "2-digit",
+    month: "short",
+    year: "numeric",
+  });
+  const kindName = (kind: string) =>
+    t.has(`docTypes.kind.${kind}`) ? t(`docTypes.kind.${kind}`) : kind;
+
+  /*
+    The escape hatch, and it is a real one: a direct invoice with no order
+    behind it happens — a job priced and done on the same visit. It goes to the
+    blank builder carrying the kind, which is the whole difference between
+    "New invoice" and what this screen used to do.
+  */
+  const blank = (
+    <Link href="/documents/new?kind=invoice">
+      <Button variant="secondary">{t("newInvoice.startBlank")}</Button>
+    </Link>
+  );
+
+  return (
+    <main className="min-h-0 flex-1 overflow-auto">
+      <div className="flex flex-wrap items-start gap-3 border-b border-line-subtle bg-surface px-4 py-4 md:px-7 md:py-5">
+        <div className="min-w-0">
+          <h1 className="text-title font-semibold text-ink">{t("newInvoice.pickSourceTitle")}</h1>
+          <p className="mt-1 text-tiny text-muted">{t("newInvoice.pickSourceSubtitle")}</p>
+        </div>
+        <div className="ms-auto flex flex-wrap items-center gap-3">
+          {blank}
+          <Link href="/invoices" className="text-tiny text-secondary hover:underline">
+            {t("newInvoice.cancel")}
+          </Link>
+        </div>
+      </div>
+
+      <div className="max-w-[1100px] px-4 py-5 md:px-7">
+        {sources.length === 0 ? (
+          <StateBlock
+            title={openOnly ? t("newInvoice.nothingOpenTitle") : t("newInvoice.noSourcesTitle")}
+            body={openOnly ? t("newInvoice.nothingOpen") : t("newInvoice.noSources")}
+            action={
+              openOnly ? (
+                <Link href="/invoices/new?all=1">
+                  <Button variant="secondary">{t("newInvoice.showAllSources")}</Button>
+                </Link>
+              ) : (
+                blank
+              )
+            }
+          />
+        ) : (
+          <section className="rounded-[var(--radius-card)] border border-line bg-surface">
+            <div className="flex flex-wrap items-baseline gap-x-3 border-b border-line-subtle px-5 py-3.5">
+              <h2 className="text-tiny font-semibold text-ink">{t("newInvoice.whatToBill")}</h2>
+              <span className="ms-auto text-micro text-muted">
+                {openOnly ? t("newInvoice.openOnlyNote") : t("newInvoice.allSourcesNote")}
+              </span>
+            </div>
+            <div className="overflow-x-auto">
+              <table className="w-full border-collapse text-tiny">
+                <thead>
+                  <tr className="border-b border-line-subtle text-micro uppercase tracking-wide text-muted">
+                    <th className="py-2 ps-5 text-start font-medium">{t("invoices.col.number")}</th>
+                    <th className="py-2 pe-4 text-start font-medium">{t("invoices.col.client")}</th>
+                    <th className="py-2 pe-4 text-start font-medium">{t("invoices.col.issued")}</th>
+                    <th className="py-2 pe-4 text-end font-medium">{t("deliveries.lines")}</th>
+                    <th className="py-2 pe-4 text-end font-medium">{t("newInvoice.ordered")}</th>
+                    <th className="py-2 pe-4 text-end font-medium">
+                      {t("newInvoice.alreadyInvoiced")}
+                    </th>
+                    <th className="py-2 pe-4 text-end font-medium">{t("newInvoice.leftToBill")}</th>
+                    <th className="py-2 pe-5 text-end font-medium">
+                      <span className="sr-only">{t("newInvoice.pickThisOne")}</span>
+                    </th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {sources.map((row) => (
+                    <tr key={row.documentId} className="border-b border-line-subtle last:border-0">
+                      <td className="py-2.5 ps-5">
+                        <span className="font-mono text-micro font-medium text-ink">
+                          {row.number ?? t("invoices.noNumber")}
+                        </span>
+                        <span className="ms-2 text-micro text-muted">{kindName(row.kind)}</span>
+                      </td>
+                      <td className="py-2.5 pe-4 text-secondary">{row.clientName}</td>
+                      <td className="py-2.5 pe-4 text-muted">
+                        {row.issuedOn ? day.format(row.issuedOn) : "—"}
+                      </td>
+                      <td className="py-2.5 pe-4 text-end tabular-nums text-ink">{row.lines}</td>
+                      <td className="py-2.5 pe-4 text-end tabular-nums text-secondary">
+                        {row.ordered}
+                      </td>
+                      <td className="py-2.5 pe-4 text-end tabular-nums text-secondary">
+                        {row.invoiced}
+                      </td>
+                      <td className="py-2.5 pe-4 text-end">
+                        <Badge tone={Number(row.remaining) > 0 ? "warning" : "good"}>
+                          {row.remaining}
+                        </Badge>
+                      </td>
+                      <td className="py-2.5 pe-5 text-end">
+                        <Link href={`/invoices/new?source=${row.documentId}`}>
+                          <Button variant="secondary" size="small">
+                            {t("newInvoice.pickThisOne")}
+                          </Button>
+                        </Link>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+            <p className="border-t border-line-subtle px-5 py-3 text-micro leading-relaxed text-muted">
+              {t("newInvoice.carriedForward")}
+            </p>
+          </section>
+        )}
+
+        {openOnly && sources.length > 0 ? (
+          <p className="mt-3 text-micro text-muted">
+            <Link href="/invoices/new?all=1" className="text-accent-ink hover:underline">
+              {t("newInvoice.showAllSources")}
+            </Link>
+          </p>
+        ) : null}
+      </div>
+    </main>
   );
 }

@@ -119,7 +119,13 @@ export default async function InvoicesPage({
             <Button variant="secondary" disabledReason={t("invoices.proformaLater")}>
               {t("invoices.newProforma")}
             </Button>
-            <Link href="/documents/new">
+            {/*
+              T2. This linked at `/documents/new`, so "New invoice" opened "New
+              document" with Quotation ticked among twenty-two kinds. It opens
+              the invoice form, which asks which order is being invoiced and
+              carries the client and the lines across from it.
+            */}
+            <Link href="/invoices/new">
               <Button variant="primary">{t("invoices.newInvoice")}</Button>
             </Link>
           </>
@@ -173,7 +179,7 @@ export default async function InvoicesPage({
           {shown.length === 0 ? (
             <div className="p-6">
               <p className="text-tiny text-ink">{t("invoices.empty")}</p>
-              <Link className="mt-3 inline-block" href="/documents/new">
+              <Link className="mt-3 inline-block" href="/invoices/new">
                 <Button variant="primary" size="small">
                   {t("invoices.newInvoice")}
                 </Button>

@@ -1,7 +1,10 @@
-import { asc, eq } from "drizzle-orm";
+import Decimal from "decimal.js";
+import { and, asc, desc, eq, inArray, sql } from "drizzle-orm";
 import { db } from "@/db";
 import { auditEntry } from "@/db/schema/control";
 import { document, documentLine, documentLink } from "@/db/schema/document";
+import { party } from "@/db/schema/party";
+import { liveDocument } from "@/domain/deletion";
 import { progress } from "@/domain/delivery/lines";
 import { coveredAgainst, sourceLines } from "@/domain/delivery/store";
 import { computeTotals } from "@/domain/money";
@@ -39,6 +42,126 @@ export class CannotBill extends Error {
   ) {
     super(why);
   }
+}
+
+/**
+ * WHAT AN INVOICE CAN BE RAISED FROM.
+ *
+ * The client saying yes, in whichever shape it arrived: their bon de commande,
+ * our proforma back with *bon pour accord*, the devis they accepted on the
+ * telephone, or a situation on a marché. `DELIVERABLE_KINDS` is the same list
+ * for the same reason and they are deliberately separate: goods can go out
+ * against an invoice, and an invoice is not raised against an invoice.
+ *
+ * `delivery_note` is not here and must not be. A BL's lines point at the order
+ * they deliver, and billing one would make an invoice whose lines point at the
+ * BL — after which "already invoiced" against the order silently reads zero
+ * and the client is billed twice. Bill the ORDER; how much of it has gone out
+ * is what `scope: "delivered"` asks.
+ *
+ * This is what the selector OFFERS. `billFrom` keeps its own check on the
+ * state, which is the one that decides whether a source is real.
+ */
+export const BILLABLE_KINDS = ["client_order", "proforma", "quotation", "situation"] as const;
+
+export type BillableSource = {
+  documentId: string;
+  kind: string;
+  number: string | null;
+  clientName: string;
+  partyId: string;
+  issuedOn: Date | null;
+  lines: number;
+  /** Sum of the item quantities on the source. */
+  ordered: string;
+  /** Sum of the quantities on the ISSUED invoices that bill it. */
+  invoiced: string;
+  /** Ordered less invoiced, never negative. Zero means nothing is left to bill. */
+  remaining: string;
+};
+
+/**
+ * What a new invoice can be started FROM — screen 72, step zero.
+ *
+ * `/invoices/new` used to send anybody arriving without `?source=` straight to
+ * `/documents/new`, the generic form with twenty-two document types and
+ * Quotation ticked. Pressing "New invoice" and landing on "New document ·
+ * Quotation" is the whole of the owner's second critical defect: the screen
+ * that carries an order forward existed, and the button could not reach it.
+ *
+ * So the bare route asks which order is being invoiced, and only then does the
+ * carried-over table have something to carry.
+ */
+export async function billableSources(
+  opts: { openOnly?: boolean; partyId?: string } = {},
+): Promise<BillableSource[]> {
+  const openOnly = opts.openOnly ?? true;
+
+  const rows = await db
+    .select({
+      documentId: document.id,
+      kind: document.kind,
+      number: document.number,
+      partyId: document.partyId,
+      issuedOn: document.issuedOn,
+      clientName: sql<string>`coalesce(nullif(trim(${party.tradeName}), ''), ${party.legalName})`,
+      lines: sql<number>`(
+        select count(*) from document_line dl
+        where dl.document_id = ${document.id} and dl.line_kind = 'item'
+      )::int`,
+      ordered: sql<string>`coalesce((
+        select sum(dl.qty) from document_line dl
+        where dl.document_id = ${document.id} and dl.line_kind = 'item'
+      ), 0)::text`,
+      // The same three clauses `coveredAgainst` applies: issued only, never a
+      // cancelled one, never a discarded one.
+      invoiced: sql<string>`coalesce((
+        select sum(inv.qty)
+        from document_line inv
+        join document i on i.id = inv.document_id
+        join document_line src on src.id = inv.source_line_id
+        where src.document_id = ${document.id}
+          and i.kind in ('invoice', 'advance_invoice', 'situation')
+          and i.number is not null
+          and i.status <> 'credited'
+          and i.deleted_at is null
+      ), 0)::text`,
+    })
+    .from(document)
+    .innerJoin(party, eq(party.id, document.partyId))
+    .where(
+      and(
+        inArray(document.kind, [...BILLABLE_KINDS]),
+        // The STATE, not the number — a client's own order carries theirs.
+        // `billFrom` asks exactly this, so the selector cannot offer what the
+        // action would refuse.
+        eq(document.status, "issued"),
+        liveDocument,
+        opts.partyId ? eq(document.partyId, opts.partyId) : sql`true`,
+      ),
+    )
+    .orderBy(desc(document.issuedOn), desc(document.createdAt));
+
+  const mapped = rows.map((row) => {
+    const ordered = new Decimal(row.ordered || "0");
+    const invoiced = new Decimal(row.invoiced || "0");
+    const left = ordered.minus(invoiced);
+    return {
+      documentId: row.documentId,
+      kind: row.kind,
+      number: row.number,
+      clientName: row.clientName,
+      partyId: row.partyId,
+      issuedOn: row.issuedOn ? new Date(`${row.issuedOn}T00:00:00Z`) : null,
+      lines: row.lines,
+      ordered: ordered.toDecimalPlaces(4).toFixed(),
+      invoiced: invoiced.toDecimalPlaces(4).toFixed(),
+      remaining: (left.isNegative() ? new Decimal(0) : left).toDecimalPlaces(4).toFixed(),
+    };
+  });
+
+  const withLines = mapped.filter((row) => row.lines > 0);
+  return openOnly ? withLines.filter((row) => Number(row.remaining) > 0) : withLines;
 }
 
 /**

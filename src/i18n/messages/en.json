@@ -3143,7 +3143,21 @@
       "nothingLeftToBill": "There is nothing left to invoice on that document.",
       "nothingDelivered": "Nothing has been delivered against it yet.",
       "nothingChosen": "Enter a quantity on at least one line."
-    }
+    },
+    "pickSourceTitle": "New invoice",
+    "pickSourceSubtitle": "An invoice is raised on what the client agreed to. Choose it and its client, its lines and its prices are carried forward.",
+    "whatToBill": "What is being invoiced",
+    "pickThisOne": "Invoice this",
+    "leftToBill": "Left to bill",
+    "openOnlyNote": "issued orders with something still to bill",
+    "allSourcesNote": "every issued order, including those already billed in full",
+    "showAllSources": "Show orders already billed in full",
+    "carriedForward": "The client, the lines and the prices come from the order. The next screen shows what is delivered and what is already invoiced before anything is created.",
+    "startBlank": "Nothing to start from",
+    "nothingOpenTitle": "Nothing is waiting to be invoiced",
+    "nothingOpen": "Every issued order has been billed in full. An invoice is raised on a client order, a pro forma, a quotation or a progress statement once it has been issued.",
+    "noSourcesTitle": "Nothing has been issued to invoice",
+    "noSources": "An invoice is raised on something the client agreed to — their order, a pro forma, a quotation or a progress statement — and none has been issued yet. A direct invoice with nothing behind it is still possible."
   },
   "today": {
     "headline": "{n, plural, one {# thing needs you today} other {# things need you today}} · about {minutes} minutes",
