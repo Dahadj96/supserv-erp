@@ -71,7 +71,7 @@ export default async function DealItemsPage({
             {row.ref}
           </Link>
         </nav>
-        <h1 className="mt-1 text-[19px] font-semibold text-ink">{t("dealItems.title")}</h1>
+        <h1 className="mt-1 text-title font-semibold text-ink">{t("dealItems.title")}</h1>
         <p className="mt-1 text-tiny text-muted">
           {t("dealItems.subtitle", { client: clientName ?? "—", count: lines.length })}
         </p>

@@ -74,7 +74,7 @@ export default async function BackupPage({
   if (!mayManage) {
     return (
       <main className="min-h-0 flex-1 overflow-auto p-7">
-        <h1 className="text-[19px] font-semibold text-ink">{t("backup.title")}</h1>
+        <h1 className="text-title font-semibold text-ink">{t("backup.title")}</h1>
         <p className="mt-2 max-w-[560px] text-tiny leading-relaxed text-secondary">
           {t("backup.notPermitted")}
         </p>
@@ -123,7 +123,7 @@ export default async function BackupPage({
     <main className="min-h-0 flex-1 overflow-auto">
       <div className="flex items-start gap-3 border-b border-line-subtle bg-surface px-4 md:px-7 py-5">
         <div>
-          <h1 className="text-[19px] font-semibold text-ink">{t("backup.title")}</h1>
+          <h1 className="text-title font-semibold text-ink">{t("backup.title")}</h1>
           <p className="mt-1 text-tiny text-muted">{t("backup.subtitle")}</p>
         </div>
         <div className="ms-auto flex items-center gap-2">

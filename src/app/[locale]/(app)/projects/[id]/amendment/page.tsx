@@ -69,7 +69,7 @@ export default async function AmendmentPage({
           </Link>{" "}
           · {p.object}
         </p>
-        <h1 className="mt-0.5 text-[19px] font-semibold text-ink">
+        <h1 className="mt-0.5 text-title font-semibold text-ink">
           {t("amendment.title")}
           {already > 0 ? (
             <span className="ms-2 text-tiny font-normal text-muted">

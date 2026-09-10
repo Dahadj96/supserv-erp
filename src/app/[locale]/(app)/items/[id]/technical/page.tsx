@@ -49,7 +49,7 @@ export default async function ItemTechnicalPage({
       <div className="border-b border-line-subtle bg-surface px-4 md:px-7 py-5">
         <div className="flex items-baseline gap-3">
           <span className="font-mono text-tiny text-muted">{file.item.code}</span>
-          <h1 className="text-[19px] font-semibold text-ink">{file.item.designation}</h1>
+          <h1 className="text-title font-semibold text-ink">{file.item.designation}</h1>
           {file.hasDatasheet ? null : (
             <Badge tone="warning">{t("itemTechnical.noDatasheet")}</Badge>
           )}

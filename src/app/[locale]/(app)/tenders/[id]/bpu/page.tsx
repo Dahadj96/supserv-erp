@@ -101,7 +101,7 @@ export default async function BpuPage({
       <div className="border-b border-line-subtle bg-surface px-4 md:px-7 pt-5">
         <div className="flex items-start gap-3">
           <div className="min-w-0">
-            <h1 className="text-[19px] font-semibold text-ink">
+            <h1 className="text-title font-semibold text-ink">
               {t("bpu.title", { n: view.rows.length })}
             </h1>
             <p className="mt-1 text-tiny text-muted">

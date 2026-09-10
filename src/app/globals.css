@@ -61,6 +61,35 @@
   --text-small: 12.5px;
   --text-base: 13.5px;
   --text-lead: 14.5px;
+
+  /*
+   * P2 — the six levels of frame `176:4` on the `v5 · repair` page, approved
+   * 10 September 2026. The scale above raised the floor and stopped there, so
+   * 2 054 of the 2 084 pieces of text in the ERP came out 12px or smaller: a
+   * card heading and the body under it were both 12px, separated by weight
+   * alone, and nothing on a screen told the eye where to look. Three of the six
+   * levels already existed and were simply unused — `--text-lead` is the card
+   * heading, `--text-base` the body, `--text-micro` the caption. These are the
+   * three that did not:
+   *
+   *   page title       24  SemiBold   --text-title    replaces text-[19px]
+   *   section heading  16  SemiBold   --text-section  a level with nothing on
+   *                                                   it yet, for the bands and
+   *                                                   card groups that today
+   *                                                   run straight from the
+   *                                                   page title to a card
+   *   numeric/tabular  23  SemiBold   --text-numeric  KPI tiles and money
+   *
+   * The numeric level is a size and a rule together — write it as
+   * `text-numeric font-semibold tabular-nums`. A column of amounts whose digits
+   * do not line up cannot be read down the column, which is the only reason the
+   * column is a column. Tailwind can express the size as a token and the other
+   * two halves only as utilities, so all three are spelled out at the call site
+   * rather than hidden in a class that would quietly beat a nearby `font-*`.
+   */
+  --text-section: 16px;
+  --text-numeric: 23px;
+  --text-title: 24px;
 }
 
 html {

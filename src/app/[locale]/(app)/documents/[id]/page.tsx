@@ -140,7 +140,7 @@ export default async function DocumentPage({
           <p className="text-micro text-muted">
             {t.has(`documents.kind.${doc.kind}`) ? t(`documents.kind.${doc.kind}`) : doc.kind}
           </p>
-          <h1 className="mt-0.5 text-[19px] font-semibold text-ink">
+          <h1 className="mt-0.5 text-title font-semibold text-ink">
             {doc.number ?? (doc.issued ? t("documents.stateIssued") : t("documents.draft"))}
           </h1>
           <p className="mt-1 text-tiny text-muted">

@@ -51,7 +51,7 @@ export default async function FormsPage({ params }: { params: Promise<{ locale: 
     <main className="min-h-0 flex-1 overflow-auto">
       <div className="border-b border-line-subtle bg-surface px-4 md:px-7 py-5">
         <div className="flex items-baseline gap-3">
-          <h1 className="text-[19px] font-semibold text-ink">{t("forms.title")}</h1>
+          <h1 className="text-title font-semibold text-ink">{t("forms.title")}</h1>
           <Badge tone={status === "live" ? "good" : "warning"}>
             {/* `intake.statusValue`, which is where screen 38 reads the same
                 four values from. The first version of this line invented a

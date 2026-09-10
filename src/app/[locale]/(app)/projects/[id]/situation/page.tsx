@@ -55,7 +55,7 @@ export default async function NextSituationPage({
           </Link>{" "}
           · {p.object}
         </p>
-        <h1 className="mt-0.5 text-[19px] font-semibold text-ink">
+        <h1 className="mt-0.5 text-title font-semibold text-ink">
           {t("situation.title", { n: next.sequence })}
         </h1>
         <p className="mt-1 max-w-[760px] text-tiny leading-relaxed text-muted">

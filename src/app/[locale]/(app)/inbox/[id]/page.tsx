@@ -227,7 +227,7 @@ export default async function MessagePage({
 
       <div className="grid gap-6 px-4 md:px-7 py-6 lg:grid-cols-[minmax(0,1fr)_320px]">
         <div className="min-w-0">
-          <h1 className="text-[19px] font-semibold leading-snug text-ink">
+          <h1 className="text-title font-semibold leading-snug text-ink">
             {message.subject || t("inbox.noSubject")}
           </h1>
 

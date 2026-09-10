@@ -79,7 +79,7 @@ export default async function OfferBuilderPage({
     <main className="min-h-0 flex-1 overflow-auto">
       <div className="flex flex-wrap items-start gap-3 border-b border-line-subtle bg-surface px-4 py-4 md:px-7 md:py-5">
         <div className="min-w-0">
-          <h1 className="text-[19px] font-semibold text-ink">
+          <h1 className="text-title font-semibold text-ink">
             {offer.document.number ?? t("offer.noNumberYet")} —{" "}
             {issued ? t("offer.issued") : t("offer.draft")}
           </h1>

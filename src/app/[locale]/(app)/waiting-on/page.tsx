@@ -40,7 +40,7 @@ export default async function WaitingPage({ params }: { params: Promise<{ locale
     <main className="min-h-0 flex-1 overflow-auto">
       <div className="flex flex-wrap items-start gap-3 border-b border-line-subtle bg-surface px-4 py-4 md:px-7 md:py-5">
         <div className="min-w-0">
-          <h1 className="text-[19px] font-semibold text-ink">{t("waiting.title")}</h1>
+          <h1 className="text-title font-semibold text-ink">{t("waiting.title")}</h1>
           <p className="mt-1 text-tiny text-muted">
             {t("waiting.subtitle", { n: view.total, overdue: view.overdue })}
           </p>

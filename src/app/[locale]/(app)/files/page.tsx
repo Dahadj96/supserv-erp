@@ -129,7 +129,7 @@ export default async function FilesPage({
     <main className="flex min-h-0 flex-1 flex-col">
       <div className="shrink-0 border-b border-line-subtle bg-surface px-4 md:px-7 py-5">
         <div className="flex items-baseline gap-3">
-          <h1 className="text-[19px] font-semibold text-ink">{t("nav.files")}</h1>
+          <h1 className="text-title font-semibold text-ink">{t("nav.files")}</h1>
           <Link
             href="/settings/storage"
             className="ms-auto inline-flex min-h-9 items-center md:min-h-0 text-tiny text-accent-ink hover:underline"

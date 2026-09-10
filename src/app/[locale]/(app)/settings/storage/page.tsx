@@ -89,7 +89,7 @@ export default async function StoragePage({ params }: { params: Promise<{ locale
     <main className="min-h-0 flex-1 overflow-auto">
       <div className="flex items-start gap-3 border-b border-line-subtle bg-surface px-4 md:px-7 py-5">
         <div>
-          <h1 className="text-[19px] font-semibold text-ink">{t("storage.title")}</h1>
+          <h1 className="text-title font-semibold text-ink">{t("storage.title")}</h1>
           <p className="mt-1 text-tiny text-muted">{t("storage.subtitle")}</p>
         </div>
         <div className="ms-auto">

@@ -46,7 +46,7 @@ export default async function InboxPage({
     return (
       <main className="min-h-0 flex-1 overflow-auto">
         <div className="border-b border-line-subtle bg-surface px-4 md:px-7 py-5">
-          <h1 className="text-[19px] font-semibold text-ink">{t("nav.inbox")}</h1>
+          <h1 className="text-title font-semibold text-ink">{t("nav.inbox")}</h1>
         </div>
         <div className="mx-4 md:mx-7 mt-5 flex max-w-[720px] items-start gap-3 rounded-[var(--radius-control)] border border-line bg-surface px-4 py-3">
           <CircleHelp className="mt-px size-4 shrink-0 text-muted" aria-hidden />
@@ -82,7 +82,7 @@ export default async function InboxPage({
     <main className="min-h-0 flex-1 overflow-auto">
       <div className="flex items-start gap-3 border-b border-line-subtle bg-surface px-4 md:px-7 py-5">
         <div>
-          <h1 className="text-[19px] font-semibold text-ink">{t("nav.inbox")}</h1>
+          <h1 className="text-title font-semibold text-ink">{t("nav.inbox")}</h1>
           <p className="mt-1 text-tiny text-muted">
             {t("inbox.subtitle", { unread: counts.unread, expiring: counts.expiringSoon })}
           </p>

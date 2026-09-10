@@ -137,7 +137,7 @@ export default async function EditDocumentPage({
       <div className="flex items-start gap-3 border-b border-line-subtle bg-surface px-4 md:px-7 py-5">
         <div>
           <p className="text-micro text-muted">{kindName(record.kind)}</p>
-          <h1 className="mt-0.5 flex items-center gap-2 text-[19px] font-semibold text-ink">
+          <h1 className="mt-0.5 flex items-center gap-2 text-title font-semibold text-ink">
             {t("builder.title")}
             <Badge tone="neutral">{t("builder.draft")}</Badge>
           </h1>
