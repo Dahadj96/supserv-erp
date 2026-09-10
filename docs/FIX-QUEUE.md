@@ -578,7 +578,7 @@ Wave T is step one. Do not start step two while anything below is `[ ]`.
 a route that 404s and a count that disagrees with its own list are broken, not
 undesigned. Anything here that invents a *new* surface still needs a frame.
 
-- [ ] **T1 · New delivery opens a 404** *(critical)*
+- [~] **T1 · New delivery opens a 404** *(critical)*
   Repair the route, and give it a source-order selector so a delivery is created
   from what was ordered rather than retyped. **Then add a navigation test that
   presses every primary creation button in the app and asserts it lands
@@ -586,7 +586,7 @@ undesigned. Anything here that invents a *new* surface still needs a frame.
   *Done when:* every creation button in the app is proven to open its form by a
   test that runs in `pnpm check`.
 
-- [ ] **T2 · New invoice opens "New document" with Quotation selected** *(critical)*
+- [~] **T2 · New invoice opens "New document" with Quotation selected** *(critical)*
   Among 22 types. Open an invoice-specific form with Invoice already chosen, and
   carry the originating order, its client and its lines forward. Nobody should
   retype what the order already says.
@@ -617,7 +617,7 @@ undesigned. Anything here that invents a *new* surface still needs a frame.
   Preserve incomplete draft rows and highlight what is missing. **Never silently
   discard entered work.** This one costs trust faster than any other on the list.
 
-- [ ] **T9 · Counts do not reconcile with their lists** *(high)*
+- [~] **T9 · Counts do not reconcile with their lists** *(high)*
   Invoices shows zero while Reports and Compliance see an invoice draft.
   Companies shows two while New deal offers five clients. Find the filter,
   archived-record and data-source disagreements. **Every count must reconcile
