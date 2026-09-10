@@ -19,7 +19,11 @@ One task at a time. Never two in flight.
    **WAVE U comes next.** Added 9 September from Abdou directly: the
    ERP is powerful and nobody can tell what it does. Take Wave U before the
    rest of Wave 2 and before Wave 3, whatever the numbering suggests.
-   **WAVE R ranks below both**, and its own heading says why: two of Wave T's
+   **WAVE V comes after Wave T** — `docs/OWNER-REVIEW-2026-09-10-B.md`, his
+   second walk, after building a real deal end to end. It absorbs T6, T7 and
+   T8, so those are not taken separately. Read that document before taking
+   anything in Wave V.
+   **WAVE R ranks below all three**, and its own heading says why: two of Wave T's
    tasks already are its biggest recommendation. The one exception is **R1**,
    which may be taken as soon as Wave T is clear. Read
    `docs/REVIEW-REDESIGN-2026-09-10.md` before taking anything in Wave R.
@@ -660,16 +664,16 @@ undesigned. Anything here that invents a *new* surface still needs a frame.
   is real, say what it is. A disabled control beside a working one is the exact
   shape of "I don't know how to use it".
 
-- [ ] **T6 · A deal's deadline cannot be corrected** *(high)*
+- [→] **T6 · A deal's deadline cannot be corrected** *(high — absorbed into V4)*
   It says the deadline can only be set at creation or by a confirmed document.
   Allow authorised editing of deadline, owner, submission method and reference,
   **with change history**. A mis-read deadline is currently unfixable, and a
   deadline is the field that loses the bid.
 
-- [ ] **T7 · Offer pricing is split across two screens** *(high)*
+- [→] **T7 · Offer pricing is split across two screens** *(high — absorbed into V5)*
   One editor: quantities, costs, selling prices, margin, tax — then preview.
 
-- [ ] **T8 · The document editor discards rows without description or quantity** *(high)*
+- [→] **T8 · The document editor discards rows without description or quantity** *(high — absorbed into V5)*
   Preserve incomplete draft rows and highlight what is missing. **Never silently
   discard entered work.** This one costs trust faster than any other on the list.
 
@@ -678,6 +682,272 @@ undesigned. Anything here that invents a *new* surface still needs a frame.
   Companies shows two while New deal offers five clients. Find the filter,
   archived-record and data-source disagreements. **Every count must reconcile
   with the list it leads to** — and a test should hold that true.
+
+## WAVE V — what he found by using it
+
+**Added 10 September 2026 from `docs/OWNER-REVIEW-2026-09-10-B.md` — his second
+walk, after building a real deal end to end and trying to get a proforma out of
+it. Read that document before taking anything here.** It outranks Wave U and
+Wave 3. Where it disagrees with the first owner review, this one wins: that one
+was written before he had run the commercial journey.
+
+**Three of Wave T's tasks are absorbed rather than duplicated.** T6 becomes
+part of V4, and T7 and T8 become part of V5 — they are the same jobs described
+from one screen instead of from the whole flow. Take T5 first (it is small and
+already scoped), then this wave in order.
+
+**The finding that shapes the whole wave:** six of the sixteen things he could
+not find are BUILT AND UNREACHABLE. Before building anything, check whether it
+exists — the audit of 8 September said the seam between the logic and the
+screen is where this system fails, and it still is.
+
+**Design.** He chose the Claude Design canvas over Figma on 10 September, for
+speed and because he can edit it himself in a browser. The design-first rule
+stands; the canvas is now where the frame comes from, and the Figma file stays
+as the record of what was already built.
+
+### BLOCK 1 — delete, edit and the bin *(his choice, and the right one: nothing else is safe to test until he can undo his own mistakes)*
+
+- [ ] **V0 · Link the screen that already attaches datasheets** *(take first — it is an hour)*
+  `/items/[id]/technical` is a real upload form, fully wired to `addItemMedia`,
+  with photo / datasheet / certificate / diagram / manual kinds and provenance.
+  **Nothing in the app links to it** — no nav row, no item list, no link from a
+  deal line. He concluded the capability did not exist.
+  Give items a list screen and link it from the deal's item table, one link per
+  line. Also pass `dealId` through `addMediaAction`: the column exists so that
+  "a picture the client sent belongs to that enquiry", and the action drops it,
+  so every upload lands item-wide.
+  *Done when:* from a deal line he reaches the place that holds that item's
+  datasheets without typing a URL.
+
+- [ ] **V1 · Discarding a deal must take its work with it**
+  `discardDeal` (`src/domain/deletion.ts:147`) writes ONE row — `deleted_at`
+  on the deal, plus an audit entry. It does not touch `deal_line`, the draft
+  documents hanging off it, `sourcing_request`, `tender` or `price_quote`. The
+  foreign keys look like they would save you and do not: `deal_line` is
+  `ON DELETE cascade` and `price_quote.deal_id` is `ON DELETE set null`, and
+  both fire only on a hard delete, which this system never does.
+  So today: live lines under a binned deal, and unissued drafts pointing at a
+  deal nobody can open — and those drafts are not in the bin either, because
+  the bin lists a document only when the document's OWN `deleted_at` is set.
+  Discard the deal, its lines, its unissued documents, its sourcing requests
+  and its tender in one transaction, each with its own audit entry so restore
+  can put them all back. **Keep the guard**: a deal carrying an ISSUED document
+  still refuses (LAW 5), and the refusal must name the document.
+  *Done when:* binning a deal empties it from every list it appeared on,
+  restoring it brings all of it back, and a deal with an issued invoice refuses
+  and says which one.
+
+- [ ] **V2 · A delete on the row, not only inside the record**
+  `deals-list.tsx:140` refuses deletion in the BULK bar and is right to —
+  *"Only what is safe in bulk. No send, issue, cancel or delete — ever."* That
+  is not a reason for a deal to have no row action at all. He looked at the
+  list, saw no way to remove a row, and stopped.
+  A per-row action on the row he is looking at, with a confirmation naming what
+  goes with it (V1 makes that sentence true). Same for the documents on a deal,
+  and for `/invoices` — `discardDocument` exists and is callable from the
+  document's own page and nowhere else.
+  *Done when:* every list that owns a record can remove one of its rows, and no
+  removal is silent about what it takes.
+
+- [ ] **V3 · The bin must empty, and the countdown must mean something**
+  `/settings/bin` lists five kinds and restores all five. What it cannot do is
+  finish. `BIN_DAYS = 30` counts down on screen and `deletion.ts:543` admits
+  *"nothing purges at zero"* — I searched `purge`, `hard delete`,
+  `permanently` and there is no such function in `src/`.
+  Add **delete forever**, gérant-only, one row at a time, behind a typed
+  confirmation, refusing anything an issued document points at. Then either
+  purge at thirty days or stop drawing a countdown that lies. And put the bin
+  where he will find it — he did not know it was there.
+  *Done when:* he can empty the bin, and the number on a bin row is true.
+
+- [ ] **V4 · A deal can be corrected** *(absorbs T6)*
+  `find src/app -type d -name edit` returns exactly TWO routes in the whole
+  application: `companies/[id]/edit` and `documents/[id]/edit`. **A deal has no
+  edit path at all** — not its subject, not its client, not its deadline, not
+  its owner. `db.update(deal)` appears at seven sites and none writes those
+  fields.
+  A deal edit form: subject, client, deadline, submission method, client
+  reference, owner. **With change history** — T6's word, and the reason is that
+  a deadline read off a PDF and corrected by hand is exactly the field somebody
+  will later need to know was corrected. `deal.owner_id` gains its first writer
+  here, which is also what unblocks "assign to" on the list and every
+  role-scoped view later.
+  *Done when:* every field a person can get wrong at creation can be corrected
+  afterwards, and the record says who changed what.
+
+### BLOCK 2 — one page from deal to proforma
+
+- [ ] **V5 · One editor, with cost, price and margin on the same row** *(absorbs T7 and T8)*
+  **The flexibility he asked for already exists and the door hides it.**
+  `build/actions.ts:96-107` — a typed price WINS over a typed margin, and the
+  margin is recomputed and shown. He never saw it because the way into that
+  screen is a single **margin** box on the deal page, so the first thing the
+  system asks for is the thing he did not want to give.
+  Three screens hold one job: `/deals/[id]/prices` (398 lines),
+  `/offers/[id]/build` (500) and `/documents/[id]/edit` (559). The builder
+  shows **no cost and no margin at all**, so the half of the work that decides
+  what he earns is on a different screen from the half that decides what the
+  client reads.
+  One editor: description, reference, quantity, unit, cost, selling price,
+  margin, discount, tax — cost and margin visible only to `offers.margin.view`,
+  which already exists and is held by gérant and compta. Type either the price
+  or the margin and the other follows. Paste from Excel through the
+  `parsePaste` that already reads tabs and prose. Keyboard between cells.
+  Totals below the table on a narrow window, not beside it.
+  **And stop discarding rows** — `documents/draft.ts:106` filters out any line
+  with no designation, on purpose, with a comment. T8 is right that this costs
+  trust faster than anything else on the list, and the comment's reasoning is
+  answerable: a blank line the client would see is a PRINTING problem, not a
+  storing problem. Keep the row, mark it incomplete, refuse to ISSUE until it
+  is filled or removed. Replace that comment so nobody restores the filter.
+  *Done when:* he prices a deal, sees his margin, and gets a document out
+  without changing screens, and nothing he typed disappears.
+
+- [ ] **V6 · Conditions on a document, printed as conditions**
+  He could not add *"this offer is valid for thirty days"* or *"payment within
+  thirty days"*. Both halves of this are nearly there.
+  **`text` and `section` line kinds already exist** (`LINE_KINDS`,
+  `draft.ts:24`) and are Add buttons on the builder, reorderable anywhere
+  between item lines. But `engine.ts:439` maps every line to
+  `{position, designation, quantity, unit, unitPrice, vatRate, total}` and
+  **drops the kind**, so `pdf.ts:433` prints his sentence as a numbered table
+  row with `0,00 / 0,00 / 0% / 0,00` beside it. Carry `lineKind` through the
+  engine and give the PDF a branch per kind.
+  **`document.valid_days` exists**, is in `DraftPatch`, is written by
+  `draft.ts:217` and is READ by three consumers — the offer-validity check
+  against the deadline, the expiring view, and the offer store. **Nothing in
+  the app ever writes it** and the PDF never prints it. Give it an input beside
+  `settlement`, and print it.
+  Then a document-level terms block for what is not a line: there is no
+  `notes`, `terms` or `footer` column on `document` today.
+  *Done when:* a proforma carries his validity and his payment terms, printed
+  as sentences rather than as rows costing nothing.
+
+- [ ] **V7 · Technical documents reach the offer**
+  There is no `file` table and `src/domain/files/index.ts:12` says there never
+  will be — files are a view over five owners: `attachment`, `credential`,
+  `dossier`, `import`, `item`. **A document is not one of them**, and neither is
+  a deal line. So the datasheets he wanted to send with his offer have nowhere
+  to attach.
+  Do NOT add a sixth file owner before reading that file: the right answer is
+  probably that a document's annexe is assembled FROM item media rather than
+  stored again — `annexeVerdict()` in `src/domain/deal/technical.ts:173`
+  already returns buildable / gaps / blocking and already feeds the offer's
+  pre-submit checks. What is missing is the renderer behind a button that
+  currently reads *"coming in phase 6"*.
+  *Done when:* an offer whose items carry datasheets produces an annexe with
+  them in it, and one that does not says which item is missing what.
+
+- [ ] **V8 · An offer that never had a deal**
+  A client sends a request on WhatsApp. There is no email, no enquiry, and he
+  wants a proforma.
+  This works today and has no button. `document.deal_id` is nullable on purpose
+  — *"Null for anything that started life without one"* — `/documents/new`
+  creates one without asking for a deal, and `offer/store.ts:44` already
+  `leftJoin`s the deal so a deal-less quotation shows in `/offers`. What is
+  missing is the door: `/offers`'s primary action reads "Build offer from a
+  deal" and goes to `/deals`, and `/documents/new` is linked from exactly one
+  place in the whole app.
+  Give `/offers` a second action, and let it ask for the client and go straight
+  to the editor. `buildOffer()` requires a `dealId` and throws `noSuchDeal`, so
+  this path goes through `createDraft`, not through it.
+  *Done when:* he can go from nothing to a priced proforma without inventing an
+  enquiry first.
+
+- [ ] **V9 · A draft in Outlook, with the PDF on it** *(needs an Entra change only Abdou can make)*
+  `docs/DECISIONS/2026-08-28-the-erp-does-not-send.md` — *"A template produces
+  text. A person sends it."* The app holds `Mail.Read`; there is no SMTP
+  client, no `.eml` writer and not one `mailto:` in the codebase. Fifteen email
+  templates are seeded with **empty bodies on purpose** and only the settings
+  screen ever reads them.
+  **Abdou reversed that decision on 10 September: `Mail.ReadWrite`, drafts
+  only.** The ERP writes into the Outlook Drafts folder — recipients, subject,
+  body from the template, the PDF attached — and never presses send. He opens
+  Outlook, reads it, sends it.
+  Write the new decision record before the code, superseding the old one, and
+  say in it exactly what changed and why, including that `Mail.Send` was
+  considered and refused. The scope change in Entra is his to approve;
+  `assertScoped()` must gain the same treatment for write that it has for read.
+  *Done when:* pressing "Draft in Outlook" on an issued proforma puts it in his
+  Drafts folder with the PDF on it, and the ERP still cannot send anything.
+
+### BLOCK 3 — the client's purchase order
+
+*He is half right that this is backwards, and the halves need different fixes.*
+**The data model is correct**: `client_order` is `family: "sell"` with
+`numbering: "clientReference"` — *"the number is the CLIENT's. We never
+generate one"* — and `purchase_order` is `family: "buy"` with our own
+`PO-{YYYY}-{####}`. **The screens conflate them** and the intake does not exist.
+
+- [ ] **V10 · The router learns what a bon de commande is**
+  The six rules match `PR`/`RFQ`, `consultation`/`avis`/`appel d'offres`, and
+  `facture`/`règlement`/`virement`. There is no *bon de commande*, no *BC*, no
+  *PO*, no *commande* — and the outcome list itself
+  (`candidate, enquiry, tender, supplierQuote, payment, needsReview`) **has no
+  order in it**. A client's emailed PO falls to the catch-all every time.
+  Add the outcome, the rule and the attachment-kind (`attachmentLooksLike`
+  returns `cv | invoice | quote | delivery_note | tender_dossier | unknown`
+  today). Mind T4's lesson: `BC` is two characters, so it matches as a whole
+  word only, and the tests for that already exist.
+  *Done when:* an email carrying a client's bon de commande is recognised as
+  one, and committing it offers to record the order against its deal.
+
+- [ ] **V11 · Read a received purchase order**
+  `proposeFields` knows seven field types and every one is a French tender
+  concept — submission deadline, opening session, place of deposit, bid bond,
+  offer validity, late penalty, delivery time. **No PO number, no client
+  reference, and no line items at all**: it returns one scalar per key.
+  A PO needs their reference, the delivery deadline, and the lines. Lines are
+  the hard part and the work is already half done elsewhere — `parsePaste`
+  reads tab-separated tables and numbered lists, and `767786f` wired it to the
+  attachment readers for the enquiry. The same pair serves here.
+  A scan is blocked behind task 1.9: `NeedsOcr` is thrown and **caught by
+  nothing**, and the OCR container has a Dockerfile and no server code. Say so
+  on screen rather than failing quietly.
+  *Done when:* a PDF purchase order proposes their number, the deadline and its
+  lines, each citing the page it was read from, and a person confirms.
+
+- [ ] **V12 · The PDF that IS the order can be attached to it**
+  `intake_dossier` carries `message_id`, `attachment_id` and `deal_id` and has
+  **no `document_id`**. So the file that is the order cannot be attached to the
+  order. Add it, and give the client order a screen of its own — today it has
+  none, on the argument that *"the document IS the record"*, which stops being
+  true the moment the real record is a PDF somebody else wrote.
+  *Done when:* opening the client order shows their PDF beside the lines that
+  were read out of it.
+
+### BLOCK 4 — the RFQ out, and the prices back
+
+- [ ] **V13 · Choose the items, choose the addresses, get the email**
+  Creating a supplier request writes rows and stops — `ask-actions.ts:11`,
+  *"Creates the request DRAFTED and sends nobody anything."* Three separate
+  gaps behind that one sentence:
+  **He cannot choose which items to ask about.** `excludedLineIds` is on the
+  table and `createRequest` accepts it, and **no caller passes it**, so every
+  request implicitly asks about every line.
+  **He cannot paste addresses.** The picker is checkboxes over companies
+  already in the directory; `sourcing_response.sentTo` and `.personId` are dead
+  columns nothing writes. He searches online, finds a supplier, and has nowhere
+  to put the address.
+  **The screen will not even give him the words.** A `supplierRfq` template is
+  seeded and the sourcing screen never renders it.
+  With V9 landed this ends in an Outlook draft per supplier. Until it does, it
+  ends in a Copy button, which is still better than what is there.
+  *Done when:* he ticks four lines, pastes three addresses, and gets three
+  drafts.
+
+- [ ] **V14 · A supplier's reply lands against its request**
+  The router HAS a `supplierQuote` rule. Committing one is blocked on purpose:
+  *"Attaching a supplier's emailed quote to the right one needs a picker on
+  this screen, and picking the wrong request silently prices an offer from the
+  wrong quote."* That reasoning is right and the picker was never built.
+  Build the picker — propose the likely request (same supplier, open, recent)
+  and let a person confirm, LAW 2. Nothing outside the sourcing screens writes
+  a `sourcing_response` today, and `sourcing_request` has no message or thread
+  column to correlate on, so that column is part of this task.
+  *Done when:* a supplier answers by email and the price arrives on the
+  comparison without being retyped.
 
 ## WAVE U — the ERP explains itself
 
