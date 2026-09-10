@@ -14,7 +14,9 @@ task, then work from this queue.
 One task at a time. Never two in flight.
 
 1. Read this file. Take the **first task that is `[ ]` and not blocked**.
-   **WAVE U OUTRANKS EVERYTHING.** Added 9 September from Abdou directly: the
+   **WAVE T OUTRANKS EVERYTHING, THEN WAVE U.** Wave T is `docs/OWNER-REVIEW-2026-09-10.md`
+   — defects Abdou found by using the ERP. Take those first, in order.
+   **WAVE U comes next.** Added 9 September from Abdou directly: the
    ERP is powerful and nobody can tell what it does. Take Wave U before the
    rest of Wave 2 and before Wave 3, whatever the numbering suggests.
 2. Mark it `[~]` (in progress) and write the file back immediately, so a
@@ -553,6 +555,73 @@ Strictly sequential. Each step is useless without the one above it.
   provenance the screen header prints is lost.
   *Done when:* importing a BPU on a plain deal either records provenance or
   says it cannot, and a test covers both.
+
+## WAVE T — restore trust
+
+**Added 10 September 2026 from `docs/OWNER-REVIEW-2026-09-10.md` — Abdou's own
+walk through the running ERP. Read that document before taking any task here.
+It outranks Wave U, Wave 2, Wave 3 and everything else in this file.** Where it
+disagrees with `docs/UX-SCAN-2026-09-09.md`, the owner's review wins: the scan
+was read off the code, the review was read off the screen by the man who has to
+use it.
+
+His acceptance test for the whole programme:
+
+> A user can see the next action, complete it, and continue without searching
+> another module or entering the same information again.
+
+His own implementation order, which stands: **restore trust → complete one
+commercial journey → simplify the interface → finish the secondary workflows.**
+Wave T is step one. Do not start step two while anything below is `[ ]`.
+
+**These are defects, not designs.** The design-first rule does not gate them —
+a route that 404s and a count that disagrees with its own list are broken, not
+undesigned. Anything here that invents a *new* surface still needs a frame.
+
+- [ ] **T1 · New delivery opens a 404** *(critical)*
+  Repair the route, and give it a source-order selector so a delivery is created
+  from what was ordered rather than retyped. **Then add a navigation test that
+  presses every primary creation button in the app and asserts it lands
+  somewhere real** — this class of defect must never reach him again.
+  *Done when:* every creation button in the app is proven to open its form by a
+  test that runs in `pnpm check`.
+
+- [ ] **T2 · New invoice opens "New document" with Quotation selected** *(critical)*
+  Among 22 types. Open an invoice-specific form with Invoice already chosen, and
+  carry the originating order, its client and its lines forward. Nobody should
+  retype what the order already says.
+
+- [ ] **T3 · Today's Reply links all point at the general inbox** *(high)*
+  Open the exact message or thread, with its action to hand.
+
+- [ ] **T4 · Today promotes newsletters, and a cloudHQ PDF tutorial reads as an RFQ** *(high)*
+  Separate **unread**, **unclassified** and **genuinely actionable**. Require an
+  explicit reason before anything is promoted to Today — an item with no reason
+  does not appear.
+
+- [ ] **T5 · Inbox Classify and Link to invoice are disabled, and classification works elsewhere** *(high)*
+  The row action must open the interface that actually works. If a prerequisite
+  is real, say what it is. A disabled control beside a working one is the exact
+  shape of "I don't know how to use it".
+
+- [ ] **T6 · A deal's deadline cannot be corrected** *(high)*
+  It says the deadline can only be set at creation or by a confirmed document.
+  Allow authorised editing of deadline, owner, submission method and reference,
+  **with change history**. A mis-read deadline is currently unfixable, and a
+  deadline is the field that loses the bid.
+
+- [ ] **T7 · Offer pricing is split across two screens** *(high)*
+  One editor: quantities, costs, selling prices, margin, tax — then preview.
+
+- [ ] **T8 · The document editor discards rows without description or quantity** *(high)*
+  Preserve incomplete draft rows and highlight what is missing. **Never silently
+  discard entered work.** This one costs trust faster than any other on the list.
+
+- [ ] **T9 · Counts do not reconcile with their lists** *(high)*
+  Invoices shows zero while Reports and Compliance see an invoice draft.
+  Companies shows two while New deal offers five clients. Find the filter,
+  archived-record and data-source disagreements. **Every count must reconcile
+  with the list it leads to** — and a test should hold that true.
 
 ## WAVE U — the ERP explains itself
 
