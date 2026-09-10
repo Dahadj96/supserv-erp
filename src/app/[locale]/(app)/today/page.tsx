@@ -137,6 +137,21 @@ export default async function TodayPage({ params }: { params: Promise<{ locale: 
                             ? ` · ${dayShort.format(item.expiresAt)} ${clock.format(item.expiresAt)}`
                             : ""}
                         </p>
+                        {/*
+                          T4. The line that says WHY this row is in front of
+                          you, which is the half of "what needs my attention"
+                          the page never answered — a subject line and a date
+                          are what it IS, not why it is here. `t.has` because
+                          a message's reason is its routing rule's own label
+                          and a rule somebody edits could name a key that has
+                          since gone; a missing sentence is a quieter failure
+                          than a 500 on the landing page.
+                        */}
+                        {t.has(item.reasonKey) ? (
+                          <p className="mt-0.5 truncate text-micro text-secondary">
+                            {t(item.reasonKey)}
+                          </p>
+                        ) : null}
                       </div>
                       <Link
                         href={item.href}

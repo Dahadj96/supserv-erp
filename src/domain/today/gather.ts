@@ -4,7 +4,7 @@ import { auditEntry } from "@/db/schema/control";
 import { deal } from "@/db/schema/deal";
 import { deliveryDetail } from "@/db/schema/delivery";
 import { document } from "@/db/schema/document";
-import { intakeMessage } from "@/db/schema/intake";
+import { intakeMessage, routingRule } from "@/db/schema/intake";
 import { party } from "@/db/schema/party";
 import { coveredAgainst, sourceLines, sourceOf } from "@/domain/delivery/store";
 import { balanceOf, daysLate } from "@/domain/money/ageing";
@@ -81,6 +81,7 @@ export async function missedDeadlines(withinDays = 30): Promise<Item[]> {
     detail: [row.clientName, row.submissionMethod].filter(Boolean).join(" · "),
     href: `/deals/${row.id}`,
     action: "open",
+    reasonKey: "today.why.deadlinePassed",
     expiresAt: row.deadlineAt,
     amount: "0",
     waitingOnThem: false,
@@ -120,6 +121,7 @@ async function deadlines(): Promise<Item[]> {
     detail: [row.clientName, row.submissionMethod].filter(Boolean).join(" · "),
     href: `/deals/${row.id}`,
     action: "open",
+    reasonKey: "today.why.deadlineNear",
     expiresAt: row.deadlineAt,
     amount: "0",
     waitingOnThem: false,
@@ -160,6 +162,7 @@ async function money(now: Date): Promise<Item[]> {
       detail: `${balanceOf(invoice)} ${invoice.currency} · ${daysLate(invoice.dueOn, now)} d`,
       href: "/payments/ageing",
       action: "chase",
+      reasonKey: "today.why.overdue",
       // An unpaid invoice does not expire. It is not less collectable tomorrow,
       // and dressing it as a deadline would put it above a tender that is.
       expiresAt: null,
@@ -201,6 +204,7 @@ async function money(now: Date): Promise<Item[]> {
       detail: note.issuedOn ?? "",
       href: `/invoices/new?source=${source.id}`,
       action: "invoice",
+      reasonKey: "today.why.delivered",
       expiresAt: null,
       amount: "0",
       waitingOnThem: false,
@@ -220,8 +224,15 @@ async function unanswered(): Promise<Item[]> {
       fromAddress: intakeMessage.fromAddress,
       receivedAt: intakeMessage.receivedAt,
       classifiedAs: intakeMessage.classifiedAs,
+      /*
+        The rule that placed it, so the row can say why it is here in the rule's
+        own words rather than in a sentence written twice. A LEFT join, because
+        a message the router never matched still has a reason to be triaged.
+      */
+      ruleLabelKey: routingRule.labelKey,
     })
     .from(intakeMessage)
+    .leftJoin(routingRule, eq(routingRule.id, intakeMessage.matchedRuleId))
     .where(
       and(
         // The same "open" the inbox uses: not dismissed, not yet committed.
@@ -266,6 +277,7 @@ async function quick(): Promise<Item[]> {
       detail: note.issuedOn ?? "",
       href: `/deliveries/${note.id}`,
       action: "attach",
+      reasonKey: "today.why.unsigned",
       expiresAt: null,
       amount: "0",
       waitingOnThem: false,
@@ -291,6 +303,7 @@ async function quick(): Promise<Item[]> {
         detail: "NIF",
         href: `/companies/${client.id}`,
         action: "fill",
+        reasonKey: "today.why.missingIdentifier",
         expiresAt: null,
         amount: "0",
         waitingOnThem: false,
@@ -323,6 +336,7 @@ async function noted(): Promise<Item[]> {
     detail: "",
     href: row.entity === "deal" ? `/deals/${row.entityId}/timeline` : "/today",
     action: "open",
+    reasonKey: "today.why.youAsked",
     // A note's date is a date somebody chose, so it behaves like a deadline —
     // it can arrive, and it can pass.
     expiresAt: row.dueAt,

@@ -619,10 +619,41 @@ undesigned. Anything here that invents a *new* surface still needs a frame.
   and the band is still called "awaiting reply" for messages nobody is waiting
   on. That is T4's job, deliberately not done here.
 
-- [ ] **T4 · Today promotes newsletters, and a cloudHQ PDF tutorial reads as an RFQ** *(high)*
-  Separate **unread**, **unclassified** and **genuinely actionable**. Require an
-  explicit reason before anything is promoted to Today — an item with no reason
-  does not appear.
+- [x] **T4 · Today promotes newsletters, and a cloudHQ PDF tutorial reads as an RFQ** *(high)*
+  **The newsletter half was one word matched as a run of letters.** Rule 2 looks
+  for `PR` — Purchase Requisition, which is how Urbacon and Reggane title theirs
+  — and `contains()` in `src/domain/intake/routing.ts` was
+  `hay.includes(needle)`. So `pr` was inside **pr**otect, **pr**oject,
+  **pr**oduit, **pr**ice and com**pr**essor, and *"How to Password Protect
+  PDFs"* was an enquiry. Not a tuning problem: `route()` applied the confidence
+  floor honestly and the rule fired on every condition it had; the condition was
+  true of half the internet.
+  A needle must now START a word, and a needle of **three characters or fewer**
+  must BE the word. The threshold is the fix's whole design: `PR`, `RFQ`, `BC`
+  and `DA` are acronyms and want the whole word, while `facture` and `virement`
+  are ordinary words that have to keep matching *factures* and *virements*.
+  `normaliseWording` has already turned every hyphen into a space, so
+  `RFQ-10023604-26` still matches. Seven tests, every subject line in them a
+  real one off contact@.
+  **Proven on his own data:** re-running the router over the 19 freshly synced
+  messages moved *"Piping Material One-stop Supplier for Oil & Gas Project"*
+  from enquiry to needs-review, and nothing else changed.
+  **The reason half is `Item.reasonKey`, and it is required.** Not optional —
+  a field that may be omitted is a field that gets omitted, so TypeScript
+  refuses a producer that does not answer for itself, which is what makes "an
+  item with no reason does not appear" true by construction rather than by
+  discipline. It caught three test files on the first typecheck. A message's
+  reason is its routing rule's OWN label (`intake.rule.rfq`), joined from
+  `matched_rule_id`, rather than a second sentence about the same thing — so a
+  person who disagrees goes and argues with the rule. Nine `today.why.*` keys
+  cover the rest, both languages, and the row renders it under the detail line,
+  which is the shape Abdou drew in his review.
+  *Left, and it is the smaller half of "separate the three":* an unclassified
+  message still sits in the same band as an actionable one, distinguished only
+  by its reason line reading "Nobody has said what this is". Collapsing them
+  into a single *"N messages to classify"* row in the quick band is the right
+  end state and it needs a new item kind, which touches `ITEM_KINDS`, `MINUTES`,
+  the band map and the notifications feed. Under Known gaps.
 
 - [ ] **T5 · Inbox Classify and Link to invoice are disabled, and classification works elsewhere** *(high)*
   The row action must open the interface that actually works. If a prerequisite

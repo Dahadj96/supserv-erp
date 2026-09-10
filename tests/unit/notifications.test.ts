@@ -13,6 +13,7 @@ function item(kind: ItemKind, over: Partial<Item> = {}): Item {
     detail: "",
     href: "/",
     action: "open",
+    reasonKey: "today.why.deadlineNear",
     expiresAt: null,
     amount: "0",
     waitingOnThem: false,

@@ -29,6 +29,7 @@ const item = (over: Partial<Item> & { id: string; kind: ItemKind }): Item => ({
   detail: "",
   href: "/",
   action: "open",
+  reasonKey: "today.why.deadlineNear",
   expiresAt: null,
   amount: "0",
   waitingOnThem: false,

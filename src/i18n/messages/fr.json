@@ -3186,6 +3186,17 @@
       "fill": "Compléter",
       "review": "Relire"
     },
+    "why": {
+      "deadlinePassed": "La date limite est passée — décidez si cela vaut encore quelque chose",
+      "deadlineNear": "La date limite est aujourd'hui ou demain",
+      "overdue": "Échue et non réglée",
+      "delivered": "Livrée et jamais facturée",
+      "unsigned": "Aucun exemplaire signé au dossier",
+      "missingIdentifier": "Une facture ne peut pas être émise sans lui",
+      "youAsked": "Vous avez demandé un rappel",
+      "routed": "La règle l'a classé et personne ne s'en est occupé",
+      "unclassified": "Personne n'a dit ce que c'est"
+    },
     "thatIsEverything": "C'est tout pour aujourd'hui",
     "allClear": "Rien n'attend de décision de votre part",
     "waitingElsewhere": "{n, plural, one {# chose attend quelqu'un d'autre} other {# choses attendent d'autres personnes}} — elles sont sur la page « On attend » et vous reviennent dès qu'elles bougent.",

@@ -106,6 +106,22 @@ export type Item = {
   /** messages key for the button, under `today.do`. */
   action: string;
   /**
+   * WHY this is on the page, as a full message key. Required, and that is the
+   * whole point of it.
+   *
+   * T4, in Abdou's words: "Require an explicit reason before anything is
+   * promoted to Today — an item with no reason does not appear." A field that
+   * may be omitted is a field that gets omitted, so this is not optional and
+   * TypeScript refuses a producer that does not answer for itself. The same
+   * trick `PageHeader` plays with `actions`.
+   *
+   * A full key rather than a suffix under `today.why`, because the reason a
+   * message is here is the routing rule's own label — `intake.rule.rfq` — and
+   * copying that sentence into a second namespace is how two sentences about
+   * one thing start to disagree.
+   */
+  reasonKey: string;
+  /**
    * When it stops being possible. Null when nothing expires — an unpaid
    * invoice is not less collectable tomorrow.
    */
@@ -281,6 +297,11 @@ export function messageItem(row: {
   fromName: string | null;
   fromAddress: string | null;
   classifiedAs: string | null;
+  /**
+   * The label of the rule that placed it — `intake.rule.rfq` and the like.
+   * Null when no rule matched, or when the row predates the rule that did.
+   */
+  ruleLabelKey: string | null;
 }): Item {
   /*
     The router either recognised it or it did not. `needsReview` is what
@@ -289,6 +310,15 @@ export function messageItem(row: {
   */
   const routed = row.classifiedAs !== null && row.classifiedAs !== "needsReview";
 
+  /*
+    The rule's own sentence is the reason, and it is the honest one: "the
+    subject names a purchase requisition" is why this message is in front of
+    you, and if that turns out to be wrong the person can go and argue with
+    that rule rather than with the page. A row the router placed but whose rule
+    we cannot name falls back to what it was placed as.
+  */
+  const reasonKey = row.ruleLabelKey ?? (routed ? "today.why.routed" : "today.why.unclassified");
+
   return {
     id: `msg:${row.id}`,
     kind: "awaitingReply" as const,
@@ -296,6 +326,7 @@ export function messageItem(row: {
     detail: row.fromName ?? row.fromAddress ?? "",
     href: `/inbox/${row.id}`,
     action: routed ? "openMessage" : "classify",
+    reasonKey: reasonKey,
     expiresAt: null,
     amount: "0",
     waitingOnThem: false,

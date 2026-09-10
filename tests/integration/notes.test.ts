@@ -174,6 +174,7 @@ describe("a note with a date is what a task means", () => {
       detail: "",
       href: "/",
       action: "open",
+      reasonKey: "today.why.youAsked",
       expiresAt: mine[0]?.dueAt ?? null,
       amount: "0",
       waitingOnThem: false,

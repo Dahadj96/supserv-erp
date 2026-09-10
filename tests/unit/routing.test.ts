@@ -166,3 +166,61 @@ describe("screen 38 — routing", () => {
     expect(d.rule).toBeNull();
   });
 });
+
+/**
+ * T4 — "Today promotes newsletters, and a cloudHQ PDF tutorial reads as an RFQ".
+ *
+ * Every subject line below is a real one off the contact@ mailbox on
+ * 10 September 2026. `PR` matched as a bare substring, so it was inside
+ * PRotect, PRoject and PRoduit, and three of the four newsletters and supplier
+ * circulars in this file were filed as enquiries by a rule that was working
+ * exactly as written.
+ */
+describe("an acronym is a word, not a run of letters", () => {
+  const subject = (s: string) => route(message({ subject: s }), rules);
+
+  it("does not read a newsletter about protecting PDFs as a purchase requisition", () => {
+    expect(subject("How to Password Protect PDFs 🔒").creates).toBe("needsReview");
+  });
+
+  it("does not read supplier circulars about projects and produits as enquiries", () => {
+    expect(subject("Piping Material One-stop Supplier for Oil & Gas Project").creates).toBe(
+      "needsReview",
+    );
+    expect(subject("Demande de coopération produit – Matériaux anticorrosion").creates).toBe(
+      "needsReview",
+    );
+    expect(
+      subject("Re: For SUPSERV, Qualified Vendor of Tenaris | TPCO Steel Pipes for Projects")
+        .creates,
+    ).toBe("needsReview");
+  });
+
+  it("still reads a real purchase requisition, which is why PR is on the list", () => {
+    expect(subject("RFQ - PR 3000116322 - FRIDGES AND FONTAINS").creates).toBe("enquiry");
+  });
+
+  it("still reads an RFQ whose number is glued on with a hyphen", () => {
+    // normaliseWording turns every hyphen into a space before this is asked.
+    expect(
+      subject("RFQ-10023604-26_Acquisition de Fourniture de Bureau pour le Groupement Reggane")
+        .creates,
+    ).toBe("enquiry");
+  });
+
+  it("lets an ordinary word keep its plural, which is why the rule turns on length", () => {
+    // `facture` is five characters, so it may run on into `factures`.
+    expect(subject("Vos factures du mois").creates).toBe("payment");
+    expect(subject("Virements reçus").creates).toBe("payment");
+  });
+
+  it("will not match an ordinary word buried inside another", () => {
+    // `avis` is on the tender rule; Davis is a surname.
+    expect(subject("Message from John Davis").creates).toBe("needsReview");
+  });
+
+  it("finds the acronym when an earlier lookalike came first", () => {
+    // "protect" fails the whole-word test; the search must carry on past it.
+    expect(subject("Protect your data — PR 4000221 attached").creates).toBe("enquiry");
+  });
+});

@@ -42,6 +42,7 @@ const item = (over: Partial<Item> & { id: string; kind: ItemKind }): Item => ({
   detail: "",
   href: "/",
   action: "open",
+  reasonKey: "today.why.deadlineNear",
   expiresAt: null,
   amount: "0",
   waitingOnThem: false,
@@ -219,6 +220,7 @@ describe("a message on Today", () => {
     fromName: "A. Himer",
     fromAddress: "a.himer@urbacon-intl.com",
     classifiedAs: "enquiry",
+    ruleLabelKey: "intake.rule.rfq",
     ...over,
   });
 
@@ -253,5 +255,46 @@ describe("a message on Today", () => {
       "a.himer@urbacon-intl.com",
     );
     expect(messageItem(row({ subject: null, fromName: null, fromAddress: null })).title).toBe("—");
+  });
+});
+
+/**
+ * T4's second half, in Abdou's own words: "Require an explicit reason before
+ * anything is promoted to Today — an item with no reason does not appear."
+ *
+ * `Item.reasonKey` is required rather than optional, so the compiler is what
+ * actually enforces that and these tests only have to hold the WORDING honest.
+ */
+describe("why a message is on Today", () => {
+  const row = (over: Partial<Parameters<typeof messageItem>[0]> = {}) => ({
+    id: "8b1f0d2e-0000-4000-8000-000000000001",
+    subject: "RFQ - PR 3000116322 - FRIDGES AND FONTAINS",
+    fromName: "A. Himer",
+    fromAddress: "a.himer@urbacon-intl.com",
+    classifiedAs: "enquiry",
+    ruleLabelKey: "intake.rule.rfq",
+    ...over,
+  });
+
+  it("gives the reason in the routing rule's own words", () => {
+    expect(messageItem(row()).reasonKey).toBe("intake.rule.rfq");
+  });
+
+  it("says nobody has classified it when nobody has", () => {
+    expect(messageItem(row({ classifiedAs: null, ruleLabelKey: null })).reasonKey).toBe(
+      "today.why.unclassified",
+    );
+  });
+
+  it("still answers for itself when the rule that placed it cannot be named", () => {
+    const reason = messageItem(row({ ruleLabelKey: null })).reasonKey;
+    expect(reason).toBe("today.why.routed");
+    expect(reason).toBeTruthy();
+  });
+
+  it("never leaves a row without a reason", () => {
+    for (const over of [{}, { classifiedAs: null }, { ruleLabelKey: null }, { subject: null }]) {
+      expect(messageItem(row(over)).reasonKey).not.toBe("");
+    }
   });
 });

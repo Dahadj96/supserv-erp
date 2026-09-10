@@ -3186,6 +3186,17 @@
       "fill": "Fill in",
       "review": "Review"
     },
+    "why": {
+      "deadlinePassed": "The deadline has passed — decide whether it is still worth anything",
+      "deadlineNear": "The deadline is today or tomorrow",
+      "overdue": "Past its due date and not paid",
+      "delivered": "Delivered and never invoiced",
+      "unsigned": "No signed copy on file",
+      "missingIdentifier": "An invoice cannot be issued without it",
+      "youAsked": "You asked to be reminded",
+      "routed": "The router placed this and nobody has dealt with it",
+      "unclassified": "Nobody has said what this is"
+    },
     "thatIsEverything": "That is everything for today",
     "allClear": "Nothing needs a decision from you",
     "waitingElsewhere": "{n, plural, one {# thing is waiting on somebody else} other {# things are waiting on other people}} — they are on the Waiting on page and come back to you when they move.",

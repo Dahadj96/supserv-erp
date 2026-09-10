@@ -85,11 +85,62 @@ export function bodyLooksLikeItHasAPrice(body: string | null): boolean {
   return body ? PRICE.test(body) : false;
 }
 
-/** Accents and case are noise here for the same reason they are in search. */
+/**
+ * A needle must start a word. A SHORT needle must be the whole word.
+ *
+ * ─── WHY, AND IT IS THE WHOLE OF T4's SECOND HALF ─────────────────────────
+ *
+ * This was `hay.includes(needle)`, and rule 2 looks for `"PR"` — Purchase
+ * Requisition, which is how Urbacon and Reggane title theirs. As a bare
+ * substring, `pr` is inside **pro**tect, **pr**oject, **pr**oduit, **pr**ice,
+ * **pr**ovide and com**pr**essor. So on the mailbox as it stood:
+ *
+ *   "How to Password Protect PDFs"      cloudHQ newsletter  → enquiry
+ *   "Piping Material ... Oil & Gas Project"  supplier spam  → enquiry
+ *   "Demande de cooperation produit"         supplier spam  → enquiry
+ *
+ * Abdou found this from the other end — a cloudHQ PDF tutorial sitting on
+ * Today as an RFQ — and it is not a tuning problem. `route()` applies the
+ * confidence floor honestly and the rule fired on every condition it had; the
+ * condition was simply true of half the internet.
+ *
+ * ─── THE THRESHOLD ────────────────────────────────────────────────────────
+ *
+ * Whole-word matching everywhere would be wrong the other way: `facture` would
+ * stop matching *factures*, and `virement` *virements*, which is how people
+ * actually write subject lines. So the rule turns on length, because the two
+ * kinds of needle on this list are different kinds of word:
+ *
+ *   up to 3 characters   an acronym — PR, RFQ, BC, DA. Whole word only.
+ *   4 or more            an ordinary word. Starts a word, may continue.
+ *
+ * `normaliseWording` has already turned every hyphen, dot and bracket into a
+ * space, so `RFQ-10023604-26` is `rfq 10023604 26` and the acronym rule finds
+ * it. `RFQ10023604`, written with no separator at all, would not match — worth
+ * knowing, not worth loosening this back to a substring for.
+ */
+const WHOLE_WORD_UP_TO = 3;
+
 function contains(haystack: string | null, needles: string[]): boolean {
   if (!haystack) return false;
-  const hay = normaliseWording(haystack);
-  return needles.some((n) => hay.includes(normaliseWording(n)));
+  // Padded, so the first and last words have a boundary on both sides.
+  const hay = ` ${normaliseWording(haystack)} `;
+
+  return needles.some((raw) => {
+    const needle = normaliseWording(raw);
+    if (!needle) return false;
+
+    // Every place the needle starts a word — not only the first, because the
+    // first can fail the whole-word test while a later one passes.
+    let from = 0;
+    for (;;) {
+      const at = hay.indexOf(` ${needle}`, from);
+      if (at === -1) return false;
+      if (needle.length > WHOLE_WORD_UP_TO) return true;
+      if (hay[at + 1 + needle.length] === " ") return true;
+      from = at + 1;
+    }
+  });
 }
 
 /**
