@@ -3058,7 +3058,19 @@
     "notDeliverable": "A delivery note is not raised against a document of this kind ({kind}). It is raised against what the client ordered — their purchase order, a quotation, a pro forma, an invoice or a progress statement.",
     "new": "New delivery",
     "newNotAllowed": "Issuing a bon de livraison is the delivery permission, and your role does not carry it.",
-    "emptyTitle": "Nothing has gone out yet"
+    "emptyTitle": "Nothing has gone out yet",
+    "pickSourceTitle": "Which order is going out",
+    "pickSourceSubtitle": "A bon de livraison is made from what was ordered. Choose the order and its lines and quantities are carried forward.",
+    "pickThisOne": "Deliver against this",
+    "openOnlyNote": "issued orders with something still owed",
+    "allSourcesNote": "every issued order, including those already delivered in full",
+    "showAllSources": "Show orders already delivered in full",
+    "carriedForward": "The lines and the quantities come from the order. What is still owed is offered by default, never what was originally ordered.",
+    "noOpenOrdersTitle": "No order is waiting to go out",
+    "noOpenOrders": "Every issued order has been delivered in full. A delivery note is raised against a client order, a quotation, a pro forma, an invoice or a progress statement once it has been issued.",
+    "noSourcesTitle": "Nothing has been issued to deliver against",
+    "noSources": "A delivery note is raised against something the client agreed to — their order, a quotation, a pro forma, an invoice or a progress statement — and none has been issued yet.",
+    "goToOrders": "Go to orders"
   },
   "newInvoice": {
     "title": "New invoice — from {number}",

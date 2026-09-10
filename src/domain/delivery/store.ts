@@ -1,10 +1,12 @@
+import Decimal from "decimal.js";
 import { and, asc, desc, eq, inArray, isNotNull, sql } from "drizzle-orm";
 import { db } from "@/db";
 import { auditEntry } from "@/db/schema/control";
 import { deliveryDetail } from "@/db/schema/delivery";
 import { document, documentLine, documentLink } from "@/db/schema/document";
 import { party } from "@/db/schema/party";
-import { type DeliveredLine, mayDeliverAgainst, type SourceLine } from "./lines";
+import { liveDocument } from "@/domain/deletion";
+import { DELIVERABLE_KINDS, type DeliveredLine, mayDeliverAgainst, type SourceLine } from "./lines";
 
 /**
  * Screens 49 and 14 — the database half.
@@ -313,6 +315,118 @@ export async function recordSignedCopy(opts: {
     },
     actorId: opts.actorId,
   });
+}
+
+/**
+ * What a new bon de livraison can be started FROM — screen 49, step zero.
+ *
+ * `/deliveries/new` used to demand `?source=<id>` in the query string and call
+ * `notFound()` when it was absent, so the primary button on screen 14 — which
+ * links at the bare route, because from a list of deliveries there is no one
+ * order to name — landed on a 404. The page was never missing. The question it
+ * needed answering first was.
+ *
+ * So it asks it. Every issued document a delivery may be raised against
+ * (`DELIVERABLE_KINDS`), live, with what it ordered and what has already gone,
+ * so the choice is made against the arithmetic rather than against a number
+ * somebody has to recognise.
+ *
+ * `openOnly` is the default because a fully delivered order is not what anybody
+ * is looking for when they press "New delivery"; it stays reachable through
+ * `openOnly: false` rather than disappearing, since an over-delivery and a
+ * replacement both start from an order that already reads complete.
+ */
+export type DeliverySource = {
+  documentId: string;
+  kind: string;
+  number: string | null;
+  clientName: string;
+  partyId: string;
+  issuedOn: Date | null;
+  lines: number;
+  /** Sum of the item quantities on the source. */
+  ordered: string;
+  /** Sum of the quantities on the ISSUED delivery notes that cover it. */
+  delivered: string;
+  /** Ordered less delivered, never negative. Zero means nothing is owed. */
+  remaining: string;
+};
+
+export async function deliverableSources(
+  opts: { openOnly?: boolean; partyId?: string } = {},
+): Promise<DeliverySource[]> {
+  const openOnly = opts.openOnly ?? true;
+
+  const rows = await db
+    .select({
+      documentId: document.id,
+      kind: document.kind,
+      number: document.number,
+      partyId: document.partyId,
+      issuedOn: document.issuedOn,
+      clientName: sql<string>`coalesce(nullif(trim(${party.tradeName}), ''), ${party.legalName})`,
+      lines: sql<number>`(
+        select count(*) from document_line dl
+        where dl.document_id = ${document.id} and dl.line_kind = 'item'
+      )::int`,
+      ordered: sql<string>`coalesce((
+        select sum(dl.qty) from document_line dl
+        where dl.document_id = ${document.id} and dl.line_kind = 'item'
+      ), 0)::text`,
+      // ISSUED delivery notes only, and never a cancelled one — the same two
+      // clauses `coveredAgainst` applies, for the same reason: a draft BL is a
+      // lorry that has not left.
+      delivered: sql<string>`coalesce((
+        select sum(bl.qty)
+        from document_line bl
+        join document b on b.id = bl.document_id
+        join document_line src on src.id = bl.source_line_id
+        where src.document_id = ${document.id}
+          and b.kind = 'delivery_note'
+          and b.number is not null
+          and b.status <> 'credited'
+          and b.deleted_at is null
+      ), 0)::text`,
+    })
+    .from(document)
+    .innerJoin(party, eq(party.id, document.partyId))
+    .where(
+      and(
+        inArray(document.kind, [...DELIVERABLE_KINDS]),
+        // The STATE, not the number: a client's own bon de commande is issued
+        // under their reference and carries no number of ours. `startDelivery`
+        // asks exactly this, so the selector cannot offer what the action
+        // would refuse.
+        eq(document.status, "issued"),
+        liveDocument,
+        opts.partyId ? eq(document.partyId, opts.partyId) : sql`true`,
+      ),
+    )
+    .orderBy(desc(document.issuedOn), desc(document.createdAt));
+
+  const mapped = rows.map((row) => {
+    const ordered = new Decimal(row.ordered || "0");
+    const delivered = new Decimal(row.delivered || "0");
+    const left = ordered.minus(delivered);
+    return {
+      documentId: row.documentId,
+      kind: row.kind,
+      number: row.number,
+      clientName: row.clientName,
+      partyId: row.partyId,
+      issuedOn: row.issuedOn ? new Date(`${row.issuedOn}T00:00:00Z`) : null,
+      lines: row.lines,
+      ordered: ordered.toDecimalPlaces(4).toFixed(),
+      delivered: delivered.toDecimalPlaces(4).toFixed(),
+      remaining: (left.isNegative() ? new Decimal(0) : left).toDecimalPlaces(4).toFixed(),
+    };
+  });
+
+  // A source with no item lines has nothing to carry forward, so offering it
+  // would open a form with an empty table and no way to explain itself.
+  const withLines = mapped.filter((row) => row.lines > 0);
+
+  return openOnly ? withLines.filter((row) => Number(row.remaining) > 0) : withLines;
 }
 
 export type DeliveryRow = {

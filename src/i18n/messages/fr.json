@@ -3058,7 +3058,19 @@
     "notDeliverable": "On ne fait pas de bon de livraison contre un document de ce type ({kind}). Un BL se fait contre ce que le client a commandé — son bon de commande, un devis, une proforma, une facture ou une situation.",
     "new": "Nouvelle livraison",
     "newNotAllowed": "Émettre un bon de livraison relève de la permission livraisons, que votre rôle ne porte pas.",
-    "emptyTitle": "Rien n’est encore sorti"
+    "emptyTitle": "Rien n’est encore sorti",
+    "pickSourceTitle": "Quelle commande part",
+    "pickSourceSubtitle": "Un bon de livraison se fait à partir de ce qui a été commandé. Choisissez la commande : ses lignes et ses quantités sont reprises.",
+    "pickThisOne": "Livrer sur celle-ci",
+    "openOnlyNote": "commandes émises avec un reste à livrer",
+    "allSourcesNote": "toutes les commandes émises, y compris celles déjà livrées en totalité",
+    "showAllSources": "Afficher les commandes déjà livrées en totalité",
+    "carriedForward": "Les lignes et les quantités viennent de la commande. C’est le reste à livrer qui est proposé par défaut, jamais la quantité commandée à l’origine.",
+    "noOpenOrdersTitle": "Aucune commande n’attend de partir",
+    "noOpenOrders": "Toutes les commandes émises ont été livrées en totalité. Un bon de livraison se fait sur une commande client, un devis, une facture proforma, une facture ou une situation, une fois émis.",
+    "noSourcesTitle": "Rien n’a été émis sur quoi livrer",
+    "noSources": "Un bon de livraison se fait sur quelque chose que le client a accepté — sa commande, un devis, une proforma, une facture ou une situation — et rien n’a encore été émis.",
+    "goToOrders": "Aller aux commandes"
   },
   "newInvoice": {
     "title": "Nouvelle facture — à partir de {number}",
