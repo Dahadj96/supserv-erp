@@ -64,6 +64,7 @@ Facts learned the hard way. Do not rediscover them.
 | Worker | `pnpm worker` is what empties the queue: no worker means no mailbox poll and every attachment stuck at "not copied here yet", with nothing on screen saying so. The `SUPSERV worker` scheduled task has run it at startup since 9 September and it polls every ten minutes — read `.data\worker.log` rather than `tasklist`, which cannot see a SYSTEM process from an unelevated session. **It runs `tsx` against the source, so it is only as new as the moment it started**: after changing anything the worker runs, either restart the task (Administrator) or start your own with `start "supserv-worker" /min cmd /c "pnpm worker > .data\worker-<task>.log 2>&1"`, use it, and close it. |
 | Reboot | Fixed, 9 September: `SUPSERV ERP`, `SUPSERV worker` and `SUPSERV backup` are all registered and start at boot, so the machine comes back on its own. An unelevated session cannot query them — `schtasks /query` answers "Access is denied" — so read `.data\worker.log` and `.data\last-backup.json` for the truth, not the task list. |
 | Stale git lock | A run that dies leaves `.git/index.lock` behind and every later git command fails with "Another git process seems to be running". Check its age and whether any `git` process actually exists: `Get-Process git`. No process and a lock minutes old means it is stale — remove it and carry on. One sat for 89 minutes on 9 September blocking three commits. |
+| **Seeing a screen for yourself** | `scripts/screenshots.ts` walks every route signed in and measures as it goes, and the way to run it is `next start -p 3100` against `supserv_test`. **Setting `DATABASE_URL` in the shell does not work.** Next 16's `next start` gives the `.env` FILE precedence over shell variables — the opposite of the old behaviour — so the server stays on the production database, the session the script minted in `_test` is invisible to it, and every route quietly renders the sign-in page with status 200. Nothing errors; you get 273 screenshots of a sign-in box. Put the overrides in **`.env.local`**, which beats `.env`, and delete it the moment the walk is done. `BETTER_AUTH_URL` and `TRUSTED_ORIGINS` must point at the spare port too, or better-auth returns a null session for an untrusted origin. Confirm the server took them: `POST /api/auth/sign-in/social {"provider":"microsoft"}` echoes its own `redirect_uri`. |
 | MCP timeouts | A `start_process` call can time out at the tool layer while the process keeps running on the machine. Do not re-run the command — call `list_sessions`, find the pid, and `read_process_output`. Re-running is how you get "the file is being used by another process". |
 
 ---
@@ -768,6 +769,62 @@ states → P4 banner → P6 list states. Each names its frame in
 **The design-first rule still stands** for anything not covered by an approved
 frame. These four decisions approve the frames that exist; they do not approve
 whatever a later run feels like drawing.
+
+### THE PATTERN TASKS — built from the approved v5 frames
+
+One task per pattern, in the inheritance order the approval section sets. Each
+names its frame; each is gated and committed on its own, because a pattern that
+cannot go green must be revertible without taking the others with it.
+
+- [x] **P2 · The type scale** *(frame `176:4`)*
+  Six levels into the token layer in `src/app/globals.css`, extending the five
+  `--text-*` tokens that already live in `@theme` rather than opening a second
+  scale beside them. Three of the six exist and are simply unused
+  (`--text-lead` 14.5 card heading, `--text-base` 13.5 body, `--text-micro`
+  11.5 caption); three are new — `--text-title` 24, `--text-section` 16 and
+  `--text-numeric` 23 with tabular figures. Then the page title comes off the
+  hardcoded `text-[19px]` and onto `text-title`, everywhere it appears.
+  *Done when:* `text-[19px]` returns nothing in `src/`, every page title is
+  24px, and `pnpm check` is green.
+
+- [x] **P1 · The page header** *(frame `175:2`, applied on `186:116`)*
+  A `PageHeader` component with `crumb`, `title`, `state` and `actions`, where
+  **`actions` is a required prop** — passing `null` is allowed and forces the
+  writer to supply `noActionReason`, a sentence the reader sees in the header.
+  That is the whole design decision: a slot you may omit is a slot that gets
+  omitted twelve times. The state line is live and computed, never a
+  description of the screen. The breadcrumb ends in the record.
+  Adopt it on the eight screens the scan named — Offers, Orders, Tenders,
+  Sourcing, Deliveries, Payments, Deals, Invoices — and **not** on the other
+  58 in the same commit; see P1b.
+  *Done when:* those eight render the header from the component, the three that
+  had no action have one or an honest sentence, and `pnpm check` is green.
+
+- [ ] **P1b · The other 58 files that copy the header markup**
+  P1 converts eight. The rest still hand-write
+  `border-b border-line-subtle bg-surface px-4 …` with an `h1` inside it. Convert
+  them in batches small enough to look at — a screenshot per screen, not a
+  regex over 58 files — and delete the two-level breadcrumb from
+  `topbar.tsx` when the last one is done, together with the `:has()` rule in
+  `globals.css` that hides it while both exist.
+  *Done when:* `border-b border-line-subtle bg-surface` appears in no page file,
+  the topbar carries no breadcrumb, and every screen's crumb ends in its record.
+
+- [ ] **P2b · Card headings and body onto their levels**
+  P2 puts the six levels in the token layer and moves the page title. It does
+  **not** move the other two levels the frame speaks to, and that is deliberate:
+  `text-tiny` is used 1 091 times and about 292 of them are an `h2`/`h3`, but
+  which `text-tiny` is a card heading and which is a caption or a table cell is
+  a judgement per screen, not a regular expression. A sweep would raise real
+  captions to 14.5px and nobody would see it until a column wrapped.
+  So: screen by screen, behind a screenshot. Card headings to `text-lead`,
+  body to `text-base`, money and KPI figures to `text-numeric`.
+  *Done when:* no card heading is the same size as the body under it.
+
+- [ ] **P3 · The row action** *(frame `177:4`)*
+- [ ] **P5 · The primary action out of the empty state** *(frame `180:10`)*
+- [ ] **P4 · The banner** *(frame `179:7`)*
+- [ ] **P6 · The list states** *(frame `181:16`)*
 
 ## WAVE 3 — shrink the surface
 
@@ -1708,6 +1765,28 @@ none of them writes.
 
 ## Needs Abdou
 
+### An offer has no outcome, so `/offers` cannot say what the frame says (P1, P3)
+
+Frame `186:116` gives `/offers` the state line **"7 awaiting client decision ·
+4 130 000 DZD at stake"**, and row verbs that read `Ask for decision`,
+`Record why we lost` and `Waiting on SADEG's order`. None of it can be built,
+and not for want of trying: `MACHINES.document` has exactly four states —
+`draft`, `issued`, `credited`, `written_off` — and **nothing anywhere records
+that a client accepted or refused an offer.** "Sent" and "awaiting a decision"
+are the same row to this system, and a rejected offer is indistinguishable from
+one sent this morning.
+
+So P1 shipped `/offers` with `offer.listSummary` — "100 offers · 0 still
+drafts" — which is live and true and says much less. The frame's facets
+(Draft / Sent / Accepted / Rejected / Expired) have the same problem.
+
+**The question is whether an offer gets an outcome.** It is a column, a
+transition on the machine, a way to set it, and a reason on the losing ones —
+and it is the difference between a list of paper and a pipeline you can read.
+It is also what P3's row verbs need before they can be wired at all. It is not
+a decision a run should make on its own: it changes what the ERP claims to
+know about a deal.
+
 ### U3 is already built and pushed. Keep it, or revert it? (U3)
 
 **`b4724b2` was pushed at 18:15 on 9 September; the design-first rule was
@@ -1953,6 +2032,8 @@ above. It is marked blocked rather than skipped.
 
 | Date | Task | Commit | Note |
 |---|---|---|---|
+| 2026-09-10 | P2 | `50a40d7` | The six levels of frame `176:4` into `@theme` beside the five that were already there, rather than a second scale next to the first. `--text-lead` (14.5, card heading), `--text-base` (13.5, body) and `--text-micro` (11.5, caption) existed and were unused; `--text-title` 24, `--text-section` 16 and `--text-numeric` 23 are new. A script swept `text-[19px]` off every page title — **90 files, 94 occurrences**, all of them on an `h1`, checked before the sweep rather than assumed — and printed what it touched; the diffs were read by hand, including the six that were not the plain `className="text-[19px] font-semibold text-ink"`. One file, `tenders/[id]/page.tsx`, holds a literal NUL as a map-key separator and grep calls it binary: the sweep reads and writes text so it was not silently skipped, and the NUL is still there. **What it deliberately does not do** is move card headings and body onto their levels, which the frame also speaks to. `text-tiny` is used 1 091 times and about 292 of those are an `h2`/`h3`, but which one is a card heading and which is a caption is a judgement per screen rather than a regular expression — a sweep would raise real captions to 14.5px and nobody would see it until a column wrapped. That is P2b. |
+| 2026-09-10 | P1 | `a49cad4` | `src/components/layout/page-header.tsx` from frame `175:2`. `actions` is a required prop and the type is a union: pass a node, or pass `null` and the compiler then demands `noActionReason` — a translated sentence rendered where the button would have been. There is a runtime throw behind the union as well, because the one thing this component exists to prevent should not rest on a rule a future `as never` can walk past. `state` and `crumb` are required for the same reason: a live line rather than a description, and a crumb that ends in the record. **Nine screens, not 66** — Offers, Orders, Tenders, Sourcing, Deliveries, Payments, Deals, Invoices, and `/settings/audit`, which is the frame's own drawn example of a legitimate empty slot. Offers, Orders and Tenders had no action anywhere except inside their empty state; they have one in the header in both states now, and Offers' reads **Build offer from a deal** per the fourth v5 decision. Orders' state line was `orders.subtitle`, a description of the screen, and is now the number `orderCounts` has computed since the screen was written and never shown: how many orders were issued with nothing delivered against them. Three new keys in EN and FR. **The breadcrumb moved into the header** and `topbar.tsx` keeps its two-level one for the 58 unconverted screens, hidden by a `:has()` rule in `globals.css` on any page carrying a `PageHeader` so it is never drawn twice; the rule and the topbar nav are deleted together in P1b. `tests/unit/page-header.test.ts` guards what the types cannot see. **Looked at, not assumed:** the built app on port 3100 against `supserv_test`, signed in, English and French, 1366 and 390 — and the phone pass caught a real regression the gate could not, three buttons squeezing the title column to forty pixels with the state line running one word per line. Fixed with a floor on that column before the commit. |
 | 2026-09-08 | — | `115da43` | Branch `fix/usability-2026-09` opened; in-progress schema-audit work carried over; audit filed. |
 | 2026-09-08 | — | `bbf3d4a` | This queue filed. Baseline `pnpm check` green before any change. |
 | 2026-09-08 | 0.7 | `e0771c8` | Landing redirect now `/today`. |
