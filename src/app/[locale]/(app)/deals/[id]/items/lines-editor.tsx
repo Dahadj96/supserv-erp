@@ -165,8 +165,18 @@ export function LinesEditor({
 
                     <td className="py-1.5 ps-4 text-micro tabular-nums text-muted">{index + 1}</td>
                     <td className="py-1.5 pe-2">
+                      {/*
+                        `data-short` on the three columns that hold a code or a
+                        number rather than a sentence — `VP-DN80-16`, `12`,
+                        `pc`. The screenshot harness measures free-text fields
+                        against 140px because a designation typed into 60px is
+                        unusable; a reference column that wide would push the
+                        designation off a phone, which is the same defect the
+                        other way round.
+                      */}
                       <input
                         name="reference"
+                        data-short
                         value={row.reference}
                         readOnly={closed}
                         onChange={(e) => set(row.key, "reference", e.target.value)}
@@ -186,6 +196,7 @@ export function LinesEditor({
                     <td className="py-1.5 pe-2">
                       <input
                         name="qty"
+                        data-short
                         type="number"
                         step="0.001"
                         min="0"
@@ -198,6 +209,7 @@ export function LinesEditor({
                     <td className="py-1.5 pe-2">
                       <input
                         name="unit"
+                        data-short
                         value={row.unit}
                         readOnly={closed}
                         onChange={(e) => set(row.key, "unit", e.target.value)}
@@ -205,12 +217,19 @@ export function LinesEditor({
                       />
                     </td>
                     <td className="py-1.5 pe-4">
+                      {/*
+                        24px targets, not 14px icons. The icon is what a person
+                        sees; the button is what a thumb lands on, and the
+                        screenshot harness measures the second. Delete
+                        especially: a delete control small enough to miss is a
+                        delete control you hit by accident.
+                      */}
                       <div className="flex items-center justify-end gap-0.5">
                         <button
                           type="button"
                           aria-label={t("dealItems.moveUp")}
                           onClick={() => move(index, -1)}
-                          className="text-muted hover:text-ink"
+                          className="inline-flex size-6 items-center justify-center rounded-[var(--radius-control)] text-muted hover:bg-sunken hover:text-ink"
                         >
                           <ChevronUp className="size-3.5" aria-hidden />
                         </button>
@@ -218,7 +237,7 @@ export function LinesEditor({
                           type="button"
                           aria-label={t("dealItems.moveDown")}
                           onClick={() => move(index, 1)}
-                          className="text-muted hover:text-ink"
+                          className="inline-flex size-6 items-center justify-center rounded-[var(--radius-control)] text-muted hover:bg-sunken hover:text-ink"
                         >
                           <ChevronDown className="size-3.5" aria-hidden />
                         </button>
@@ -226,7 +245,7 @@ export function LinesEditor({
                           type="button"
                           aria-label={t("dealItems.removeLine")}
                           onClick={() => setRows((all) => all.filter((r) => r.key !== row.key))}
-                          className="text-muted hover:text-critical-ink"
+                          className="inline-flex size-6 items-center justify-center rounded-[var(--radius-control)] text-muted hover:bg-critical-bg hover:text-critical-ink"
                         >
                           <X className="size-3.5" aria-hidden />
                         </button>

@@ -80,7 +80,19 @@ function routes(): string[] {
     if (cell[1].includes("(") || cell[1].includes("…")) continue;
     found.add(cell[1]);
   }
-  return [...found].sort();
+  const all = [...found].sort();
+  /*
+    `--only deals/[id]/items` photographs one screen instead of a hundred and
+    twenty.
+
+    A full run is six minutes across three viewports, which is right before a
+    release and wrong while fixing one screen: the loop of measure, fix,
+    measure again is where a 14px delete button gets found, and a six-minute
+    loop is a loop nobody runs twice. Substring match, not a pattern — the
+    routes are typed by hand from the log line above them.
+  */
+  const only = arg("only", "");
+  return only ? all.filter((route) => route.includes(only)) : all;
 }
 
 /** What runs inside the page. Plain DOM, no dependencies. */
