@@ -75,6 +75,11 @@ const EXPECTED: Record<string, string[]> = {
   // in the first place. What makes it safe is that every change is recorded
   // with a name, not that fewer people may do it.
   "deals/[id]/edit/actions.ts:editDealAction": ["*write"],
+  // V0b — saying "this line is that article" is a claim a person makes and it
+  // is recorded with their name. `*write`, the same gate as typing the line in
+  // the first place: it is not a permission to withhold from whoever typed it.
+  "deals/[id]/items/[lineId]/match/actions.ts:createItemFromLineAction": ["*write"],
+  "deals/[id]/items/[lineId]/match/actions.ts:matchLineAction": ["*write"],
   "deals/[id]/items/actions.ts:readPasteAction": ["*write"],
   "deals/[id]/items/actions.ts:saveLinesAction": ["*write"],
   "deals/[id]/technical/actions.ts:clearNotApplicableAction": ["*write"],

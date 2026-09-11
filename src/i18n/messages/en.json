@@ -3977,6 +3977,7 @@
       "blocking_rule": "Blocking rule",
       "company_identity": "Company identity",
       "deal": "Deal",
+      "deal_line": "Line on an enquiry",
       "delivery_detail": "Delivery",
       "document": "Document",
       "document_template": "Document template",
@@ -3984,6 +3985,7 @@
       "email_template": "Email template",
       "extraction_field": "Extracted field",
       "import_batch": "Import",
+      "item": "Article",
       "intake_channel": "Intake channel",
       "intake_dossier": "Read dossier",
       "intake_message": "Received message",
@@ -4408,7 +4410,10 @@
     },
     "technicalFile": "Datasheets",
     "notMatched": "Not matched",
-    "notMatchedHelp": "This line has not been matched to an item in the catalogue, so there is nothing to attach a datasheet to yet. Match it first and this becomes a link."
+    "notMatchedHelp": "This line has not been matched to an item in the catalogue, so there is nothing to attach a datasheet to yet. Match it first and this becomes a link.",
+    "matchIt": "Match it",
+    "saveFirst": "Save first",
+    "saveFirstHelp": "This row has not been saved yet, so there is nothing to attach an article to. Save the list and it becomes a link."
   },
   "itemTechnical": {
     "noDatasheet": "No datasheet",
@@ -5770,7 +5775,7 @@
     "contact": "Contact at the client",
     "noContact": "Nobody named yet",
     "owner": "Owner",
-    "noOwner": "Nobody",
+    "noOwner": "Not assigned",
     "ownerHint": "Who is answerable for it. This is the Owner column on the deals list.",
     "recorded": "Only the fields you actually change are written to the history, with what they were before and what they became. Saving without changing anything records nothing.",
     "corrected": "{n, plural, =0 {Nothing changed.} one {One field corrected. The change is in the timeline below.} other {# fields corrected. The changes are in the timeline below.}}",
@@ -5780,6 +5785,38 @@
       "clientAndSubject": "An enquiry needs a client and a subject.",
       "noSuchDeal": "That enquiry no longer exists.",
       "inTheBin": "That enquiry is in the bin. Restore it first — that is a decision somebody makes deliberately."
+    }
+  },
+  "match": {
+    "title": "Which article is this?",
+    "state": "Line {n} — “{designation}”. Matching it is what lets this line reach that article's datasheets, and what puts the article in the catalogue at all.",
+    "back": "Back to the list",
+    "whatTheyWrote": "What the client wrote",
+    "alreadyMatched": "Matched",
+    "detach": "Not this one after all",
+    "candidates": "What it might be",
+    "nothingAuto": "Nothing is matched automatically — a code that looks exact is still only a signal.",
+    "noCandidates": "Nothing in the catalogue looks like this line. If it is something you have not sold before, make it an article below.",
+    "thisIsIt": "This is it",
+    "hasDatasheet": "Datasheet held",
+    "noDatasheetHelp": "Matching still helps: the article exists, and a datasheet can be put on it afterwards.",
+    "way": {
+      "exact_code": "Our code is exactly what they wrote — {via}",
+      "alias": "Known to us as “{via}”",
+      "designation": "The designation matches on {via}"
+    },
+    "newArticle": "Or make it a new article",
+    "newArticleHelp": "For something you have not sold before. The code is ours and generated — never the client's reference, because two clients calling different things P-01 is normal. Their reference is kept as an alias, so the next enquiry from them matches on the first pass.",
+    "kind": "What it is",
+    "kindGood": "Goods",
+    "kindService": "Service",
+    "isGeneric": "No datasheet exists for this",
+    "createIt": "Make the article",
+    "error": {
+      "noSuchLine": "That line is no longer on this enquiry.",
+      "noSuchItem": "That article no longer exists.",
+      "dealClosed": "This enquiry is closed.",
+      "notAllowed": "Your role is read only."
     }
   }
 }

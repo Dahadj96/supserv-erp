@@ -45,9 +45,12 @@ export function PurgeRow({
   if (!open) {
     return (
       <Button
-        variant="ghost"
+        variant="secondary"
         size="small"
-        className="text-critical-ink"
+        // Critical text on the neutral button rather than a solid red one. A
+        // red button beside Restore would read as the primary action on the
+        // row, and on this screen the primary action is putting things BACK.
+        className="border-critical/40 text-critical-ink hover:bg-critical-bg"
         disabledReason={disabledReason}
         onClick={() => setOpen(true)}
       >
@@ -60,7 +63,7 @@ export function PurgeRow({
     <form
       action={action}
       onSubmit={() => setOpen(false)}
-      className="flex flex-col items-end gap-2 rounded-[var(--radius-control)] bg-critical-bg p-2.5"
+      className="flex w-[300px] flex-col items-end gap-2 rounded-[var(--radius-control)] border border-critical bg-critical-bg p-3"
     >
       <p className="text-micro leading-relaxed text-critical-ink">
         {t("bin.purge.warning", { what })}

@@ -3977,6 +3977,7 @@
       "blocking_rule": "Règle bloquante",
       "company_identity": "Identité de l'entreprise",
       "deal": "Affaire",
+      "deal_line": "Ligne d’affaire",
       "delivery_detail": "Livraison",
       "document": "Document",
       "document_template": "Modèle de document",
@@ -3984,6 +3985,7 @@
       "email_template": "Modèle d'e-mail",
       "extraction_field": "Champ extrait",
       "import_batch": "Reprise",
+      "item": "Article",
       "intake_channel": "Canal d'entrée",
       "intake_dossier": "Dossier lu",
       "intake_message": "Message reçu",
@@ -4408,7 +4410,10 @@
     },
     "technicalFile": "Fiches techniques",
     "notMatched": "Non rattachée",
-    "notMatchedHelp": "Cette ligne n’est rattachée à aucun article du catalogue : il n’y a donc rien à quoi joindre une fiche technique. Rattachez-la et ceci devient un lien."
+    "notMatchedHelp": "Cette ligne n’est rattachée à aucun article du catalogue : il n’y a donc rien à quoi joindre une fiche technique. Rattachez-la et ceci devient un lien.",
+    "matchIt": "La rattacher",
+    "saveFirst": "Enregistrez d’abord",
+    "saveFirstHelp": "Cette ligne n’est pas encore enregistrée : il n’y a rien à quoi rattacher un article. Enregistrez la liste et ceci devient un lien."
   },
   "itemTechnical": {
     "noDatasheet": "Sans fiche technique",
@@ -5768,9 +5773,9 @@
     "referenceHint": "Leur numéro pour cette consultation, tel qu’ils l’ont écrit.",
     "deadlineHint": "Lue sur le document par l’extraction puis validée par une personne. C’est ici qu’on la corrige.",
     "contact": "Interlocuteur chez le client",
-    "noContact": "Personne d’identifié",
+    "noContact": "Aucun interlocuteur",
     "owner": "Responsable",
-    "noOwner": "Personne",
+    "noOwner": "Non attribué",
     "ownerHint": "Qui en répond. C’est la colonne Responsable de la liste des affaires.",
     "recorded": "Seuls les champs réellement modifiés sont écrits dans l’historique, avec leur valeur avant et après. Enregistrer sans rien changer n’écrit rien.",
     "corrected": "{n, plural, =0 {Rien n’a changé.} one {Un champ corrigé. La modification figure dans le fil ci-dessous.} other {# champs corrigés. Les modifications figurent dans le fil ci-dessous.}}",
@@ -5780,6 +5785,38 @@
       "clientAndSubject": "Une affaire exige un client et un objet.",
       "noSuchDeal": "Cette affaire n’existe plus.",
       "inTheBin": "Cette affaire est à la corbeille. Restaurez-la d’abord — c’est une décision que l’on prend délibérément."
+    }
+  },
+  "match": {
+    "title": "De quel article s’agit-il ?",
+    "state": "Ligne {n} — « {designation} ». Le rattachement est ce qui permet à cette ligne d’atteindre les fiches techniques de l’article, et ce qui fait entrer l’article au catalogue.",
+    "back": "Retour à la liste",
+    "whatTheyWrote": "Ce que le client a écrit",
+    "alreadyMatched": "Rattachée",
+    "detach": "Finalement non",
+    "candidates": "Ce que cela pourrait être",
+    "nothingAuto": "Aucun rattachement automatique — un code qui semble exact reste un indice.",
+    "noCandidates": "Rien au catalogue ne ressemble à cette ligne. Si c’est quelque chose que vous n’avez jamais vendu, créez l’article ci-dessous.",
+    "thisIsIt": "C’est celui-là",
+    "hasDatasheet": "Fiche technique au dossier",
+    "noDatasheetHelp": "Le rattachement sert quand même : l’article existe, et une fiche pourra y être jointe ensuite.",
+    "way": {
+      "exact_code": "Notre code est exactement ce qu’ils ont écrit — {via}",
+      "alias": "Connu chez nous sous « {via} »",
+      "designation": "La désignation correspond sur {via}"
+    },
+    "newArticle": "Ou en faire un nouvel article",
+    "newArticleHelp": "Pour quelque chose que vous n’avez jamais vendu. Le code est le nôtre et généré — jamais la référence du client, car deux clients appelant P-01 des choses différentes est la norme. Leur référence est conservée comme alias, pour que la prochaine consultation corresponde du premier coup.",
+    "kind": "Ce que c’est",
+    "kindGood": "Fourniture",
+    "kindService": "Prestation",
+    "isGeneric": "Aucune fiche technique n’existe pour cela",
+    "createIt": "Créer l’article",
+    "error": {
+      "noSuchLine": "Cette ligne n’est plus sur cette affaire.",
+      "noSuchItem": "Cet article n’existe plus.",
+      "dealClosed": "Cette affaire est close.",
+      "notAllowed": "Votre rôle est en lecture seule."
     }
   }
 }

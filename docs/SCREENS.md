@@ -114,6 +114,7 @@ nothing gets built into this ERP without a line saying what it is for.
 | `/deals/new` | 05 Deals — the create form |
 | `/deals/[id]/edit` | 06 Deal — the edit form (V4). A deal had no edit path at all, so a deadline read off a PDF was unfixable for the life of the enquiry |
 | `/items` | 77 Item technical file — the catalogue, and the only door to it. The upload form shipped complete with nothing anywhere linking to it (V0) |
+| `/deals/[id]/items/[lineId]/match` | 73 Item list builder — matching a line to the catalogue (V0b). `deal_line.item_id` had existed since phase 4 and nothing in the application ever wrote it, so no line could ever reach an article's datasheets |
 | `/deliveries/new` | 14 Deliveries — the create form |
 | `/documents/new` | 47 Document builder — picking a kind before there is a draft |
 | `/inbox/[id]` | 02 Inbox — one item, opened |

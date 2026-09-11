@@ -1,8 +1,8 @@
-import { and, desc, eq, sql } from "drizzle-orm";
+import { and, desc, eq, isNull, sql } from "drizzle-orm";
 import { db } from "@/db";
 import { auditEntry } from "@/db/schema/control";
 import { deal, dealLine } from "@/db/schema/deal";
-import { item, itemCoverage, itemMedia } from "@/db/schema/item";
+import { item, itemAlias, itemCoverage, itemMedia } from "@/db/schema/item";
 import { party } from "@/db/schema/party";
 import { fileId } from "@/domain/files";
 import { storageFor } from "@/storage";
@@ -252,7 +252,17 @@ export async function catalogue(opts?: {
       isGeneric: item.isGeneric,
       mediaCount: sql<number>`(select count(*)::int from ${itemMedia} where ${itemMedia.itemId} = ${item.id})`,
       datasheets: sql<number>`(select count(*)::int from ${itemMedia} where ${itemMedia.itemId} = ${item.id} and ${itemMedia.mediaKind} = 'datasheet')`,
-      usedOnCount: sql<number>`(select count(*)::int from ${itemCoverage} where ${itemCoverage.itemId} = ${item.id})`,
+      /*
+        Counted off `deal_line`, not `item_coverage`.
+
+        Matching a line to the catalogue does NOT create a coverage row —
+        coverage is the tender's "does this enquiry's annexe hold a fiche
+        technique for this article" question, which is a different one. Counting
+        it here made the column read "—" for every article in the catalogue
+        however many enquiries had asked for it, which is a column that teaches
+        you to ignore it.
+      */
+      usedOnCount: sql<number>`(select count(distinct ${dealLine.dealId})::int from ${dealLine} where ${dealLine.itemId} = ${item.id})`,
     })
     .from(item)
     .where(
@@ -286,4 +296,301 @@ export async function dealBehindMedia(
     .where(and(eq(deal.id, dealId), eq(dealLine.itemId, itemId)))
     .limit(1);
   return found ?? null;
+}
+
+/* ──────────────────── matching a line to the catalogue ─────────────────────
+ *
+ * `deal_line.item_id` has existed since phase 4 with a comment saying "set when
+ * a person matches this line to the catalogue". Nothing ever set it: `grep
+ * matchedBy` returns three hits and all three write `null`.
+ *
+ * So the catalogue could only ever be populated by a seed script, every article
+ * read "0 enquiries" for ever, and V0's link from a deal line to that article's
+ * datasheets could never appear on any line — the door was built and the
+ * corridor to it was not. This is the corridor.
+ *
+ * LAW 2 all the way through: candidates are PROPOSED with the reason each one
+ * is proposed, and a person picks. Nothing is auto-matched, however exact the
+ * code looks, because "VP-DN80-16" meaning our article and "VP-DN80-16"
+ * meaning the client's own numbering are the same string.
+ */
+
+/** How a candidate came to be proposed. Kept on the row as `matched_by`. */
+export type MatchWay = "exact_code" | "alias" | "designation";
+
+export type MatchCandidate = {
+  id: string;
+  code: string;
+  designation: string;
+  brand: string | null;
+  model: string | null;
+  hasDatasheet: boolean;
+  way: MatchWay;
+  /** The alias that matched, when it was an alias. Shown as the reason. */
+  via: string | null;
+};
+
+export type LineToMatch = {
+  id: string;
+  dealId: string;
+  dealRef: string;
+  position: number;
+  reference: string | null;
+  designation: string;
+  qty: string;
+  unit: string | null;
+  itemId: string | null;
+  matchedBy: string | null;
+  /** The article it is already matched to, when it is. */
+  matched: { id: string; code: string; designation: string } | null;
+};
+
+export async function lineToMatch(dealId: string, lineId: string): Promise<LineToMatch | null> {
+  const [row] = await db
+    .select({
+      id: dealLine.id,
+      dealId: dealLine.dealId,
+      dealRef: deal.ref,
+      position: dealLine.position,
+      reference: dealLine.reference,
+      designation: dealLine.designation,
+      qty: dealLine.qty,
+      unit: dealLine.unit,
+      itemId: dealLine.itemId,
+      matchedBy: dealLine.matchedBy,
+    })
+    .from(dealLine)
+    .innerJoin(deal, eq(deal.id, dealLine.dealId))
+    .where(and(eq(dealLine.id, lineId), eq(dealLine.dealId, dealId), isNull(deal.deletedAt)))
+    .limit(1);
+  if (!row) return null;
+
+  let matched: LineToMatch["matched"] = null;
+  if (row.itemId) {
+    const [found] = await db
+      .select({ id: item.id, code: item.code, designation: item.designation })
+      .from(item)
+      .where(eq(item.id, row.itemId))
+      .limit(1);
+    matched = found ?? null;
+  }
+
+  return { ...row, matched };
+}
+
+/**
+ * What this line might be, and why each one is offered.
+ *
+ * Three passes, best first, and NEVER auto-applied. The client's own reference
+ * looking exactly like one of our codes is the strongest signal there is and it
+ * is still only a signal: half the consultations in Adrar number their lines
+ * P-01, P-02, and so would we.
+ */
+export async function matchCandidates(lineId: string, limit = 12): Promise<MatchCandidate[]> {
+  const [line] = await db
+    .select({ reference: dealLine.reference, designation: dealLine.designation })
+    .from(dealLine)
+    .where(eq(dealLine.id, lineId))
+    .limit(1);
+  if (!line) return [];
+
+  const ref = line.reference?.trim() ?? "";
+  const words = line.designation
+    .toLowerCase()
+    .split(/[^\p{L}\p{N}]+/u)
+    .filter((w) => w.length >= 4)
+    .slice(0, 4);
+
+  const base = {
+    id: item.id,
+    code: item.code,
+    designation: item.designation,
+    brand: item.brand,
+    model: item.model,
+    datasheets: sql<number>`(select count(*)::int from ${itemMedia} where ${itemMedia.itemId} = ${item.id} and ${itemMedia.mediaKind} = 'datasheet')`,
+  };
+
+  const found = new Map<string, MatchCandidate>();
+  const take = (
+    rows: (typeof base extends never ? never : Record<string, unknown>)[],
+    way: MatchWay,
+    via: string | null,
+  ) => {
+    for (const r of rows as {
+      id: string;
+      code: string;
+      designation: string;
+      brand: string | null;
+      model: string | null;
+      datasheets: number;
+      alias?: string;
+    }[]) {
+      if (found.has(r.id)) continue;
+      found.set(r.id, {
+        id: r.id,
+        code: r.code,
+        designation: r.designation,
+        brand: r.brand,
+        model: r.model,
+        hasDatasheet: r.datasheets > 0,
+        way,
+        via: via ?? r.alias ?? null,
+      });
+    }
+  };
+
+  if (ref) {
+    take(
+      await db.select(base).from(item).where(sql`lower(${item.code}) = lower(${ref})`).limit(limit),
+      "exact_code",
+      ref,
+    );
+
+    take(
+      await db
+        .select({ ...base, alias: itemAlias.alias })
+        .from(item)
+        .innerJoin(itemAlias, eq(itemAlias.itemId, item.id))
+        .where(sql`lower(${itemAlias.alias}) = lower(${ref})`)
+        .limit(limit),
+      "alias",
+      null,
+    );
+  }
+
+  if (found.size < limit && words.length > 0) {
+    // Every significant word, so "vanne papillon DN80" does not match every
+    // vanne in the catalogue. ILIKE rather than full-text: the catalogue is
+    // hundreds of rows, and a French stemmer that does not know "raccord" is
+    // worse than a LIKE that does.
+    const clause = words.map((w) => sql`${item.designation} ilike ${`%${w}%`}`);
+    take(
+      await db
+        .select(base)
+        .from(item)
+        .where(and(...clause))
+        .orderBy(item.code)
+        .limit(limit - found.size),
+      "designation",
+      words.join(" "),
+    );
+  }
+
+  return [...found.values()].slice(0, limit);
+}
+
+export class MatchRefused extends Error {
+  constructor(readonly reason: "noSuchLine" | "noSuchItem" | "dealClosed") {
+    super(reason);
+    this.name = "MatchRefused";
+  }
+}
+
+/** Attach this line to an article somebody chose, or detach it. */
+export async function matchLine(opts: {
+  dealId: string;
+  lineId: string;
+  itemId: string | null;
+  way: MatchWay | null;
+  actorId: string;
+}): Promise<void> {
+  const line = await lineToMatch(opts.dealId, opts.lineId);
+  if (!line) throw new MatchRefused("noSuchLine");
+
+  if (opts.itemId) {
+    const [found] = await db
+      .select({ id: item.id })
+      .from(item)
+      .where(eq(item.id, opts.itemId))
+      .limit(1);
+    if (!found) throw new MatchRefused("noSuchItem");
+  }
+
+  await db.transaction(async (tx) => {
+    await tx
+      .update(dealLine)
+      .set({ itemId: opts.itemId, matchedBy: opts.itemId ? (opts.way ?? "typed") : null })
+      .where(eq(dealLine.id, opts.lineId));
+
+    await tx.insert(auditEntry).values({
+      actorId: opts.actorId,
+      actorKind: "user",
+      entity: "deal_line",
+      entityId: opts.lineId,
+      action: opts.itemId ? "attach" : "undo",
+      before: { itemId: line.itemId, matchedBy: line.matchedBy },
+      after: { itemId: opts.itemId, matchedBy: opts.itemId ? (opts.way ?? "typed") : null },
+      sourceScreen: "73",
+    });
+  });
+}
+
+/**
+ * The line is a thing we have never sold before. Make it an article, and match
+ * this line to it in the same act.
+ *
+ * The code is OURS and generated — never the client's reference, which is the
+ * whole reason `deal_line.reference` says "verbatim from the client. Never our
+ * code." Two clients calling different things P-01 is normal.
+ */
+export async function createItemFromLine(opts: {
+  dealId: string;
+  lineId: string;
+  kind: "good" | "service";
+  isGeneric: boolean;
+  actorId: string;
+}): Promise<string> {
+  const line = await lineToMatch(opts.dealId, opts.lineId);
+  if (!line) throw new MatchRefused("noSuchLine");
+
+  const [last] = await db
+    .select({ code: item.code })
+    .from(item)
+    .where(sql`${item.code} ~ '^ART-[0-9]+$'`)
+    .orderBy(sql`${item.code} desc`)
+    .limit(1);
+  const next = Number(last?.code?.slice(4) ?? 0) + 1;
+  const code = `ART-${String(next).padStart(4, "0")}`;
+
+  return db.transaction(async (tx) => {
+    const [created] = await tx
+      .insert(item)
+      .values({
+        code,
+        designation: line.designation,
+        unit: line.unit,
+        kind: opts.kind,
+        isGeneric: opts.isGeneric,
+      })
+      .returning({ id: item.id });
+    const itemId = created?.id as string;
+
+    // The client's own word for it, kept as an alias so the next enquiry from
+    // them matches on the first pass instead of asking again.
+    if (line.reference?.trim()) {
+      await tx.insert(itemAlias).values({
+        itemId,
+        alias: line.reference.trim(),
+        source: "client",
+        preferOnOffer: false,
+      });
+    }
+
+    await tx
+      .update(dealLine)
+      .set({ itemId, matchedBy: "typed" })
+      .where(eq(dealLine.id, opts.lineId));
+
+    await tx.insert(auditEntry).values({
+      actorId: opts.actorId,
+      actorKind: "user",
+      entity: "item",
+      entityId: itemId,
+      action: "create",
+      after: { code, designation: line.designation, fromDeal: line.dealRef },
+      sourceScreen: "73",
+    });
+
+    return itemId;
+  });
 }

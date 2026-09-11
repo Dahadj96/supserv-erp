@@ -259,12 +259,31 @@ export function LinesEditor({
                           <Paperclip className="size-3.5" aria-hidden />
                           {t("dealItems.technicalFile")}
                         </Link>
-                      ) : (
-                        <span
-                          className="text-micro text-muted"
+                      ) : row.id ? (
+                        /*
+                          V0b — "not matched" used to be a dead end, and it was
+                          a dead end for EVERY line, because nothing in the
+                          application ever wrote `deal_line.item_id`. It is the
+                          way in now: the match screen proposes candidates with
+                          the reason each is proposed, and offers to make the
+                          line into a new article when it is something we have
+                          never sold.
+                        */
+                        <Link
+                          href={`/deals/${dealId}/items/${row.id}/match`}
+                          className="text-micro text-accent-ink hover:underline"
                           title={t("dealItems.notMatchedHelp")}
                         >
-                          {t("dealItems.notMatched")}
+                          {t("dealItems.matchIt")}
+                        </Link>
+                      ) : (
+                        // A row somebody has just added has no `deal_line` yet,
+                        // so there is nothing to match to anything. Save first.
+                        <span
+                          className="text-micro text-muted"
+                          title={t("dealItems.saveFirstHelp")}
+                        >
+                          {t("dealItems.saveFirst")}
                         </span>
                       )}
                     </td>
