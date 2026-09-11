@@ -1,5 +1,7 @@
 import { CircleAlert } from "lucide-react";
 import { getTranslations, setRequestLocale } from "next-intl/server";
+import { previewBulkDelete, runBulkDelete } from "@/app/[locale]/(app)/bulk-delete-actions";
+import { BulkResult } from "@/components/data";
 import { Button } from "@/components/ui/button";
 import {
   bouncingContacts,
@@ -30,10 +32,15 @@ export default async function ContactsPage({
   searchParams,
 }: {
   params: Promise<{ locale: string }>;
-  searchParams: Promise<{ facet?: string }>;
+  searchParams: Promise<{
+    facet?: string;
+    binned?: string;
+    refused?: string;
+    more?: string;
+  }>;
 }) {
   const { locale } = await params;
-  const { facet: raw } = await searchParams;
+  const { facet: raw, binned, refused, more } = await searchParams;
   setRequestLocale(locale);
   const t = await getTranslations();
 
@@ -119,7 +126,14 @@ export default async function ContactsPage({
         })}
       </div>
 
-      <ContactsList rows={rows} total={counts.all} />
+      <BulkResult binned={binned} refused={refused} more={more} />
+
+      <ContactsList
+        rows={rows}
+        total={counts.all}
+        previewBulk={previewBulkDelete.bind(null, locale, "person")}
+        runBulk={runBulkDelete.bind(null, locale, "person", "/contacts")}
+      />
 
       <div className="grid max-w-[1400px] grid-cols-1 md:grid-cols-3 items-start gap-5 px-4 md:px-7 pb-8">
         <section className="col-span-1 md:col-span-2 rounded-[var(--radius-card)] border border-line bg-surface p-5">

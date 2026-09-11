@@ -66,6 +66,14 @@ const EXPECTED: Record<string, string[]> = {
   // ── Records anybody but `lecture` may add ────────────────────────────────
   "capture/actions.ts:readAction": ["*own"],
   "capture/actions.ts:saveAction": ["*write"],
+  /*
+    Bulk delete, one file for all four kinds — `records.delete`, the same
+    permission one row at a time asks for, because the act is the same act.
+    The preview holds it too: a description that leaked what a person may not
+    delete would be a permission hole with a friendly face.
+  */
+  "bulk-delete-actions.ts:previewBulkDelete": ["records.delete"],
+  "bulk-delete-actions.ts:runBulkDelete": ["records.delete"],
   "companies/actions.ts:addCompanyAlias": ["*write"],
   "companies/actions.ts:createCompany": ["*write"],
   "companies/actions.ts:updateCompany": ["*write"],

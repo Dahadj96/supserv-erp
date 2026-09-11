@@ -1087,3 +1087,159 @@ export async function purgeFromBin(opts: {
     throw error;
   }
 }
+
+/* ─────────────────────── bulk, and why the rule changed ────────────────────
+ *
+ * `bulk-bar.tsx` has said since screen 79 was drawn: "Send, issue, cancel and
+ * delete are deliberately absent. Anything that leaves the building or cannot
+ * be undone happens one record at a time. Do not add them here."
+ *
+ * The owner asked for bulk delete on 11 September 2026, and the rule's PREMISE
+ * had already stopped being true by then — which is the only reason this
+ * exists. That sentence was written when discarding was a one-way door:
+ *
+ *   - there was no bin worth the name (V3: nothing purged, and nothing could
+ *     be destroyed on purpose either — the row simply hid for ever),
+ *   - discarding a deal wrote ONE row and left its drafts stranded (V1), so
+ *     "restore" did not actually restore, and
+ *   - no screen could tell you what a removal would take with it (V2).
+ *
+ * All three are now false. Every row here goes to the BIN, restorable for
+ * thirty days by anybody who may delete; a deal comes back with its lines, its
+ * drafts, its supplier requests and its tender; and destroying a record for
+ * good is a separate permission, one row at a time, behind a typed
+ * confirmation. Fifty reversible acts are not more dangerous than one.
+ *
+ * What has NOT changed, and must not: issued paper never goes, a person who
+ * has not left a crew never goes, and **a refusal is never silent**. This
+ * returns what refused and why, every time, and the screen prints it. A bulk
+ * action that quietly skips eleven of your fifty rows is worse than no bulk
+ * action, which is what the original rule was really protecting against.
+ *
+ * Send, issue and cancel stay absent from the bar for ever. Those DO leave the
+ * building.
+ */
+
+export type BulkKind = "deal" | "document" | "company" | "person";
+
+export type BulkDiscardResult = {
+  /** How many went to the bin. */
+  binned: number;
+  /** The ones that refused, named, with the reason each refused. */
+  refused: { id: string; label: string; reason: string }[];
+};
+
+/**
+ * Discard many records, one at a time, refusing what must be refused.
+ *
+ * Deliberately a LOOP and not one big statement. Each row gets the same guard
+ * and the same audit entry it would get alone — a bulk path with its own
+ * shortcut is how an issued invoice eventually goes in the bin because
+ * somebody optimised the check out of it.
+ */
+export async function bulkDiscard(opts: {
+  kind: BulkKind;
+  ids: string[];
+  reason: string;
+  actorId: string;
+}): Promise<BulkDiscardResult> {
+  const refused: BulkDiscardResult["refused"] = [];
+  let binned = 0;
+
+  for (const id of opts.ids) {
+    try {
+      if (opts.kind === "deal") {
+        await discardDeal({ id, reason: opts.reason, actorId: opts.actorId, fromWhere: "05" });
+      } else if (opts.kind === "document") {
+        await discardDocument({ id, reason: opts.reason, actorId: opts.actorId, fromWhere: "17" });
+      } else if (opts.kind === "company") {
+        await discardParty({ id, reason: opts.reason, actorId: opts.actorId, fromWhere: "21" });
+      } else {
+        await discardPerson({ id, reason: opts.reason, actorId: opts.actorId, fromWhere: "76" });
+      }
+      binned += 1;
+    } catch (error) {
+      refused.push({ id, label: await labelOf(opts.kind, id), reason: reasonOf(error) });
+    }
+  }
+
+  return { binned, refused };
+}
+
+/** What to call a row in a refusal. Its own reference, never its uuid. */
+async function labelOf(kind: BulkKind, id: string): Promise<string> {
+  if (kind === "deal") {
+    const [row] = await db.select({ ref: deal.ref }).from(deal).where(eq(deal.id, id)).limit(1);
+    return row?.ref ?? id;
+  }
+  if (kind === "document") {
+    const [row] = await db
+      .select({ number: document.number, kind: document.kind })
+      .from(document)
+      .where(eq(document.id, id))
+      .limit(1);
+    return row?.number ?? row?.kind ?? id;
+  }
+  if (kind === "company") {
+    const [row] = await db
+      .select({ code: party.code, name: party.legalName })
+      .from(party)
+      .where(eq(party.id, id))
+      .limit(1);
+    return row?.name ?? row?.code ?? id;
+  }
+  const [row] = await db
+    .select({ name: person.fullName })
+    .from(person)
+    .where(eq(person.id, id))
+    .limit(1);
+  return row?.name ?? id;
+}
+
+/** The rule code behind a refusal, for the screen to translate. */
+function reasonOf(error: unknown): string {
+  if (error instanceof DealNotDiscardable || error instanceof NotDiscardable) {
+    return "hasIssuedDocuments";
+  }
+  if (error instanceof DocumentIsIssued) return "documentIsIssued";
+  if (error instanceof PersonOnSite) return "personIsOnSite";
+  if (error instanceof NotYourNote) return "notYourNote";
+  // Anything else is a bug rather than a rule, and saying so is better than
+  // printing "refused" beside a row for a reason nobody can look up.
+  return "unexpected";
+}
+
+/**
+ * What a bulk discard WOULD do, asked before the confirmation is shown.
+ *
+ * The same guards the discard itself uses, so the sentence on the screen and
+ * the outcome cannot disagree. Nothing is written.
+ */
+export async function bulkDiscardPreview(opts: {
+  kind: BulkKind;
+  ids: string[];
+}): Promise<{ canGo: number; refused: { label: string; reason: string }[] }> {
+  const refused: { label: string; reason: string }[] = [];
+  let canGo = 0;
+
+  for (const id of opts.ids) {
+    let blocker: string | null = null;
+
+    if (opts.kind === "deal") {
+      const effect = await dealDiscardEffect(id);
+      if (effect.issued.length > 0) blocker = "hasIssuedDocuments";
+    } else if (opts.kind === "document") {
+      const state = await documentBinState(id);
+      if (!state.discardable) blocker = "documentIsIssued";
+    } else if (opts.kind === "company") {
+      if ((await issuedDocumentCount(id)) > 0) blocker = "hasIssuedDocuments";
+    } else {
+      if (((await peopleOnSite([id])).get(id) ?? 0) > 0) blocker = "personIsOnSite";
+    }
+
+    if (blocker) refused.push({ label: await labelOf(opts.kind, id), reason: blocker });
+    else canGo += 1;
+  }
+
+  return { canGo, refused };
+}

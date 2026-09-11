@@ -2,7 +2,7 @@
 
 import { useFormatter, useTranslations } from "next-intl";
 import type { ColumnDef } from "@/components/data";
-import { DataTable } from "@/components/data";
+import { BulkDelete, type BulkDeletePreview, DataTable } from "@/components/data";
 import { Badge, type BadgeTone } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import type { PersonRow } from "@/domain/people";
@@ -20,6 +20,8 @@ export function PeopleList({
   total,
   discard,
   notAllowed,
+  previewBulk,
+  runBulk,
 }: {
   rows: PersonRow[];
   total: number;
@@ -27,6 +29,12 @@ export function PeopleList({
   discard: (form: FormData) => Promise<void>;
   /** The sentence to show when this role may not bin anything. */
   notAllowed?: string;
+  /* Bulk delete. A person who has not left a crew never goes — screen 16
+     answers "who is on Adrar centre today" out of `project_crew`, and binning
+     somebody still on it makes that answer point at a row no list will show.
+     They are named in the preview rather than skipped in silence. */
+  previewBulk: (ids: string[]) => Promise<BulkDeletePreview>;
+  runBulk: (ids: string[], form: FormData) => void;
 }) {
   const t = useTranslations();
   const format = useFormatter();
@@ -103,6 +111,11 @@ export function PeopleList({
 
   return (
     <DataTable
+      bulkDelete={
+        notAllowed
+          ? undefined
+          : (ids) => <BulkDelete ids={ids} preview={previewBulk} run={runBulk} onDone={() => {}} />
+      }
       rows={rows}
       total={total}
       columns={COLUMNS}

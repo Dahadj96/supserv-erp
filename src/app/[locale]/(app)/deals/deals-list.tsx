@@ -2,7 +2,13 @@
 
 import { useTranslations } from "next-intl";
 import type { BulkAction, ColumnDef, FilterField, SavedView } from "@/components/data";
-import { DataTable, downloadCsv, toCsv } from "@/components/data";
+import {
+  BulkDelete,
+  type BulkDeletePreview,
+  DataTable,
+  downloadCsv,
+  toCsv,
+} from "@/components/data";
 import { Badge } from "@/components/ui/badge";
 import { RowDelete, type RowDeleteDescription } from "@/components/ui/row-delete";
 
@@ -178,6 +184,8 @@ export function DealsList({
   total,
   describeDiscard,
   discard,
+  previewBulk,
+  runBulk,
 }: {
   rows: DealRow[];
   total: number;
@@ -190,6 +198,12 @@ export function DealsList({
   */
   describeDiscard: (id: string) => Promise<RowDeleteDescription>;
   discard: (id: string, form: FormData) => void;
+  /* The bar's one destructive action. Previewed on the server with the same
+     guards the discard uses, so the rows that will refuse are NAMED before
+     anybody presses it — see `bulk-bar.tsx` for why delete came off that
+     file's do-not-add list. */
+  previewBulk: (ids: string[]) => Promise<BulkDeletePreview>;
+  runBulk: (ids: string[], form: FormData) => void;
 }) {
   const t = useTranslations();
 
@@ -214,6 +228,9 @@ export function DealsList({
         asking for: one record, from the row somebody is looking at, with a
         confirmation that names what goes with it.
       */
+      bulkDelete={(ids) => (
+        <BulkDelete ids={ids} preview={previewBulk} run={runBulk} onDone={() => {}} />
+      )}
       rowAction={(row) => (
         <RowDelete
           label={row.reference}

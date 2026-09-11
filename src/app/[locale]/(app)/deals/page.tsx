@@ -1,7 +1,9 @@
 import { Plus } from "lucide-react";
 import { redirect as hardRedirect } from "next/navigation";
 import { getTranslations, setRequestLocale } from "next-intl/server";
+import { previewBulkDelete, runBulkDelete } from "@/app/[locale]/(app)/bulk-delete-actions";
 import { getSession } from "@/auth/session";
+import { BulkResult } from "@/components/data";
 import { PageHeader } from "@/components/layout/page-header";
 import { Button } from "@/components/ui/button";
 import { listDeals } from "@/domain/deal/deal";
@@ -25,10 +27,16 @@ export default async function DealsPage({
   searchParams,
 }: {
   params: Promise<{ locale: string }>;
-  searchParams: Promise<{ stage?: string; open?: string }>;
+  searchParams: Promise<{
+    stage?: string;
+    open?: string;
+    binned?: string;
+    refused?: string;
+    more?: string;
+  }>;
 }) {
   const { locale } = await params;
-  const { stage, open } = await searchParams;
+  const { stage, open, binned, refused, more } = await searchParams;
   setRequestLocale(locale);
   const t = await getTranslations();
 
@@ -118,6 +126,8 @@ export default async function DealsPage({
         }
       />
 
+      <BulkResult binned={binned} refused={refused} more={more} />
+
       <div className="flex shrink-0 flex-wrap items-center gap-2 border-b border-line-subtle bg-surface px-4 py-2.5 md:px-7">
         <span className="me-1 text-micro uppercase tracking-wide text-muted">
           {t("deals.stageDerivedLabel")}
@@ -148,6 +158,8 @@ export default async function DealsPage({
         // own page makes, and refuses on the same rule.
         describeDiscard={describeDealDiscard.bind(null, locale)}
         discard={discardDealFromListAction.bind(null, locale)}
+        previewBulk={previewBulkDelete.bind(null, locale, "deal")}
+        runBulk={runBulkDelete.bind(null, locale, "deal", "/deals")}
       />
     </main>
   );

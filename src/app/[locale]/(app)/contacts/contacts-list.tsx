@@ -2,7 +2,7 @@
 
 import { useFormatter, useTranslations } from "next-intl";
 import type { ColumnDef } from "@/components/data";
-import { DataTable } from "@/components/data";
+import { BulkDelete, type BulkDeletePreview, DataTable } from "@/components/data";
 import { Badge, type BadgeTone } from "@/components/ui/badge";
 import type { ContactRow, ContactStatus } from "@/domain/contact";
 
@@ -20,7 +20,17 @@ const PREFERS_TONE: Record<string, BadgeTone> = {
   whatsapp: "good",
 };
 
-export function ContactsList({ rows, total }: { rows: ContactRow[]; total: number }) {
+export function ContactsList({
+  rows,
+  total,
+  previewBulk,
+  runBulk,
+}: {
+  rows: ContactRow[];
+  total: number;
+  previewBulk: (ids: string[]) => Promise<BulkDeletePreview>;
+  runBulk: (ids: string[], form: FormData) => void;
+}) {
   const t = useTranslations();
   const format = useFormatter();
 
@@ -69,6 +79,9 @@ export function ContactsList({ rows, total }: { rows: ContactRow[]; total: numbe
 
   return (
     <DataTable
+      bulkDelete={(ids) => (
+        <BulkDelete ids={ids} preview={previewBulk} run={runBulk} onDone={() => {}} />
+      )}
       rows={rows}
       total={total}
       columns={COLUMNS}

@@ -1,9 +1,11 @@
 import { asc } from "drizzle-orm";
 import { Info } from "lucide-react";
 import { getTranslations, setRequestLocale } from "next-intl/server";
+import { previewBulkDelete, runBulkDelete } from "@/app/[locale]/(app)/bulk-delete-actions";
 import { discardPersonAction } from "@/app/[locale]/(app)/contacts/delete-actions";
 import { can } from "@/auth/can";
 import { getSession } from "@/auth/session";
+import { BulkResult } from "@/components/data";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { db } from "@/db";
@@ -29,10 +31,17 @@ export default async function PeoplePage({
   searchParams,
 }: {
   params: Promise<{ locale: string }>;
-  searchParams: Promise<{ facet?: string; error?: string; blocked?: string }>;
+  searchParams: Promise<{
+    facet?: string;
+    error?: string;
+    blocked?: string;
+    binned?: string;
+    refused?: string;
+    more?: string;
+  }>;
 }) {
   const { locale } = await params;
-  const { facet: raw, error, blocked } = await searchParams;
+  const { facet: raw, error, blocked, binned, refused, more } = await searchParams;
   setRequestLocale(locale);
   const t = await getTranslations();
 
@@ -125,9 +134,13 @@ export default async function PeoplePage({
         })}
       </div>
 
+      <BulkResult binned={binned} refused={refused} more={more} />
+
       <PeopleList
         rows={rows}
         total={counts.all}
+        previewBulk={previewBulkDelete.bind(null, locale, "person")}
+        runBulk={runBulkDelete.bind(null, locale, "person", "/people")}
         discard={discardPersonAction.bind(null, locale)}
         notAllowed={mayDelete ? undefined : t("bin.notAllowed")}
       />

@@ -2,7 +2,7 @@
 
 import { useTranslations } from "next-intl";
 import type { ColumnDef } from "@/components/data";
-import { DataTable } from "@/components/data";
+import { BulkDelete, type BulkDeletePreview, DataTable } from "@/components/data";
 
 export type CompanyRow = {
   id: string;
@@ -27,11 +27,27 @@ const COLUMNS: ColumnDef<CompanyRow>[] = [
   { key: "docLocale", labelKey: "companies.docLocale", render: (r) => r.docLocale.toUpperCase() },
 ];
 
-export function CompaniesList({ rows, total }: { rows: CompanyRow[]; total: number }) {
+export function CompaniesList({
+  rows,
+  total,
+  previewBulk,
+  runBulk,
+}: {
+  rows: CompanyRow[];
+  total: number;
+  /* Bulk delete, with the server previewing which rows will refuse — a company
+     that has ever issued a document never goes, and it is named before the
+     button is pressed rather than skipped afterwards. */
+  previewBulk: (ids: string[]) => Promise<BulkDeletePreview>;
+  runBulk: (ids: string[], form: FormData) => void;
+}) {
   const t = useTranslations();
 
   return (
     <DataTable
+      bulkDelete={(ids) => (
+        <BulkDelete ids={ids} preview={previewBulk} run={runBulk} onDone={() => {}} />
+      )}
       rows={rows}
       total={total}
       columns={COLUMNS}

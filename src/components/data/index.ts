@@ -3,6 +3,8 @@
  * Ten screens share it. Do not write a second table.
  */
 export { BulkBar } from "./bulk-bar";
+export { BulkDelete, type BulkDeletePreview } from "./bulk-delete";
+export { BulkResult } from "./bulk-result";
 export { ColumnsMenu } from "./columns-menu";
 export { DataTable } from "./data-table";
 export { cellText, downloadCsv, toCsv } from "./export-csv";

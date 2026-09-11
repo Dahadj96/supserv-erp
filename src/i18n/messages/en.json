@@ -93,7 +93,25 @@
     "rowsPerPage": "Rows per page",
     "previous": "Previous page",
     "next": "Next page",
-    "export": "Export"
+    "export": "Export",
+    "bulkDelete": "Move to the bin",
+    "bulkDeleteTitle": "{count, plural, one {Move this record to the bin?} other {Move # records to the bin?}}",
+    "bulkChecking": "Checking which of them can go…",
+    "bulkWillGo": "{count, plural, one {One goes to the bin.} other {# go to the bin.}} Each one takes its own work with it and brings it all back if you restore it.",
+    "bulkConfirm": "{count, plural, one {Move it} other {Move # of them}}",
+    "bulkRefused": "{count, plural, one {One cannot go} other {# cannot go}}",
+    "bulkAndMore": "…and {n} more.",
+    "bulkDone": "{count, plural, one {One record is in the bin.} other {# records are in the bin.}} Restorable for 30 days.",
+    "bulkTooMany": "More than {most} at once",
+    "bulkReason": {
+      "hasIssuedDocuments": "it has issued documents, and paper that has left the building is never deleted",
+      "documentIsIssued": "it has been issued — a correction is an avoir",
+      "personIsOnSite": "they have not left a crew. Take them off the site first",
+      "notYourNote": "somebody else wrote it",
+      "notAllowed": "your role may not delete records",
+      "tooMany": "tick fewer rows. Above that number, a wrong filter stops being something you can undo by reading the bin",
+      "unexpected": "something went wrong rather than a rule refusing. Nothing was removed for this one"
+    }
   },
   "deals": {
     "reference": "Ref",

@@ -27,6 +27,7 @@ export function DataTable<Row extends { id: string }>({
   emptyState,
   getRowHref,
   rowAction,
+  bulkDelete,
 }: {
   rows: Row[];
   /** Unfiltered total. The count always shows both. */
@@ -47,6 +48,8 @@ export function DataTable<Row extends { id: string }>({
    * a menu; until then it is one slot with one thing in it.
    */
   rowAction?: (row: Row) => ReactNode;
+  /** The bar's one destructive action — see `bulk-bar.tsx` for why it is apart. */
+  bulkDelete?: (ids: string[]) => ReactNode;
 }) {
   const t = useTranslations();
   const list = useListState();
@@ -226,6 +229,7 @@ export function DataTable<Row extends { id: string }>({
         actions={bulkActions}
         context={{ rows: picked, columns: shownColumns }}
         onClear={() => setSelected([])}
+        destructive={bulkDelete}
       />
 
       <Pagination

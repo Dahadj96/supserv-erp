@@ -93,7 +93,25 @@
     "rowsPerPage": "Lignes par page",
     "previous": "Page précédente",
     "next": "Page suivante",
-    "export": "Exporter"
+    "export": "Exporter",
+    "bulkDelete": "Mettre à la corbeille",
+    "bulkDeleteTitle": "{count, plural, one {Mettre cet enregistrement à la corbeille ?} other {Mettre # enregistrements à la corbeille ?}}",
+    "bulkChecking": "Vérification de ceux qui peuvent partir…",
+    "bulkWillGo": "{count, plural, one {Un part à la corbeille.} other {# partent à la corbeille.}} Chacun emporte son travail avec lui et le ramène entièrement si vous le restaurez.",
+    "bulkConfirm": "{count, plural, one {Le mettre} other {En mettre #}}",
+    "bulkRefused": "{count, plural, one {Un ne peut pas partir} other {# ne peuvent pas partir}}",
+    "bulkAndMore": "… et {n} de plus.",
+    "bulkDone": "{count, plural, one {Un enregistrement est à la corbeille.} other {# enregistrements sont à la corbeille.}} Restaurables 30 jours.",
+    "bulkTooMany": "Plus de {most} à la fois",
+    "bulkReason": {
+      "hasIssuedDocuments": "des documents ont été émis, et le papier sorti de l’entreprise ne se supprime jamais",
+      "documentIsIssued": "il a été émis — la correction est un avoir",
+      "personIsOnSite": "n’a pas quitté un chantier. Retirez-la de l’équipe d’abord",
+      "notYourNote": "écrite par quelqu’un d’autre",
+      "notAllowed": "votre rôle ne peut pas supprimer d’enregistrements",
+      "tooMany": "cochez moins de lignes. Au-delà, un mauvais filtre cesse d’être rattrapable en lisant la corbeille",
+      "unexpected": "une erreur, et non une règle qui refuse. Rien n’a été retiré pour celui-là"
+    }
   },
   "deals": {
     "reference": "Réf",

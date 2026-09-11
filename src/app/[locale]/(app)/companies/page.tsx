@@ -1,5 +1,7 @@
 import { Plus } from "lucide-react";
 import { getTranslations, setRequestLocale } from "next-intl/server";
+import { previewBulkDelete, runBulkDelete } from "@/app/[locale]/(app)/bulk-delete-actions";
+import { BulkResult } from "@/components/data";
 import { Button } from "@/components/ui/button";
 import { suggestDuplicateParties } from "@/domain/merge";
 import { liveCompanies, liveCompanyCount } from "@/domain/party";
@@ -16,8 +18,15 @@ import { CompaniesList } from "./companies-list";
  */
 export const dynamic = "force-dynamic";
 
-export default async function CompaniesPage({ params }: { params: Promise<{ locale: string }> }) {
+export default async function CompaniesPage({
+  params,
+  searchParams,
+}: {
+  params: Promise<{ locale: string }>;
+  searchParams: Promise<{ binned?: string; refused?: string; more?: string }>;
+}) {
   const { locale } = await params;
+  const { binned, refused, more } = await searchParams;
   setRequestLocale(locale);
   const t = await getTranslations();
 
@@ -67,7 +76,14 @@ export default async function CompaniesPage({ params }: { params: Promise<{ loca
         </div>
       ) : null}
 
-      <CompaniesList rows={rows} total={total} />
+      <BulkResult binned={binned} refused={refused} more={more} />
+
+      <CompaniesList
+        rows={rows}
+        total={total}
+        previewBulk={previewBulkDelete.bind(null, locale, "company")}
+        runBulk={runBulkDelete.bind(null, locale, "company", "/companies")}
+      />
     </main>
   );
 }
