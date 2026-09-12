@@ -1,10 +1,15 @@
 import { redirect as hardRedirect } from "next/navigation";
 import { getTranslations, setRequestLocale } from "next-intl/server";
+import {
+  describeDocumentDiscard,
+  discardDocumentFromListAction,
+} from "@/app/[locale]/(app)/documents/[id]/delete-actions";
 import { can } from "@/auth/can";
 import { getSession } from "@/auth/session";
 import { PageHeader } from "@/components/layout/page-header";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import { RowDelete } from "@/components/ui/row-delete";
 import { StateBlock } from "@/components/ui/state-block";
 import { formatMoney } from "@/domain/money";
 import { listOffers } from "@/domain/offer/store";
@@ -93,7 +98,8 @@ export default async function OffersPage({ params }: { params: Promise<{ locale:
                   <th className="py-2 pe-4 text-end font-medium">{t("offer.margin")}</th>
                 ) : null}
                 <th className="py-2 pe-4 text-start font-medium">{t("deals.stage")}</th>
-                <th className="py-2 text-start font-medium">{t("offer.created")}</th>
+                <th className="py-2 pe-4 text-start font-medium">{t("offer.created")}</th>
+                <th className="w-10 py-2" />
               </tr>
             </thead>
             <tbody>
@@ -139,7 +145,29 @@ export default async function OffersPage({ params }: { params: Promise<{ locale:
                       {row.number ? t("offer.issued") : t("offer.draft")}
                     </Badge>
                   </td>
-                  <td className="py-2.5 text-muted">{day.format(row.createdAt)}</td>
+                  <td className="py-2.5 pe-4 text-muted">{day.format(row.createdAt)}</td>
+                  {/*
+                    The offers list was the one list that owns records and had no
+                    way to remove one — `/invoices` got it with V2 and the drafts
+                    hanging off an enquiry got it too, and this screen was
+                    missed. An offer typed for the wrong client had to be opened
+                    before it could go.
+
+                    Only on a DRAFT. An issued offer keeps its number for ever
+                    (LAW 5), so a trash icon beside one would exist only to
+                    refuse — and the answer for an issued document is a
+                    different button on the document itself.
+                  */}
+                  <td className="py-2.5 text-end">
+                    {row.number ? null : (
+                      <RowDelete
+                        label={row.dealRef ?? t("offer.noNumberYet")}
+                        what={t("rowDelete.what.document")}
+                        describe={describeDocumentDiscard.bind(null, locale, row.id)}
+                        action={discardDocumentFromListAction.bind(null, locale, "/offers", row.id)}
+                      />
+                    )}
+                  </td>
                 </tr>
               ))}
             </tbody>

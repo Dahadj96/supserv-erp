@@ -1,11 +1,16 @@
 import { AlertCircle } from "lucide-react";
 import { redirect as hardRedirect } from "next/navigation";
 import { getTranslations, setRequestLocale } from "next-intl/server";
+import {
+  describeDocumentDiscard,
+  discardDocumentFromListAction,
+} from "@/app/[locale]/(app)/documents/[id]/delete-actions";
 import { can } from "@/auth/can";
 import { getSession } from "@/auth/session";
 import { PageHeader } from "@/components/layout/page-header";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import { RowDelete } from "@/components/ui/row-delete";
 import { StateBlock } from "@/components/ui/state-block";
 import { deliveries } from "@/domain/delivery/store";
 import { Link } from "@/i18n/navigation";
@@ -133,6 +138,7 @@ export default async function DeliveriesPage({
                     <th className="py-2 pe-4 text-start font-medium">{t("deliveries.date")}</th>
                     <th className="py-2 pe-4 text-end font-medium">{t("deliveries.lines")}</th>
                     <th className="py-2 pe-5 text-start font-medium">{t("deliveries.proof")}</th>
+                    <th className="w-10 py-2.5 pe-5" />
                   </tr>
                 </thead>
                 <tbody>
@@ -167,6 +173,23 @@ export default async function DeliveriesPage({
                         ) : (
                           <Badge tone="warning">{t("deliveries.proofMissing")}</Badge>
                         )}
+                      </td>
+                      {/* Drafts only. A bon de livraison that has gone out is
+                          paper the client signed for. */}
+                      <td className="py-2.5 pe-5 text-end">
+                        {row.number === null ? (
+                          <RowDelete
+                            label={t("deliveries.draft")}
+                            what={t("rowDelete.what.document")}
+                            describe={describeDocumentDiscard.bind(null, locale, row.documentId)}
+                            action={discardDocumentFromListAction.bind(
+                              null,
+                              locale,
+                              "/deliveries",
+                              row.documentId,
+                            )}
+                          />
+                        ) : null}
                       </td>
                     </tr>
                   ))}

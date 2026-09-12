@@ -1,11 +1,16 @@
 import { Info } from "lucide-react";
 import { redirect as hardRedirect, notFound } from "next/navigation";
 import { getTranslations, setRequestLocale } from "next-intl/server";
+import {
+  describeDocumentDiscard,
+  discardDocumentFromListAction,
+} from "@/app/[locale]/(app)/documents/[id]/delete-actions";
 import { INPUT } from "@/app/[locale]/(app)/setup/field";
 import { can } from "@/auth/can";
 import { getSession } from "@/auth/session";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import { RowDelete } from "@/components/ui/row-delete";
 import { priceHistory } from "@/domain/deal/price-history";
 import { formatMoney } from "@/domain/money";
 import { marginPct } from "@/domain/offer/margin";
@@ -108,6 +113,31 @@ export default async function OfferBuilderPage({
           <Link href={`/documents/${id}`}>
             <Button variant="primary">{t("offer.openDocument")}</Button>
           </Link>
+          {/*
+            And the way OUT.
+
+            `discardDocument` has existed since Wave 0 and was callable from
+            `/documents/[id]` and nowhere else — but an offer is opened here,
+            worked on here, and abandoned here. Somebody who built a proforma
+            for the wrong client had to know that a third screen existed before
+            they could remove it, which is how "I cannot delete an offer" gets
+            written down about a system that could delete it all along.
+
+            Only while it is a draft: an issued offer keeps its number for ever.
+          */}
+          {issued ? null : (
+            <RowDelete
+              label={offer.document.number ?? offer.dealRef ?? t("offer.noNumberYet")}
+              what={t("rowDelete.what.document")}
+              describe={describeDocumentDiscard.bind(null, locale, id)}
+              action={discardDocumentFromListAction.bind(
+                null,
+                locale,
+                offer.dealId ? `/deals/${offer.dealId}` : "/offers",
+                id,
+              )}
+            />
+          )}
         </div>
       </div>
 

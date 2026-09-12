@@ -114,10 +114,7 @@ describe("bulk delete — the refusal is never silent", () => {
   });
 
   it("writes a separate audit entry per record, not one for the batch", async () => {
-    const entries = await db
-      .select()
-      .from(auditEntry)
-      .where(eq(auditEntry.actorId, ACTOR));
+    const entries = await db.select().from(auditEntry).where(eq(auditEntry.actorId, ACTOR));
     const discards = entries.filter((e) => e.entity === "deal" && e.action === "discard");
     expect(discards).toHaveLength(2);
     // Each one came from the list, and each carries its own reason.
@@ -128,10 +125,16 @@ describe("bulk delete — the refusal is never silent", () => {
     const restorable = ids.filter((id) => id !== invoicedDealId);
     await restoreDeal({ id: restorable[0] as string, actorId: ACTOR });
 
-    const [back] = await db.select().from(deal).where(eq(deal.id, restorable[0] as string));
+    const [back] = await db
+      .select()
+      .from(deal)
+      .where(eq(deal.id, restorable[0] as string));
     expect(back?.deletedAt).toBeNull();
 
-    const [stillGone] = await db.select().from(deal).where(eq(deal.id, restorable[1] as string));
+    const [stillGone] = await db
+      .select()
+      .from(deal)
+      .where(eq(deal.id, restorable[1] as string));
     expect(stillGone?.deletedAt, "the other one is untouched").toBeTruthy();
   });
 

@@ -1,9 +1,14 @@
 import { redirect as hardRedirect } from "next/navigation";
 import { getFormatter, getTranslations, setRequestLocale } from "next-intl/server";
+import {
+  describeDocumentDiscard,
+  discardDocumentFromListAction,
+} from "@/app/[locale]/(app)/documents/[id]/delete-actions";
 import { getSession } from "@/auth/session";
 import { PageHeader } from "@/components/layout/page-header";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import { RowDelete } from "@/components/ui/row-delete";
 import { StateBlock } from "@/components/ui/state-block";
 import { isOrderKind, listOrders, ORDER_KINDS, orderCounts } from "@/domain/order/list";
 import { Link } from "@/i18n/navigation";
@@ -156,6 +161,7 @@ export default async function OrdersPage({
                 <th className="px-4 md:px-7 py-2 text-end font-medium text-muted">
                   {t("orders.column.delivered")}
                 </th>
+                <th className="w-10 px-4 py-2 md:px-7" />
               </tr>
             </thead>
             <tbody>
@@ -196,6 +202,18 @@ export default async function OrdersPage({
                     ) : (
                       <Badge tone="warning">{t("orders.nothingDelivered")}</Badge>
                     )}
+                  </td>
+                  {/* The same row delete the other document lists have. Drafts
+                      only: an issued order is the client's own commitment. */}
+                  <td className="px-4 py-2.5 text-end md:px-7">
+                    {row.number === null ? (
+                      <RowDelete
+                        label={t("orders.draft")}
+                        what={t("rowDelete.what.document")}
+                        describe={describeDocumentDiscard.bind(null, locale, row.id)}
+                        action={discardDocumentFromListAction.bind(null, locale, "/orders", row.id)}
+                      />
+                    ) : null}
                   </td>
                 </tr>
               ))}
